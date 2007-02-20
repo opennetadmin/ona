@@ -29,7 +29,10 @@ if (!$self['secure'] and !loggedIn()) {
 EOL;
 }
 */
-blahblah blah blah blah
+
+
+// Set the title of this web page here:
+$conf['title'] .= "Home";
 
 // Include xajax stuff
 require_once($conf['inc_xajax_stuff']);
