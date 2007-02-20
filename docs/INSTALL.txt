@@ -1,0 +1,14 @@
+these are just rambling thoughts at this point
+
+requirements:
+mysql
+php
+mod-php
+
+have to create a db called "ona"
+
+add a user called ona-sys with a password of "onar0x"
+
+give taht user full read/write type privs.. doenst need admin (create drop etc)
+
+

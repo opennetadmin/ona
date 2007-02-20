@@ -1,0 +1,834 @@
+<?
+
+//
+// IPDB GUI Specific Functions
+//
+
+// Global settings used in functions below
+global $conf;
+$conf['suggest_max_results'] = 10;
+$conf['search_results_per_page'] = 10;
+if (is_numeric($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
+$conf['loading_icon'] = "<br><center><img src=\"{$images}/loading.gif\"></center><br>";
+
+// Define some colors for the subnet map:
+$color['bgcolor_map_host']      = '#BFD2FF';
+$color['bgcolor_map_subnet']   = '#CCBFFF';
+$color['bgcolor_map_selected']  = '#FBFFB6';
+$color['bgcolor_map_empty']     = '#FFFFFF';
+
+// Used in various windows to build a "help" link .. we use $_ENV because $conf is site specific.
+$_ENV['help_url'] = '/dokuwiki/doku.php?id=ona_help:';
+
+// Much of this configuration is required here since
+// a lot of it's used in xajax calls before a web page is created.
+$color['menu_bar_bg']      = '#F3F1FF';
+$color['menu_header_bg']   = '#FFFFFF';
+$color['menu_item_bg']     = '#F3F1FF';
+$color['menu_header_text'] = '#436976';
+$color['menu_item_text']   = '#436976';
+
+// moved these to the config.inc.php
+//$color['link_nav']         = '#7E8CD7';
+//$color['link_act']         = '#EB8F1F';
+//$color['link_zone']        = '#5BA65B';
+
+// Make sure we have necessary non-gui ONA functions & DB connectivity
+//require_once($conf['inc_functions_ona']);
+
+
+// Register ONA specific functions with xajax
+// (set the function names in a variable so they'll be processed later)
+// Note that these functions must be already defined!
+// $xajax->registerFunction("your_function");
+
+
+// Load xajax and Brandon Zehm's xajax enabled "drag", "suggest", and "webwin" libraries.
+//require_once($conf['inc_xajax_modules']);
+
+// Include some ONA specific javascript functions
+//$conf['html_headers'] .= '<script type="text/javascript" src="js/ipdb.js"></script>' . "\n";
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function:
+//     rewrite_history ($window_name, $null, $return_html)
+//
+// Description:
+//     Rewrites the history div in the work_space window.
+//     If $return_html == 1 the raw html is returned rather than returning
+//     and XML response to update it.
+//     This also updates the work space window's title.
+//////////////////////////////////////////////////////////////////////////////
+// function rewrite_history($window_name, $null='', $return_html=0) {
+//     global $conf, $self, $color, $style, $images;
+//
+//     $html = $js = '';
+//
+//     $html .= "Trace: ";
+//     $and = '';
+//     foreach($_SESSION['ona'][$window_name]['history'] as $history) {
+//         $history['title'] = htmlentities($history['title'], ENT_QUOTES);
+//         $history['type'] = htmlentities($history['type'], ENT_QUOTES);
+//         $history['url'] = str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']);
+//         $history['url'] = htmlentities($history['url'], ENT_QUOTES);
+//         $html .= <<<EOL
+// {$and}<a title="{$history['type']}: {$history['title']}" onClick="xajax_window_submit('work_space', '{$history['url']}');">{$history['title']}</a>&nbsp;
+// EOL;
+//         $and = '&nbsp;&gt;&gt;&nbsp;';
+//     }
+//
+//     if ($return_html) {
+//         return($html);
+//     }
+//
+//     // Update the work_space window's title
+//     $history = end($_SESSION['ona'][$window_name]['history']);
+//
+//
+//     // Insert the new html into the window
+//     // Instantiate the xajaxResponse object
+//     $response = new xajaxResponse();
+//     $response->addAssign("trace_history", "innerHTML", $html);
+//     return($response->getXML());
+// }
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Calculates the percentage of a subnet that is in "use".
+// Returns a three part list:
+//    list($percentage_used, $number_used, $number_total)
+//////////////////////////////////////////////////////////////////////////////
+function get_subnet_usage($subnet_id) {
+    global $conf, $self, $onadb;
+
+    list($status, $rows, $subnet) = db_get_record($onadb, 'subnets', array('id' => $subnet_id));
+    if ($status or !$rows) { return(0); }
+    $subnet['SIZE'] = (0xffffffff - ip_mangle($subnet['ip_mask'], 'numeric')) - 1;
+
+    // Calculate the percentage used (total size - allocated hosts - dhcp pool size)
+    list($status, $hosts, $tmp) = db_get_records($onadb, 'interfaces', array('SUBNET_ID' => $subnet['id']), "", 0);
+    //list($status, $rows, $pools) = db_get_records($onadb, 'DHCP_POOL_B', array('SUBNET_ID' => $subnet['ID']));
+    $pool_size = 0;
+  //  foreach ($pools as $pool) {
+  //      $pool_size += ($pool['IP_ADDRESS_END'] - $pool['IP_ADDRESS_START'] + 1);
+  //  }
+    $total_used = $hosts + $pool_size;
+    $percentage = sprintf('%d', ($total_used / $subnet['SIZE']) * 100);
+    return(array($percentage, $total_used, $subnet['SIZE']));
+}
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Returns the html for a "percentage of subnet used" bar graph
+//////////////////////////////////////////////////////////////////////////////
+function get_subnet_usage_html($subnet_id, $width=30, $height=8) {
+    global $conf, $self, $mysql, $onadb;
+    list($usage, $used, $total) = get_subnet_usage($subnet_id);
+    $css='';
+    if (strpos($_SERVER['HTTP_USER_AGENT'],'MSIE') != false)
+        $css = "font-size: " . ($height - 2) . "px;";
+    return(<<<EOL
+    <div style="white-space: nowrap; width: 100%; text-align: left; padding-top: 2px; padding-bottom: 2px; vertical-align: middle; font-size: 8px;">
+        <div title="{$usage}% used" style="{$css} float: left; width: {$width}px; height: {$height}px; text-align: left; vertical-align: middle; background-color: #ABFFBC; border: 1px solid #000;">
+            <div style="{$css} width: {$usage}%; height: {$height}px; vertical-align: middle; background-color: #FF3939;"></div>
+        </div>
+        <span style="font-size: 8px;">&nbsp;{$used} / {$total}</span>
+    </div>
+EOL
+);
+}
+
+
+
+
+
+
+
+// Lookup hostnames and check their host_id is in server_b
+function get_server_suggestions($q, $max_results=10) {
+    global $onadb, $self, $conf;
+    $results = array();
+
+    // wildcard the query before searching
+    $q = $q . '%';
+
+    $table = 'HOSTS_B';
+    $field = 'PRIMARY_DNS_NAME';
+    $where  = "{$field} LIKE " . $onadb->qstr($q) . " AND ID IN (SELECT HOST_ID FROM SERVER_B)";
+    $order  = "{$field} ASC";
+
+    // Search the db for results
+    list ($status, $rows, $records) = db_get_records(
+                                        $onadb,
+                                        $table,
+                                        $where,
+                                        $order,
+                                        $max_results
+                                      );
+
+    // If the query didn't work return the error message
+    if ($status) { $results[] = "Internal Error: {$self['error']}"; }
+
+    foreach ($records as $record) {
+        list($status, $rows, $zone) = db_get_record($onadb, 'DNS_ZONES_B', array('ID' => $record['PRIMARY_DNS_ZONE_ID']));
+        $results[] = $record[$field].".".$zone['ZONE_NAME'];
+    }
+
+    // Return the records
+    return($results);
+}
+
+
+function get_host_suggestions($q, $max_results=10) {
+    return(get_text_suggestions($q . '%', 'dns_a', 'name', $max_results));
+}
+
+function get_host_notes_suggestions($q, $max_results=10) {
+    return(get_text_suggestions($q . '%', 'hosts', 'notes', $max_results));
+}
+
+function get_alias_suggestions($q, $max_results=10) {
+    return(get_text_suggestions($q . '%', 'HOST_ALIASES_B', 'ALIAS', $max_results));
+}
+
+function get_zone_suggestions($q, $max_results=10) {
+    return(get_text_suggestions($q . '%', 'domains', 'ns_name', $max_results));
+}
+
+function get_vlan_campus_suggestions($q, $max_results=10) {
+    $q = strtoupper($q);
+    return(get_text_suggestions($q . '%', 'vlan_campuses', 'name', $max_results));
+}
+
+function get_block_suggestions($q, $max_results=10) {
+    $q = strtoupper($q);
+    return(get_text_suggestions($q . '%', 'blocks', 'name', $max_results));
+}
+
+function get_subnet_suggestions($q, $max_results=10) {
+    $q = strtoupper($q);
+    return(get_text_suggestions($q . '%', 'subnets', 'name', $max_results));
+}
+
+function get_location_number_suggestions($q, $max_results=10) {
+    return(get_text_suggestions($q . '%', 'locations', 'reference', $max_results));
+}
+
+function get_mac_suggestions($q, $max_results=10) {
+    $formatted = $results = array();
+
+    $q = strtoupper($q);
+    //if (preg_match('/[^\%\:\.\-0-9A-F]/', $q)) return(array()); // It's not a mac address ;)
+    $q = preg_replace('/[\:\.\-]/', '', $q);  // Discard characters that aren't stored in the db
+
+    $results = get_text_suggestions($q . '%', 'interfaces', 'mac_addr', $max_results);
+    foreach($results as $result) $formatted[] = mac_mangle($result, 2);
+    return($formatted);
+}
+
+
+
+function get_ip_suggestions($q, $max_results=10) {
+    global $onadb;
+    $formatted = $results = array();
+
+    // Complete the (potentially incomplete) ip address
+    $ip = ip_complete($q, '0');
+    $ip_end = ip_complete($q, '255');
+
+    // Find out if $ip and $ip_end are valid
+    $ip = ip_mangle($ip, 'numeric');
+    $ip_end = ip_mangle($ip_end, 'numeric');
+    if ($ip == -1 or $ip_end == -1) { return(array()); } // It's not valid ip addresses
+
+    // Now use SQL to look for subnet ip records that match
+    $table = 'subnets';
+    $field = 'ip_addr';
+    $where  = "{$field} >= " . $onadb->qstr($ip) . " AND {$field} <= " . $onadb->qstr($ip_end);
+    $order  = "{$field} ASC";
+
+    // Search the db for results and put results into $results
+    list ($status, $rows, $records) = db_get_records($onadb, $table, $where, $order, $max_results);
+    foreach ($records as $record) { $results[] = $record[$field]; }
+
+    // If we need more suggestions, look in the host_subnets table
+    $max_results -= count($results);
+    if ($max_results) {
+        $table = 'interfaces';
+        list ($status, $rows, $records) = db_get_records($onadb, $table, $where, $order, $max_results);
+        foreach ($records as $record) { $results[] = $record[$field]; }
+    }
+
+    // Format the ip's in dotted format
+    sort($results);
+    foreach($results as $result) { $formatted[] = ip_mangle($result, 'dotted'); }
+
+    unset($results, $result, $records, $record);
+    return($formatted);
+}
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server for suggest_qsearch()
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_qsearch($q, $el_input, $el_suggest) {
+    global $conf, $images;
+    $results = array();
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Command intrepreter
+    if (strpos($q, '/') === 0) {
+        $js .= "suggestions = Array('Enter a command...');";
+        $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+        $response->addScript($js);
+        return($response->getXML());
+    }
+
+    // Search the DB for ip addressees
+    if (count($results) < $conf['suggest_max_results']) {
+        $array = get_ip_suggestions($q, $conf['suggest_max_results'] - count($results));
+        foreach($array as $suggestion) { $results[] = $suggestion; }
+        $results = array_unique($results);
+    }
+
+    // Search the DB for hosts
+    if (count($results) < $conf['suggest_max_results']) {
+        $array = get_host_suggestions($q, $conf['suggest_max_results'] - count($results));
+        foreach($array as $suggestion) { $results[] = $suggestion; }
+        $results = array_unique($results);
+    }
+
+    // Search the DB for aliases
+ //   if (count($results) < $conf['suggest_max_results']) {
+ //       $array = get_alias_suggestions($q, $conf['suggest_max_results'] - count($results));
+ //       foreach($array as $suggestion) { $results[] = $suggestion; }
+ //       $results = array_unique($results);
+  //  }
+
+    // Search the DB for subnets
+    if (count($results) < $conf['suggest_max_results']) {
+        $array = get_subnet_suggestions($q, $conf['suggest_max_results'] - count($results));
+        foreach($array as $suggestion) { $results[] = $suggestion; }
+        $results = array_unique($results);
+    }
+
+    // Search the DB for hosts (*)
+    if (count($results) < $conf['suggest_max_results']) {
+        $array = get_host_suggestions('%' . $q, $conf['suggest_max_results'] - count($results));
+        foreach($array as $suggestion) { $results[] = $suggestion; }
+        $results = array_unique($results);
+    }
+
+    // Search the DB for aliases (*)
+//    if (count($results) < $conf['suggest_max_results']) {
+//        $array = get_alias_suggestions('%' . $q, $conf['suggest_max_results'] - count($results));
+//        foreach($array as $suggestion) { $results[] = $suggestion; }
+//        $results = array_unique($results);
+//    }
+
+    // Search the DB for subnets (*)
+    if (count($results) < $conf['suggest_max_results']) {
+        $array = get_subnet_suggestions('%' . $q, $conf['suggest_max_results'] - count($results));
+        foreach($array as $suggestion) { $results[] = $suggestion; }
+        $results = array_unique($results);
+    }
+
+    // Search the DB for mac addressees
+    if (count($results) < $conf['suggest_max_results']) {
+        $array = get_mac_suggestions($q, $conf['suggest_max_results'] - count($results));
+        foreach($array as $suggestion) { $results[] = $suggestion; }
+        $results = array_unique($results);
+    }
+
+    // Search the DB for mac addressees (*)
+    if (count($results) < $conf['suggest_max_results']) {
+        $array = get_mac_suggestions('%' . $q, $conf['suggest_max_results'] - count($results));
+        foreach($array as $suggestion) { $results[] = $suggestion; }
+        $results = array_unique($results);
+    }
+
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_hostname($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_host_suggestions($q);
+    $results = array_merge($results, get_host_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_server($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_server_suggestions($q);
+    $results = array_merge($results, get_server_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    //TODO: potentialy add a search for get_zone_suggestions here
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+
+function suggest_pool_server_qf($q, $el_input, $el_suggest) {
+    return(suggest_server($q, $el_input, $el_suggest));
+}
+function suggest_zone_server_name($q, $el_input, $el_suggest) {
+    return(suggest_server($q, $el_input, $el_suggest));
+}
+function suggest_dhcp_server_name($q, $el_input, $el_suggest) {
+    return(suggest_server($q, $el_input, $el_suggest));
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_zone($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_zone_suggestions($q);
+    $results = array_merge($results, get_zone_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+function suggest_zone_alias_edit($q, $el_input, $el_suggest) {
+    return(suggest_zone($q, $el_input, $el_suggest));
+}
+function suggest_zone_edit($q, $el_input, $el_suggest) {
+    return(suggest_zone($q, $el_input, $el_suggest));
+}
+function suggest_set_zone_edit_host($q, $el_input, $el_suggest) {
+    return(suggest_zone($q, $el_input, $el_suggest));
+}
+function suggest_zone_server_edit($q, $el_input, $el_suggest) {
+    return(suggest_zone($q, $el_input, $el_suggest));
+}
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_notes($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_host_notes_suggestions($q, $conf['suggest_max_results']);
+    $results = array_merge($results, get_host_notes_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_mac($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_mac_suggestions($q);
+    $results = array_merge($results, get_mac_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function that is part of the
+// xajax_suggest module.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_ip($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_ip_suggestions($q);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+// The following are just wrappers around suggest_ip();
+function suggest_ip_thru($q, $el_input, $el_suggest) {
+    return(suggest_ip($q, $el_input, $el_suggest));
+}
+function suggest_ip_subnet($q, $el_input, $el_suggest) {
+    return(suggest_ip($q, $el_input, $el_suggest));
+}
+function suggest_ip_subnet_thru($q, $el_input, $el_suggest) {
+    return(suggest_ip($q, $el_input, $el_suggest));
+}
+function suggest_ip_subnet_qf($q, $el_input, $el_suggest) {
+    return(suggest_ip($q, $el_input, $el_suggest));
+}
+function suggest_ip_subnet_thru_qf($q, $el_input, $el_suggest) {
+    return(suggest_ip($q, $el_input, $el_suggest));
+}
+function suggest_block_ip_subnet($q, $el_input, $el_suggest) {
+    return(suggest_ip($q, $el_input, $el_suggest));
+}
+function suggest_block_ip_subnet_thru($q, $el_input, $el_suggest) {
+    return(suggest_ip($q, $el_input, $el_suggest));
+}
+function suggest_set_ip_edit_interface($q, $el_input, $el_suggest) {
+    return(suggest_ip($q, $el_input, $el_suggest));
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_vlan_campus($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_vlan_campus_suggestions($q);
+    $results = array_merge($results, get_vlan_campus_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+function suggest_vlan_edit($q, $el_input, $el_suggest) {
+    return(suggest_vlan_campus($q, $el_input, $el_suggest));
+}
+function suggest_vlan_campus_qf($q, $el_input, $el_suggest) {
+    return(suggest_vlan_campus($q, $el_input, $el_suggest));
+}
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_block($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_block_suggestions($q);
+    $results = array_merge($results, get_block_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_subnet($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_subnet_suggestions($q);
+    $results = array_merge($results, get_subnet_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+function suggest_set_subnet_edit_interface($q, $el_input, $el_suggest) {
+    return(suggest_subnet($q, $el_input, $el_suggest));
+}
+function suggest_set_subnet_edit_host($q, $el_input, $el_suggest) {
+    return(suggest_subnet($q, $el_input, $el_suggest));
+}
+function suggest_subnet_qf($q, $el_input, $el_suggest) {
+    return(suggest_subnet($q, $el_input, $el_suggest));
+}
+function suggest_dhcp_subnet_name($q, $el_input, $el_suggest) {
+    return(suggest_subnet($q, $el_input, $el_suggest));
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_location_number($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_location_number_suggestions($q);
+    $results = array_merge($results, get_location_number_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+// Used in all QF (tool-tip based) search boxes
+function suggest_location_number_qf($q, $el_input, $el_suggest) {
+    return(suggest_location_number($q, $el_input, $el_suggest));
+}
+// Advanced search subnet tab
+function suggest_location_number_subnet($q, $el_input, $el_suggest) {
+    return(suggest_location_number($q, $el_input, $el_suggest));
+}
+
+
+
+
+
+?>
