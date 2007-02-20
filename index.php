@@ -25,6 +25,7 @@ if (!$self['secure'] and !loggedIn()) {
 <script type="text/javascript"><!--
     window.location = "{$https}/";
 --></script>
+<!--Paul was here-->
 </body></html>
 EOL;
 }
