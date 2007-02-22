@@ -170,37 +170,37 @@ function db_pconnect($type, $name) {
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: get_content(string $name)
-//
+//  
 //  Input:
 //    $name
 //      The name of the content to load and display from the 'content'
 //      mysql table.
-//
+//  
 //  Output:
 //    Returns the text from the 'text' field of the specified content
 //    record identified by $name.
 ///////////////////////////////////////////////////////////////////////
 function get_content($name) {
-    global $mysql;
-
+    global $onadb;
+    
     // Debugging
     printmsg("DEBUG => get_content($name) called", 3);
-
+    
     // Get the content to be displayed on this page
-    list($status, $rows, $content) = db_get_record($mysql, 'content', array('name' => $name));
-
-    // Build an edit link if they're an author
+    list($status, $rows, $content) = db_get_record($onadb, 'content', array('name' => $name));
+    
+    // Build an edit link if they're an editor
     $edit = "";
-    if ($_SESSION['auth']['user']['admin'] == 1) {
+    if (auth('editor')) {
         $edit = <<<EOL
-<br>
-[<span onClick="xajax_window_submit('content', 'name=>{$name}', 'editor');" style="color: #4B42FF; text-decoration: underline; cursor: pointer; font-size: smaller;">edit</span>]&nbsp;&nbsp;
+<br/>
+[<span onClick="xajax_window_submit('fckeditor', 'name=>{$name}', 'editor');" style="color: #4B42FF; text-decoration: underline; cursor: pointer; font-size: smaller;">edit</span>]&nbsp;&nbsp;
 EOL;
     }
-
+    
     // If there wasn't content, tell them.
     if ($status or !$rows)
-        return("<br><font color=\"red\"><b>Content could not be loaded, please try back soon!</b></font><br>\n" . $edit);
+        return("<br/><span style=\"color: red;\"><b>Content could not be loaded, please try back soon!</b></span><br/>\n" . $edit);
     else
         return($content['text'] . $edit);
 }
@@ -228,7 +228,7 @@ EOL;
 //
 ///////////////////////////////////////////////////////////////////////
 function save_users_acl_in_session() {
-    global $mysql;
+    global $onadb;
 
     // If we've already saved their acl in the session, don't do anything.
     if ($_SESSION['auth']['acl']['_done_'] == 1) {
@@ -244,12 +244,12 @@ function save_users_acl_in_session() {
     $i = 0;
     do {
         // Loop through each permission the user has
-        list($status, $rows, $acl) = db_get_record($mysql, 'acl', array('user_id' => $_SESSION['auth']['user']['id']));
+        list($status, $rows, $acl) = db_get_record($onadb, 'acl', array('user_id' => $_SESSION['auth']['user']['id']));
         if (!$rows) { break; }
         $i++;
 
         // Get the permission's name, and save it in $_SESSION['auth']['acl']
-        list($status, $rows_perm, $perm) = db_get_record($mysql, 'permissions', array('id' => $acl['perm_id']));
+        list($status, $rows_perm, $perm) = db_get_record($onadb, 'permissions', array('id' => $acl['perm_id']));
         if ($rows_perm) {
             $_SESSION['auth']['acl'][$perm['name']] = 1;
         }
@@ -280,18 +280,18 @@ function save_users_acl_in_session() {
 //
 ///////////////////////////////////////////////////////////////////////
 function acl_add($user_id, $perm_name) {
-    global $mysql;
+    global $onadb;
 
     // Find the perm_id for the requested perm_name
-    list($status, $rows, $perm) = db_get_record($mysql, 'permissions', array('name' => $perm_name));
+    list($status, $rows, $perm) = db_get_record($onadb, 'permissions', array('name' => $perm_name));
     if ($status or !$perm['id']) { $self['error'] = "acl_add() ERROR => Invalid permission requested"; return(1); }
 
     // See if they already have that permission
-    list($status, $rows, $acl) = db_get_record($mysql, 'acl', array('perm_id' => $perm['id'], 'user_id' => $_SESSION['auth']['user']['id']));
+    list($status, $rows, $acl) = db_get_record($onadb, 'acl', array('perm_id' => $perm['id'], 'user_id' => $_SESSION['auth']['user']['id']));
     if ($status or $acl['id']) { $self['error'] = "acl_add() ERROR => User already has that permission"; return(1); }
 
     // Add the ACL entry
-    list($status, $rows) = db_insert_record($mysql, 'acl', array('perm_id' => $perm['id'], 'user_id' => $_SESSION['auth']['user']['id']));
+    list($status, $rows) = db_insert_record($onadb, 'acl', array('perm_id' => $perm['id'], 'user_id' => $_SESSION['auth']['user']['id']));
     if ($status or !$rows) { $self['error'] = "acl_add() ERROR => SQL insert failed"; return(1); }
     $_SESSION['auth']['acl'][$perm_name] = $perm['id'];
     return(0);
@@ -329,7 +329,7 @@ function acl_add($user_id, $perm_name) {
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: db_insert_record($dbh, string $table, array $insert)
-//
+//  
 //  Input:
 //    $dbh    an adodb connection object connected to a database
 //    $table  the table name to insert into.
@@ -338,7 +338,7 @@ function acl_add($user_id, $perm_name) {
 //            is the value to insert into that column.  Values do not
 //            need to be quoted, they will be properly quoted before
 //            being used in the SQL query.
-//
+//  
 //  Output:
 //    Returns a two part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
@@ -347,7 +347,7 @@ function acl_add($user_id, $perm_name) {
 //      2. The number of rows that were inserted (i.e. 1 on success, 0 on
 //         error).  Again, if 0 rows were inserted an error message will
 //         be stored in $self['error']
-//
+//  
 //  Example: list($status, $rows) = db_insert_record(
 //                                      $mysql,
 //                                      "HOSTS_B",
@@ -364,10 +364,10 @@ function acl_add($user_id, $perm_name) {
 function db_insert_record($dbh=0, $table="", $insert="") {
     global $self;
     $self['db_insert_record_count']++;
-
+    
     // Debugging
     printmsg("DEBUG => db_insert_record(\$dbh, $table, \$insert) called", 3);
-
+    
     // Return an error if insufficient input was received
     if ( (!$dbh) or (!$dbh->IsConnected()) or
          (!$table) or
@@ -376,7 +376,7 @@ function db_insert_record($dbh=0, $table="", $insert="") {
         printmsg($self['error'], 3);
         return(array(1, 0));
     }
-
+    
     // Build the SQL query
     $q  = "INSERT INTO {$table} ( ";
     $first = 1;
@@ -391,18 +391,18 @@ function db_insert_record($dbh=0, $table="", $insert="") {
         $q .= $dbh->qstr($insert[$key]);
     }
     $q .= " )";
-
+    
     // Run the SQL
     printmsg("DEBUG => db_insert_record() Running query: $q", 4);
     $ok = $dbh->Execute($q);
     $error = $dbh->ErrorMsg();
-
+    
     // Report any errors
     if ($ok === false or $error) {
-        $self['error'] = 'ERROR => SQL INSERT failed: ' . $error . "\n";
+        $self['error'] = 'ERROR => SQL INSERT failed: ' . $error . "\n"; 
         return(array(2, 0));
     }
-
+    
     // Otherwise return success
     printmsg("DEBUG => db_insert_record() Insert was successful", 4);
     return(array(0, 1));
@@ -424,7 +424,7 @@ function db_insert_record($dbh=0, $table="", $insert="") {
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: db_update_record($dbh, string $table, array/string $where, array $insert)
-//
+//  
 //  Input:
 //    $dbh    an adodb connection object connected to a database
 //    $table  the table name to query from.
@@ -439,7 +439,7 @@ function db_insert_record($dbh=0, $table="", $insert="") {
 //            the value to insert into that column.  Values do not
 //            need to be quoted, they will be properly quoted before
 //            being used in the SQL query.
-//
+//  
 //  Output:
 //    Updates a *single* record in the specified database table.
 //    Returns a two part list:
@@ -449,7 +449,7 @@ function db_insert_record($dbh=0, $table="", $insert="") {
 //      2. The number of rows that were actually updated (i.e. will
 //         always be 1 or 0.)  Note that even if 0 rows are updated
 //         the exit status will still be 0 unless the SQL query fails.
-//
+//  
 //  Example: list($status, $rows) = db_update_record(
 //                                      'HOSTS_B',
 //                                      array('ID' => '12354'),
@@ -463,10 +463,10 @@ function db_insert_record($dbh=0, $table="", $insert="") {
 function db_update_record($dbh=0, $table="", $where="", $insert="") {
     global $self;
     $self['db_update_record_count']++;
-
+    
     // Debugging
     printmsg("DEBUG => db_update_record(\$dbh, $table, \$where, \$insert) called", 3);
-
+    
     // Return an error if insufficient input was received
     if ( (!$dbh) or (!$dbh->IsConnected()) or
          (!$table) or (!$where) or (!$insert) ) {
@@ -474,7 +474,7 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
         printmsg($self['error'], 3);
         return(array(1, 0));
     }
-
+    
     // Build our $set variable
     $set = '';
     $and = '';
@@ -482,7 +482,7 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
         $set .= "{$and}{$key} = " . $dbh->qstr($insert[$key]);
         if (!$and) { $and = ", "; }
     }
-
+    
     // Build the WHERE clause if $where is an array
     if (is_array($where)) {
         $where_str = '';
@@ -496,26 +496,26 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
     else {
         $where_str = $where;
     }
-
+    
     // Build the SQL query
     $q  = "UPDATE {$table} SET {$set} WHERE {$where_str}";
-
+    
     // Execute the query
     printmsg("DEBUG => db_update_record() Running query: $q", 4);
     $rs = $dbh->Execute($q);
-
+    
     // See if the query worked or not
     if ($rs === false) {
-        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg();
+        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg(); 
         printmsg($self['error'], 3);
         return(array(2, 0));
     }
-
+    
     // How many rows were affected?
     $rows = $dbh->Affected_Rows();
     if ($rows === false) { $rows = 0; }
     $rs->Close();
-
+    
     // Return Success
     printmsg("DEBUG => db_update_record() Query updated {$rows} rows", 4);
     return(array(0, $rows));
@@ -536,53 +536,53 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: db_delete_record($dbh, string $table, array/string $where)
-//
+//  Function: db_delete_records($dbh, string $table, array/string $where)
+//  
 //  Input:
 //    $dbh    an adodb connection object connected to a database
 //    $table  the table name to delete from.
 //    $where  an associative array of KEY = VALUE pair(s) used to
-//            locate and delete the record you want.  If $where is
+//            locate and delete the record(s) you want.  If $where is
 //            a string, that string is used as the WHERE clause of
 //            the sql query instead of generating one from an array.
 //            If you do this MAKE sure special characters are quoted
 //            properly to avoid security issues or bugs.
-//
+//  
 //  Output:
-//    Deletes a *single* record from the database.
+//    Deletes records from the database.
 //    Returns a two part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
 //         When a non-zero exit status is returned a textual description
 //         of the error will be stored in the global variable $self['error']
-//      2. The number of rows that were actually deleted (i.e. will
-//         always be 1 or 0.)  Note that even if 0 rows are updated
-//         the exit status will still be 0 unless the SQL query fails.
-//
-//  Example: list($status, $rows) = db_delete_record(
+//      2. The number of rows that were actually deleted .  Note that even 
+//         if 0 rows are updated the exit status will still be 0 unless the
+//         SQL query fails.
+//  
+//  Example: list($status, $rows) = db_delete_records(
 //                                      'HOSTS_B',
 //                                      array('ID' => '12354'),
 //                                  );
-//
+//  
 //  Exit codes:
 //    0  :: No error
 //    1  :: Invalid or insufficient input
 //    2  :: SQL query failed
 ///////////////////////////////////////////////////////////////////////
-function db_delete_record($dbh=0, $table="", $where="") {
+function db_delete_records($dbh=0, $table="", $where="") {
     global $self;
-    $self['db_delete_record_count']++;
-
+    $self['db_delete_records_count']++;
+    
     // Debugging
-    printmsg("DEBUG => db_delete_record(\$dbh, $table, \$where) called", 3);
-
+    printmsg("DEBUG => db_delete_records(\$dbh, $table, \$where) called", 3);
+    
     // Return an error if insufficient input was received
-    if ( (!$dbh) or (!$dbh->IsConnected()) or
-         (!$table) or (!is_array($where)) ) {
-        $self['error'] = "ERROR => db_delete_record() received invalid input";
-        printmsg($self['error'], 3);
+    if ( empty($dbh) or (!$dbh->IsConnected()) or
+         empty($table) or empty($where) ) {
+        $self['error'] = "ERROR => db_delete_records() received invalid input";
+        printmsg($self['error'], 0);
         return(array(1, 0));
     }
-
+    
     // Build the WHERE clause if $where is an array
     if (is_array($where)) {
         $where_str = '';
@@ -596,27 +596,29 @@ function db_delete_record($dbh=0, $table="", $where="") {
     else {
         $where_str = $where;
     }
-
+    
     // Build the SQL query
-    $q  = "DELETE FROM {$table} WHERE {$where_str} LIMIT 1";
-
+    // The LIMIT 1 is only valid in MySQL, so we've removed it.  db_delete_record now deletes all the records that match
+    // $q  = "DELETE FROM {$table} WHERE {$where_str} LIMIT 1";
+    $q  = "DELETE FROM {$table} WHERE {$where_str}";
+    
     // Execute the query
     $rs = $dbh->Execute($q);
-
+    
     // See if the query worked or not
     if ($rs === false) {
-        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg();
+        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg(); 
         printmsg($self['error'], 3);
         return(array(2, 0, array()));
     }
-
+    
     // How many rows were affected?
     $rows = $dbh->Affected_Rows();
     if ($rows === false) { $rows = 0; }
     $rs->Close();
-
+    
     // Return Success
-    printmsg("DEBUG => db_delete_record() Query deleted {$rows} row(s)", 4);
+    printmsg("DEBUG => db_delete_records() Query deleted {$rows} row(s)", 4);
     return(array(0, $rows));
 }
 
@@ -636,11 +638,11 @@ function db_delete_record($dbh=0, $table="", $where="") {
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: db_get_record($dbh,
-//                          string $table,
-//                          array/string $where,
+//  Function: db_get_record($dbh, 
+//                          string $table, 
+//                          array/string $where, 
 //                          string $order)
-//
+//  
 //  Input:
 //    $dbh    an adodb connection object connected to a database
 //    $table the table name to query from.
@@ -651,7 +653,7 @@ function db_delete_record($dbh=0, $table="", $where="") {
 //           If you do this MAKE sure special characters are quoted
 //           properly to avoid security issues or bugs.
 //    $order actual SQL to use in the ORDER BY clause.
-//
+//  
 //  Output:
 //    Returns a three part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
@@ -660,18 +662,18 @@ function db_delete_record($dbh=0, $table="", $where="") {
 //      2. The number of rows (n) that match values in $where, or 0 on no matches.
 //      3. An associative array of a record from the $table table
 //         where the values in $where match.  When more than one record is
-//         returned from the DB, the first record is returned on the
-//         first call.  Each subsequent call with the same table and
+//         returned from the DB, the first record is returned on the 
+//         first call.  Each subsequent call with the same table and 
 //         parameters will cause the function to return the next record.
 //         When 'n' records are found, and the function is called 'n+1'
 //         times, it loops and the first record is returned again.
-//
+//  
 //  Notes:
-//    If you want to "reset" the row offset for a particular query and
+//    If you want to "reset" the row offset for a particular query and 
 //    make sure that your next query is NOT cached, set this global
 //    variable before calling db_get_record():
 //      $self['db_get_record']['reset_cache'] = 1;
-//    These are also globally configurable, but you won't need to set
+//    These are also globally configurable, but you won't need to set 
 //    these after each call to db_get_record().
 //      $self['db_get_record']['min_rows_to_cache']
 //      $self['db_get_record']['secs_to_cache']
@@ -695,10 +697,10 @@ function db_delete_record($dbh=0, $table="", $where="") {
 function db_get_record($dbh=0, $table="", $where="", $order="") {
     global $self;
     $self['db_get_record_count']++;
-
+    
     // Debugging
     printmsg("DEBUG => db_get_record(\$dbh, \$where, $table, $order) called", 3);
-
+    
     // Return an error if insufficient input was received
     if ( (!$dbh) or (!$dbh->IsConnected()) or
          (!$table) or (!$where) ) {
@@ -706,7 +708,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
         printmsg($self['error'], 3);
         return(array(1, 0, array()));
     }
-
+    
     // Build the WHERE clause if $where is an array
     if (is_array($where)) {
         $where_str = '';
@@ -720,7 +722,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
     else {
         $where_str = $where;
     }
-
+    
     // Build the SQL query
     $q = 'SELECT * ' .
          "FROM {$table} " .
@@ -728,8 +730,8 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
     if ($order) {
         $q .= "ORDER BY {$order}";
     }
-
-
+    
+    
     // Caching - our Query Cache policy is this:
     //   1) If this is a new query for $table, don't cache
     //   2) If this isn't a new query for $table and the recordset
@@ -754,17 +756,17 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
         if (!$self['db_get_record']['min_rows_to_cache']) {
             $self['db_get_record']['min_rows_to_cache'] = 20;
         }
-
+        
         // If there are enough records (or were last time we ran this query), lets cache the query this time.
         if ($self['cache']["db_get_{$table}_record"]['rows'] >= $self['db_get_record']['min_rows_to_cache']) {
             $use_cache = 1;
         }
-
+        
         // Increment the row offset, so we know which row to return
         $self['cache']["db_get_{$table}_record"]['row']++;
     }
-
-
+    
+    
     // Select the record from the DB, don't cache results
     if ($use_cache == 0) {
         printmsg("DEBUG => db_get_record() running query: {$q}", 5);
@@ -776,31 +778,31 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
         if (!$self['db_get_record']['secs_to_cache']) {
             $self['db_get_record']['secs_to_cache'] = 60;
         }
-
+        
         printmsg("DEBUG => db_get_record() running (cached) query: {$q}", 5);
         $rs = $dbh->CacheExecute($self['db_get_record']['secs_to_cache'], $q);
     }
-
-
+    
+    
     // See if the query worked or not
     if ($rs === false) {
-        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg();
+        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg(); 
         printmsg($self['error'], 3);
         return(array(2, 0, array()));
     }
-
-
+    
+    
     // Save the number of rows for use later
     $rows = $self['cache']["db_get_{$table}_record"]['rows'] = $rs->RecordCount();
-
-
+    
+    
     // If there were no rows, return 0 rows
     if (!$rows) {
         // Query returned no results
         printmsg("DEBUG => db_get_record() Query returned no results", 4);
         return(array(0, 0, array()));
     }
-
+    
     // If there's more than one record
     else if ( ($rows > 1) and ($self['cache']["db_get_{$table}_record"]['row']) ) {
         // If we need to loop back to row 0, lets do that
@@ -812,7 +814,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
             $rs->Move($self['cache']["db_get_{$table}_record"]['row']);
         }
     }
-
+    
     // Return the row
     printmsg("DEBUG => db_get_record() Returning record " . ($self['cache']["db_get_{$table}_record"]['row'] + 1) . " of " . $rows, 4);
     $array = $rs->FetchRow();
@@ -829,14 +831,14 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: db_get_records($dbh,
-//                           string $table,
-//                           array/string $where,
+//  Function: db_get_records($dbh, 
+//                           string $table, 
+//                           array/string $where, 
 //                           [string $order],
 //                           [int $rows=-1],
 //                           [int $offset=-1]
 //                          )
-//
+//  
 //  Input:
 //    $dbh    an adodb connection object connected to a database
 //    $table  the table name to query from.
@@ -851,16 +853,16 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 //            NOTE: if $rows is 0, the function will do a SELECT COUNT(*)
 //            and return the proper number of total rows.
 //    $offset retrieve rows starting with $offset. $offset is 0 based.
-//
+//  
 //  Output:
 //    Returns a three part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
 //         When a non-zero exit status is returned a textual description
 //         of the error will be stored in the global variable $self['error']
 //      2. The number of rows (n) that match values in $where, or 0 on no matches.
-//      3. An array of arrays.  Each sub-array is an associative array of
+//      3. An array of arrays.  Each sub-array is an associative array of 
 //         a record from the $table table where the values in $where match.
-//
+//  
 //  Example: list($status, $rows, $records) = db_get_record(
 //                                                $oracle,
 //                                                'HOSTS_B',
@@ -869,7 +871,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 //                                                '25',
 //                                                '50'
 //                                            );
-//
+//  
 //  Exit codes:
 //    0  :: No error
 //    1  :: Invalid or insufficient input
@@ -878,10 +880,10 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offset=-1) {
     global $self;
     $self['db_get_records_count']++;
-
+    
     // Debugging
     printmsg("DEBUG => db_get_records(\$dbh, \$where, $table, $order, $rows, $offset) called", 3);
-
+    
     // Return an error if insufficient input was received
     if ( (!$dbh) or (!$dbh->IsConnected()) or
          (!$table) or (!$where) ) {
@@ -889,7 +891,7 @@ function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offs
         printmsg($self['error'], 3);
         return(array(1, 0, array()));
     }
-
+    
     // Build the WHERE clause if $where is an array
     if (is_array($where)) {
         $where_str = '';
@@ -903,7 +905,7 @@ function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offs
     else {
         $where_str = $where;
     }
-
+    
     // Return the 0 records, but number of total rows the query would have returned
     // if they requested 0 rows.
     $select = 'SELECT * ';
@@ -913,7 +915,7 @@ function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offs
         $offset = -1;
         $order  = '';
     }
-
+    
     // Build the SQL query
     $q = $select .
          "FROM {$table} " .
@@ -921,41 +923,41 @@ function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offs
     if ($order) {
         $q .= "ORDER BY {$order}";
     }
-
-
+    
+    
     // Select the records from the DB
     printmsg("DEBUG => db_get_records() running query: {$q}", 5);
     $rs = $dbh->SelectLimit($q, $rows, $offset);
-
-
+    
+    
     // See if the query worked or not
     if ($rs === false) {
-        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg();
+        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg(); 
         printmsg($self['error'], 3);
         return(array(2, 0, array()));
     }
-
-
+    
+    
     // Save the number of rows for use later
     $rows = $rs->RecordCount();
     if ($select == 'SELECT COUNT(*) AS COUNT ') {
         $record = $rs->FetchRow();
         $rows = $record['COUNT'];
     }
-
+    
     // If there were no rows, return 0 rows
     if (!$rows) {
         // Query returned no results
         printmsg("DEBUG => db_get_records() Query returned no results", 4);
         return(array(0, 0, array()));
     }
-
+    
     // Loop and save each row to $recordset
     $recordset = array();
     while (!$rs->EOF) {
         $recordset[] = $rs->FetchRow();
     }
-
+    
     // Return the row
     printmsg("DEBUG => db_get_records() Returning records", 4);
     $rs->Close();
