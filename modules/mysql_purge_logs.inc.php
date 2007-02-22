@@ -19,7 +19,7 @@
 //
 //  Example: list($status, $result) = mysql_purge_logs('slaves=STRING');
 ///////////////////////////////////////////////////////////////////////
-function mysql_purge_logs($options="user=root") {
+function mysql_purge_logs($options) {
     global $conf, $self, $ona_db;
     printmsg('DEBUG => mysql_purge_logs('.$options.') called', 3);
 
@@ -60,16 +60,26 @@ EOM
         ));
     }
 
+    // Set default user ID, if none was provided.
+    if(!$options['user'])
+        $options['user']='root';
+
     // Split out the list of slave servers into an array (comma-delimited).
-    $slaves = preg_split($options['slaves'], '/,/', -1, PREG_SPLIT_NO_EMPTY);
+    $slaves = preg_split('/,/', $options['slaves']);
+    
+    // Check that we got some slaves
+    if (!is_array($slaves)) {
+        return(array(1, 'ERROR => No slaves specified!\n'));
+    }
 
     // Now we begin...
     $masters = array();
     foreach ($slaves as $slave_host) {
         if(!$slave_host or $slave_host == "")
             continue;
+        printmsg("DEBUG => Connect to slave host mysql://{$options['user']}:{$options['password']}@{$slave_host}", 4);
         $dbh = db_connect('mysql', $slave_host, $options['user'], $options['password'], 'mysql');
-        if(!$dbh)
+        if(!$dbh || !$dbh->IsConnected())
             continue;
 
         // Find out this slave's replication status.
@@ -99,7 +109,7 @@ EOM
     $retval_errlvl = 0;
     foreach($masters as $host => $binlog) {
         $dbh = db_connect('mysql', $host, $options['user'], $options['password'], 'mysql');
-        if(!$dbh) {
+        if(!$dbh || !$dbh->IsConnected()) {
             $self['error'] .= "ERROR => Could not connect to host '{$host}' to execute query. Skipping.\n";
             $retval_errlvl = 2;
             continue;
@@ -146,8 +156,8 @@ EOM
 function db_connect($db_type, $host, $user, $pass, $database) {
     $object = NewADOConnection($db_type);
     $connected = 0;
-    for ($a = 1; $a <= 5 and $connected == 0; $a++) {
-        $ok1 = $object->PConnect($host, $user, $pass, $database);
+    for ($a = 1; $a <= 3 and $connected == 0; $a++) {
+        $ok1 = $object->Connect($host, $user, $pass, $database);
         $ok2 = $object->IsConnected();
         $ok3 = $object->ErrorMsg();
         // If the connection didn't work, bail.
@@ -158,7 +168,7 @@ function db_connect($db_type, $host, $user, $pass, $database) {
 
     // If it still isn't connected, return an error.
     if ($connected == 0) {
-        printmsg("ERROR => {$db_type} DB connection failed after 5 tries!  Maybe server is down? Error: " . $object->ErrorMsg());
+        printmsg("ERROR => {$db_type} DB connection failed after 3 tries!  Maybe server is down? Error: " . $object->ErrorMsg());
     }
 
     return $object;
