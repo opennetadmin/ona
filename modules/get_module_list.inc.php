@@ -21,7 +21,7 @@
 //  Example: list($status, $result) = get_module_list('type=string');
 ///////////////////////////////////////////////////////////////////////
 function get_module_list($options="type=string") {
-    global $conf, $self, $mysql;
+    global $conf, $self, $onadb;
     printmsg('DEBUG => get_module_list('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
@@ -62,7 +62,7 @@ EOM
     // Get a list of the valid "modules" and their descriptions.
 
     // FIXME: move this to the db later!
-    list($status, $rows, $modules) = db_get_records($mysql, 'dcm_module_list', 'id > 0', 'name');
+    list($status, $rows, $modules) = db_get_records($onadb, 'dcm_module_list', 'id > 0', 'name');
     printmsg("DEBUG => get_module_list() found {$rows} modules in db", 4);
     foreach ($modules as $module) {
         $modules_string .= str_pad($module['name'], $pad_length) . " :: {$module['description']}\n";

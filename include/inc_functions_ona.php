@@ -1,7 +1,7 @@
 <?
 
 //
-// IPDB GUI Specific Functions
+// ONA GUI Specific Functions
 //
 
 // Global settings used in functions below
