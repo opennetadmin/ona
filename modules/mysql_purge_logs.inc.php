@@ -165,4 +165,3 @@ function db_connect($db_type, $host, $user, $pass, $database) {
 }
 
 ?>
-
