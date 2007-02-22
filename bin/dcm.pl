@@ -128,8 +128,8 @@ if ($0 =~ /^(.*\/)[^\/]/ and -f "$1/inc_standard.pl") {
 elsif (-f "/lib/perl/inc_standard.pl") {
     $_ = do "/lib/perl/inc_standard.pl";
 }
-elsif (-f "/var/www/ona/include/inc_standard.pl") {
-    $_ = do "/var/www/ona/include/inc_standard.pl";
+elsif (-f "/var/www/htdocs/ona/include/inc_standard.pl") {
+    $_ = do "/var/www/htdocs/ona/include/inc_standard.pl";
 }
 else {
     die "ERROR => Standard perl library couldn't be loaded!\n";
