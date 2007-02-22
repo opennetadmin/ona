@@ -69,7 +69,6 @@ $conf = array (
         "inc_functions"        => "$include/inc_functions_general.php",
         "inc_functions_ona"    => "$include/inc_functions_ona.php",
         "inc_functions_db"     => "$include/inc_functions_db.php",
-        "inc_cc"               => "$include/inc_functions_cc.php",
         "inc_db"               => "$include/inc_db.php",
         "inc_mysqlsessions"    => "$include/session_mysql.php",
         "inc_adodb"            => "$include/adodb/adodb.inc.php",

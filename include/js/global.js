@@ -75,6 +75,7 @@ function el(id) {
 }
 
 
+
 // Read a cookie's value
 function getcookie(cookiename) {
     var cookiestring=""+document.cookie;
@@ -83,5 +84,20 @@ function getcookie(cookiename) {
     var index2=cookiestring.indexOf(';',index1);
     if (index2==-1) index2=cookiestring.length; 
     return unescape(cookiestring.substring(index1+cookiename.length+1,index2));
+}
+
+// Internal function for setcookie
+function getexpirydate(nodays){
+    var UTCstring;
+    var Today = new Date();
+    var nomilli=Date.parse(Today);
+    Today.setTime(nomilli+nodays*24*60*60*1000);
+    return Today.toUTCString();
+}
+
+// Set a cookie
+function setcookie(name,value,duration_days) {
+    var cookiestring=name+"="+escape(value)+";EXPIRES="+getexpirydate(duration_days);
+    document.cookie=cookiestring;
 }
 

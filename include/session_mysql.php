@@ -3,9 +3,10 @@
  * session_mysql.php
  * ------------------------------------------------------------------------
  * PHP4 MySQL Session Handler
- * Version 1.20 - ADODB
+ * Version 1.22 - ADODB
  * by Ying Zhang (ying@zippydesign.com)
- * Last Modified: 2006-04-26 (by Brandon Zehm)
+ * Last Modified: 2006-11-18 (by Brandon Zehm)
+ *   Now uses db_delete_records() for sess_gc()
  *   Now requires ADODB but should require fewer db connections.
  * ------------------------------------------------------------------------
  * TERMS OF USAGE:
@@ -32,7 +33,7 @@
  * ------------------------------------------------------------------------
  * INSTALLATION:
  * ------------------------------------------------------------------------
- * Make sure you have MySQL support compiled into PHP4.  Then copy this
+ * Make sure you have MySQL support compiled into PHP.  Then copy this
  * script to a directory that is accessible by the rest of your PHP
  * scripts.
  *
@@ -104,26 +105,21 @@ function sess_destroy($key) {
 }
 
 
-function sess_gc($maxlifetime) {
+function sess_gc($lifetime) {
     global $SESS_DBH;
-    
-    $i = 0;
-    do {
-        list($status, $rows) = db_delete_record($SESS_DBH, 'sessions', "`expiry` < " . time());
-        if ($rows) { $i++; }
-    } while ($rows);
-    
-    return($i);
+    list($status, $rows) = db_delete_records($SESS_DBH, "`sessions`", "`expiry` < " . time());
+    return($rows);
 }
 
 
 session_set_save_handler(
-        "sess_open",
-        "sess_close",
-        "sess_read",
-        "sess_write",
-        "sess_destroy",
-        "sess_gc");
+    "sess_open",
+    "sess_close",
+    "sess_read",
+    "sess_write",
+    "sess_destroy",
+    "sess_gc"
+);
 
 // DON'T put whitespace at the beginning or end of this file!!!
 ?>
