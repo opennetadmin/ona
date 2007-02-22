@@ -26,17 +26,12 @@ $conf = array (
 
         /* Logging - Used by the printmsg() function */
         "debug"                => 5,
-        "stdout"               => 0,
-        "logfile"              => "/var/log/website.dev",
+        "stdout"               => 0, // Print logs to the generated web page, not a good idea!
+        "db"                   => 1, // Log to a sql log, highly recommended
+        "logfile"              => "/var/log/website",
         "syslog"               => 1, // It only syslogs if debug is 0.
 
-        // The mode of this website:
-        //     0 == Production
-        //     1 == Development
-        //   This changes the behavior of several things, including
-        //   which database instances are used in SQL queries, style-
-        //   sheet being used, etc.
-        //   THIS VALUE MAY BE OVERRIDDEN BELOW IN THIS FILE
+        // DEPRICATED, THIS OPTION IS BEING REMOVED:
         "dev_mode"             => 0,
 
         // Database Context
@@ -50,7 +45,7 @@ $conf = array (
         "date_format"          => 'M jS, g:ia',
         "search_results_per_page" => 10,
         "suggest_max_results"  => 10,
-
+        
         /* Used in header.php */
         /* Recommendation: not more than 60 (40?) chars */
         "title"                => 'Open Network Admin :: ',
@@ -59,17 +54,17 @@ $conf = array (
         /* Recommendation: not more than 1024 chars, no keywords more than twice */
         "meta_keywords"        => '',
         "html_headers"         => '',
-
+        
         /* Session Settings */
         "cookie_host"          => $_SERVER['HTTP_HOST'],
         "cookie_life"          => (60*60*24*2),
-
+        
         /* Include Files: HTML */
         "html_header"          => "$include/html_header.php",
         "html_footer"          => "$include/html_footer.php",
         "html_style_sheet"     => "$include/html_style_sheet.php",
         "loading_icon"         => "<br><center><img src=\"{$images}/loading.gif\"></center><br>",
-
+        
         /* Include Files: Functions */
         "inc_functions"        => "$include/inc_functions_general.php",
         "inc_functions_ona"    => "$include/inc_functions_ona.php",
@@ -85,11 +80,6 @@ $conf = array (
         "dcm_module_dir"       => "$include/../modules",
 );
 
-
-// Set the site to development mode if the server name starts with "dev."
-if (preg_match('/^dev\./i', $_SERVER['HTTP_HOST'])) {
-    $conf["dev_mode"] = 1;
-}
 
 
 // The $self array is used to store globally available temporary data.
@@ -178,25 +168,24 @@ $db_context = array (
         // Name:
         'default' => array(
             'description' => 'Website metadata',
-            'production' => array(
+            'primary' => array(
                 'db_type'     => 'mysql',
-                'db_host'     => '127.0.0.1',
-                'db_login'    => 'ona-sys',
-                'db_passwd'   => 'onar0x',
+                'db_host'     => 'blade2',
+                'db_login'    => 'root',
+                'db_passwd'   => '',
                 'db_database' => 'ona',
                 'db_debug'    => false,
             ),
-            'development' => array(
+            'secondary' => array(
                 'db_type'     => 'mysql',
-                'db_host'     => '127.0.0.1',
-                'db_login'    => 'ona-sys',
-                'db_passwd'   => 'onar0x',
+                'db_host'     => 'blade3',
+                'db_login'    => 'root',
+                'db_passwd'   => '',
                 'db_database' => 'ona',
                 'db_debug'    => false,
             ),
         ),
     ),
-
 );
 
 

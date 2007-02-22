@@ -100,59 +100,68 @@ function db_pconnect($type, $name) {
     global $conf;
     global $self;
     global $db_context;
-
-    // Determine production/development
-    $self['dev_mode'] = 'development';
-    if ($conf['dev_mode'] == 0) {
-        $self['dev_mode'] = 'production';
-    }
-
+    
     // Get info from $db_context[]
-    $self['db_type']     = $db_context[$type] [$name] [$self['dev_mode']] ['db_type'];
-    $self['db_host']     = $db_context[$type] [$name] [$self['dev_mode']] ['db_host'];
-    $self['db_login']    = $db_context[$type] [$name] [$self['dev_mode']] ['db_login'];
-    $self['db_passwd']   = $db_context[$type] [$name] [$self['dev_mode']] ['db_passwd'];
-    $self['db_database'] = $db_context[$type] [$name] [$self['dev_mode']] ['db_database'];
-    $self['db_debug']    = $db_context[$type] [$name] [$self['dev_mode']] ['db_debug'];
-
+    $which = 'primary';
+    $self['db_type']     = $db_context[$type] [$name] [$which] ['db_type'];
+    $self['db_host']     = $db_context[$type] [$name] [$which] ['db_host'];
+    $self['db_login']    = $db_context[$type] [$name] [$which] ['db_login'];
+    $self['db_passwd']   = $db_context[$type] [$name] [$which] ['db_passwd'];
+    $self['db_database'] = $db_context[$type] [$name] [$which] ['db_database'];
+    $self['db_debug']    = $db_context[$type] [$name] [$which] ['db_debug'];
+    
     // Create a new ADODB connection object
     $object = NewADOConnection($self['db_type']);
     $object->debug = $self['db_debug'];
-
+    
+    // Try connecting to the primary server
     $connected = 0;
     for ($a = 1; $a <= 5 and $connected == 0; $a++) {
         $ok1 = $object->PConnect($self['db_host'], $self['db_login'], $self['db_passwd'], $self['db_database']);
         $ok2 = $object->IsConnected();
         $ok3 = $object->ErrorMsg();
+        
         // If the connection didn't work, bail.
-        if (!$ok1 or !$ok2 or $ok3) {  printmsg("ERROR => {$self['db_type']} DB connection failed: " . $object->ErrorMsg(), 1); }
-        // Otherwise exit the for loop.
-        else { $connected = 1; }
+        if (!$ok1 or !$ok2 or $ok3)
+            printmsg("ERROR => {$self['db_type']} DB connection failed: " . $object->ErrorMsg(), 1);
+        
+        // Otherwise return the object.
+        else
+            return $object;
     }
-
+    
+    // If we're not connected, try the secondary server
+    $which = 'secondary';
+    $self['db_type']     = $db_context[$type] [$name] [$which] ['db_type'];
+    $self['db_host']     = $db_context[$type] [$name] [$which] ['db_host'];
+    $self['db_login']    = $db_context[$type] [$name] [$which] ['db_login'];
+    $self['db_passwd']   = $db_context[$type] [$name] [$which] ['db_passwd'];
+    $self['db_database'] = $db_context[$type] [$name] [$which] ['db_database'];
+    $self['db_debug']    = $db_context[$type] [$name] [$which] ['db_debug'];
+    
+    for ($a = 1; $a <= 5 and $connected == 0; $a++) {
+        $ok1 = $object->PConnect($self['db_host'], $self['db_login'], $self['db_passwd'], $self['db_database']);
+        $ok2 = $object->IsConnected();
+        $ok3 = $object->ErrorMsg();
+        
+        // If the connection didn't work, bail.
+        if (!$ok1 or !$ok2 or $ok3)
+            printmsg("ERROR => {$self['db_type']} DB connection failed: " . $object->ErrorMsg(), 1);
+        
+        // Otherwise return the object.
+        else
+            return $object;
+    }
+    
     // If it still isn't connected, return an error.
-    if ($connected == 0) {
+    if ($connected == 0)
         printmsg("ERROR => {$self['db_type']} DB connection failed after 5 tries!  Maybe server is down? Error: " . $object->ErrorMsg());
-    }
-
+    
     return $object;
 }
 
 
 
-
-
-
-
-
-// Note: Added $onadb as a global in hopes to use it instead of $mysql throughout
-// the code.  could be confusing if we end up using other backends and everything still
-// says mysql on it.  Should remove this global for mysql at some point but I'm
-// leaving it for now so crap still works and Brandon knows that I did it.
-
-// (Re)Connect to the DB
-global $onadb, $mysql;
-$onadb = $mysql = db_pconnect('mysql', $conf['mysql_context']);
 
 
 

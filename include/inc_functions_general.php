@@ -12,6 +12,10 @@ foreach (array_keys($_REQUEST) as $key) {
 // Make sure we're always connected to the database
 require_once($conf['inc_db']);
 
+// (Re)Connect to the DB now.
+global $onadb;
+$onadb = db_pconnect('mysql', $conf['mysql_context']);
+
 // Include the basic database functions
 require_once($conf['inc_functions_db']);
 
