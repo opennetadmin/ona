@@ -12,3 +12,7 @@ add a user called ona-sys with a password of "onar0x"
 give taht user full read/write type privs.. doenst need admin (create drop etc)
 
 
+==== DCM CONFIGURATION ====
+
+Set web host to "localhost:80" or something.
+Set dcm interface path (default: "/dcm.pl").
