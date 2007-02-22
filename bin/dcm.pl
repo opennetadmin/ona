@@ -40,7 +40,7 @@
 ## 
 ## Description
 ## 
-## dcm.pl (Distributed Console Module) is a console utility designed to provide
+## dcm.pl (Distributed Console Moule) is a console utility designed to provide
 ## a console interface to web-based "modules".  The goal is to build a simple
 ## framework that will enable a secure method of invoking centrally managed
 ## modules on a remote web server via an intuitive yet powerful command line
@@ -69,9 +69,6 @@
 ##############################################################################
 ##  
 ##  Changelog:
-##      
-##      XX/XX/2006 - v1.17 - Brandon Zehm
-##          - Close $FILE when done with it during command line processing.
 ##      
 ##      06/06/2006 - v1.16 - Brandon Zehm
 ##          - First public release canidate
@@ -175,7 +172,7 @@ my %conf = (
     'colorCyan'            => "\033[36;1m",
     
     ## Script specific settings
-    'version'              => '1.17',                          ## The version of this program
+    'version'              => '1.16',                          ## The version of this program
     'authorName'           => 'Brandon Zehm',                  ## Author's Name
     'authorEmail'          => 'caspian@dotconf.net',           ## Author's Email Address
     'configurationFile'    => '/etc/dcm.conf',                 ## Default configuration file location
@@ -1270,7 +1267,6 @@ foreach my $key (keys(%opt)) {
         while (<$FILE>) {
             $opt{$key} .= $_;
         }
-        close $FILE;
         ## Strip an ending \n (so that `echo test_message | dcm.pl -r test key=-` works properly)
         $opt{$key} =~ s/\r?\n$//os;
     }
