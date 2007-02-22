@@ -21,62 +21,62 @@ $images = "{$baseURL}/images";
 $_ENV['help_url'] = "http://opennetadmin.com/dokuwiki/doku.php?id=documentation:";
 
 $conf = array (
-        /* General Setup */
-        "version"              => "v1.00",
+    /* General Setup */
+    "version"              => "v1.00",
 
-        /* Logging - Used by the printmsg() function */
-        "debug"                => 5,
-        "stdout"               => 0, // Print logs to the generated web page, not a good idea!
-        "db"                   => 1, // Log to a sql log, highly recommended
-        "logfile"              => "/var/log/website",
-        "syslog"               => 1, // It only syslogs if debug is 0.
+    /* Logging - Used by the printmsg() function */
+    "debug"                => 5,
+    "stdout"               => 0, // Print logs to the generated web page, not a good idea!
+    "db"                   => 1, // Log to a sql log, highly recommended
+    "logfile"              => "/var/log/website",
+    "syslog"               => 1, // It only syslogs if debug is 0.
 
-        // DEPRICATED, THIS OPTION IS BEING REMOVED:
-        "dev_mode"             => 0,
+    // DEPRICATED, THIS OPTION IS BEING REMOVED:
+    "dev_mode"             => 0,
 
-        // Database Context
-        // For possible values see the $db_context() array and description below
-        "mysql_context"        => 'default',
+    // Database Context
+    // For possible values see the $db_context() array and description below
+    "mysql_context"        => 'default',
 
-        /* Other Random Things */
-        "contact_phone"        => '888-888-8888',
-        "contact_email"        => 'support@opennetadmin.com',
-        "money_format"         => '%01.2f',
-        "date_format"          => 'M jS, g:ia',
-        "search_results_per_page" => 10,
-        "suggest_max_results"  => 10,
-        
-        /* Used in header.php */
-        /* Recommendation: not more than 60 (40?) chars */
-        "title"                => 'Open Network Admin :: ',
-        /* Recommendation: not more than 150 chars */
-        "meta_description"     => '',
-        /* Recommendation: not more than 1024 chars, no keywords more than twice */
-        "meta_keywords"        => '',
-        "html_headers"         => '',
-        
-        /* Session Settings */
-        "cookie_host"          => $_SERVER['HTTP_HOST'],
-        "cookie_life"          => (60*60*24*2),
-        
-        /* Include Files: HTML */
-        "html_header"          => "$include/html_header.php",
-        "html_footer"          => "$include/html_footer.php",
-        "html_style_sheet"     => "$include/html_style_sheet.php",
-        "loading_icon"         => "<br><center><img src=\"{$images}/loading.gif\"></center><br>",
-        
-        /* Include Files: Functions */
-        "inc_functions"        => "$include/inc_functions_general.php",
-        "inc_functions_ona"    => "$include/inc_functions_ona.php",
-        "inc_functions_db"     => "$include/inc_functions_db.php",
-        "inc_db"               => "$include/inc_db.php",
-        "inc_mysqlsessions"    => "$include/session_mysql.php",
-        "inc_adodb"            => "$include/adodb/adodb.inc.php",
-        "inc_xajax_stuff"      => "$include/xajax_setup.inc.php",
-        "inc_diff"             => "$include/DifferenceEngine.php",
+    /* Other Random Things */
+    "contact_phone"        => '888-888-8888',
+    "contact_email"        => 'support@opennetadmin.com',
+    "money_format"         => '%01.2f',
+    "date_format"          => 'M jS, g:ia',
+    "search_results_per_page" => 10,
+    "suggest_max_results"  => 10,
+    
+    /* Used in header.php */
+    /* Recommendation: not more than 60 (40?) chars */
+    "title"                => 'Open Network Admin :: ',
+    /* Recommendation: not more than 150 chars */
+    "meta_description"     => '',
+    /* Recommendation: not more than 1024 chars, no keywords more than twice */
+    "meta_keywords"        => '',
+    "html_headers"         => '',
+    
+    /* Session Settings */
+    "cookie_host"          => $_SERVER['HTTP_HOST'],
+    "cookie_life"          => (60*60*24*2),
+    
+    /* Include Files: HTML */
+    "html_header"          => "$include/html_header.php",
+    "html_footer"          => "$include/html_footer.php",
+    "html_style_sheet"     => "$include/html_style_sheet.php",
+    "loading_icon"         => "<br><center><img src=\"{$images}/loading.gif\"></center><br>",
+    
+    /* Include Files: Functions */
+    "inc_functions"        => "$include/inc_functions_general.php",
+    "inc_functions_ona"    => "$include/inc_functions_ona.php",
+    "inc_functions_db"     => "$include/inc_functions_db.php",
+    "inc_db"               => "$include/inc_db.php",
+    "inc_mysqlsessions"    => "$include/session_mysql.php",
+    "inc_adodb"            => "$include/adodb/adodb.inc.php",
+    "inc_xajax_stuff"      => "$include/xajax_setup.inc.php",
+    "inc_diff"             => "$include/DifferenceEngine.php",
 
-        /* Settings for dcm.pl */
-        "dcm_module_dir"       => "$include/../modules",
+    /* Settings for dcm.pl */
+    "dcm_module_dir"       => "$include/../modules",
 );
 
 
@@ -85,14 +85,14 @@ $conf = array (
 // Think of it as a cache or an easy way to pass data around ;)
 // I've tried to define the entries that are commonly used:
 $self = array (
-        // Error messages will often get stored in here
-        "error"                => "",
+    // Error messages will often get stored in here
+    "error"                => "",
 
-        // All sorts of things get cached in here to speed things up
-        "cache"                => array(),
+    // All sorts of things get cached in here to speed things up
+    "cache"                => array(),
 
-        // Get's automatically set to 1 if we're using HTTPS/SSL
-        "secure"               => 0,
+    // Get's automatically set to 1 if we're using HTTPS/SSL
+    "secure"               => 0,
 );
 // If the server port is 443 then this is a secure page
 // This is basically used to put a padlock icon on secure pages.
