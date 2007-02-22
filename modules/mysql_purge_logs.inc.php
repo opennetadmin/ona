@@ -100,7 +100,7 @@ EOM
     foreach($masters as $host => $binlog) {
         $dbh = db_connect('mysql', $host, $options['user'], $options['password'], 'mysql');
         if(!$dbh) {
-            $self['error'] .= "ERROR: could not connect to host '{$host}' to execute query. Skipping.\n";
+            $self['error'] .= "ERROR => Could not connect to host '{$host}' to execute query. Skipping.\n";
             $retval_errlvl = 2;
             continue;
         }
