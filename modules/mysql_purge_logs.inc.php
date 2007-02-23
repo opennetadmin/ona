@@ -50,6 +50,7 @@ automatically.
     slaves=NAME[,NAME ...]    list of slave server(s) to connect to
   
   Optional:
+    commit=[yes|no]           commit changes to database (default: no)
     user=NAME                 mysql username (default: root)
     password=STRING           mysql password (default: blank)
 
@@ -64,14 +65,12 @@ EOM
     if(!$options['user'])
         $options['user']='root';
 
+    // Sanitize "options[commit]" (no is the default)
+    $options['commit'] = sanitize_YN($options['commit'], 'N');
+
     // Split out the list of slave servers into an array (comma-delimited).
     $slaves = preg_split('/,/', $options['slaves']);
     
-    // Check that we got some slaves
-    if (!is_array($slaves)) {
-        return(array(1, 'ERROR => No slaves specified!\n'));
-    }
-
     // Now we begin...
     $masters = array();
     foreach ($slaves as $slave_host) {
@@ -108,22 +107,30 @@ EOM
     $retval_string = "";
     $retval_errlvl = 0;
     foreach($masters as $host => $binlog) {
-        $dbh = db_connect('mysql', $host, $options['user'], $options['password'], 'mysql');
-        if(!$dbh || !$dbh->IsConnected()) {
-            $self['error'] .= "ERROR => Could not connect to host '{$host}' to execute query. Skipping.\n";
-            $retval_errlvl = 2;
-            continue;
+        if($options['commit'] == 'Y') {
+            $dbh = db_connect('mysql', $host, $options['user'], $options['password'], 'mysql');
+            if(!$dbh || !$dbh->IsConnected()) {
+                $self['error'] .= "ERROR => Could not connect to host '{$host}' to execute query. Skipping.\n";
+                $retval_errlvl = 2;
+                continue;
+            }
         }
-        $q = "purge master logs to '{$binlog}'";
-        $rs = $dbh->Execute($q);
-	$error = $dbh->ErrorMsg();
 
-        // Report any errors
-        if ($rs === false or $error) {
-            $self['error'] .= 'ERROR => SQL query on host {$host} failed: ' . $error . "\n";
-            $retval_errlvl = 2;
+        $q = "purge master logs to '{$binlog}'";
+
+        if($options['commit'] == 'Y') {
+            $rs = $dbh->Execute($q);
+	    $error = $dbh->ErrorMsg();
+
+            // Report any errors
+            if ($rs === false or $error) {
+                $self['error'] .= 'ERROR => SQL query on host {$host} failed: ' . $error . "\n";
+                $retval_errlvl = 2;
+            } else {
+                $retval_string .= "Successfully executed ({$q}) on host '{$host}'.\n";
+            }
         } else {
-            $retval_string .= "Successfully executed ({$q}) on host '{$host}'.\n";
+            $retval_string .= "Not commiting changes. Would have executed: ({$q}) on host '{$host}'.\n";
         }
     }
 
