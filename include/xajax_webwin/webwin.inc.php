@@ -158,6 +158,8 @@ function window_submit($window_name, $form='', $function='') {
     if (!$window_name or !$form) { return($response->getXML()); }
     $js = "";
     
+    printmsg("DEBUG => webwin_submit() Window: {$window_name} Function: {$function} Form: {$form}", 1);
+    
     // If a function name wasn't provided, we look for a function called:
     //   $window_name . '_submit'
     if (!$function) {
@@ -176,6 +178,7 @@ function window_submit($window_name, $form='', $function='') {
     if (function_exists($function)) { return($function($window_name, $form)); }
     
     // Ok, I couldn't find anything to do.. just return an empty XML response
+    printmsg("NOTICE => webwin_submit() invalid function called! Window: {$window_name} Function: {$function}", 0);
     return($response->getXML());
 }
 
