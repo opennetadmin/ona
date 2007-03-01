@@ -34,7 +34,7 @@ $color['link_act'] = $color['link'];
 // $color['link_act'] = '#FF8000';
 
 // Display the style-sheet
-print <<< EOL
+print <<<EOL
 
 
 /* --------------- Styles for common HTML elements --------------- */
@@ -269,12 +269,12 @@ a.zone:hover { color: {$color['link_zone']}; cursor: pointer; text-decoration: u
     padding-right:  4px;
 }
 
-/* Start Menu */
-div.wwTT_menu {
+/* Ona Menus */
+div.wwTT_ona_menu {
     border: 1px solid #333366;
     background-color: #333366;
 }
-div.wwTT_menu .row {
+div.wwTT_ona_menu .row {
     font-size: 10px;
     font-family: Verdana, Helvetica;
     vertical-align: center;
@@ -283,7 +283,7 @@ div.wwTT_menu .row {
     background-color: #F1F1FF;
     border-bottom: 1px solid #E3E3F0;
 }
-div.wwTT_menu .hovered {
+div.wwTT_ona_menu .hovered {
     font-size: 10px;
     font-family: Verdana, Helvetica;
     vertical-align: center;
@@ -442,12 +442,9 @@ span.diffchange { color: red; }
 /* ---------------------------- Misc --------------------------*/
 
 .padding {
-    font-size: small;
     margin: 0px;
-    padding-top:    2px;
-    padding-bottom: 2px;
-    padding-left:   4px;
-    padding-right:  4px;
+    padding: 2px 4px;
+    font-size: small;
 }
 
 .hidden  { visibility:hidden; display:none; }

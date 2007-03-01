@@ -207,7 +207,7 @@ print <<<EOL
                  'y', button_top + button_height,
                  'width', 200,
                  'delay', 0,
-                 'styleClass', 'wwTT_menu',
+                 'styleClass', 'wwTT_ona_menu',
                  'javascript', 'el(\'start_menu\').style.visibility = \'hidden\'; xajax_window_submit(\'tooltips\', \'tooltip=>start_menu,id=>start_menu\');'
             );
         };

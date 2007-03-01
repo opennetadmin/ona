@@ -26,7 +26,7 @@ include("$include/html_top_bar.php");
 print <<<EOL
     <!-- Workspace div -->
     <div id="content_table" style="height: 90%;" class="theWholeBananna">
-        <!-- Parent div for all "windows" -->
+        <!-- Parent element for all "windows" -->
         <span id="window_container"></span>
 
 <!-- END HEADER -->
