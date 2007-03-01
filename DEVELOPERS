@@ -1,0 +1,16 @@
+DEVELOPERS
+
+
+CODING STYLE
+
+
+FUNCTION DEFINITIONS
+
+GUIDING PRINCIPLES
+
+
+USE OF THE $_SESSION VARIABLE
+    * Everything is stored "under" $_SESSION['ona']
+    * All authentication data is stored under $_SESSION['ona']['auth']
+        When a user logs out, only $_SESSION['ona']['auth']* is deleted.
+    *
