@@ -278,7 +278,16 @@ function microtime_float() {
 //    1 or numeric:  170666057
 //    2 or dotted:   10.44.40.73
 //    3 or cidr:     24 (or /24) (for netmasks only)
-//    4 or binary:   1010101010101010101010101010101010101010
+//    4 or binary:   1010101010101010101010101010101010101010 (32 bits)
+//    5 or bin128:   1010101010101010101010101010101010101010... (128 bits)
+//    6 or ipv6:     FE80:0000:0000:0000:0202:B3FF:FE1E:8329  or
+//                   FE80:0:0:0:202:B3FF:FE1E:8329  or
+//                   FE80::202:B3FF:FE1E:8329  or
+//                   0:0:0:0:0:0:192.0.2.128  or
+//                   ::192.0.2.128  or
+//                   ::C000:280
+//                   ::ffff:192.0.2.128  or
+//                   ::ffff:C000:280
 //
 //  Formats the input IP address into the format specified.  When a
 //  format is not specified dotted format is returned unless you
@@ -293,7 +302,9 @@ function ip_mangle($ip="", $format="default") {
 
     // Is input in dotted format (2)?
     if (preg_match('/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/', $ip)) {
-        $ip = ip2long($ip);
+        //$ip = ip2long($ip);
+        //NOTE: look up code for ip6tolong at http://us2.php.net/manual/en/function.ip2long.php
+        $ip = gmp_init(sprintf("%u", ip2long($ip)), 10);
         if ($format == "default") { $format = 1; }
     }
 
@@ -304,15 +315,40 @@ function ip_mangle($ip="", $format="default") {
             return(-1);
         }
         // So create a binary string of 1's and 0's and convert it to an int
-        $ip = bindec(str_pad(str_pad("", $matches[1], "1"), 32, "0"));
+        //$ip = bindec(str_pad(str_pad("", $matches[1], "1"), 32, "0"));
+        $ip = gmp_init(str_pad(str_pad("", $matches[1], "1"), 32, "0"), 2);
         if ($format == "default") { $format = 2; }
     }
 
-    // Is it in binary format (4)?
+    // Is it in 32-bit binary format (4)?
     else if (preg_match('/^[01]{32}$/', $ip)) {
-        $ip = bindec($ip);
+        //$ip = bindec($ip);
+        $ip = gmp_init($ip, 2);
         if ($format == "default") { $format = 2; }
     }
+
+    // Is it in 128-bit binary format (5)?
+    else if (preg_match('/^[01]{128}$/', $ip)) {
+        $ip = gmp_init($ip, 2);
+        if ($format == "default") { $format = 6; }
+    }
+
+    // Is it in ipv6 (non-compressed) format (6)?
+    else if (preg_match('/^([0-9A-F]{4}:)+([0-9A-F]{4})/i', $ip)) {
+        $ip = gmp_init(str_replace(":", "", $ip), 16);
+        if ($format == "default") { $format = 1; }
+    }
+
+    // How about ipv6 (stripped leading 0's) format (6)?
+    else if (preg_match('/^([0-9A-F]{1,4}:){7}([0-9A-F]{1,4}/i', $ip)) {
+        $newip = "";
+        dec2hex(strval(preg_match('/([0-9A-F]{1,4])/i', $ip, $matches)));
+        for ($i = 0; $i < 8; $i++)
+            $newip .= sprintf("%04X", (hexdec($matches[$i])));
+        $ip = gmp_init($ip, 16);
+        if ($format == "default") { $format = 1; }
+    }
+
 
     // If it has a non-digit character, it's invalid.
     else if (preg_match('/\D/', $ip)) {
@@ -322,8 +358,10 @@ function ip_mangle($ip="", $format="default") {
     // Then input must be in numeric format (1)
     else {
         // We flip it to dotted and back again to make sure it's a valid address
-        $ip = long2ip($ip);
-        $ip = ip2long($ip);
+        //$ip = long2ip($ip);
+        //$ip = ip2long($ip);
+        //FIXME: the below code is really just a placeholder.
+	$ip = gmp_init($ip, 10);
         if ($format == "default") { $format = 2; }
     }
 
@@ -337,11 +375,13 @@ function ip_mangle($ip="", $format="default") {
 
     // Is output format 1 (numeric)?
     if ($format == 1 or $format == 'numeric')
-        return(sprintf("%u", $ip));
+        //return(sprintf("%u", $ip));
+        return(sprintf("%s", gmp_strval($ip, 10)));
 
     // Is output format 2 (dotted)?
     else if ($format == 2 or $format == 'dotted')
-        return(long2ip($ip));
+        //return(long2ip($ip));
+        return(long2ip(sprintf("%s", gmp_strval($ip))));
 
     // Is output format 3 (CIDR)?
     else if ($format == 3 or $format == 'cidr') {
@@ -353,13 +393,29 @@ function ip_mangle($ip="", $format="default") {
             return(-1);
         }
         // Return the number of 1's at the beginning of the binary representation of $ip
-        return(strlen(rtrim($binary,"0")));
+        //return(strlen(rtrim($binary,"0")));
+        return(strlen(rtrim(gmp_strval($ip, 2), "0")));
+
     }
 
-    // Is output format 4 (binary string)?
+    // Is output format 4 (32-bit binary string)?
     else if ($format == 4 or $format == 'binary') {
-        // Convert the integer to it's 32 bit binary representation
-        return(str_pad(decbin($ip), 32, "0", STR_PAD_LEFT));
+        // Convert the integer to it's 32-bit binary representation
+        //return(str_pad(decbin($ip), 32, "0", STR_PAD_LEFT));
+        return(str_pad(gmp_strval($ip, 2), 32, "0", STR_PAD_LEFT));
+    }
+
+    // Is output format 5 (128-bit binary string)?
+    else if ($format == 5 or $format == 'bin128') {
+        // Convert the number to it's 128-bit binary representation
+        return(str_pad(gmp_strval($ip, 2), 128, "0", STR_PAD_LEFT));
+//        return(gmp_strval(gmp_init($ip), 2));
+    }
+
+    // Is output format 6 (IPv6 string)?
+    else if ($format == 6 or format == 'ipv6') {
+        // Convert the number to 8x 16-bit words, represented in hexidecimal
+        return(implode(":", str_split(str_pad(gmp_strval($ip, 16), 32, "0", STR_PAD_LEFT), 4)));
     }
 
     else {
@@ -369,7 +425,18 @@ function ip_mangle($ip="", $format="default") {
 }
 
 
-
+//FIXME: clean this up!
+if (!function_exists("str_split")) {
+  function str_split($str,$length = 1) {
+   if ($length < 1) return false;
+   $strlen = strlen($str);
+   $ret = array();
+   for ($i = 0; $i < $strlen; $i += $length) {
+     $ret[] = substr($str,$i,$length);
+   }
+   return $ret;
+  }
+}
 
 
 
