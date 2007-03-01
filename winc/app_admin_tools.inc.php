@@ -26,10 +26,10 @@ $window['js'] .= <<<EOL
 EOL;
 
 $window['html'] .= <<<EOL
-    
+
 <!-- Window Content -->
 
-<div class="wwTT_menu" style="width: 100%;">
+<div class="wwTT_ona_menu" style="width: 100%;">
     
     <div class="row" 
          onMouseOver="this.className='hovered';"
