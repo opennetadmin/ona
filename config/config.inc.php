@@ -106,28 +106,35 @@ if ($_SERVER['SERVER_PORT'] == 443) { $self['secure'] = 1; }
 
 
 // Colors
-$color['bg']         = '#FFFFFF';
-$color['content_bg'] = '#FFFFFF';
-$color['bar_bg']     = '#FFFFFF';
-// $color['border']     = '#896465';
-$color['border']     = '#1A1A1A';
-$color['form_bg']    = '#FFEFB6';
+$color['bg']                    = '#FFFFFF';
+$color['content_bg']            = '#FFFFFF';
+$color['bar_bg']                = '#D3DBFF';
+$color['border']                = '#1A1A1A';
+$color['form_bg']               = '#FFEFB6';
 
-$color['font_default']   = '#3E3E3E';
-$color['font_title']     = '#4E4E4E';
-$color['font_subtitle']  = '#5A5A5A';
-$color['font_error']     = '#E35D5D';
+$color['font_default']          = '#3E3E3E';
+$color['font_title']            = '#4E4E4E';
+$color['font_subtitle']         = '#5A5A5A';
+$color['font_error']            = '#E35D5D';
 
-$color['link']   = '#6B7DD1';
-$color['vlink']  = '#6B7DD1';
-$color['alink']  = '#6B7DD1';
+$color['link']                  = '#6B7DD1';
+$color['vlink']                 = '#6B7DD1';
+$color['alink']                 = '#6B7DD1';
+$color['link_nav']              = '#0048FF';  // was '#7E8CD7';
+$color['link_act']              = '#FF8000';  // was '#EB8F1F';
+$color['link_zone']             = 'green';    // was '#5BA65B';
 
-$color['link_nav']         = '#0048FF';   // was '#7E8CD7';
-$color['link_act']         = '#FF8000'; // was '#EB8F1F';
-$color['link_zone']        = 'green';  // was '#5BA65B';
+$color['button_normal']         = '#FFFFFF';
+$color['button_hover']          = '#E0E0E0';
 
-$color['button_normal'] = '#FFFFFF';
-$color['button_hover'] = '#E0E0E0';
+$color['menu_bar_bg']           = '#CFDFFF';
+$color['menu_item_bg']          = '#CFDFFF';
+$color['menu_item_selected_bg'] = '#B1C6E3';
+$color['menu_header_bg']        = '#B1C6E3';
+$color['menu_header_text']      = $color['font_default'];
+$color['menu_item_text']        = $color['font_default'];
+
+
 
 // Style variables (used in PHP in various places)
 $style['font-family'] = "Arial, Sans-Serif";

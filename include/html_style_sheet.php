@@ -21,17 +21,6 @@ header('Content-type: text/css');
 
 require_once($conf['inc_xajax_stuff']);
 
-$color['menu_bar_bg']            = '#CFDFFF';
-$color['menu_item_bg']           = '#CFDFFF';
-$color['menu_item_selected_bg']  = '#B1C6E3';
-$color['menu_header_bg']         = '#B1C6E3';
-$color['menu_header_text']       = $color['font_default'];
-$color['menu_item_text']         = $color['font_default'];
-$color['bar_bg']                 = '#D3DBFF';
-
-$color['link_nav'] = $color['link'];
-$color['link_act'] = $color['link'];
-// $color['link_act'] = '#FF8000';
 
 // Display the style-sheet
 print <<<EOL
