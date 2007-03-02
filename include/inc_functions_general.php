@@ -298,55 +298,91 @@ function microtime_float() {
 //      print "IP is: " . ip_mangle(170666057)
 ///////////////////////////////////////////////////////////////////////
 function ip_mangle($ip="", $format="default") {
+    // is_ipv4 returns TRUE if $inp can be represented as an IPv4 address
+    //                 FALSE if $inp cannot be represented as an IPv4 address (e.g. IPv6)
+    // note: $inp is a 'gmp' resource, created by 'gmp_init()'
+    if(!function_exists("is_ipv4")) {
+        function is_ipv4($inp) {
+            if(gmp_cmp(gmp_init("0xffffffff"), $inp) >= 0)
+                return TRUE;
+            return FALSE;
+        }
+    }
+    
+    // Split a string into an array, each element of length $length characters.
+    // This function doesn't exist in PHP < 5.0.0.
+    if (!function_exists("str_split")) {
+        function str_split($str,$length = 1) {
+            if ($length < 1) return false;
+            $strlen = strlen($str);
+            $ret = array();
+            for ($i = 0; $i < $strlen; $i += $length) {
+                $ret[] = substr($str,$i,$length);
+            }
+            return $ret;
+        }
+    }
+    
     global $self;
 
-    // Is input in dotted format (2)?
+    // Is input in IPv4 dotted format (2)?
     if (preg_match('/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/', $ip)) {
+        if($ip != long2ip(ip2long($ip))) {
+            $self['error'] = "ERROR => Invalid IPv4 address";
+            return(-1);
+        }
         //$ip = ip2long($ip);
         //NOTE: look up code for ip6tolong at http://us2.php.net/manual/en/function.ip2long.php
         $ip = gmp_init(sprintf("%u", ip2long($ip)), 10);
-        if ($format == "default") { $format = 1; }
+        if ($format == "default") { $format = "numeric"; }
     }
 
-    // Is it in CIDR format (3)?
-    else if (preg_match('/^\/?(\d{1,2})$/', $ip, $matches)) {
-        if (!($matches[1] >= 0 && $matches[1] <= 32)) {
+    // Is it in IPv4/IPv6 CIDR format (3)?
+    else if (preg_match('/^\/?(\d{1,3})$/', $ip, $matches)) {
+        if (!($matches[1] >= 0 && $matches[1] <= 128)) {
             $self['error'] = "ERROR => Invalid CIDR mask";
             return(-1);
         }
         // So create a binary string of 1's and 0's and convert it to an int
         //$ip = bindec(str_pad(str_pad("", $matches[1], "1"), 32, "0"));
-        $ip = gmp_init(str_pad(str_pad("", $matches[1], "1"), 32, "0"), 2);
-        if ($format == "default") { $format = 2; }
+        $ip = gmp_init(str_pad(str_pad("", $matches[1], "1"), 128, "0"), 2);
+        if ($format == "default") {
+            // default to IPv6 output if the input was IPv6, IPv4 otherwise
+            if (is_ipv4($ip))
+                $format = "dotted";
+            else
+                $format = "ipv6";
+        }
+        //if ($format == "default") { $format = 2; }
     }
 
     // Is it in 32-bit binary format (4)?
     else if (preg_match('/^[01]{32}$/', $ip)) {
         //$ip = bindec($ip);
         $ip = gmp_init($ip, 2);
-        if ($format == "default") { $format = 2; }
+        if ($format == "default") { $format = "dotted"; }
     }
 
     // Is it in 128-bit binary format (5)?
     else if (preg_match('/^[01]{128}$/', $ip)) {
         $ip = gmp_init($ip, 2);
-        if ($format == "default") { $format = 6; }
+        if ($format == "default") { $format = "ipv6"; }
     }
 
     // Is it in ipv6 (non-compressed) format (6)?
     else if (preg_match('/^([0-9A-F]{4}:)+([0-9A-F]{4})/i', $ip)) {
         $ip = gmp_init(str_replace(":", "", $ip), 16);
-        if ($format == "default") { $format = 1; }
+        if ($format == "default") { $format = "numeric"; }
     }
 
     // How about ipv6 (stripped leading 0's) format (6)?
-    else if (preg_match('/^([0-9A-F]{1,4}:){7}([0-9A-F]{1,4}/i', $ip)) {
+    else if (preg_match('/^([0-9A-F]{1,4}:){7}([0-9A-F]{1,4})/i', $ip)) {
         $newip = "";
         dec2hex(strval(preg_match('/([0-9A-F]{1,4])/i', $ip, $matches)));
         for ($i = 0; $i < 8; $i++)
             $newip .= sprintf("%04X", (hexdec($matches[$i])));
         $ip = gmp_init($ip, 16);
-        if ($format == "default") { $format = 1; }
+        if ($format == "default") { $format = "numeric"; }
     }
 
 
@@ -360,14 +396,23 @@ function ip_mangle($ip="", $format="default") {
         // We flip it to dotted and back again to make sure it's a valid address
         //$ip = long2ip($ip);
         //$ip = ip2long($ip);
-        //FIXME: the below code is really just a placeholder.
-	$ip = gmp_init($ip, 10);
-        if ($format == "default") { $format = 2; }
+        //FIXME: the below code is really just a placeholder.  It doesn't check for validity
+        //       of IPv4 address(es)
+        $ip = gmp_init($ip, 10);
+        if ($format == "default") { 
+            if(is_ipv4($ip))
+                $format = "dotted";
+            else
+                $format = "ipv6";
+        }
     }
 
 
-    // If the address wasn't valid return an error
-    if ($ip == -1) {
+    // If the address wasn't valid return an error\
+    // check for out-of-range values (< 0 or > 2**128)
+    if (gmp_cmp(gmp_init(-1), $ip) >= 0 or
+        gmp_cmp(gmp_pow("2", 128), $ip) <= 0) {
+        //$ip == -1) {
         $self['error'] = "ERROR => Invalid IP address";
         return(-1);
     }
@@ -379,15 +424,26 @@ function ip_mangle($ip="", $format="default") {
         return(sprintf("%s", gmp_strval($ip, 10)));
 
     // Is output format 2 (dotted)?
-    else if ($format == 2 or $format == 'dotted')
+    else if ($format == 2 or $format == 'dotted') {
         //return(long2ip($ip));
+        //if(gmp_sign(gmp_sub($ip, gmp_init("4294967296"))) >= 0) {
+        if(!is_ipv4($ip)) {
+        //gmp_cmp($ip, gmp_init("0xffffffff")) >= 0) {
+            $self['error'] = "ERROR => Invalid IPv4 address";
+            return(-1);
+        }
         return(long2ip(sprintf("%s", gmp_strval($ip))));
+    }
 
     // Is output format 3 (CIDR)?
     else if ($format == 3 or $format == 'cidr') {
         // Make sure the address is a valid mask - convert it to 1's and 0's,
         // then make sure it's all 1's followed by all 0's.
-        $binary = str_pad(decbin($ip), 32, "0", STR_PAD_LEFT);
+        if(is_ipv4($ip))
+            $cidr_bits = 32;
+        else
+            $cidr_bits = 128;
+        $binary = str_pad(gmp_strval($ip, 2), $cidr_bits, "0", STR_PAD_LEFT);
         if (!(preg_match('/^1+0*$/', $binary))) {
             $self['error'] = "ERROR => IP address specified is not a valid netmask";
             return(-1);
@@ -425,18 +481,7 @@ function ip_mangle($ip="", $format="default") {
 }
 
 
-//FIXME: clean this up!
-if (!function_exists("str_split")) {
-  function str_split($str,$length = 1) {
-   if ($length < 1) return false;
-   $strlen = strlen($str);
-   $ret = array();
-   for ($i = 0; $i < $strlen; $i += $length) {
-     $ret[] = substr($str,$i,$length);
-   }
-   return $ret;
-  }
-}
+
 
 
 
