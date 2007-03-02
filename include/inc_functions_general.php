@@ -323,6 +323,21 @@ function ip_mangle($ip="", $format="default") {
         }
     }
     
+    // Converts an ipv6 formatted input string to GMP integer resource
+    if (!function_exists("ip2gmp6")) {
+        function ip2gmp6($ip) {
+            // Expand '::' to zero stanzas
+            if (substr_count($ip, '::'))
+                $ip = str_replace('::', str_repeat(':0000', 8 - substr_count($ip, ':')) . ':', $ip);
+            $ip = explode(':', $ip) ;
+            $r_ip = '';
+            // Fix any missing leading zeroes
+            foreach ($ip as $v)
+                   $r_ip .= str_pad($v, 4, 0, STR_PAD_LEFT) ;  
+            return (gmp_init($r_ip, 16));
+        }
+    }
+        
     global $self;
 
     // Is input in IPv4 dotted format (2)?
@@ -369,24 +384,18 @@ function ip_mangle($ip="", $format="default") {
         if ($format == "default") { $format = "ipv6"; }
     }
 
-    // Is it in ipv6 (non-compressed) format (6)?
-    else if (preg_match('/^([0-9A-F]{4}:)+([0-9A-F]{4})/i', $ip)) {
-        $ip = gmp_init(str_replace(":", "", $ip), 16);
+    // Is it in ipv6 format (6)?
+    // This matches the 'full' uncompressed IPv6 format, the format without
+    // leading zeros in each stanza, and also 'compressed' IPv6 format, which
+    // substitutes '::' for multiple zero stanzas.
+    else if (   (substr_count($ip, '::') == 1 && substr_count($ip, ':::') == 0 &&
+                 preg_match('/^:|([0-9A-F]{1,4}:){0,7}:|(:[0-9A-F]{1,4}){0,7}$/i', $ip)) or
+             preg_match('/^([0-9A-F]{1,4}:){7}([0-9A-F]{1,4})$/i', $ip)) {
+        $ip = ip2gmp6($ip);
         if ($format == "default") { $format = "numeric"; }
     }
 
-    // How about ipv6 (stripped leading 0's) format (6)?
-    else if (preg_match('/^([0-9A-F]{1,4}:){7}([0-9A-F]{1,4})/i', $ip)) {
-        $newip = "";
-        dec2hex(strval(preg_match('/([0-9A-F]{1,4])/i', $ip, $matches)));
-        for ($i = 0; $i < 8; $i++)
-            $newip .= sprintf("%04X", (hexdec($matches[$i])));
-        $ip = gmp_init($ip, 16);
-        if ($format == "default") { $format = "numeric"; }
-    }
-
-
-    // If it has a non-digit character, it's invalid.
+    // If at this point, it has a non-digit character, it's invalid.
     else if (preg_match('/\D/', $ip)) {
         $ip = -1;
     }
@@ -479,7 +488,6 @@ function ip_mangle($ip="", $format="default") {
         return(-1);
     }
 }
-
 
 
 
