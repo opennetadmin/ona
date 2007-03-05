@@ -280,14 +280,14 @@ function microtime_float() {
 //    3 or cidr:     24 (or /24) (for netmasks only)
 //    4 or binary:   1010101010101010101010101010101010101010 (32 bits)
 //    5 or bin128:   1010101010101010101010101010101010101010... (128 bits)
-//    6 or ipv6:     FE80:0000:0000:0000:0202:B3FF:FE1E:8329  or
-//                   FE80:0:0:0:202:B3FF:FE1E:8329  or
-//                   FE80::202:B3FF:FE1E:8329  or
-//                   0:0:0:0:0:0:192.0.2.128  or
-//                   ::192.0.2.128  or
-//                   ::C000:280
-//                   ::ffff:192.0.2.128  or
+//    6 or ipv6:     FE80:0000:0000:0000:0202:B3FF:FE1E:8329
+//    7 or ipv6gz:   FE80::202:B3FF:FE1E:8329 or
+//                   ::C000:280 or
 //                   ::ffff:C000:280
+//
+//  (currently unsupported for input or output)  0:0:0:0:0:0:192.0.2.128
+//  (currently unsupported for input or output)  ::ffff:192.0.2.128
+//  (currently unsupported for input or output)  ::192.0.2.128
 //
 //  Formats the input IP address into the format specified.  When a
 //  format is not specified dotted format is returned unless you
@@ -300,7 +300,7 @@ function microtime_float() {
 function ip_mangle($ip="", $format="default") {
     // is_ipv4 returns TRUE if $inp can be represented as an IPv4 address
     //                 FALSE if $inp cannot be represented as an IPv4 address (e.g. IPv6)
-    // note: $inp is a 'gmp' resource, created by 'gmp_init()'
+    // Note: $inp is a 'gmp' resource, created by 'gmp_init()'.
     if(!function_exists("is_ipv4")) {
         function is_ipv4($inp) {
             if(gmp_cmp(gmp_init("0xffffffff"), $inp) >= 0)
@@ -323,18 +323,80 @@ function ip_mangle($ip="", $format="default") {
         }
     }
     
-    // Converts an ipv6 formatted input string to GMP integer resource
+    // Converts an ipv6 formatted input string to a GMP resource
     if (!function_exists("ip2gmp6")) {
         function ip2gmp6($ip) {
             // Expand '::' to zero stanzas
             if (substr_count($ip, '::'))
-                $ip = str_replace('::', str_repeat(':0000', 8 - substr_count($ip, ':')) . ':', $ip);
+                $ip = str_replace('::', 
+                    str_repeat(':0000', 8-substr_count($ip, ':')) . ':', $ip);
             $ip = explode(':', $ip) ;
             $r_ip = '';
-            // Fix any missing leading zeroes
+            // Insert any missing leading zeros in each stanza.
             foreach ($ip as $v)
                    $r_ip .= str_pad($v, 4, 0, STR_PAD_LEFT) ;  
             return (gmp_init($r_ip, 16));
+        }
+    }
+    
+    // When given an uncompressed IPv6 address string of the form
+    // 0000:1111:2222:3333:4444:5555:6666:7777:8888, this
+    // will return a 'compressed' IPv6 address string.  It replaces the
+    // longest consecutive sequence of "0000" stanzas with double
+    // colons ("::") and strips any leading zeros in each stanza.
+    //
+    // For example, input string fe80:0000:0000:0000:00ff:0000:a033:05b7
+    // will be output as string  fe80::ff:0:a033:5b7.
+    if (!function_exists("ipv6gz")) {
+        function ipv6gz($ip) {
+            $e = explode(':', $ip);
+            $e[] = "XXXX";    // add a sentinel value
+            $zeros = array("0000");
+            $result = array_intersect ($e, $zeros );
+            // $result now contains only the non-zero stanzas from $ip
+            if (sizeof($result) > 0) {
+                // Find the longest sequence of zero stanzas
+                $begin = $start = ""; $len = 0;
+                foreach($e as $key=>$val) {
+                    if($val === "0000") {
+                        if($begin === "") {
+                            $begin = $key;
+                            if ($start === "")
+                                $start = $begin;
+                        }
+                    } else {
+                        if($begin !== "") {
+                            if($key-$begin > $len) {
+                                $len = $key-$begin;
+                                $start = $begin;
+                            }
+                            $begin = "";
+                        }
+                    }
+                }
+                array_pop($e);    // remove the sentinel value
+                
+                // Replace that sequence with '::', strip leading zeros, etc
+                $newip=array();
+                foreach($e as $key=>$val) {
+                    if($start !== "" && $key > $start && $key < $start+$len) continue;
+                    if($start !== "" && $key === $start)
+                        $val = '';
+                    else
+                        $val = base_convert($val, 16, 16);
+                    $newip[] = $val;
+                }
+                // Corner cases: (1) If the final stanza is compressed, add one more
+                // empty array element, so we will end with two colons, not just one.
+                // (2) If the whole string was zeros, then add another empty element.
+                // (3) If the beginning stanza is compressed, prepend an empty array
+                // element, _unless_ cases (1) and (2) were both true.
+                if($start+$len == 8) { $newip[] = ''; }
+                if($len == 8) { $newip[] = ''; }
+                if($start == 0 && $len < 8) { array_unshift($newip, ''); }
+                $ip = implode(':', $newip);
+            }
+            return $ip;
         }
     }
         
@@ -346,8 +408,6 @@ function ip_mangle($ip="", $format="default") {
             $self['error'] = "ERROR => Invalid IPv4 address";
             return(-1);
         }
-        //$ip = ip2long($ip);
-        //NOTE: look up code for ip6tolong at http://us2.php.net/manual/en/function.ip2long.php
         $ip = gmp_init(sprintf("%u", ip2long($ip)), 10);
         if ($format == "default") { $format = "numeric"; }
     }
@@ -359,16 +419,14 @@ function ip_mangle($ip="", $format="default") {
             return(-1);
         }
         // So create a binary string of 1's and 0's and convert it to an int
-        //$ip = bindec(str_pad(str_pad("", $matches[1], "1"), 32, "0"));
         $ip = gmp_init(str_pad(str_pad("", $matches[1], "1"), 128, "0"), 2);
         if ($format == "default") {
-            // default to IPv6 output if the input was IPv6, IPv4 otherwise
+            // Default to IPv6 output if the input was IPv6, IPv4 otherwise
             if (is_ipv4($ip))
                 $format = "dotted";
             else
                 $format = "ipv6";
         }
-        //if ($format == "default") { $format = 2; }
     }
 
     // Is it in 32-bit binary format (4)?
@@ -400,13 +458,8 @@ function ip_mangle($ip="", $format="default") {
         $ip = -1;
     }
 
-    // Then input must be in numeric format (1)
+    // If we get here, then the input must be in numeric format (1)
     else {
-        // We flip it to dotted and back again to make sure it's a valid address
-        //$ip = long2ip($ip);
-        //$ip = ip2long($ip);
-        //FIXME: the below code is really just a placeholder.  It doesn't check for validity
-        //       of IPv4 address(es)
         $ip = gmp_init($ip, 10);
         if ($format == "default") { 
             if(is_ipv4($ip))
@@ -417,11 +470,10 @@ function ip_mangle($ip="", $format="default") {
     }
 
 
-    // If the address wasn't valid return an error\
+    // If the address wasn't valid return an error --
     // check for out-of-range values (< 0 or > 2**128)
     if (gmp_cmp(gmp_init(-1), $ip) >= 0 or
         gmp_cmp(gmp_pow("2", 128), $ip) <= 0) {
-        //$ip == -1) {
         $self['error'] = "ERROR => Invalid IP address";
         return(-1);
     }
@@ -434,10 +486,7 @@ function ip_mangle($ip="", $format="default") {
 
     // Is output format 2 (dotted)?
     else if ($format == 2 or $format == 'dotted') {
-        //return(long2ip($ip));
-        //if(gmp_sign(gmp_sub($ip, gmp_init("4294967296"))) >= 0) {
         if(!is_ipv4($ip)) {
-        //gmp_cmp($ip, gmp_init("0xffffffff")) >= 0) {
             $self['error'] = "ERROR => Invalid IPv4 address";
             return(-1);
         }
@@ -458,29 +507,31 @@ function ip_mangle($ip="", $format="default") {
             return(-1);
         }
         // Return the number of 1's at the beginning of the binary representation of $ip
-        //return(strlen(rtrim($binary,"0")));
         return(strlen(rtrim(gmp_strval($ip, 2), "0")));
 
     }
 
     // Is output format 4 (32-bit binary string)?
     else if ($format == 4 or $format == 'binary') {
-        // Convert the integer to it's 32-bit binary representation
-        //return(str_pad(decbin($ip), 32, "0", STR_PAD_LEFT));
+        // Convert the integer to its 32-bit binary representation
         return(str_pad(gmp_strval($ip, 2), 32, "0", STR_PAD_LEFT));
     }
 
     // Is output format 5 (128-bit binary string)?
     else if ($format == 5 or $format == 'bin128') {
-        // Convert the number to it's 128-bit binary representation
+        // Convert the number to its 128-bit binary representation
         return(str_pad(gmp_strval($ip, 2), 128, "0", STR_PAD_LEFT));
-//        return(gmp_strval(gmp_init($ip), 2));
     }
 
-    // Is output format 6 (IPv6 string)?
-    else if ($format == 6 or format == 'ipv6') {
-        // Convert the number to 8x 16-bit words, represented in hexidecimal
+    // Is output format 6 (uncompressed IPv6 string)?
+    else if ($format == 6 or $format == 'ipv6') {
+        // Convert the number to 8x 16-bit hexidecimal stanzas.
         return(implode(":", str_split(str_pad(gmp_strval($ip, 16), 32, "0", STR_PAD_LEFT), 4)));
+    }
+    
+    // Is output format 7 (compressed IPv6 string)?
+    else if ($format == 7 or $format == 'ipv6gz') {
+        return(ipv6gz(implode(":", str_split(str_pad(gmp_strval($ip, 16), 32, "0", STR_PAD_LEFT), 4))));
     }
 
     else {
