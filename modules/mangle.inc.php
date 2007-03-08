@@ -53,6 +53,7 @@ Converts between various IP address representations
                         binary  : return ip as a 32-bit binary string
                         bin128  : return ip as a 128-bit binary string
                         ipv6    : return ip as an IPv6 address
+                        ipv6gz  : return ip as a compressed IPv6 address
 
 \n
 EOM
