@@ -46,13 +46,13 @@ Converts between various IP address representations
     ip=<inet_addr>  32 or 128-bit Internet address
 
   Optional:
-    format=<specifier>  Desired output format, specified as a string or number
-                        '1' or 'numeric' : return ip as an integer
-                        '2' or 'dotted'  : return ip as an IPv4 address
-                        '3' or 'cidr'    : return ip as a CIDR netmask
-                        '4' or 'binary'  : return ip as a 32-bit binary string
-                        '5' or 'bin128'  : return ip as a 128-bit binary string
-                        '6' or 'ipv6'    : return ip as an IPv6 address
+    format=<specifier>  Desired output format, specified as a string
+                        numeric : return ip as an integer
+                        dotted  : return ip as an IPv4 address
+                        cidr    : return ip as a CIDR netmask
+                        binary  : return ip as a 32-bit binary string
+                        bin128  : return ip as a 128-bit binary string
+                        ipv6    : return ip as an IPv6 address
 
 \n
 EOM
@@ -63,10 +63,10 @@ EOM
     // Now what?  We need to call ip_mangle() with our options
     if (!$options['format'])
         $options['format'] = 'default';
-    $retval = "\n" . ip_mangle($options['ip'], $options['format']) . "\n";
+    $retval = ip_mangle($options['ip'], $options['format']) . "\n";
 
     if ($self['error'] != '')
-        return (array(1, $self['error'] . "\n" . $retval));
+        return (array(1, $self['error'] . "\n"));
     else
         return (array(0, $retval));
 }
