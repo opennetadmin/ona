@@ -19,6 +19,10 @@ function ws_tooltips_submit($window_name, $form='') {
     printmsg("DEBUG => Displaying tooltip: {$form['tooltip']}", 4);
 
     switch ($form['tooltip']) {
+        case 'start_menu':
+           list ($html, $js) = get_start_menu_html();
+           break;
+
         case 'location':
            $tip_style = 'style="color: #FFFFFF;"';
            list ($html, $js) = get_location_html($form['location_id']);
@@ -27,10 +31,6 @@ function ws_tooltips_submit($window_name, $form='') {
 
         case 'subnet':
            list ($html, $js) = get_subnet_html($form['subnet_ip']);
-           break;
-
-        case 'start_menu':
-           list ($html, $js) = get_start_menu_html();
            break;
 
         case 'qf_subnet':
@@ -100,26 +100,10 @@ function get_start_menu_html() {
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); toggle_window('app_advanced_search');"
-     title="Advanced search"
- ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0"
- />&nbsp;Advanced search</div>
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('edit_vlan_campus', ' ', 'editor');"
-     title="Add a new VLAN campus"
+     onClick="removeElement('start_menu'); xajax_window_submit('edit_host', ' ', 'editor');"
+     title="Add a new host"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add VLAN campus</div>
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('edit_vlan', ' ', 'editor');"
-     title="Add a new VLAN"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add VLAN</div>
+ />&nbsp;Add Host</div>
 
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -127,48 +111,7 @@ function get_start_menu_html() {
      onClick="removeElement('start_menu'); xajax_window_submit('edit_subnet', ' ', 'editor');"
      title="Add a new subnet"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add subnet</div>
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('edit_host', ' ', 'editor');"
-     title="Add a new host"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add host</div>
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('edit_block', ' ', 'editor');"
-     title="Add a new block"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add block</div>
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('search_results', 'search_form_id=>block_search_form,all_flag=>1');"
-     title="View All Blocks"
- ><img style="vertical-align: middle;" src="{$images}/silk/brick.png" border="0"
- />&nbsp;View all blocks</div>
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('search_results', 'search_form_id=>vlan_campus_search_form,all_flag=>1');"
-     title="View All Vlan Campuses"
- ><img style="vertical-align: middle;" src="{$images}/silk/building.png" border="0"
- />&nbsp;View all VLAN campuses</div>
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); toggle_window('app_interface_move');"
-     title="Bulk interface move utility"
- ><img style="vertical-align: middle;" src="{$images}/silk/lightning_go.png" border="0"
- />&nbsp;Interface move</div>
-
+ />&nbsp;Add Subnet</div>
 
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -176,7 +119,7 @@ function get_start_menu_html() {
      onClick="removeElement('start_menu'); toggle_window('app_admin_tools');"
      title="Admin tools"
  ><img style="vertical-align: middle;" src="{$images}/silk/controller.png" border="0"
- />&nbsp;Admin tools</div>
+ />&nbsp;Admin Tools</div>
 
 EOL;
 
