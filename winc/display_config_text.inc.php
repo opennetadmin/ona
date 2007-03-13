@@ -29,7 +29,7 @@ function ws_display_list($window_name, $form='') {
     // Load the host record
     list($host, $zone) = ona_find_host($form['host_id']);
     if (!$host['id']) {
-        //array_pop($_SESSION['ona']['work_space']['history']);
+        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
@@ -37,12 +37,12 @@ function ws_display_list($window_name, $form='') {
     }
 
     // Update History Title
-//    $history = array_pop($_SESSION['ona']['work_space']['history']);
-//    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
-//    if ($history['title'] == $window_name) {
-//        $history['title'] = "Configs: {$host['PRIMARY_DNS_NAME']}";
-//        array_push($_SESSION['ona']['work_space']['history'], $history);
-//    }
+    $history = array_pop($_SESSION['ona']['work_space']['history']);
+    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
+    if ($history['title'] == $window_name) {
+        $history['title'] = "Configs: {$host['PRIMARY_DNS_NAME']}";
+        array_push($_SESSION['ona']['work_space']['history'], $history);
+    }
 
     // Create some javascript to refresh the current page
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
@@ -261,7 +261,7 @@ function ws_display_config($window_name, $form='') {
     // Load the config text record
     list($status, $rows, $config) = ona_get_config_record(array('id' => $form['config_id']));
     if (!$config['id']) {
-    //    array_pop($_SESSION['ona']['work_space']['history']);
+        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Configuration text record doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
@@ -271,7 +271,7 @@ function ws_display_config($window_name, $form='') {
     // Load the asscoiated host record
     list($host, $zone) = ona_find_host($config['host_id']);
     if (!$host['id']) {
-  //      array_pop($_SESSION['ona']['work_space']['history']);
+        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
@@ -279,12 +279,12 @@ function ws_display_config($window_name, $form='') {
     }
 
     // Update History Title
-//    $history = array_pop($_SESSION['ona']['work_space']['history']);
-//    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
-//    if ($history['title'] == $window_name) {
-//        $history['title'] = "Config text ({$host['PRIMARY_DNS_NAME']})";
-//       array_push($_SESSION['ona']['work_space']['history'], $history);
-//    }
+    $history = array_pop($_SESSION['ona']['work_space']['history']);
+    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
+    if ($history['title'] == $window_name) {
+        $history['title'] = "Config text ({$host['PRIMARY_DNS_NAME']})";
+       array_push($_SESSION['ona']['work_space']['history'], $history);
+    }
 
     // Create some javascript to refresh the current page
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
@@ -400,7 +400,7 @@ function ws_display_diff($window_name, $form='') {
     // Load the old config text record
     list($status, $rows, $old) = ona_get_config_record(array('id' => $form['old_id']));
     if (!$old['id']) {
-       // array_pop($_SESSION['ona']['work_space']['history']);
+        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Configuration text record doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
@@ -410,7 +410,7 @@ function ws_display_diff($window_name, $form='') {
     // Load the new config text record
     list($status, $rows, $new) = ona_get_config_record(array('id' => $form['new_id']));
     if (!$new['id']) {
-        //array_pop($_SESSION['ona']['work_space']['history']);
+        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Configuration text record doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
@@ -420,7 +420,7 @@ function ws_display_diff($window_name, $form='') {
     // Load the asscoiated old host record
     list($old_host, $old_zone) = ona_find_host($old['host_id']);
     if (!$old_host['id']) {
-       // array_pop($_SESSION['ona']['work_space']['history']);
+        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
@@ -430,7 +430,7 @@ function ws_display_diff($window_name, $form='') {
     // Load the asscoiated new host record
     list($new_host, $new_zone) = ona_find_host($new['host_id']);
     if (!$new_host['id']) {
-      //  array_pop($_SESSION['ona']['work_space']['history']);
+        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
@@ -438,12 +438,12 @@ function ws_display_diff($window_name, $form='') {
     }
 
     // Update History Title
-//    $history = array_pop($_SESSION['ona']['work_space']['history']);
-//    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
-//    if ($history['title'] == $window_name) {
-//        $history['title'] = "Config diff ({$form['old_id']} / {$form['new_id']})";
-//        array_push($_SESSION['ona']['work_space']['history'], $history);
-//    }
+    $history = array_pop($_SESSION['ona']['work_space']['history']);
+    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
+    if ($history['title'] == $window_name) {
+        $history['title'] = "Config diff ({$form['old_id']} / {$form['new_id']})";
+        array_push($_SESSION['ona']['work_space']['history'], $history);
+    }
 
     // Create some javascript to refresh the current page
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);

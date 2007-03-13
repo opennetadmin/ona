@@ -13,8 +13,7 @@ $include;
 // Used in URL links
 $http   = "http://{$_SERVER['HTTP_HOST']}";
 $https  = "https://{$_SERVER['HTTP_HOST']}";
-$baseURL = preg_replace('+' . $_SERVER['DOCUMENT_ROOT'] . '+', '', $base);
-$baseURL = preg_replace('+/$+', '', $baseURL);
+$baseURL = str_replace($_SERVER['DOCUMENT_ROOT'], '', $base); $baseURL = rtrim($baseURL, '/');
 $images = "{$baseURL}/images";
 
 // help URL location
@@ -30,10 +29,10 @@ $conf = array (
     "db"                   => 1, // Log to a sql log, highly recommended
     "logfile"              => "/var/log/website",
     "syslog"               => 1, // It only syslogs if debug is 0.
-
+    
     // DEPRICATED, THIS OPTION IS BEING REMOVED:
     "dev_mode"             => 0,
-
+    
     // Database Context
     // For possible values see the $db_context() array and description below
     "mysql_context"        => 'default',
@@ -57,7 +56,7 @@ $conf = array (
     
     /* Session Settings */
     "cookie_host"          => $_SERVER['HTTP_HOST'],
-    "cookie_life"          => (60*60*24*2),
+    "cookie_life"          => (60*60*24*2), // 2 days
     
     /* Include Files: HTML */
     "html_header"          => "$include/html_header.php",
@@ -99,6 +98,9 @@ $self = array (
 if ($_SERVER['SERVER_PORT'] == 443) { $self['secure'] = 1; }
 
 
+// Used in various windows to build a "help" link .. we use $_ENV because $conf is site specific.
+$_ENV['help_url'] = '/dokuwiki/doku.php?id=ona_help:';
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //                            STYLE SHEET STUFF                              //
@@ -127,13 +129,21 @@ $color['link_zone']             = 'green';    // was '#5BA65B';
 $color['button_normal']         = '#FFFFFF';
 $color['button_hover']          = '#E0E0E0';
 
-$color['menu_bar_bg']           = '#CFDFFF';
-$color['menu_item_bg']          = '#CFDFFF';
+// Define some colors for the subnet map:
+$color['bgcolor_map_host']      = '#BFD2FF';
+$color['bgcolor_map_subnet']   = '#CCBFFF';
+$color['bgcolor_map_selected']  = '#FBFFB6';
+$color['bgcolor_map_empty']     = '#FFFFFF';
+
+// Much of this configuration is required here since
+// a lot of it's used in xajax calls before a web page is created.
+$color['menu_bar_bg']      = '#F3F1FF';
+$color['menu_header_bg']   = '#FFFFFF';
+$color['menu_item_bg']     = '#F3F1FF';
+$color['menu_header_text'] = '#436976';
+$color['menu_item_text']   = '#436976';
 $color['menu_item_selected_bg'] = '#B1C6E3';
 $color['menu_header_bg']        = '#B1C6E3';
-$color['menu_header_text']      = $color['font_default'];
-$color['menu_item_text']        = $color['font_default'];
-
 
 
 // Style variables (used in PHP in various places)

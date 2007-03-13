@@ -65,7 +65,9 @@ EOM
     list($status, $rows, $modules) = db_get_records($onadb, 'dcm_module_list', 'id > 0', 'name');
     printmsg("DEBUG => get_module_list() found {$rows} modules in db", 4);
     foreach ($modules as $module) {
-        $modules_string .= str_pad($module['name'], $pad_length) . " :: {$module['description']}\n";
+        if ($module['name'] != 'get_module_list') {
+            $modules_string .= str_pad($module['name'], $pad_length) . " :: {$module['description']}\n";
+        }
         $modules_array[$module['name']] = $module['description'];
         $modules_perl .= "\$modules{'{$module['name']}'} = \"{$module['description']}\";\n";
     }

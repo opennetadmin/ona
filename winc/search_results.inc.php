@@ -238,7 +238,10 @@ function qsearch_command($q) {
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
 
+    // bz: FIXME!! Most of these should be moved to a user preferences application
+    
     // Set list row length
+    // Note that when you remove this, you must also remove a few lines in the ona_functions include file
     if (strpos($q, 'rows ') === 0) {
         $q = str_replace('rows ', '', $q);
         if (is_numeric($q)) {
@@ -246,22 +249,6 @@ function qsearch_command($q) {
             $_SESSION['search_results_per_page'] = $q;
             $js .= "alert('Lists will now display {$q} rows.');";
         }
-    }
-
-    // The typical cloud background
-    if ($q == 'clouds') {
-        $js .= "el('content_table').style.backgroundRepeat = 'repeat';";
-        $js .= "el('content_table').style.backgroundImage = 'url(\'{$images}/skytile.jpg\')';";
-        setcookie("pref_bg_url", "{$images}/skytile.jpg", time()+63072000);
-        setcookie("pref_bg_repeat", 'repeat', time()+63072000);
-    }
-
-    // Disable the clouds background
-    if ($q == 'noclouds') {
-        $js .= "el('content_table').style.backgroundRepeat = 'no-repeat';";
-        $js .= "el('content_table').style.backgroundImage = 'none';";
-        setcookie("pref_bg_url", "", time()+63072000);
-        setcookie("pref_bg_repeat", 'no-repeat', time()+63072000);
     }
 
     // Custom backgrounds

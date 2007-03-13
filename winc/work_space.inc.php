@@ -36,9 +36,8 @@ function ws_work_space_submit($window_name, $javascript='') {
     
     
     // If there are to many url's in the history, trim some.
-    while (count($_SESSION['ona'][$window_name]['history']) > 7) {
+    while (count($_SESSION['ona'][$window_name]['history']) > 7)
         array_shift($_SESSION['ona'][$window_name]['history']);
-    }
     
     
     
@@ -172,9 +171,7 @@ EOL;
         $and = '&nbsp;&gt;&gt;&nbsp;';
     }
     
-    if ($return_html) {
-        return($html);
-    }
+    if ($return_html) return($html);
     
     // Update the work_space window's title
     $history = end($_SESSION['ona'][$window_name]['history']);

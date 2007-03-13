@@ -1,101 +1,22 @@
 <?
 
 //
-// ONA GUI Specific Functions
+// GUI Specific Functions
+// Not included for DCM modules
 //
 
 // Global settings used in functions below
 global $conf;
-$conf['suggest_max_results'] = 10;
-$conf['search_results_per_page'] = 10;
+
+// FIXME: This should be done where all the other user's prefs are loaded
+// The other half of this is in search_results.inc.php
 if (is_numeric($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
-$conf['loading_icon'] = "<br><center><img src=\"{$images}/loading.gif\"></center><br>";
-
-// Define some colors for the subnet map:
-$color['bgcolor_map_host']      = '#BFD2FF';
-$color['bgcolor_map_subnet']   = '#CCBFFF';
-$color['bgcolor_map_selected']  = '#FBFFB6';
-$color['bgcolor_map_empty']     = '#FFFFFF';
-
-// Used in various windows to build a "help" link .. we use $_ENV because $conf is site specific.
-$_ENV['help_url'] = '/dokuwiki/doku.php?id=ona_help:';
-
-// Much of this configuration is required here since
-// a lot of it's used in xajax calls before a web page is created.
-$color['menu_bar_bg']      = '#F3F1FF';
-$color['menu_header_bg']   = '#FFFFFF';
-$color['menu_item_bg']     = '#F3F1FF';
-$color['menu_header_text'] = '#436976';
-$color['menu_item_text']   = '#436976';
-
-// moved these to the config.inc.php
-//$color['link_nav']         = '#7E8CD7';
-//$color['link_act']         = '#EB8F1F';
-//$color['link_zone']        = '#5BA65B';
-
-// Make sure we have necessary non-gui ONA functions & DB connectivity
-//require_once($conf['inc_functions_ona']);
-
 
 // Register ONA specific functions with xajax
 // (set the function names in a variable so they'll be processed later)
 // Note that these functions must be already defined!
 // $xajax->registerFunction("your_function");
 
-
-// Load xajax and Brandon Zehm's xajax enabled "drag", "suggest", and "webwin" libraries.
-//require_once($conf['inc_xajax_modules']);
-
-// Include some ONA specific javascript functions
-//$conf['html_headers'] .= '<script type="text/javascript" src="js/ipdb.js"></script>' . "\n";
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// Function:
-//     rewrite_history ($window_name, $null, $return_html)
-//
-// Description:
-//     Rewrites the history div in the work_space window.
-//     If $return_html == 1 the raw html is returned rather than returning
-//     and XML response to update it.
-//     This also updates the work space window's title.
-//////////////////////////////////////////////////////////////////////////////
-// function rewrite_history($window_name, $null='', $return_html=0) {
-//     global $conf, $self, $color, $style, $images;
-//
-//     $html = $js = '';
-//
-//     $html .= "Trace: ";
-//     $and = '';
-//     foreach($_SESSION['ona'][$window_name]['history'] as $history) {
-//         $history['title'] = htmlentities($history['title'], ENT_QUOTES);
-//         $history['type'] = htmlentities($history['type'], ENT_QUOTES);
-//         $history['url'] = str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']);
-//         $history['url'] = htmlentities($history['url'], ENT_QUOTES);
-//         $html .= <<<EOL
-// {$and}<a title="{$history['type']}: {$history['title']}" onClick="xajax_window_submit('work_space', '{$history['url']}');">{$history['title']}</a>&nbsp;
-// EOL;
-//         $and = '&nbsp;&gt;&gt;&nbsp;';
-//     }
-//
-//     if ($return_html) {
-//         return($html);
-//     }
-//
-//     // Update the work_space window's title
-//     $history = end($_SESSION['ona'][$window_name]['history']);
-//
-//
-//     // Insert the new html into the window
-//     // Instantiate the xajaxResponse object
-//     $response = new xajaxResponse();
-//     $response->addAssign("trace_history", "innerHTML", $html);
-//     return($response->getXML());
-// }
 
 
 

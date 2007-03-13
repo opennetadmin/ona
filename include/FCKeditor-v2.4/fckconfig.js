@@ -78,11 +78,11 @@ FCKConfig.FormatIndentator	= '    ' ;
 
 FCKConfig.ForceStrongEm = true ;
 FCKConfig.GeckoUseSPAN	= false ;
-FCKConfig.StartupFocus	= false ;
+FCKConfig.StartupFocus	= true ;
 FCKConfig.ForcePasteAsPlainText	= false ;
 FCKConfig.AutoDetectPasteFromWord = true ;	// IE only.
 FCKConfig.ForceSimpleAmpersand	= false ;
-FCKConfig.TabSpaces		= 0 ;
+FCKConfig.TabSpaces		= 4 ;
 FCKConfig.ShowBorders	= true ;
 FCKConfig.SourcePopup	= false ;
 FCKConfig.ToolbarStartExpanded	= true ;
@@ -132,8 +132,8 @@ FCKConfig.ToolbarSets["wincFCKeditor"] = [
     ['Style','FontFormat','FontName','FontSize']
 ] ;
 
-FCKConfig.EnterMode = 'p' ;			// p | div | br
-FCKConfig.ShiftEnterMode = 'br' ;	// p | div | br
+FCKConfig.EnterMode = 'br' ;			// p | div | br
+FCKConfig.ShiftEnterMode = 'div' ;	// p | div | br
 
 FCKConfig.Keystrokes = [
 	[ CTRL + 65 /*A*/, true ],

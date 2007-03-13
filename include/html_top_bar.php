@@ -1,13 +1,10 @@
 <?
-// hard coded for now
-//session_start();
+// FIXME: Matt was trying to put the trace bar into this file, might be a good idea someday
+
+// FIXME: hard coded for now
 $_SESSION['ona']['auth']['user']['username'] = "guest";
 $_SESSION['ona']['auth']['user']['level'] = "0";
 
-
-//$_SESSION['ona']['trace_history']['history'] = "history";
-
-$_SESSION['ona']['work_space']['history'] = array();
 print <<<EOL
     
     <!-- Top (start) Bar -->
@@ -88,47 +85,6 @@ print <<<EOL
         </div>
     </div>
     
-    <div id="trace_history" style="font-size: smaller; background-color: #EDEEFF;">
-EOL;
-
-//     $window_name = 'trace_history';
-//     /****     UPDATE THIS WINDOW'S "HISTORY"     ****/
-//     if (!is_array($_SESSION['ona'][$window_name]['history'])) {
-//         $_SESSION['ona'][$window_name]['history'] = array();
-//     }
-// 
-//     // Get the "URL" and it's "Title"
-//     $title = '';
-//     if (preg_match("/xajax_window_submit\('([^']+)'/", $javascript, $matches)) { $title = $matches[1]; }
-// 
-//     // Remove old history items that are duplicates of the current "URL"
-//     $new_history = array();
-//     foreach ($_SESSION['ona'][$window_name]['history'] as $history) {
-//         if ($history['url'] != $javascript) {
-//             array_push($new_history, $history);
-//         }
-//     }
-//     $_SESSION['ona'][$window_name]['history'] = $new_history;
-// 
-//     // Add the current "URL"
-//     //array_push($_SESSION['ona'][$window_name]['history'], array('title' => $title, 'type' => $title, 'url' => $javascript));
-// 
-// 
-//     // If there are to many url's in the history, trim some.
-//     while (count($_SESSION['ona'][$window_name]['history']) > 7) {
-//         array_shift($_SESSION['ona'][$window_name]['history']);
-//     }
-
-
-
-
-    
- //   $window['html'] .= rewrite_history($window_name, ' ', 0);
-    print <<<EOL
-    {$window['html']}
-    </div>
-
-
 EOL;
 
 

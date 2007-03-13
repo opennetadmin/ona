@@ -1,7 +1,19 @@
 DEVELOPERS
 
 
-CODING STYLE
+CODING STANDARDS
+  Synopsis:
+    * Comments are to begin with two pounds: ##
+    * Use an indent of 4 spaces, with NO TABS!
+    * Functions must have a descriptive header with the name, description,
+      input requirements, output, and example usage.
+    * At least one command line argument is REQUIRED before a script does
+      anything!
+    * When no command line arguments are supplied the script should display
+      a human readable usage summary.
+    * The "-h" and "--help" command line options must be supported.
+    * Scripts must exit with an error code of 0 on success, and non-zero
+      on error.
 
 
 FUNCTION DEFINITIONS

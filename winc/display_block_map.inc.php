@@ -34,7 +34,6 @@ function ws_display($window_name, $form='') {
     }
     
     // Update History Title
-    $_SESSION['ona']['work_space']['history'] = array();
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
     if ($history['title'] == $window_name) {

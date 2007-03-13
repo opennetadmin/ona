@@ -4,9 +4,7 @@
 
 // Debugging: lets print what's in $_REQUEST
 printmsg("Get/Post vars:", 3);
-foreach (array_keys($_REQUEST) as $key) {
-   printmsg("Name: $key    Value: $_REQUEST[$key]", 3);
-}
+foreach (array_keys($_REQUEST) as $key) printmsg("Name: $key    Value: $_REQUEST[$key]", 3);
 
 
 // Make sure we're always connected to the database
@@ -898,11 +896,11 @@ function startSession() {
     }
 
     // Set the name of the cookie (nicer than default name)
-    session_name("SESSION_ID");
-
+    session_name("ONA_SESSION_ID");
+    
     // Set cookie to expire at end of session
-    session_set_cookie_params(0, '/', $conf['cookie_host'],0);
-
+    session_set_cookie_params(0, '/');
+    
     // (Re)start the session
     session_start();
 
@@ -911,11 +909,11 @@ function startSession() {
     header("Cache-control: private");
 
     // Display session variables
-    if ($conf['debug'] >= 6) {
-        print "Session Variables:<pre>";
-        var_export($_SESSION);
-        print "</pre>\n";
-    }
+    // if ($conf['debug'] >= 6) {
+    //     print "Session Variables:<pre>";
+    //     var_export($_SESSION);
+    //     print "</pre>\n";
+    // }
 
     return(0);
 }
@@ -940,7 +938,7 @@ function securePage() {
 
     // If the sessionID is not present start the session (reading the
     // users cookie and loading their settings from disk)
-    if ( SESSION_ID != "" ) startSession();
+    if ( ONA_SESSION_ID != "" ) startSession();
 
     // Make sure their session is still active
     if (!(isset($_SESSION['auth']['user']['username']))) {
@@ -969,7 +967,6 @@ function loggedIn() {
     // Make sure their session is still active
     if (!(isset($_SESSION['auth']['user']['username'])))
         return(0);
-
     return(1);
 }
 
@@ -983,28 +980,19 @@ function loggedIn() {
 // Returns true if the current user has access to the requested resource,
 // false if not.
 //////////////////////////////////////////////////////////////////////////////
-//function auth($resource) {
-//    if (array_key_exists($resource, $_SESSION['auth']['acl']))
-//        return true;
-//    return false;
-//}
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// Returns true if the current user has access to the requested resource,
-// false if not.
-//////////////////////////////////////////////////////////////////////////////
 function auth($resource) {
-    if (!is_string($resource)) return false;
-    //if (array_key_exists($resource, $_SESSION['ona']['auth']['perms'])) {
-    //    printmsg("DEBUG => auth() {$_SESSION['ona']['auth']['user']['username']} has the {$resource} permission",1);
-    //    return true;
-    //}
-    printmsg("DEBUG => auth() {$_SESSION['ona']['auth']['user']['username']} does not have the {$resource} permission",1);
-    //return false;
-    // for now we will always return true
+    
+    // FIXME: hack until we get auth stuff working:
+    printmsg("DEBUG => FIXME: auth() always returns true for now", 1);
     return true;
+    
+    if (!is_string($resource)) return false;
+    if (array_key_exists($resource, $_SESSION['ona']['auth']['perms'])) {
+        printmsg("DEBUG => auth() {$_SESSION['ona']['auth']['user']['username']} has the {$resource} permission",1);
+        return true;
+    }
+    printmsg("DEBUG => auth() {$_SESSION['ona']['auth']['user']['username']} does not have the {$resource} permission",1);
+    return false;
 }
 
 
@@ -1016,16 +1004,18 @@ function auth($resource) {
 // the level passed into the function.  Returns false if not.
 //////////////////////////////////////////////////////////////////////////////
 function authlvl($level) {
-    if (!is_numeric($level)) return false;
-    //if ($_SESSION['ona']['auth']['user']['level'] >= $level) {
-    //    printmsg("DEBUG => authlvl() {$_SESSION['ona']['auth']['user']['username']}'s level is >= {$level}",1);
-    //    return true;
-   // }
-    printmsg("DEBUG => authlvl() {$_SESSION['ona']['auth']['user']['username']}'s level is not >= {$level}",1);
-    //return false;
-    // for now we will always return true
+    
+    // FIXME: hack until we get auth stuff working:
+    printmsg("DEBUG => FIXME: authlvl() always returns true for now", 1);
     return true;
-
+    
+    if (!is_numeric($level)) return false;
+    if ($_SESSION['ona']['auth']['user']['level'] >= $level) {
+        printmsg("DEBUG => authlvl() {$_SESSION['ona']['auth']['user']['username']}'s level is >= {$level}",1);
+        return true;
+    }
+    printmsg("DEBUG => authlvl() {$_SESSION['ona']['auth']['user']['username']}'s level is not >= {$level}",1);
+    return false;
 }
 
 
@@ -1151,7 +1141,7 @@ function run_module($module='', $options='', $transaction=1) {
     // Load the module
     if (load_module($module)) { return(array(1, $self['error'] . "\n")); }
 
-    // Start an Oracle transaction (this might not be compatible with MySQL!)
+    // Start an DB transaction (If the database supports it)
     if ($transaction) $has_trans = $onadb->BeginTrans();
     if (!$has_trans) printmsg("NOTICE => Transactions support not available on this database!", 1);
 

@@ -50,8 +50,8 @@
  * does that sort of thing before it passes data to these functions.
 */
 
-global $SESS_DBH, $mysql, $conf;
-$SESS_DBH = $mysql;
+global $SESS_DBH, $onadb, $conf;
+$SESS_DBH = $onadb;
 $SESS_LIFE = $conf['cookie_life'];
 
 function sess_open($save_path, $session_name) { return true; }

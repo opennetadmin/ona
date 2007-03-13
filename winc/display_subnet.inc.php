@@ -28,7 +28,7 @@ function ws_display($window_name, $form='') {
     else if ($form['subnet'])
         list($status, $rows, $record) = ona_get_subnet_record(array('name' => $form['subnet']));
     if ($status or !$rows) {
-        //array_pop($_SESSION['ona']['work_space']['history']);
+        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Subnet doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
@@ -36,13 +36,12 @@ function ws_display($window_name, $form='') {
     }
 
     // Update History Title
-//     $_SESSION['ona']['work_space']['history'] = array();
-//     $history = array_pop($_SESSION['ona']['work_space']['history']);
-//     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
-//     if ($history['title'] == $window_name) {
-//         $history['title'] = $record['name'];
-//         array_push($_SESSION['ona']['work_space']['history'], $history);
-//     }
+    $history = array_pop($_SESSION['ona']['work_space']['history']);
+    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
+    if ($history['title'] == $window_name) {
+        $history['title'] = $record['name'];
+        array_push($_SESSION['ona']['work_space']['history'], $history);
+    }
 
     // Create some javascript to refresh the current page
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);

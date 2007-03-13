@@ -27,7 +27,7 @@ function ws_display($window_name, $form='') {
             $rows = 1;
     }
     if ($status or !$rows) {
-        //array_pop($_SESSION['ona']['work_space']['history']);
+        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
@@ -35,12 +35,12 @@ function ws_display($window_name, $form='') {
     }
 
     // Update History Title (and tell the browser to re-draw the history div)
-  //  $history = array_pop($_SESSION['ona']['work_space']['history']);
- //   $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
- //   if ($history['title'] == $window_name) {
- //       $history['title'] = $record['PRIMARY_DNS_NAME'];
-       // array_push($_SESSION['ona']['work_space']['history'], $history);
- //   }
+    $history = array_pop($_SESSION['ona']['work_space']['history']);
+    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
+    if ($history['title'] == $window_name) {
+        $history['title'] = $record['PRIMARY_DNS_NAME'];
+        array_push($_SESSION['ona']['work_space']['history'], $history);
+    }
 
     // Create some javascript to refresh the current page
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);

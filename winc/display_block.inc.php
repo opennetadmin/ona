@@ -29,12 +29,12 @@ function ws_display($window_name, $form='') {
     }
 
     // Update History Title
-//    $history = array_pop($_SESSION['ona']['work_space']['history']);
-//    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
-//    if ($history['title'] == $window_name) {
-//        $history['title'] = $record['name'];
-//        array_push($_SESSION['ona']['work_space']['history'], $history);
-//    }
+    $history = array_pop($_SESSION['ona']['work_space']['history']);
+    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
+    if ($history['title'] == $window_name) {
+        $history['title'] = $record['name'];
+        array_push($_SESSION['ona']['work_space']['history'], $history);
+    }
 
     // Create some javascript to refresh the current page
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);

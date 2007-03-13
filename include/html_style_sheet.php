@@ -19,6 +19,7 @@ require_once($conf['inc_functions']);
 // Set the document content-type
 header('Content-type: text/css');
 
+// We do this to make sure we have the $color[] entries from the xajax_webwin library
 require_once($conf['inc_xajax_stuff']);
 
 
@@ -252,13 +253,10 @@ a.zone:hover { color: {$color['link_zone']}; cursor: pointer; text-decoration: u
     vertical-align: top;
     font-size: smaller;
     margin: 0px;
-    padding-top:    2px;
-    padding-bottom: 2px;
-    padding-left:   4px;
-    padding-right:  4px;
+    padding: 2px 4px;
 }
 
-/* Ona Menus */
+/* Ona Menus .. used with webwinTT library */
 div.wwTT_ona_menu {
     border: 1px solid #333366;
     background-color: #333366;
