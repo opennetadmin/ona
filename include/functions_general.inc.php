@@ -7,9 +7,6 @@ printmsg("Get/Post vars:", 3);
 foreach (array_keys($_REQUEST) as $key) printmsg("Name: $key    Value: $_REQUEST[$key]", 3);
 
 
-// Make sure we're always connected to the database
-require_once($conf['inc_db']);
-
 // Include the basic database functions
 require_once($conf['inc_functions_db']);
 
@@ -1044,7 +1041,7 @@ function load_module($name='') {
     if (function_exists($name)) { return(0); }
 
     // Make sure we're connected to the DB
-    require_once($conf['inc_db']);
+    // require_once($conf['inc_functions_db']);
 
     // Use cache if possible
     if (!is_array($self['cache']['modules']) or !array_key_exists('get_module_list', $self['cache']['modules'])) {
@@ -1310,6 +1307,68 @@ EOL;
     else
         return($html);
 }
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: format_array($array)
+//
+//  Takes an array and returns a formatted string of the contents
+//  of the array for display. Usually used in the ona_xxx_display()
+//  functions to display database records.
+//
+//  Example:
+//      $string = format_array($array)
+///////////////////////////////////////////////////////////////////////
+function format_array($array=array()) {
+
+    $text = '';
+    foreach (array_keys($array) as $key) {
+
+        // Make some data look pretty
+        if      ($key == 'IP_ADDR')        { $array[$key] = ip_mangle($array[$key]); }
+        else if ($key == 'IP_ADDRESS_START')  { $array[$key] = ip_mangle($array[$key]); }
+        else if ($key == 'IP_ADDRESS_END')    { $array[$key] = ip_mangle($array[$key]); }
+        else if ($key == 'IP_MASK')    { $array[$key] = ip_mangle($array[$key]); }
+        else if ($key == 'DATA_LINK_ADDRESS') { $array[$key] = mac_mangle($array[$key]); if ($array[$key] == -1) $array[$key] = ''; }
+        else if ($key == 'HOST_ID')           {
+            list($host, $zone) = ona_find_host($array[$key]);
+            if ($host['ID'])
+                $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['FQDN']})");
+        }
+        else if ($key == 'SERVER_ID')         {
+            list($status, $rows, $server) = ona_get_server_record(array('ID' => $array[$key]));
+            list($host, $host) = ona_find_host($server['HOST_ID']);
+            if ($host['ID'])
+                $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['FQDN']})");
+        }
+        else if ($key == 'subnet_id')        {
+            list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $array[$key]));
+            if ($subnet['id'])
+                $array[$key] = str_pad($array[$key], 20) . strtoupper("({$subnet['name']})");
+        }
+        else if ($key == 'DNS_ZONE_ID' or $key == 'PRIMARY_DNS_ZONE_ID') {
+            list($status, $rows, $zone) = ona_get_zone_record(array('ID' => $array[$key]));
+            $array[$key] = str_pad($array[$key], 20) . strtolower("({$zone['ZONE_NAME']})");
+        }
+
+        // Align columns
+        if ($array[$key]) { $text .= str_pad("  {$key}", 30) . $array[$key] . "\n"; }
+    }
+
+    // Return a nice string :)
+    return($text);
+}
+
+
+
 
 
 

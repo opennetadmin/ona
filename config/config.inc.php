@@ -60,7 +60,6 @@ $conf = array (
     "inc_functions"          => "$include/functions_general.inc.php",
     "inc_functions_gui"      => "$include/functions_gui.inc.php",
     "inc_functions_db"       => "$include/functions_db.inc.php",
-    "inc_db"                 => "$include/inc_db.php",
     "inc_db_sessions"        => "$include/adodb_sessions.inc.php",
     "inc_adodb"              => "$include/adodb/adodb.inc.php",
     "inc_xajax_stuff"        => "$include/xajax_setup.inc.php",
@@ -159,9 +158,9 @@ $style['borderR'] = "border-right: 1px solid {$color['border']};";
 //   to keep all database connection info in one place.
 //
 //   Note: after adding a new context here you also need to add the details
-//         for that new context in inc_db.php as well.
+//         for that new context in functions_db.php as well.
 //   Note: the context used is determined by the value of $conf['mysql_context']
-//         at the time inc_db.php is included.
+//         at the time functions_db.php is included.
 //   Note: Available ADODB types:
 //         mysql, oracle, oci8, mssql, postgres, sybase, vfp, access, ibase and many others.
 $db_context = array (
