@@ -1,6 +1,6 @@
 <?
 // Include map portal functions
-include('include/ona_block_map.php');
+include('include/functions_network_map.inc.php');
 
 
 

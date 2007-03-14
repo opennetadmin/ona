@@ -21,16 +21,13 @@ EOL;
     exit;
 }
 
-// Set the title of this web page here:
-$conf['title'] .= "Home";
-
-// Include xajax stuff
+// Include xajax stuff (ajax calls will never make it past this line)
 require_once($conf['inc_xajax_stuff']);
 
-// Include HTML Header
-require_once($conf['html_header']);
+// Set the title of this web page here:
+$conf['title'] .= "0wn Your Network";
 
-echo "&nbsp;";
+// Include "Desktop" Framework
+require_once($conf['html_desktop']);
 
-require_once($conf['html_footer']);
 ?>

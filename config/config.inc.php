@@ -51,9 +51,8 @@ $conf = array (
     "cookie_life"            => (60*60*24*2), // 2 days
     
     /* Include Files: HTML */
-    "html_header"            => "$include/html_header.php",
-    "html_footer"            => "$include/html_footer.php",
-    "html_style_sheet"       => "$include/html_style_sheet.php",
+    "html_style_sheet"       => "$include/html_style_sheet.inc.php",
+    "html_desktop"           => "$include/html_desktop.inc.php",
     "loading_icon"           => "<br><center><img src=\"{$images}/loading.gif\"></center><br>",
     
     /* Include Files: Functions */
