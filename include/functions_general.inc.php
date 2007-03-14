@@ -10,18 +10,18 @@ foreach (array_keys($_REQUEST) as $key) printmsg("Name: $key    Value: $_REQUEST
 // Make sure we're always connected to the database
 require_once($conf['inc_db']);
 
+// Include the basic database functions
+require_once($conf['inc_functions_db']);
+
 // (Re)Connect to the DB now.
 global $onadb;
 $onadb = db_pconnect('mysql', $conf['mysql_context']);
 
-// Include the basic database functions
-require_once($conf['inc_functions_db']);
-
 // Include functions that replace the default session handler with one that uses MySQL as a backend
-require_once($conf['inc_mysqlsessions']);
+require_once($conf['inc_db_sessions']);
 
-// Include the standard ona related functions
-require_once($conf['inc_functions_ona']);
+// Include the GUI functions
+require_once($conf['inc_functions_gui']);
 
 // Start the session handler (this calls a function defined below in this file)
 startSession();

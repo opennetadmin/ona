@@ -57,11 +57,11 @@ $conf = array (
     "loading_icon"           => "<br><center><img src=\"{$images}/loading.gif\"></center><br>",
     
     /* Include Files: Functions */
-    "inc_functions"          => "$include/inc_functions_general.php",
-    "inc_functions_ona"      => "$include/inc_functions_ona.php",
-    "inc_functions_db"       => "$include/inc_functions_db.php",
+    "inc_functions"          => "$include/functions_general.inc.php",
+    "inc_functions_gui"      => "$include/functions_gui.inc.php",
+    "inc_functions_db"       => "$include/functions_db.inc.php",
     "inc_db"                 => "$include/inc_db.php",
-    "inc_mysqlsessions"      => "$include/session_mysql.php",
+    "inc_db_sessions"        => "$include/adodb_sessions.inc.php",
     "inc_adodb"              => "$include/adodb/adodb.inc.php",
     "inc_xajax_stuff"        => "$include/xajax_setup.inc.php",
     "inc_diff"               => "$include/DifferenceEngine.php",

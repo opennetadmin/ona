@@ -1,12 +1,5 @@
 <?
 
-// Make sure we have necessary functions & DB connectivity
-require_once($conf['inc_functions_ona']);
-
-
-
-
-
 ///////////////////////////////////////////////////////////////////////
 //  Function: interface_add (string $options='')
 //
