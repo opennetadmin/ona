@@ -88,7 +88,7 @@ $ADODB_FETCH_MODE = ADODB_FETCH_ASSOC;
 //
 //  Establishes a persistent connection to the database as specified
 //  by $context_type and $context_name.  Uses the global DB context
-//  definitions stored in $db_context(), as well as $conf['dev_mode'].
+//  definitions stored in $db_context().
 //  This function will try up to 5 times to get the connection working.
 //  This was a necessary function, because quite regularly we were
 //  getting Oracle errors when ADODB/PHP thought it was connected to

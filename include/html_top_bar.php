@@ -1,10 +1,6 @@
 <?
 // FIXME: Matt was trying to put the trace bar into this file, might be a good idea someday
 
-// FIXME: hard coded for now
-$_SESSION['ona']['auth']['user']['username'] = "guest";
-$_SESSION['ona']['auth']['user']['level'] = "0";
-
 print <<<EOL
     
     <!-- Top (start) Bar -->

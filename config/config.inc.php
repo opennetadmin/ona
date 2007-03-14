@@ -12,70 +12,62 @@ $include;
 
 // Used in URL links
 $http   = "http://{$_SERVER['HTTP_HOST']}";
-$https  = "https://{$_SERVER['HTTP_HOST']}";
+$https  = "http://{$_SERVER['HTTP_HOST']}";  // Change this to "https" if your server supports https
 $baseURL = str_replace($_SERVER['DOCUMENT_ROOT'], '', $base); $baseURL = rtrim($baseURL, '/');
 $images = "{$baseURL}/images";
 
 // help URL location
-$_ENV['help_url'] = "http://opennetadmin.com/dokuwiki/doku.php?id=documentation:";
+$_ENV['help_url'] = "http://www.opennetadmin.com/dokuwiki/doku.php?id=documentation:";
 
 $conf = array (
     /* General Setup */
-    "version"              => "v1.00",
+    "version"                => "v1.00",
 
     /* Logging - Used by the printmsg() function */
-    "debug"                => 5,
-    "stdout"               => 0, // Print logs to the generated web page, not a good idea!
-    "db"                   => 1, // Log to a sql log, highly recommended
-    "logfile"              => "/var/log/website",
-    "syslog"               => 1, // It only syslogs if debug is 0.
-    
-    // DEPRICATED, THIS OPTION IS BEING REMOVED:
-    "dev_mode"             => 0,
+    "debug"                  => 5,
+    "stdout"                 => 0, // Print logs to the generated web page, not a good idea!
+    "db"                     => 1, // Log to a sql log, highly recommended
+    "logfile"                => "/var/log/website",
+    "syslog"                 => 1, // It only syslogs if debug is 0.
     
     // Database Context
     // For possible values see the $db_context() array and description below
-    "mysql_context"        => 'default',
+    "mysql_context"          => 'default',
 
     /* Other Random Things */
-    "contact_phone"        => '888-888-8888',
-    "contact_email"        => 'support@opennetadmin.com',
-    "money_format"         => '%01.2f',
-    "date_format"          => 'M jS, g:ia',
-    "search_results_per_page" => 10,
-    "suggest_max_results"  => 10,
+    "money_format"           => '%01.2f',
+    "date_format"            => 'M jS, g:ia',
+    "search_results_per_page"=> 10,
+    "suggest_max_results"    => 10,
+    
     
     /* Used in header.php */
-    /* Recommendation: not more than 60 (40?) chars */
-    "title"                => 'Open Network Admin :: ',
-    /* Recommendation: not more than 150 chars */
-    "meta_description"     => '',
-    /* Recommendation: not more than 1024 chars, no keywords more than twice */
-    "meta_keywords"        => '',
-    "html_headers"         => '',
+    "title"                  => 'Open Network Admin :: ',
+    "meta_description"       => '',
+    "meta_keywords"          => '',
+    "html_headers"           => '',
     
     /* Session Settings */
-    "cookie_host"          => $_SERVER['HTTP_HOST'],
-    "cookie_life"          => (60*60*24*2), // 2 days
+    "cookie_life"            => (60*60*24*2), // 2 days
     
     /* Include Files: HTML */
-    "html_header"          => "$include/html_header.php",
-    "html_footer"          => "$include/html_footer.php",
-    "html_style_sheet"     => "$include/html_style_sheet.php",
-    "loading_icon"         => "<br><center><img src=\"{$images}/loading.gif\"></center><br>",
+    "html_header"            => "$include/html_header.php",
+    "html_footer"            => "$include/html_footer.php",
+    "html_style_sheet"       => "$include/html_style_sheet.php",
+    "loading_icon"           => "<br><center><img src=\"{$images}/loading.gif\"></center><br>",
     
     /* Include Files: Functions */
-    "inc_functions"        => "$include/inc_functions_general.php",
-    "inc_functions_ona"    => "$include/inc_functions_ona.php",
-    "inc_functions_db"     => "$include/inc_functions_db.php",
-    "inc_db"               => "$include/inc_db.php",
-    "inc_mysqlsessions"    => "$include/session_mysql.php",
-    "inc_adodb"            => "$include/adodb/adodb.inc.php",
-    "inc_xajax_stuff"      => "$include/xajax_setup.inc.php",
-    "inc_diff"             => "$include/DifferenceEngine.php",
-
+    "inc_functions"          => "$include/inc_functions_general.php",
+    "inc_functions_ona"      => "$include/inc_functions_ona.php",
+    "inc_functions_db"       => "$include/inc_functions_db.php",
+    "inc_db"                 => "$include/inc_db.php",
+    "inc_mysqlsessions"      => "$include/session_mysql.php",
+    "inc_adodb"              => "$include/adodb/adodb.inc.php",
+    "inc_xajax_stuff"        => "$include/xajax_setup.inc.php",
+    "inc_diff"               => "$include/DifferenceEngine.php",
+    
     /* Settings for dcm.pl */
-    "dcm_module_dir"       => "$include/../modules",
+    "dcm_module_dir"         => "$base/modules",
 );
 
 
@@ -85,13 +77,13 @@ $conf = array (
 // I've tried to define the entries that are commonly used:
 $self = array (
     // Error messages will often get stored in here
-    "error"                => "",
+    "error"                  => "",
 
     // All sorts of things get cached in here to speed things up
-    "cache"                => array(),
+    "cache"                  => array(),
 
     // Get's automatically set to 1 if we're using HTTPS/SSL
-    "secure"               => 0,
+    "secure"                 => 0,
 );
 // If the server port is 443 then this is a secure page
 // This is basically used to put a padlock icon on secure pages.
@@ -108,42 +100,42 @@ $_ENV['help_url'] = '/dokuwiki/doku.php?id=ona_help:';
 
 
 // Colors
-$color['bg']                    = '#FFFFFF';
-$color['content_bg']            = '#FFFFFF';
-$color['bar_bg']                = '#D3DBFF';
-$color['border']                = '#1A1A1A';
-$color['form_bg']               = '#FFEFB6';
+$color['bg']                   = '#FFFFFF';
+$color['content_bg']           = '#FFFFFF';
+$color['bar_bg']               = '#D3DBFF';
+$color['border']               = '#1A1A1A';
+$color['form_bg']              = '#FFEFB6';
 
-$color['font_default']          = '#3E3E3E';
-$color['font_title']            = '#4E4E4E';
-$color['font_subtitle']         = '#5A5A5A';
-$color['font_error']            = '#E35D5D';
+$color['font_default']         = '#3E3E3E';
+$color['font_title']           = '#4E4E4E';
+$color['font_subtitle']        = '#5A5A5A';
+$color['font_error']           = '#E35D5D';
 
-$color['link']                  = '#6B7DD1';
-$color['vlink']                 = '#6B7DD1';
-$color['alink']                 = '#6B7DD1';
-$color['link_nav']              = '#0048FF';  // was '#7E8CD7';
-$color['link_act']              = '#FF8000';  // was '#EB8F1F';
-$color['link_zone']             = 'green';    // was '#5BA65B';
+$color['link']                 = '#6B7DD1';
+$color['vlink']                = '#6B7DD1';
+$color['alink']                = '#6B7DD1';
+$color['link_nav']             = '#0048FF';  // was '#7E8CD7';
+$color['link_act']             = '#FF8000';  // was '#EB8F1F';
+$color['link_zone']            = 'green';    // was '#5BA65B';
 
-$color['button_normal']         = '#FFFFFF';
-$color['button_hover']          = '#E0E0E0';
+$color['button_normal']        = '#FFFFFF';
+$color['button_hover']         = '#E0E0E0';
 
 // Define some colors for the subnet map:
-$color['bgcolor_map_host']      = '#BFD2FF';
+$color['bgcolor_map_host']     = '#BFD2FF';
 $color['bgcolor_map_subnet']   = '#CCBFFF';
-$color['bgcolor_map_selected']  = '#FBFFB6';
-$color['bgcolor_map_empty']     = '#FFFFFF';
+$color['bgcolor_map_selected'] = '#FBFFB6';
+$color['bgcolor_map_empty']    = '#FFFFFF';
 
 // Much of this configuration is required here since
 // a lot of it's used in xajax calls before a web page is created.
-$color['menu_bar_bg']      = '#F3F1FF';
-$color['menu_header_bg']   = '#FFFFFF';
-$color['menu_item_bg']     = '#F3F1FF';
-$color['menu_header_text'] = '#436976';
-$color['menu_item_text']   = '#436976';
-$color['menu_item_selected_bg'] = '#B1C6E3';
-$color['menu_header_bg']        = '#B1C6E3';
+$color['menu_bar_bg']          = '#F3F1FF';
+$color['menu_header_bg']       = '#FFFFFF';
+$color['menu_item_bg']         = '#F3F1FF';
+$color['menu_header_text']     = '#436976';
+$color['menu_item_text']       = '#436976';
+$color['menu_item_selected_bg']= '#B1C6E3';
+$color['menu_header_bg']       = '#B1C6E3';
 
 
 // Style variables (used in PHP in various places)

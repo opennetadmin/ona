@@ -941,8 +941,8 @@ function securePage() {
     if ( ONA_SESSION_ID != "" ) startSession();
 
     // Make sure their session is still active
-    if (!(isset($_SESSION['auth']['user']['username']))) {
-        header("Location: {$conf['url_expired']}");
+    if (!(isset($_SESSION['ona']['auth']['user']['username']))) {
+        header("Location: {$https}{$baseURL}/login.php?expired=1");
         exit();
     }
 
@@ -960,14 +960,14 @@ function securePage() {
 ///////////////////////////////////////////////////////////////////////
 //  Function: loggedIn()
 //
-//  Returns 1 if the user is authenticated
+//  Returns true if the user is authenticated, false if not
 //
 ///////////////////////////////////////////////////////////////////////
 function loggedIn() {
     // Make sure their session is still active
-    if (!(isset($_SESSION['auth']['user']['username'])))
-        return(0);
-    return(1);
+    if (isset($_SESSION['ona']['auth']['user']['username']))
+        return true;
+    return false;
 }
 
 
