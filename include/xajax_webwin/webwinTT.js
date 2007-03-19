@@ -1,14 +1,8 @@
 //////////////////////////////////////////////////////////////////////////////
-// 
 // Author: Brandon Zehm <caspian@dotconf.net>
 // 
-// WebWin Tool Tip Javascript Library
-// (i.e. DomTT Lite)
-// Originally based off of code from the DomTT project: 
-//   http://www.mojavelinux.com/projects/domtooltip/
-// 
-// Version: 1.3
-// Last Update: 2006-04-11
+// Version: 1.5
+// Last Update: 2007-03-19
 // 
 // LICENSE:
 // This script is licenced under the GNU LGPL, which basically means you
@@ -16,17 +10,44 @@
 //   http://www.gnu.org/copyleft/lesser.html
 // 
 // ABOUT:
+//   WebWin Tool Tip Javascript Library (i.e. DomTT Lite)
+//   Originally based off of code from the DomTT project: 
+//     http://www.mojavelinux.com/projects/domtooltip/
 // 
 // USAGE:
+//   Simply include this file, and webwin.css in your html headers.
+//   This file has no other dependancies on any PHP scripts, and can be used
+//   stand-alone without the other webwin stuff.
+//   NOTICE: This file depends on global.js from Brandon's other websites.
+//   NOTICE: This file depends on drag.js from the xajax_drag library.
+//   
+//   Public Functions:
+//     wwTT() - Create a new tool-tip
+//   
+//   Private Functions:
+//     wwTT_create() - Build & display the current tool-tip
+//     wwTT_position - (Re)position the current tool-tip
+//     wwTT_isDescendantOf() - Determine if one element is a child of another
 // 
 // CHANGELOG:
-// 
+//   v1.5 - 2007-03-19 - Brandon Zehm
+//       * Add workaround for Firefox/Mozilla bug #167801
+//   
+//   v1.4 - 2006-08-22 - Brandon Zehm
+//       * Make sure wwTT_position() always returns a value
+//   
+//   v1.3 - 2006-04-11 - Brandon Zehm
+//       * Initial public release 
 //////////////////////////////////////////////////////////////////////////////
 
-
+// Global variables
 var wwTTobj = new Object;
 wwTTobj.autoId = 0;
 wwTTobj.options = new Object;
+
+
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -35,9 +56,26 @@ wwTTobj.options = new Object;
 // Description:
 //     Displays a tool tip "popup" using options provided
 //     Usage based loosly off of the open source domTT package.
+// 
+// Input:
+//     There are several options that can be passed in, here is a list.
+//       id            (auto)           Override the default element id for the new tool-tip
+//       content       ''               Content to display in the tool-tip
+//       delay         1000             Microsecond delay before displaying the tool-tip
+//       detectEdge    1                Avoid placing tool-tips outside the browser boundaries
+//       direction     'southeast'      Position the tool-tip this direction from the mouse cursor:
+//                                        northeast, northwest, north, southwest, southeast, south, east, west
+//       javascript    ''               Execute this javascript after tool-tip creation
+//       lifetime      5000             Auto expire tool-tip after X microseconds
+//       styleClass    'wwTT_Classic'   Any valid css class name
+//       type          'greasy'         Tool-tip type: greasy, velcro, or static
+//       width         ''               Manual tool-tip width (in pixels)
+//       x             0                Manual absolute tool-tip x position
+//       y             0                Manual absolute tool-tip y position
+//       zIndex        5                Manual tool-tip zIndex
 //     
 // Example:
-//     wwTT(this, event, '');
+//     wwTT(this, event, 'content', 'sample content!', 'type', 'velcro');
 //////////////////////////////////////////////////////////////////////////////
 function wwTT(in_this, in_event) {
     wwTTobj.autoId++;
@@ -74,18 +112,18 @@ function wwTT(in_this, in_event) {
     wwTTobj.options['detectEdge'] = 1;               // Avoid placing tool-tips outside the browser boundaries
     wwTTobj.options['direction']  = 'southeast';     // Position the tool-tip this direction from the mouse
     wwTTobj.options['javascript'] = '';              // Execute this javascript after tool-tip creation
-    wwTTobj.options['lifetime']   = 5000;            // auto expire tool-tip after X microseconds
-    wwTTobj.options['styleClass'] = 'wwTT_Classic';  // any valid css class name
+    wwTTobj.options['lifetime']   = 5000;            // Auto expire tool-tip after X microseconds
+    wwTTobj.options['styleClass'] = 'wwTT_Classic';  // Any valid css class name
     wwTTobj.options['type']       = 'greasy';        // Tool-tip type: greasy, velcro, or static
     wwTTobj.options['width']      = '';              // Manual tool-tip width (in pixels)
     wwTTobj.options['x']          = 0;               // Manual tool-tip x position
     wwTTobj.options['y']          = 0;               // Manual tool-tip y position
     wwTTobj.options['zIndex']     = 5;               // Manual tool-tip zIndex
     
-    // Load in the options from the function call
-    for (var i = 2; i < arguments.length; i += 2) {
+    // Load in the options from the function call 
+    // (this is a sweet way to pass key=value pairs into a function!)
+    for (var i = 2; i < arguments.length; i += 2)
         wwTTobj.options[arguments[i]] = arguments[i + 1];
-    }
     
     // Setup an onMouseOut handler for the owner element
     if (wwTTobj.options.type == 'greasy') {
@@ -111,11 +149,14 @@ function wwTT(in_this, in_event) {
 
 
 
+
+
 //////////////////////////////////////////////////////////////////////////////
 // Function: wwTT_create(this, event, option, value)
 // 
 // Description:
-//     Creates & displays a tool-tip "popup" using options provided
+//     Creates & displays a tool-tip "popup" using options provided.
+//     Private function.
 //     
 // Example:
 //     wwTT_create();
@@ -134,6 +175,7 @@ function wwTT_create() {
     tooltip.className = wwTTobj.options.styleClass;
     tooltip.style.zIndex = wwTTobj.options.zIndex;
     tooltip.style.position = 'absolute';
+    // FIXME: This should be removed someday (year) when Firefox/Mozilla no longer have this bug
     // Bug workaround: "position fixed" below is a workaround for this bug: https://bugzilla.mozilla.org/show_bug.cgi?id=167801
     if (navigator.userAgent.indexOf('Gecko/') != -1)
         tooltip.style.position = 'fixed';
@@ -184,11 +226,13 @@ function wwTT_create() {
 
 
 
+
 //////////////////////////////////////////////////////////////////////////////
 // Function: wwTT_position(element_id)
 // 
 // Description:
 //     Positions an already existing tool-tip
+//     Private function.
 //     
 // Example:
 //     wwTT_position(element_id);
@@ -261,7 +305,11 @@ function wwTT_position(element_id) {
     // Position the tool-tip
     tooltip.style.left = newX + 'px';
     tooltip.style.top  = newY + 'px';
+    return true;
 }
+
+
+
 
 
 
@@ -269,7 +317,8 @@ function wwTT_position(element_id) {
 // Function: wwTT_isDescendantOf(element, potential_child)
 // 
 // Description:
-//     Returns true if potential_child is a descendant of element
+//     Returns true if potential_child is a descendant of element.
+//     Private function.
 //////////////////////////////////////////////////////////////////////////////
 function wwTT_isDescendantOf(_parent, _object) {
     var cur_el = _object;
@@ -283,5 +332,3 @@ function wwTT_isDescendantOf(_parent, _object) {
     }
     return false;
 }
-
-

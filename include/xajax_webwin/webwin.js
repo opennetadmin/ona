@@ -13,17 +13,28 @@
 //   http://www.gnu.org/copyleft/lesser.html
 // 
 // ABOUT:
+//   NOTICE: This file depends on suggest.js from the xajax-suggest library.
+//   NOTICE: This file depends on global.js from Brandon's other websites.
 // 
 // USAGE:
-//   NOTICE: This file depends on suggest.js from the xajax-suggest library.
-// 
+//   Public Functions:
+//      toggle_window() - Displays or hides a window (creates it if it doesn't exist)
+//      focus_window()  - "Focuses" the window name specified
+//   
+//   Private Functions:
+//      initialize_window
+//   
 // CHANGELOG:
 //   2007-03-19 - Brandon Zehm - Small updates, added this header.
-// 
 //////////////////////////////////////////////////////////////////////////////
 
 // Global Variables
 var window_default_zindex = 2; // This should match the setting in the .css and .php file!
+
+
+
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,6 +68,7 @@ function toggle_window(el_name) {
     if (_el.style.display == 'block')
         focus_window(_el.id);
 }
+
 
 
 

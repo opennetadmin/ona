@@ -237,8 +237,8 @@ function suggest_display(el_input, el_suggest) {
     suggest_init(_input, _suggest);
     suggestion_width = _input.offsetWidth - 6;
     
-    // HACK for our website?:
-    if (msIE) { suggestion_width = _input.offsetWidth - 2; }
+    // FIXME: this is using the browser variable defined when drag.js is loaded!
+    if (browser.isIE) suggestion_width = _input.offsetWidth - 2;
     
     // If there aren't any suggestions display "No suggestions..."
     if(suggestions.length == 0) {

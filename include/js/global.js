@@ -1,10 +1,8 @@
 // 
-// These javascript functions get loaded into ALL datacom web pages.
+// These javascript functions get loaded for all web pages.
 // Add and modify functions with care!
 //
 
-var ua = navigator.userAgent.toLowerCase();
-var msIE = ((ua.indexOf('msie') != -1) && (ua.indexOf('opera') == -1) && (ua.indexOf('webtv') == -1)); 
 
 // Add a "trim" function to Javascript's string object type
 String.prototype.trim = function() {
@@ -18,11 +16,10 @@ String.prototype.trim = function() {
 //
 function toggleBox(id) {
     if(document.layers) {    //NN4+
-        if (document.layers[id].visibility == "show") {
+        if (document.layers[id].visibility == "show")
             document.layers[id].visibility = "hide";
-        } else {
+        else
             document.layers[id].visibility = "show";
-        }
     }
     else if(document.getElementById) {     //gecko(NN6) + IE 5+
         var obj = document.getElementById(id);
@@ -57,20 +54,20 @@ function removeElement(name) {
 
 
 
-// Taken from mail.google.com and modified
+// Synonym for document.getElementById()
 function el(id) {
-    if(document.layers) {    //NN4+
-       return document.layers[id];
-    }
-    else if (document.getElementById) {  // Gecko (NN6, Firefox, IE 5+)
+    // NN4+
+    if(document.layers)
+        return document.layers[id];
+    // Gecko (NN6, Firefox, IE 5+)
+    else if (document.getElementById)
         return document.getElementById(id);
-    }
-    else if(document.all) {  // IE 4
+    // IE 4
+    else if(document.all)
         return document.all[id];
-    }
-    else if (window[id]) {
+    // ?
+    else if (window[id])
         return window[id];
-    }
     return null;
 }
 
