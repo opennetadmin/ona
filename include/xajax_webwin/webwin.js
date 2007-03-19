@@ -1,16 +1,47 @@
+//////////////////////////////////////////////////////////////////////////////
+// 
+// Author: Brandon Zehm <caspian@dotconf.net>
+// 
+// WebWin Javascript Library
+// 
+// Version: 1.0
+// Last Update: 2007-03-19
+// 
+// LICENSE:
+// This script is licenced under the GNU LGPL, which basically means you
+// can use it for any purpose whatsoever.  Full details at: 
+//   http://www.gnu.org/copyleft/lesser.html
+// 
+// ABOUT:
+// 
+// USAGE:
+//   NOTICE: This file depends on suggest.js from the xajax-suggest library.
+// 
+// CHANGELOG:
+//   2007-03-19 - Brandon Zehm - Small updates, added this header.
+// 
+//////////////////////////////////////////////////////////////////////////////
 
-// This should match the setting in the .css and .php file!
-var window_default_zindex = 2;
+// Global Variables
+var window_default_zindex = 2; // This should match the setting in the .css and .php file!
 
-// Function to hide/show a moveable ipdb "window"
-// Uses toggleBox() and el() from global.js
-// Shows/hides the window if it exits, otherwise
-// makes an xajax call to load/create the window.
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: toggle_window(window_name)
+// 
+// Description:
+//     Hides or shows the "Window" named window_name if it exists, 
+//     otherwise it makes an xajax call to create that window.
+//     NOTE: Uses toggleBox() from global.js
+//     NOTE: Uses el() from global.js
+//     
+// Example:
+//     toggle_window('window_name');
+//////////////////////////////////////////////////////////////////////////////
 function toggle_window(el_name) {
     var _el = el(el_name);
     
-    // If the element doesn't exist, we need to make an xajax
-    // call to create the "window".
+    // If the element doesn't exist, make an xajax call to create it.
     if (!_el) {
         xajax_window_open(el_name);
         return;
@@ -29,10 +60,21 @@ function toggle_window(el_name) {
 
 
 
-// Function to set initial position of various elements
-// Uses calcOffset() from suggest.js
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: initialize_window(window_name)
 // 
-// NOTE: This function will have site-specific definitions in it!
+// Description:
+//     Sets the initial position of new "Window" div's
+//     NOTE: Uses calcOffset() from suggest.js
+//     NOTE: Uses el() from global.js
+//     FIXME: This function could currently have site-specific definitions!
+//     
+// Example:
+//     initialize_window('window_name');
+//////////////////////////////////////////////////////////////////////////////
 function initialize_window(el_name) {
     var _el = el(el_name);
     
@@ -53,7 +95,7 @@ function initialize_window(el_name) {
                 window_position[el_name+'_x'] = calcOffset(el('menu-apps-button'), 'offsetLeft');
                 break;
             
-            // Set the default position of the main_menu div .. just below the "window_container" box
+            // Set the default position of the work_space div..
             case "work_space":
                 window_position[el_name+'_y'] = calcOffset(el('content_table'), 'offsetTop');
                 window_position[el_name+'_x'] = calcOffset(el('content_table'), 'offsetLeft');
@@ -72,6 +114,7 @@ function initialize_window(el_name) {
     _el.className        = 'window';
     _el.style.zIndex     = window_default_zindex;
     
+    // FIXME: This should be removed someday (year) when Firefox/Mozilla no longer have this bug
     // Bug workaround: "position fixed" below is a workaround for this bug: https://bugzilla.mozilla.org/show_bug.cgi?id=167801
     if (navigator.userAgent.indexOf('Gecko/') != -1)
         _el.style.position = 'fixed';
@@ -80,13 +123,28 @@ function initialize_window(el_name) {
     // or initialize_window(), so we now position the box where it belongs.
     _el.style.top   = window_position[el_name+'_y'] + 'px';
     _el.style.left  = window_position[el_name+'_x'] + 'px';
-    //alert('x=' + window_position[el_name+'_x'] + ' y=' + window_position[el_name+'_y']);
     
 }
 
 
-// Function to "focus" the window specified
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: focus_window(window_name)
+// 
+// Description:
+//     "Focuses" the window name specified (i.e. raise it above other windows)
+//     
+// Example:
+//     focus_window('window_name');
+//////////////////////////////////////////////////////////////////////////////
 function focus_window(el_name) {
+    var _el = el(el_name);
     var _parent = el('window_container');
     
     // Basically we loop through every window.  If we find any windows
@@ -94,7 +152,7 @@ function focus_window(el_name) {
     // When we find the window we're focusing we set it's zIndex to default + 1.
     nodes = _parent.childNodes;
     for (var i=0; i<nodes.length; i++) {
-        if (nodes[i].id == el_name)
+        if (nodes[i].id == _el.id)
             nodes[i].style.zIndex = window_default_zindex + 1;
         else if (nodes[i].style.zIndex > window_default_zindex)
             nodes[i].style.zIndex = window_default_zindex;
