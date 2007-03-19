@@ -55,7 +55,7 @@ Displays an subnet record from the database
 
   Notes:
     * An error is returned if search string returns more than one subnet
-    * IP can be in dotted or numeric format
+    * IP can be in dotted, numeric, or IPv6 format
 \n
 EOM
         ));
@@ -65,7 +65,7 @@ EOM
     $options['verbose'] = sanitize_YN($options['verbose'], 'Y');
 
     // They provided a subnet ID or IP address
-    // Find an subnet record
+    // Find a subnet record
     list($status, $rows, $subnet) = ona_find_subnet($options['subnet']);
     if ($status or !$rows) {
         $self['error'] = "ERROR => Subnet not found";
@@ -153,8 +153,8 @@ Adds a new subnet (subnet) record
 
   Required:
     name=TEXT               subnet name (i.e. "LAN-1234")
-    ip=ADDRESS              dotted (10.0.0.0) or long subnet address
-    netmask=MASK            dotted (255.0.0.0), CIDR (/8), or long netmask
+    ip=ADDRESS              dotted (10.0.0.0), IPv6, or numeric subnet address
+    netmask=MASK            dotted (255.0.0.0), IPv6, CIDR (/8), or numeric netmask
     type=TYPE               subnet type name or id
 
   Optional:
@@ -194,6 +194,7 @@ EOM
     }
 
     // Validate that the subnet IP & netmask combo are valid together.
+    // FIXME: (later) needs to be IPv6-ified
     $ip1 = ip_mangle($options['ip'], 'binary');
     $ip2 = str_pad(substr($ip1, 0, $cidr), 32, '0');
     $ip1 = ip_mangle($ip1, 'dotted');
@@ -288,7 +289,8 @@ EOM
     $SET['name'] = $options['name'];
 
 
-    // Check permissions
+// FIXME: add auth code here!
+//      Check permissions
 //    if (!auth('subnet_add')) {
 //        $self['error'] = "Permission denied!";
 //        printmsg($self['error'], 0);
@@ -409,7 +411,8 @@ EOM
     }
 
 
-    // Check permissions
+// FIXME: add auth code here!
+//       Check permissions
 //     if (!auth('subnet_modify') or !authlvl($subnet['LVL'])) {
 //         $self['error'] = "Permission denied!";
 //         printmsg($self['error'], 0);
@@ -423,7 +426,8 @@ EOM
     else {
         $check_boundaries = 1;
         $options['set_ip'] = ip_mangle($options['set_ip'], 'numeric');
-        if ($options['set_ip'] == -1) {
+        // FIXME: what if ip_mangle returns a GMP object?
+            if ($options['set_ip'] == -1) {
             $self['error'] = "ERROR => The IP address specified is invalid!";
             return(array(4, $self['error'] . "\n"));
         }
@@ -437,6 +441,7 @@ EOM
     else {
         $check_boundaries = 1;
         $cidr = ip_mangle($options['set_netmask'], 'cidr');
+        // FIXME: what if ip_mangle returns a GMP object?
         $options['set_netmask'] = ip_mangle($options['set_netmask'], 'numeric');
         if ($cidr == -1 or $options['set_netmask'] == -1) {
             $self['error'] = "ERROR => The netmask specified is invalid!";
@@ -495,7 +500,7 @@ EOM
         //    [ -------- new subnet --------- ]
         //           [ -- old subnet --]
         //
-        // Do a cool SQL query to find all subnets whoose start address is >= or <= the
+        // Do a cool SQL query to find all subnets whose start address is >= or <= the
         // new subnet base address.
         $where = "ip_addr >= {$options['set_ip']} AND ip_addr <= {$last_host}";
         list($status, $rows, $record) = ona_get_subnet_record($where);
@@ -683,7 +688,8 @@ EOM
     }
 
 
-    // Check permissions
+// FIXME: add auth code here!
+//     Check permissions
 //     if (!auth('subnet_del') or !authlvl($subnet['LVL'])) {
 //         $self['error'] = "Permission denied!";
 //         printmsg($self['error'], 0);
@@ -691,10 +697,11 @@ EOM
 //     }
 
 
-    // If "commit" is yes, delte the subnet
+    // If "commit" is yes, delete the subnet
     if ($options['commit'] == 'Y') {
         $text = "";
 
+        // FIXME: (add all this) ... 
         // SUMMARY:
         //   Delete assignments to any DHCP servers
         //   Delete any DHCP pools on the current subnet
