@@ -28,10 +28,16 @@
 //     wwTT_create() - Build & display the current tool-tip
 //     wwTT_position - (Re)position the current tool-tip
 //     wwTT_isDescendantOf() - Determine if one element is a child of another
+//   
+//   Basic example:
+//     <span onMouseOver="wwTT(this, event, 'content', 'See spot run..');">Hi there!</span>
 // 
 // CHANGELOG:
 //   v1.5 - 2007-03-19 - Brandon Zehm
 //       * Add workaround for Firefox/Mozilla bug #167801
+//       * Fixed some bugs with the greasy tool-tip option
+//       * Enabled and documented the lifetime option
+//       * Added a lot of documentation
 //   
 //   v1.4 - 2006-08-22 - Brandon Zehm
 //       * Make sure wwTT_position() always returns a value
@@ -59,16 +65,24 @@ wwTTobj.options = new Object;
 // 
 // Input:
 //     There are several options that can be passed in, here is a list.
+//       OPTION        DEFAULT          DESCRIPTION
+//       ------        -------          -----------
 //       id            (auto)           Override the default element id for the new tool-tip
-//       content       ''               Content to display in the tool-tip
-//       delay         1000             Microsecond delay before displaying the tool-tip
+//       content       ''               Text or html to display in the tool-tip
+//       type          'greasy'         Tool-tip type: greasy, velcro, or static
+//                                        greasy: tool-tip removed when mouse leaves parent
+//                                        velcro: tool-tip removed when the mouse is moved into and then outside of the tool-tip
+//                                        static: tool-tip is not removed (unless another tool-tip is created)
+//       delay         1000             Millisecond delay before displaying the tool-tip
+//       lifetime      0                Millisecond delay before expiring the tool-tip
+//                                        greasy: expires after being displayed for X milliseconds
+//                                        static: expires after being displayed for X milliseconds
+//                                        velcro: expires after the mouse has been into and then outside of the tool-tip for X milliseconds
 //       detectEdge    1                Avoid placing tool-tips outside the browser boundaries
 //       direction     'southeast'      Position the tool-tip this direction from the mouse cursor:
 //                                        northeast, northwest, north, southwest, southeast, south, east, west
 //       javascript    ''               Execute this javascript after tool-tip creation
-//       lifetime      5000             Auto expire tool-tip after X microseconds
 //       styleClass    'wwTT_Classic'   Any valid css class name
-//       type          'greasy'         Tool-tip type: greasy, velcro, or static
 //       width         ''               Manual tool-tip width (in pixels)
 //       x             0                Manual absolute tool-tip x position
 //       y             0                Manual absolute tool-tip y position
@@ -108,13 +122,13 @@ function wwTT(in_this, in_event) {
     // Define default options
     wwTTobj.options['id']         = 'wwTT_' + wwTTobj.autoId;
     wwTTobj.options['content']    = '';              // Content to display in the tool-tip
-    wwTTobj.options['delay']      = 1000;            // Microsecond delay before displaying the tool-tip
+    wwTTobj.options['type']       = 'greasy';        // Tool-tip type: greasy, velcro, or static
+    wwTTobj.options['delay']      = 1000;            // Millisecond delay before displaying the tool-tip
+    wwTTobj.options['lifetime']   = 0;               // Millisecond delay before expiring the tool-tip (0 disables)
     wwTTobj.options['detectEdge'] = 1;               // Avoid placing tool-tips outside the browser boundaries
     wwTTobj.options['direction']  = 'southeast';     // Position the tool-tip this direction from the mouse
     wwTTobj.options['javascript'] = '';              // Execute this javascript after tool-tip creation
-    wwTTobj.options['lifetime']   = 5000;            // Auto expire tool-tip after X microseconds
     wwTTobj.options['styleClass'] = 'wwTT_Classic';  // Any valid css class name
-    wwTTobj.options['type']       = 'greasy';        // Tool-tip type: greasy, velcro, or static
     wwTTobj.options['width']      = '';              // Manual tool-tip width (in pixels)
     wwTTobj.options['x']          = 0;               // Manual tool-tip x position
     wwTTobj.options['y']          = 0;               // Manual tool-tip y position
@@ -126,24 +140,19 @@ function wwTT(in_this, in_event) {
         wwTTobj.options[arguments[i]] = arguments[i + 1];
     
     // Setup an onMouseOut handler for the owner element
-    if (wwTTobj.options.type == 'greasy') {
-        wwTTobj.options.owner.onmouseout = 
-            function(ev) {
-                clearTimeout(wwTTobj.timer);
+    wwTTobj.options.owner.onmouseout = 
+        function(ev) {
+            clearTimeout(wwTTobj.timer_create);
+            // If a greasy tool-tip was actually created before we leave the parent element, remove it!
+            if (wwTTobj.lastID == wwTTobj.options.id && wwTTobj.options.type == 'greasy') {
+                clearTimeout(wwTTobj.timer_destroy);
                 removeElement(wwTTobj.lastID);
-            };
-    }
-    else if (wwTTobj.options.type == 'velcro' || wwTTobj.options.type == 'static') {
-        wwTTobj.options.owner.onmouseout = 
-            function(ev) {
-                clearTimeout(wwTTobj.timer);
-            };
-        wwTTobj.options.lifetime = 0;
-    }
+            }
+        };
     
-    // Set a timer to display the popup .. if the tool-tip doesn't already exist
+    // If the tool-tip doesn't already exist, set a timer to display the popup
     if (!el(wwTTobj.options.id))
-        wwTTobj.timer = setTimeout('wwTT_create();', wwTTobj.options.delay);
+        wwTTobj.timer_create = setTimeout('wwTT_create();', wwTTobj.options.delay);
 }
 
 
@@ -152,10 +161,11 @@ function wwTT(in_this, in_event) {
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Function: wwTT_create(this, event, option, value)
+// Function: wwTT_create()
 // 
 // Description:
-//     Creates & displays a tool-tip "popup" using options provided.
+//     Creates & displays a tool-tip "popup" using options found in the
+//     global object wwTTobj.
 //     Private function.
 //     
 // Example:
@@ -163,10 +173,17 @@ function wwTT(in_this, in_event) {
 //////////////////////////////////////////////////////////////////////////////
 function wwTT_create() {
     
+    // Clear any old lifetime timers .. they're not needed now ;)
+    if (typeof(wwTTobj.timer_destroy) != 'undefined')
+        clearTimeout(wwTTobj.timer_destroy);
+    
     // Make sure the last tool-tip (if any) is removed
     if (typeof(wwTTobj.lastID) != 'undefined')
         removeElement(wwTTobj.lastID);
+    
+    // Copy a few things for later reference
     wwTTobj.lastID = wwTTobj.options.id;
+    wwTTobj.lastLifetime = wwTTobj.options.lifetime;
     
     // Create the tool-tip div
     var tooltip = wwTTobj.options.parent.appendChild(wwTTobj.document.createElement('div'));
@@ -191,31 +208,51 @@ function wwTT_create() {
     // Position the tool-tip
     wwTT_position(tooltip.id);
     
-    // If it's a "velcro" tool-tip setup it's onMouseOut handler
-    // and disable the onMouseOut on the owner element.  We only
-    // remove the tool-tip if the event involved an element that's
-    // not one of our own children.
+    // For "greasy" tool-tips
+    //   * Setup a lifetime destroy counter if it's not 0
+    if (wwTTobj.options.type == 'greasy') {
+        if (wwTTobj.options.lifetime != 0)
+            wwTTobj.timer_destroy = setTimeout("removeElement('" + wwTTobj.options.id + "');", wwTTobj.options.lifetime);
+    }
+    
+    
+    // For "velcro" tool-tips
+    //   * Setup it's onMouseOut handler
+    //     * Setup a lifetime countdown timer to destroy the tool-tip
+    //   * Add a onMouseOver handler that cancels any pending lifetime "destroy" timers
+    //   * Disable the owner's onMouseOut handler (just to keep things clean in the DOM)
     if (wwTTobj.options.type == 'velcro') {
+        // Setup a timer to remove the element if the event didn't come from one of our children
         tooltip.onmouseout = 
             function(ev) {
                 if (typeof(ev) == 'undefined') ev = event;
                 var tag = browser.isIE ? 'toElement' : 'relatedTarget';
                 if (!wwTT_isDescendantOf(this, ev[tag])) 
-                    removeElement(this.id);
+                    wwTTobj.timer_destroy = setTimeout("removeElement('" + wwTTobj.lastID + "');", wwTTobj.lastLifetime);
+            };
+        
+        // Cancel the count-down timer if the mouse comes into the tool-tip
+        tooltip.onmouseover = 
+            function(ev) {
+                clearTimeout(wwTTobj.timer_destroy);
             };
         wwTTobj.options.owner.onmouseout = function(ev) { return true; };
     }
     
-    // If it's a "static" tool-tip, disable the onMouseOut on the 
-    // owner element.  We don't remove the element.
+    
+    // For "static" tool-tips
+    //   * Disable the owner's onMouseOut handler (just to keep things clean in the DOM)
+    //   * Setup a lifetime destroy counter if it's not 0
     if (wwTTobj.options.type == 'static') {
         wwTTobj.options.owner.onmouseout = function(ev) { return true; };
+        if (wwTTobj.options.lifetime != 0)
+            wwTTobj.timer_destroy = setTimeout("removeElement('" + wwTTobj.options.id + "');", wwTTobj.options.lifetime);
     }
     
     // Display the tool-tip
     tooltip.style.visibility = 'visible';
     
-    // Execute any javascript the browser asked us to
+    // Execute any javascript queued to be run
     if (wwTTobj.options.javascript != '')
         eval(wwTTobj.options.javascript);
 

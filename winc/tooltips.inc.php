@@ -1172,6 +1172,14 @@ EOL;
     return(array($html, $js));
 }
 
+
+
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 // Function: get_switchport_template_select($)
 //

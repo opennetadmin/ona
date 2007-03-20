@@ -7,7 +7,6 @@ $year = date('Y');
 
 print <<<EOL
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!-- BEGIN HEADER -->
 <!-- This web site is copyrighted (c) {$year} -->
 <html>
 <head>
@@ -40,12 +39,13 @@ print <<<EOL
                     <input type="hidden" name="search_form_id" value="qsearch_form">
                     <input id="qsearch" 
                            class="edit" 
+                           style="width: 150px;"
                            type="text" 
                            value=""
                            name="q" 
-                           size="15" 
                            maxlength="100" 
                            onFocus="el('qsearch_input_overlay').style.display = 'none';"
+                           onMouseOver="wwTT(this, event, 'content', 'Quick Search...', 'lifetime', '3000');"
                     >
                     <div id="suggest_qsearch" class="suggest"></div>
                     <div id="qsearch_input_overlay"
@@ -80,30 +80,35 @@ print <<<EOL
             <span class="topmenu-item" style="cursor: pointer;" title="Display user info" onClick="toggle_window('app_user_info');">
                 <img style="vertical-align: middle;" src="{$images}/silk/user_gray.png" border="0" /> 
             </span>
-            
-            <form id="login_form" onSubmit="xajax_window_submit('login_password', xajax.getFormValues('login_form')); return false;">
-                <input id="login_userid"
-                        class="edit"
-                        type="text"
-                        value="{$_SESSION['ona']['auth']['user']['username']}"
-                        name="login_userid"
-                        size="12"
-                >
-            </form>
-            
-            <img style="vertical-align: middle;" title="Logout" src="{$images}/silk/door_out.png" border="0" onClick="document.location = 'logout.php';" />
-            <img style="vertical-align: middle;" title="Global help index" src="{$images}/silk/help.png" border="0" onClick="document.location = '{$_ENV['help_url']}';" />
+            <span class="topmenu-item" style="cursor: pointer;" title="Open online help" onClick="document.location = '{$_ENV['help_url']}'; /* FIXME: Open help in an iframe in a window */">
+                <img style="vertical-align: middle;" title="Global help index" src="{$images}/silk/help.png" border="0" />
+            </span>
+            <span class="topmenu-item" style="cursor: pointer;" title="Logout" onClick="var doit=confirm('Logout?'); if (doit == true) document.location = 'logout.php';">
+                <img style="vertical-align: middle;" title="Logout" src="{$images}/silk/door_out.png" border="0" />
+            </span>
             
             &nbsp;
         </div>
     </div>
     
+    <!-- Workspace div -->
+    <div id="content_table" style="height: 90%;" class="theWholeBananna">
+        <!-- Parent element for all "windows" -->
+        <span id="window_container"></span>&nbsp;
+    </div>
+    
+    <!-- Bottom Text -->
+    <div id="bottombox_table" class="bottomBox" style="width: 100%; text-align: center;">
+        &copy;{$year} <a href="http://www.opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}<br>
+        We recommend <a href="http://www.mozilla.com/firefox/" target="null">Firefox</a> &gt;= 1.5, but this site also works with <a href="http://konqueror.kde.org/" target="null">Konqueror</a> &gt;= 3.5 &amp; Internet Explorer &gt;= 5.5<br>
+        This site was designed, written &amp; tested by <a href="mailto:hornet136@gmail.com">Matt Pascoe</a>, <a href="mailto:deacon@thedeacon.org">Paul Kreiner</a> &amp; <a href="mailto:caspian@dotconf.net">Brandon Zehm</a>.
+    </div>
     
 <!-- Javascript for the Task Bar -->
 <script type="text/javascript"><!--
     /* Setup the quick search */
     suggest_setup('qsearch', 'suggest_qsearch');
-
+    
     /* Position the quick serach overlay */
     var my_top  = calcOffset(el('qsearch'), 'offsetTop');
     var my_left  = calcOffset(el('qsearch'), 'offsetLeft');
@@ -143,7 +148,7 @@ print <<<EOL
             }
         }
         
-        /* Update the bar if it's changed */
+        /* Update the bar if it's changed (beware, the dark arts of the sith were summoned to write the following code) */
         if ( (update == 1) || (html.replace(/(<([^>]+)>)/g,"") != (_bar.innerHTML).replace(/(<([^>]+)>)/g,"")) ) {
             _bar.innerHTML = html;
         }
@@ -160,7 +165,7 @@ print <<<EOL
             var button_top    = calcOffset(el('menu-apps-button'), 'offsetTop');
             var button_left   = calcOffset(el('menu-apps-button'), 'offsetLeft');
             var button_height = el('menu-apps-button').offsetHeight;
-            /* Create the fake tool-tip */
+            /* Create the tool-tip menu */
             wwTT(this, ev, 
                  'id', 'start_menu', 
                  'type', 'velcro',
@@ -168,33 +173,13 @@ print <<<EOL
                  'y', button_top + button_height,
                  'width', 200,
                  'delay', 0,
+                 'lifetime', 1000,
                  'styleClass', 'wwTT_ona_menu',
                  'javascript', 'el(\'start_menu\').style.visibility = \'hidden\'; xajax_window_submit(\'tooltips\', \'tooltip=>start_menu,id=>start_menu\');'
             );
         };
-    _button.onmouseover = _button.onclick;
     
---></script>    
-    
-    
-    <!-- Workspace div -->
-    <div id="content_table" style="height: 90%;" class="theWholeBananna">
-        <!-- Parent element for all "windows" -->
-        <span id="window_container"></span>
-
-<!-- END HEADER -->
-
-&nbsp;
-
-<!-- BEGIN FOOTER -->
-    </div>
-
-    <!-- Bottom Text -->
-    <div id="bottombox_table" class="bottomBox" style="width: 100%; text-align: center;">
-        &copy;{$year} <a href="http://www.opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}<br>
-        We recommend <a href="http://www.mozilla.com/firefox/" target="null">Firefox</a> &gt;= 1.5, but this site also works with <a href="http://konqueror.kde.org/" target="null">Konqueror</a> &gt;= 3.5 &amp; Internet Explorer &gt;= 5.5<br>
-        This site was designed, written &amp; tested by <a href="mailto:hornet136@gmail.com">Matt Pascoe</a>, <a href="mailto:deacon@thedeacon.org">Paul Kreiner</a> &amp; <a href="mailto:caspian@dotconf.net">Brandon Zehm</a>.
-    </div>
+--></script>
 
 <!-- Set some preferences FIXME: This shouldn't be here! -->
 <script type="text/javascript"><!--
@@ -204,6 +189,5 @@ print <<<EOL
 
 </body>
 </html>
-
 EOL;
 ?>
