@@ -413,8 +413,11 @@ function ip_mangle($ip="", $format="default") {
             $self['error'] = "ERROR => Invalid CIDR mask";
             return(-1);
         }
+
         // So create a binary string of 1's and 0's and convert it to an int
-        $ip = gmp_init(str_pad(str_pad("", $matches[1], "1"), 128, "0"), 2);
+        if($ip <= 32) { $cidr_bits = 32; }
+        else { $cidr_bits = 128; }
+        $ip = gmp_init(str_pad(str_pad("", $matches[1], "1"), $cidr_bits, "0"), 2);
         if ($format == "default") {
             // Default to IPv6 output if the input was IPv6, IPv4 otherwise
             if (is_ipv4($ip))
@@ -1336,7 +1339,7 @@ function format_array($array=array()) {
         if      ($key == 'ip_addr')        { $array[$key] = ip_mangle($array[$key], 'dotted'); }
         else if ($key == 'ip_address_start')  { $array[$key] = ip_mangle($array[$key], 'dotted'); }
         else if ($key == 'ip_address_end')    { $array[$key] = ip_mangle($array[$key], 'dotted'); }
-        else if ($key == 'ip_mask')    { $array[$key] = ip_mangle($array[$key], 'dotted'); }
+        else if ($key == 'ip_mask')    { $array[$key] = ip_mangle($array[$key]); }
         else if ($key == 'data_link_address') { $array[$key] = mac_mangle($array[$key]); if ($array[$key] == -1) $array[$key] = ''; }
         else if ($key == 'host_id')           {
             list($host, $zone) = ona_find_host($array[$key]);

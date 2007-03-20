@@ -15,8 +15,9 @@ function ws_editor($window_name, $form='') {
     global $font_family, $color, $style, $images;
     $window = array();
 
-    // Check permissions
- //   if (! (auth('subnet_modify') and auth('subnet_add')) ) {
+  // FIXME: add auth code here!
+  // Check permissions
+  //   if (! (auth('subnet_modify') and auth('subnet_add')) ) {
   //      $response = new xajaxResponse();
   //      $response->addScript("alert('Permission denied!');");
   //      return($response->getXML());
@@ -267,12 +268,13 @@ EOL;
 function ws_save($window_name, $form='') {
     global $include, $conf, $self, $onadb;
 
+    // FIXME: add auth code here!
     // Check permissions
-//    if (! (auth('subnet_modify') and auth('subnet_add')) ) {
-//        $response = new xajaxResponse();
-//        $response->addScript("alert('Permission denied!');");
-//        return($response->getXML());
-//    }
+    //    if (! (auth('subnet_modify') and auth('subnet_add')) ) {
+    //        $response = new xajaxResponse();
+    //        $response->addScript("alert('Permission denied!');");
+    //        return($response->getXML());
+    //    }
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
@@ -373,12 +375,13 @@ function ws_save($window_name, $form='') {
 function ws_delete($window_name, $form='') {
     global $include, $conf, $self, $onadb;
 
+    // FIXME: add auth code here!
     // Check permissions
-//    if (!auth('subnet_del')) {
-//        $response = new xajaxResponse();
-//        $response->addScript("alert('Permission denied!');");
-//        return($response->getXML());
-//    }
+    //    if (!auth('subnet_del')) {
+    //        $response = new xajaxResponse();
+    //        $response->addScript("alert('Permission denied!');");
+    //        return($response->getXML());
+    //    }
 
     // If an array in a string was provided, build the array and store it in $form
     $form = parse_options_string($form);
