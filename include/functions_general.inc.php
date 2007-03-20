@@ -427,13 +427,13 @@ function ip_mangle($ip="", $format="default") {
     // Is it in 32-bit binary format (4)?
     else if (preg_match('/^[01]{32}$/', $ip)) {
         //$ip = bindec($ip);
-        $ip = gmp_init($ip, 2);
+        $ip = gmp_init(strval($ip), 2);
         if ($format == "default") { $format = "dotted"; }
     }
 
     // Is it in 128-bit binary format (5)?
     else if (preg_match('/^[01]{128}$/', $ip)) {
-        $ip = gmp_init($ip, 2);
+        $ip = gmp_init(strval($ip), 2);
         if ($format == "default") { $format = "ipv6"; }
     }
 
@@ -455,7 +455,7 @@ function ip_mangle($ip="", $format="default") {
 
     // If we get here, then the input must be in numeric format (1)
     else {
-        $ip = gmp_init($ip, 10);
+        $ip = gmp_init(strval($ip), 10);
         if ($format == "default") { 
             if(is_ipv4($ip))
                 $format = "dotted";
@@ -1333,20 +1333,20 @@ function format_array($array=array()) {
     foreach (array_keys($array) as $key) {
 
         // Make some data look pretty
-        if      ($key == 'IP_ADDR')        { $array[$key] = ip_mangle($array[$key]); }
-        else if ($key == 'IP_ADDRESS_START')  { $array[$key] = ip_mangle($array[$key]); }
-        else if ($key == 'IP_ADDRESS_END')    { $array[$key] = ip_mangle($array[$key]); }
-        else if ($key == 'IP_MASK')    { $array[$key] = ip_mangle($array[$key]); }
-        else if ($key == 'DATA_LINK_ADDRESS') { $array[$key] = mac_mangle($array[$key]); if ($array[$key] == -1) $array[$key] = ''; }
-        else if ($key == 'HOST_ID')           {
+        if      ($key == 'ip_addr')        { $array[$key] = ip_mangle($array[$key], 'dotted'); }
+        else if ($key == 'ip_address_start')  { $array[$key] = ip_mangle($array[$key], 'dotted'); }
+        else if ($key == 'ip_address_end')    { $array[$key] = ip_mangle($array[$key], 'dotted'); }
+        else if ($key == 'ip_mask')    { $array[$key] = ip_mangle($array[$key], 'dotted'); }
+        else if ($key == 'data_link_address') { $array[$key] = mac_mangle($array[$key]); if ($array[$key] == -1) $array[$key] = ''; }
+        else if ($key == 'host_id')           {
             list($host, $zone) = ona_find_host($array[$key]);
-            if ($host['ID'])
+            if ($host['id'])
                 $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['FQDN']})");
         }
-        else if ($key == 'SERVER_ID')         {
-            list($status, $rows, $server) = ona_get_server_record(array('ID' => $array[$key]));
-            list($host, $host) = ona_find_host($server['HOST_ID']);
-            if ($host['ID'])
+        else if ($key == 'server_id')         {
+            list($status, $rows, $server) = ona_get_server_record(array('id' => $array[$key]));
+            list($host, $host) = ona_find_host($server['host_id']);
+            if ($host['id'])
                 $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['FQDN']})");
         }
         else if ($key == 'subnet_id')        {
@@ -1354,8 +1354,8 @@ function format_array($array=array()) {
             if ($subnet['id'])
                 $array[$key] = str_pad($array[$key], 20) . strtoupper("({$subnet['name']})");
         }
-        else if ($key == 'DNS_ZONE_ID' or $key == 'PRIMARY_DNS_ZONE_ID') {
-            list($status, $rows, $zone) = ona_get_zone_record(array('ID' => $array[$key]));
+        else if ($key == 'dns_zone_id' or $key == 'primary_dns_zone_id') {
+            list($status, $rows, $zone) = ona_get_zone_record(array('id' => $array[$key]));
             $array[$key] = str_pad($array[$key], 20) . strtolower("({$zone['ZONE_NAME']})");
         }
 
