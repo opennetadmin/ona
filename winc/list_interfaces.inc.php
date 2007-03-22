@@ -14,7 +14,6 @@ function ws_display_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
-    $debug_val = 3;  // used in the auth() calls to supress logging
 
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
@@ -135,7 +134,7 @@ EOL;
                 <td class="list-row">
 EOL;
 
-            if (auth('interface_del',$debug_val)) {
+            if (auth('interface_del')) {
                 $html .= <<<EOL
                     <a title="Edit interface. ID: {$record['id']}"
                        class="act"
@@ -186,7 +185,7 @@ EOL;
                     ></form>&nbsp;
 EOL;
 
-        if (auth('interface_modify',$debug_val)) {
+        if (auth('interface_modify')) {
             $html .= <<<EOL
 
                     <a title="Edit interface. ID: {$record['id']}"
@@ -196,7 +195,7 @@ EOL;
 EOL;
         }
 
-        if (auth('interface_del',$debug_val)) {
+        if (auth('interface_del')) {
             $html .= <<<EOL
 
                     <a title="Delete interface"

@@ -1086,6 +1086,10 @@ function ona_get_alias_record($array='', $order='') {
     return(ona_get_record($array, 'HOST_ALIASES_B', $order));
 }
 
+function ona_get_zone_record($array='', $order='') {
+    return(ona_get_record($array, 'dns_zones', $order));
+}
+
 function ona_get_dns_domain_record($array='', $order='') {
     return(ona_get_record($array, 'dns_domains', $order));
 }

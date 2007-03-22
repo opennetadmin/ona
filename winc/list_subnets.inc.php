@@ -14,7 +14,6 @@ function ws_display_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
-    $debug_val = 3;  // used in the auth() calls to supress logging
 
     // If the user supplied an array in a string, build the array and store it in $form
     //$form = parse_options_string($form);
@@ -257,7 +256,7 @@ EOL;
                    onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_block_map\', \'ip_block_start=>{$record['ip_addr']}\', \'display\');');"
                 ><img src="{$images}/silk/shape_align_left.png" border="0"></a>&nbsp;
 EOL;
-    if (auth('subnet_modify',$debug_val)) {
+    if (auth('subnet_modify')) {
         $html .= <<<EOL
 
                 <a title="Edit subnet"
@@ -267,7 +266,7 @@ EOL;
 EOL;
     }
 
-    if (auth('subnet_del',$debug_val)) {
+    if (auth('subnet_del')) {
         $html .= <<<EOL
 
                 <a title="Delete subnet"

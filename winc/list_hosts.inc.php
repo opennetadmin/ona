@@ -14,43 +14,43 @@ function ws_display_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
-    $debug_val = 3;  // used in the auth() calls to supress logging
-
-    // If the user supplied an array in a string, build the array and store it in $form
+    
+    // If the user supplied an array in a string, transform it into an array
     $form = parse_options_string($form);
-
+    
     // Find the "tab" we're on
     $tab = $_SESSION['ona'][$form['form_id']]['tab'];
-
+    
     // Build js to refresh this list
     $refresh = "xajax_window_submit('{$window_name}', xajax.getFormValues('{$form['form_id']}'), 'display_list');";
-
+    
     // If it's not a new query, load the previous query from the session
     // into $form and save the current page and filter in the session.
     // Also find/set the "page" we're viewing
     $page = 1;
     if ($form['page'] and is_numeric($form['page'])) {
-        //$form = array_merge($form, $_SESSION['ona'][$form['form_id']][$tab]['q']);
+        $form = array_merge($form, $_SESSION['ona'][$form['form_id']][$tab]['q']);
         $_SESSION['ona'][$form['form_id']][$tab]['page'] = $page = $form['page'];
         $_SESSION['ona'][$form['form_id']][$tab]['filter'] = $form['filter'];
     }
-
+    printmsg("DEBUG => Displaying hosts list page: {$page}", 1);
+    
     // Calculate the SQL query offset (based on the page being displayed)
     $offset = ($conf['search_results_per_page'] * ($page - 1));
-    if ($offset == 0) { $offset = -1; }
-
+    if ($offset == 0) $offset = -1;
+    
     // Search results go in here
     $results = array();
     $count = 0;
-
-
-
-
+    
+    
+    
+    
     //
     // *** ADVANCED HOST SEARCH ***
     //       FIND RESULT SET
     //
-
+    
     // Start building the "where" clause for the sql query to find the hosts to display
     $where = "";
     $and = "";
@@ -66,7 +66,7 @@ function ws_display_list($window_name, $form='') {
     // HOSTNAME
     $aliases = 0;
     if ($form['hostname']) {
-        $where .= $and . "PRIMARY_DNS_NAME LIKE " . $onadb->qstr('%'.$form['hostname'].'%');
+        $where .= $and . "primary_dns_name LIKE " . $onadb->qstr('%'.$form['hostname'].'%');
         $and = " AND ";
 
         // ALIAS NAME
@@ -89,7 +89,7 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
-    // SUBNET ID
+    // subnet ID
     if (is_numeric($form['subnet_id'])) {
         // We do a sub-select to find interface id's that match
         $where .= $and . "id IN ( SELECT host_id " .
@@ -109,7 +109,7 @@ function ws_display_list($window_name, $form='') {
 
         // We do a sub-select to find interface id's that match
         $where .= $and . "ID IN ( SELECT HOST_ID " .
-                         "        FROM HOST_SUBNETS_B " .
+                         "        FROM HOST_subnetS_B " .
                          "        WHERE DATA_LINK_ADDRESS LIKE " . $onadb->qstr('%'.$form['mac'].'%') . " ) ";
         $and = " AND ";
 
@@ -129,8 +129,8 @@ function ws_display_list($window_name, $form='') {
         if ($ip != -1 and $ip_end != -1) {
             // We do a sub-select to find interface id's between the specified ranges
             $where .= $and . "ID IN ( SELECT HOST_ID " .
-                             "        FROM HOST_SUBNETS_B " .
-                             "        WHERE IP_ADDRESS >= " . $onadb->qstr($ip) . " AND IP_ADDRESS <= " . $onadb->qstr($ip_end) . " )";
+                             "        FROM HOST_subnetS_B " .
+                             "        WHERE ip_addrESS >= " . $onadb->qstr($ip) . " AND ip_addrESS <= " . $onadb->qstr($ip_end) . " )";
             $and = " AND ";
         }
     }
@@ -166,7 +166,7 @@ function ws_display_list($window_name, $form='') {
             $and = " AND ";
             $or = "";
             foreach ($records as $record) {
-                $where .= $or . "DEVICE_MODEL_ID = " . $onadb->qstr($record['ID']);
+                $where .= $or . "DEVICE_MODEL_ID = " . $onadb->qstr($record['id']);
                 $or = " OR ";
             }
             $where .= " ) ";
@@ -188,7 +188,7 @@ function ws_display_list($window_name, $form='') {
             $and = " AND ";
             $or = "";
             foreach ($records as $record) {
-                $where .= $or . "DEVICE_MODEL_ID = " . $onadb->qstr($record['ID']);
+                $where .= $or . "DEVICE_MODEL_ID = " . $onadb->qstr($record['id']);
                 $or = " OR ";
             }
             $where .= " ) ";
@@ -225,7 +225,7 @@ function ws_display_list($window_name, $form='') {
 
         // Host names should always be lower case
         $form['filter'] = strtolower($form['filter']);
-        $filter = ' AND PRIMARY_DNS_NAME LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
+        $filter = ' AND primary_dns_name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
     list ($status, $rows, $results) =
         db_get_records(
@@ -283,8 +283,8 @@ EOL;
     // Loop and display each record
     foreach($results as $record) {
         // Get additional info about eash host record
-
-
+        
+        
         // If a subnet_id was passed use it as part of the search.  Used to display the IP of the subnet you searched
         if (is_numeric($form['subnet_id'])) {
             list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id'], 'subnet_id' => $form['subnet_id']), '');
@@ -298,12 +298,12 @@ EOL;
 
             $interfaces = $rows;
 
-        } elseif (is_numeric($ip)) {
+        } else if (is_numeric($ip)) {
             list($status, $interfaces, $interface) = db_get_record($onadb,
                                                             'interfaces',
                                                             'HOST_ID = '. $onadb->qstr($record['id']) .
-                                                            ' AND IP_ADDR >= ' . $onadb->qstr($ip) .
-                                                            ' AND IP_ADDR <= ' . $onadb->qstr($ip_end),
+                                                            ' AND ip_addr >= ' . $onadb->qstr($ip) .
+                                                            ' AND ip_addr <= ' . $onadb->qstr($ip_end),
                                                             "",
                                                             0);
 
@@ -320,37 +320,36 @@ EOL;
             // Interface (and find out how many there are)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('HOST_ID' => $record['id']), '');
         }
-
-        if (!$interfaces) {$count -1; continue;}
-
-        $record['IP_ADDR'] = ip_mangle($interface['ip_addr'], 'dotted');
+        
+        // bz: why did someone add this??  You especially want to show hosts with no interfaces so you can fix them!
+        // if (!$interfaces) {$count -1; continue;}
+        
+        $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
         $interface_style = '';
-        if ($interfaces > 1) {
-            $interface_style = 'font-weight: bold;';
-        }
-
+        if ($interfaces > 1) $interface_style = 'font-weight: bold;';
+        
         // DNS A record
         list($status, $rows, $dnsa) = ona_get_dns_a_record(array('id' => $record['primary_dns_a_id']));
         $record['dns_name'] = $dnsa['name'];
-
+        
         // Domain Name
         list($status, $rows, $dnsdomain) = ona_get_dns_domain_record(array('id' => $dnsa['dns_domain_id']));
         $record['domain'] = $dnsdomain['ns_fqdn'];
-
+        
         // Subnet description
         list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $interface['subnet_id']));
-        $record['SUBNET'] = $subnet['name'];
-        $record['IP_MASK'] = ip_mangle($subnet['ip_mask'], 'dotted');
-        $record['IP_MASK_CIDR'] = ip_mangle($subnet['ip_mask'], 'cidr');
-
-
+        $record['subnet'] = $subnet['name'];
+        $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
+        $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
+        
+        
         // Device Description
         list($status, $rows, $device) = ona_get_model_record(array('ID' => $record['model_id']));
         $record['device'] = "{$device['MANUFACTURER_NAME']}, {$device['model']}";
         $record['device'] = str_replace('Unknown', '?', $record['device']);
 
 
-        $record['NOTES_SHORT'] = truncate($record['notes'], 40);
+        $record['notes_short'] = truncate($record['notes'], 40);
 
         // Get location_number from the location_id
         list($status, $rows, $location) = ona_get_location_record(array('id' => $record['location_id']));
@@ -377,7 +376,7 @@ EOL;
                     <a title="View subnet. ID: {$subnet['id']}"
                          class="nav"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['id']}\', \'display\')');"
-                    >{$record['SUBNET']}</a>&nbsp;
+                    >{$record['subnet']}</a>&nbsp;
                 </td>
 
                 <td class="list-row" align="left">
@@ -396,8 +395,8 @@ if ($interfaces > 1) {
 EOL;
 }
         $html .= <<<EOL
-                    >{$record['IP_ADDR']}</span>&nbsp;
-                    <span title="{$record['IP_MASK']}">/{$record['IP_MASK_CIDR']}</span>&nbsp;
+                    >{$record['ip_addr']}</span>&nbsp;
+                    <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>&nbsp;
                 </td>
 
                 <td class="list-row">{$record['device']}&nbsp;</td>
@@ -414,35 +413,35 @@ EOL;
                 </td>
 
                 <td class="list-row">
-                    <span title="{$record['notes']}">{$record['NOTES_SHORT']}</span>&nbsp;
+                    <span title="{$record['notes']}">{$record['notes_short']}</span>&nbsp;
                 </td>
 
                 <!-- ACTION ICONS -->
                 <td class="list-row" align="right">
-                    <form id="{$form['form_id']}_list_host_{$record['ID']}"
-                        ><input type="hidden" name="host_id" value="{$record['ID']}"
+                    <form id="{$form['form_id']}_list_host_{$record['id']}"
+                        ><input type="hidden" name="host_id" value="{$record['id']}"
                         ><input type="hidden" name="js" value="{$refresh}"
                     ></form>&nbsp;
 EOL;
 
-        if (auth('host_modify',$debug_val)) {
+        if (auth('host_modify')) {
             $html .= <<<EOL
 
                     <a title="Edit host"
                        class="act"
-                       onClick="xajax_window_submit('edit_host', xajax.getFormValues('{$form['form_id']}_list_host_{$record['ID']}'), 'editor');"
+                       onClick="xajax_window_submit('edit_host', xajax.getFormValues('{$form['form_id']}_list_host_{$record['id']}'), 'editor');"
                     ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 EOL;
         }
 
-        if (auth('host_del',$debug_val)) {
+        if (auth('host_del')) {
             $html .= <<<EOL
 
                     <a title="Delete host"
                        class="act"
                        onClick="var doit=confirm('Are you sure you want to delete this host?');
                                 if (doit == true)
-                                    xajax_window_submit('edit_host', xajax.getFormValues('{$form['form_id']}_list_host_{$record['ID']}'), 'delete');"
+                                    xajax_window_submit('edit_host', xajax.getFormValues('{$form['form_id']}_list_host_{$record['id']}'), 'delete');"
                     ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
         }
@@ -584,7 +583,6 @@ function ws_display_alias_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
-    $debug_val = 3; // used in the auth() calls to supress logging
 
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
@@ -765,15 +763,15 @@ EOL;
 
         // Interface (and find out how many there are)
         list($status, $interfaces, $interface) = ona_get_interface_record(array('HOST_ID' => $record['HOST_ID']), '');
-        $record['IP_ADDRESS'] = ip_mangle($interface['IP_ADDRESS'], 'dotted');
+        $record['ip_addrESS'] = ip_mangle($interface['ip_addrESS'], 'dotted');
         $interface_style = '';
         if ($interfaces > 1) $interface_style = 'font-weight: bold;';
 
         // Subnet description
-        list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $interface['SUBNET_ID']));
-        $record['SUBNET'] = $subnet['DESCRIPTION'];
-        $record['IP_SUBNET_MASK'] = ip_mangle($subnet['IP_SUBNET_MASK'], 'dotted');
-        $record['IP_SUBNET_MASK_CIDR'] = ip_mangle($subnet['IP_SUBNET_MASK'], 'cidr');
+        list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $interface['subnet_ID']));
+        $record['subnet'] = $subnet['DESCRIPTION'];
+        $record['IP_subnet_MASK'] = ip_mangle($subnet['IP_subnet_MASK'], 'dotted');
+        $record['IP_subnet_MASK_CIDR'] = ip_mangle($subnet['IP_subnet_MASK'], 'cidr');
 
       // Removed for now (brandon) it makes things too wide!
       /*
@@ -817,7 +815,7 @@ EOL;
                     <a title="View subnet. ID: {$subnet['ID']}"
                          class="nav"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['ID']}\', \'display\')');"
-                    >{$record['SUBNET']}</a>&nbsp;
+                    >{$record['subnet']}</a>&nbsp;
                 </td>
 
                 <td class="list-row" align="left">
@@ -836,8 +834,8 @@ if ($interfaces > 1) {
 EOL;
 }
          $html .= <<<EOL
-                    >{$record['IP_ADDRESS']}</span>&nbsp;
-                    <span title="{$record['IP_SUBNET_MASK']}">/{$record['IP_SUBNET_MASK_CIDR']}</span>&nbsp;
+                    >{$record['ip_addrESS']}</span>&nbsp;
+                    <span title="{$record['IP_subnet_MASK']}">/{$record['IP_subnet_MASK_CIDR']}</span>&nbsp;
                 </td>
 
                 <!-- Removed for now (brandon) it makes things too wide!
@@ -862,30 +860,30 @@ EOL;
 
                 <!-- ACTION ICONS -->
                 <td class="list-row" align="right">
-                    <form id="{$form['form_id']}_list_alias_{$record['ID']}"
-                        ><input type="hidden" name="alias_id" value="{$record['ID']}"
+                    <form id="{$form['form_id']}_list_alias_{$record['id']}"
+                        ><input type="hidden" name="alias_id" value="{$record['id']}"
                         ><input type="hidden" name="js" value="{$refresh}"
                     ></form>
 EOL;
 
-        if (auth('alias_modify',$debug_val)) {
+        if (auth('alias_modify')) {
             $html .= <<<EOL
 
                     <a title="Edit alias"
                        class="act"
-                       onClick="xajax_window_submit('edit_alias', xajax.getFormValues('{$form['form_id']}_list_alias_{$record['ID']}'), 'editor');"
+                       onClick="xajax_window_submit('edit_alias', xajax.getFormValues('{$form['form_id']}_list_alias_{$record['id']}'), 'editor');"
                     ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 EOL;
         }
 
-        if (auth('alias_del',$debug_val)) {
+        if (auth('alias_del')) {
             $html .= <<<EOL
 
                     <a title="Delete alias"
                        class="act"
                        onClick="var doit=confirm('Are you sure you want to delete this alias?');
                                 if (doit == true)
-                                    xajax_window_submit('edit_alias', xajax.getFormValues('{$form['form_id']}_list_alias_{$record['ID']}'), 'delete');"
+                                    xajax_window_submit('edit_alias', xajax.getFormValues('{$form['form_id']}_list_alias_{$record['id']}'), 'delete');"
                     ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
         }

@@ -5,12 +5,9 @@
 // Not included for DCM modules
 //
 
-// Global settings used in functions below
-global $conf;
-
 // FIXME: This should be done where all the other user's prefs are loaded
 // The other half of this is in search_results.inc.php
-if (is_numeric($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
+// if (is_numeric($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
 
 // Register ONA specific functions with xajax
 // (set the function names in a variable so they'll be processed later)

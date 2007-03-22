@@ -14,7 +14,6 @@ function ws_display_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
-    $debug_val = 3; // used in the auth() calls to supress logging
 
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
@@ -168,7 +167,7 @@ EOL;
                     ></form>
 EOL;
 
-        if (auth('advanced',$debug_val)) {
+        if (auth('advanced')) {
             $html .= <<<EOL
 
                     <a title="Edit block. ID: {$record['id']}"
@@ -184,7 +183,7 @@ EOL;
                     ><img src="{$images}/silk/shape_align_left.png" border="0"></a>&nbsp;
 EOL;
 
-        if (auth('advanced',$debug_val)) {
+        if (auth('advanced')) {
             $html .= <<<EOL
 
                     <a title="Delete block"
