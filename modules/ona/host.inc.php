@@ -33,7 +33,8 @@ function host_add($options="") {
     $options = parse_options($options);
     
     // Return the usage summary if we need to
-    if ($options['help'] or !($options['host'] and $options['type'] and $options['unit']) ) {
+    if ($options['help'] or !($options['host'] and $options['type']) ) {
+//FIXME: PK:    if ($options['help'] or !($options['host'] and $options['type'] and $options['unit']) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
         $self['error'] = 'ERROR => Insufficient parameters';
         return(array(1, 
@@ -47,7 +48,7 @@ Add a new host
   Required:
     host=NAME[.DOMAIN]        hostname for new DNS record
     type=TYPE or ID           device/model type or ID
-    unit=NAME or ID           location/unit ID
+    unit=NAME or ID           location/unit ID ***PK 3/21/07: ERASE THIS***
   
   Optional:
     security_level=LEVEL      numeric security level ({$conf['ona_lvl']})
@@ -67,22 +68,24 @@ EOM
     }
     
     
-    // Find the Unit ID to use
-    list($status, $rows, $unit) = ona_find_unit($options['unit']);
-    if ($status or $rows != 1 or !$unit['UNIT_ID']) {
-        printmsg("DEBUG => The unit specified, {$options['unit']}, does not exist!", 3);
-        return(array(2, "ERROR => The unit specified, {$options['unit']}, does not exist!\n"));
-    }
-    printmsg("DEBUG => Unit selected: {$unit['UNIT_NAME']} Unit number: {$unit['UNIT_NUMBER']}", 3);
+// FIXME: commented out by Paul K 3/21/07 because we probably won't use units
+//    // Find the Unit ID to use
+//    list($status, $rows, $unit) = ona_find_unit($options['unit']);
+//    if ($status or $rows != 1 or !$unit['UNIT_ID']) {
+//        printmsg("DEBUG => The unit specified, {$options['unit']}, does not exist!", 3);
+//        return(array(2, "ERROR => The unit specified, {$options['unit']}, does not exist!\n"));
+//    }
+//    printmsg("DEBUG => Unit selected: {$unit['UNIT_NAME']} Unit number: {$unit['UNIT_NUMBER']}", 3);
     
     
-    // Find the Device ID (i.e. Type) to use
-    list($status, $rows, $device) = ona_find_device($options['type']);
-    if ($status or $rows != 1 or !$device['ID']) {
-        printmsg("DEBUG => The device type specified, {$options['type']}, does not exist!", 3);
-        return(array(3, "ERROR => The device type specified, {$options['type']}, does not exist!\n"));
-    }
-    printmsg("DEBUG => Device selected: {$device['MODEL_DESCRIPTION']} Device ID: {$device['ID']}", 3);
+// FIXME: commented out by Paul K 3/23/07 because we don't do device types yet
+//    // Find the Device ID (i.e. Type) to use
+//    list($status, $rows, $device) = ona_find_device($options['type']);
+//    if ($status or $rows != 1 or !$device['ID']) {
+//        printmsg("DEBUG => The device type specified, {$options['type']}, does not exist!", 3);
+//        return(array(3, "ERROR => The device type specified, {$options['type']}, does not exist!\n"));
+//    }
+//    printmsg("DEBUG => Device selected: {$device['MODEL_DESCRIPTION']} Device ID: {$device['ID']}", 3);
     
     
     // Sanitize "security_level" option
@@ -107,11 +110,17 @@ EOM
         return(array(4, $self['error'] . "\n"));
     }
     // Debugging
-    printmsg("DEBUG => Host selected: {$host_name}{$host_zone_name} Zone ID: $host_zone_id", 3);
+    printmsg("DEBUG => Host selected: {$host_name}{$host_zone_name} Zone ID: $host_zone_id", 2);
     
     // Validate that there isn't already a host/alias named $host_name in the zone $host_zone_id.
-    list($h_status, $h_rows, $h_record) =  ona_get_host_record(array('PRIMARY_DNS_NAME'    => $host_name, 
-                                                                      'PRIMARY_DNS_ZONE_ID' => $host_zone_id));
+    //list($z_status, $z_rows, $z_record) = ona_get_zone_record(array('name' => $host_zone_name));
+    $h_status = $h_rows = 0;
+    list($d_status, $d_rows, $d_record) = ona_get_dns_a_record(array('name' => $host_name, 'domain_id' => $host_zone_id));
+    if (!$d_status && $d_rows) {
+        list($h_status, $h_rows, $h_record) =  ona_get_host_record(array('primary_dns_a_id'    => $d_record[0]));
+    }
+    error_log($d_status.",".$d_rows.",".print_r($d_record,true));
+    error_log($h_status.",".$h_rows.",".print_r($h_record,true));
     if ($h_status or $h_rows) {
         printmsg("DEBUG => Another host named {$host_name}.{$host_zone_name} already exists!",3);
         $self['error'] = "ERROR => Another host named {$host_name}.{$host_zone_name} already exists!";
@@ -147,15 +156,11 @@ EOM
     $options['notes'] = str_replace('\\&','&',$options['notes']);
     
     // Add the host
-    // We don't insert into the "SORTED_DNS_NAME" field - it's updated by a trigger in the DB
-    // and is used (not really used anymore) to be able to sort by the sub zone..
-    // We also don't insert the UNIT_NUMBER field -- not sure what this is but Matt P. 
-    // said not to worry about it.
     list($status, $rows) = db_insert_record(
         $onadb, 
-        'HOSTS_B',
+        'hosts',
         array(
-            'ID'                   => $id,
+            'id'                   => $id,
             'PRIMARY_DNS_NAME'     => $host_name,
             'PRIMARY_DNS_ZONE_ID'  => $host_zone_id,
             'DEVICE_MODEL_ID'      => $device['ID'],

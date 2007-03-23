@@ -1408,7 +1408,7 @@ function ona_get_next_id($tablename) {
 //      * In the event that the FQDN specified is an alias record, the
 //        associated host record, and that host record's domain are returned.
 //      * In the event that a valid, existing, domain can not be found in
-//        the FQDN, the domain "something.com" will be returned.
+//        the FQDN, the domain "default-zone.com" will be returned.
 //        I.E. A valid domain (zone) record will always be returned.
 //
 //  Example:  list($host, $zone) = ona_find_host('myhost.domain.com');
@@ -1489,7 +1489,7 @@ function ona_find_host($search="") {
         }
     }
 
-    // If no zone_id yet, use .com
+    // FIXME: If no zone_id yet, use their default zone
     if (!$zone['ID']) {
         printmsg('DEBUG => ona_find_host() Zone not found, returning zone_id for ".com"', 3);
         list($status, $records, $zone) = ona_get_zone_record(array('ZONE_NAME' => '.com'));
@@ -1563,7 +1563,7 @@ function ona_find_zone($hostname="") {
 
         // Check to see if $hostname has a vailid zone_id in the DB
         // If it is, exit the while loop.
-        list($status, $records, $zone) = ona_get_zone_record(array('ZONE_NAME' => $zone_name));
+        list($status, $records, $zone) = ona_get_zone_record(array('name' => $zone_name));
         if ($status == 0 and $records == 1) {
             // Fix $hostname
             $hostname = str_replace('.' . $zone_name, '', $hostname);
@@ -1575,7 +1575,7 @@ function ona_find_zone($hostname="") {
 
         // Check to see if $hostname has a valid zone_id in the DB
         // If it is, exit the while loop.
-        list($status, $records, $zone) = ona_get_zone_record(array('ZONE_NAME' => $zone_name . '.com'));
+        list($status, $records, $zone) = ona_get_zone_record(array('name' => $zone_name . '.com'));
         if ($status == 0 and $records == 1) {
             // Fix $hostname
             $hostname = str_replace('.' . $zone_name, '', $hostname);
@@ -1591,16 +1591,16 @@ function ona_find_zone($hostname="") {
 
     // If no zone_id yet, see if it's a HOST or ALIAS ID
     if (!$zone['ID'] and preg_match('/^\d+$/', $hostname)) {
-        list($status, $records, $host) = ona_get_host_record(array('ID' => $hostname));
+        list($status, $records, $host) = ona_get_host_record(array('id' => $hostname));
         if ($status == 0 and $records == 1) {
             $hostname = $host['PRIMARY_DNS_NAME'];
-            list($status, $records, $zone) = ona_get_zone_record(array('ID' => $host['PRIMARY_DNS_ZONE_ID']));
+            list($status, $records, $zone) = ona_get_zone_record(array('id' => $host['PRIMARY_DNS_ZONE_ID']));
         }
         else {
-            list($status, $records, $alias) = ona_get_alias_record(array('ID' => $hostname));
+            list($status, $records, $alias) = ona_get_alias_record(array('id' => $hostname));
             if ($status == 0 and $records == 1) {
                 $hostname = $alias['ALIAS'];
-                list($status, $records, $zone) = ona_get_zone_record(array('ID' => $alias['DNS_ZONE_ID']));
+                list($status, $records, $zone) = ona_get_zone_record(array('id' => $alias['DNS_ZONE_ID']));
             }
         }
     }
@@ -1609,7 +1609,7 @@ function ona_find_zone($hostname="") {
     if (!$zone['ID']) {
         printmsg('DEBUG => Zone not found, returning zone_id for ".com"', 3);
         $zone_name = '.com';
-        list($status, $records, $zone) = ona_get_zone_record(array('ZONE_NAME' => $zone_name));
+        list($status, $records, $zone) = ona_get_zone_record(array('name' => $zone_name));
     }
 
     // Return
