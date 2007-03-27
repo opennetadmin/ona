@@ -140,7 +140,7 @@ function subnet_add($options="") {
     printmsg('DEBUG => subnet_add('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -259,8 +259,8 @@ EOM
     }
 
     // The IP/NETMASK look good, set them.
-    $SET['IP_ADDR'] = $options['ip'];
-    $SET['IP_MASK'] = $options['netmask'];
+    $SET['ip_addr'] = $options['ip'];
+    $SET['ip_mask'] = $options['netmask'];
 
 
     // Find the type from $options[type]
@@ -269,9 +269,8 @@ EOM
         $self['error'] = "ERROR => Invalid subnet type specified!";
         return(array(9, $self['error'] . "\n"));
     }
-    printmsg("Subnet type selected: {$subnet_type['name']}", 1);
-    $SET['SUBNET_TYPE_ID'] = $subnet_type['id'];
-
+    printmsg("Subnet type selected: {$subnet_type['name']} ({$subnet_type['short_name']})", 1);
+    $SET['subnet_type_id'] = $subnet_type['id'];
 
 
 
@@ -300,13 +299,12 @@ EOM
     $SET['name'] = $options['name'];
 
 
-// FIXME: add auth code here!
-//      Check permissions
-//    if (!auth('subnet_add')) {
-//        $self['error'] = "Permission denied!";
-//        printmsg($self['error'], 0);
-//        return(array(14, $self['error'] . "\n"));
-//    }
+    // Check permissions
+    if (!auth('subnet_add')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(14, $self['error'] . "\n"));
+    }
 
     // Get the next ID for the new interface
     $id = ona_get_next_id('subnets');
@@ -371,7 +369,7 @@ function subnet_modify($options="") {
     printmsg('DEBUG => subnet_modify('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -545,11 +543,8 @@ EOM
     //
     // Define the fields we're updating
     //
-    // FIXME!  Pick your poison...
     // This variable will contain the updated info we'll insert into the DB
     $SET = array();
-    //$SET['ip_addr'] = ip_mangle($options['set_ip'], 'dotted');
-    //$SET['ip_mask'] = ip_mangle($options['set_netmask'], 'dotted');
     $SET['ip_addr'] = $options['set_ip'];
     $SET['ip_mask'] = $options['set_netmask'];
 
@@ -561,7 +556,7 @@ EOM
         $options['set_security_level'] = sanitize_security_level($options['set_security_level']);
         if ($options['set_security_level'] == -1)
             return(array(11, $self['error'] . "\n"));
-        $SET['LVL'] = $options['set_security_level'];
+        $SET['lvl'] = $options['set_security_level'];
     }
 
 
@@ -576,6 +571,7 @@ EOM
             $self['error'] = "ERROR => That name is already used by another subnet!";
             return(array(12, $self['error'] . "\n"));
         }
+        // BUSINESS RULE: subnet names are stored in all upper case
         $SET['name'] = strtoupper($options['set_name']);
     }
 
@@ -588,7 +584,7 @@ EOM
             $self['error'] = "ERROR => Invalid subnet type specified!";
             return(array(13, $self['error'] . "\n"));
         }
-        printmsg("Subnet type selected: {$subnet_type['name']}", 1);
+        printmsg("Subnet type selected: {$subnet_type['display_name']} ({$subnet_type['short_name']})", 1);
         $SET['subnet_type_id'] = $subnet_type['id'];
     }
 
@@ -601,8 +597,8 @@ EOM
             $self['error'] = "ERROR => Location not found!";
             return(array(14, $self['error'] . "\n"));
         }
-        printmsg("Location selected: {$location['LOCATION_NUMBER']} Name: {$location['LOCATION_NAME']}", 1);
-        $SET['LOCATION_ID'] = $location['LOCATION_ID'];
+        printmsg("Location selected: {$location['location_number']} Name: {$location['location_name']}", 1);
+        $SET['location_id'] = $location['id'];
     }
 
 
@@ -623,7 +619,7 @@ EOM
     }
 
 
-    // Update the host record
+    // Update the subnet record
     list($status, $rows) = db_update_record($onadb, 'subnets', array('id' => $subnet['id']), $SET);
     if ($status or !$rows)
         return(array(16, $self['error'] . "\n"));
@@ -632,9 +628,6 @@ EOM
     list($status, $rows, $subnet) = ona_get_subnet_record($subnet['id']);
 
     // Return the (human-readable) success notice
-    //FIXME: delete this
-    //$SET['ip_addr'] = ip_mangle($SET['ip_addr'], 'dotted');
-    //$SET['ip_mask'] = ip_mangle($SET['ip_addr'], 'dotted');
     $text = format_array($SET);
     $self['error'] = "NOTICE => Subnet UPDATED";
     return(array(0, $self['error'] . ":\n{$text}\n"));
@@ -671,7 +664,7 @@ function subnet_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg('DEBUG => subnet_del('.$options.') called', 3);
 
@@ -712,13 +705,12 @@ EOM
     }
 
 
-// FIXME: add auth code here!
-//     Check permissions
-//     if (!auth('subnet_del') or !authlvl($subnet['LVL'])) {
-//         $self['error'] = "Permission denied!";
-//         printmsg($self['error'], 0);
-//         return(array(3, $self['error'] . "\n"));
-//     }
+    // Check permissions
+    if (!auth('subnet_del') or !authlvl($subnet['lvl'])) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(3, $self['error'] . "\n"));
+    }
 
 
     // If "commit" is yes, delete the subnet
@@ -760,9 +752,9 @@ EOM
 
 
         // Delete associated host / interface records that need to be deleted
-        // We delete hosts that have only one interface (and it's on this subnet)
-        // We delete interfaces from hosts that have multiple interfaces
-        list($status, $rows, $interfaces) = db_get_records($onadb, 'interfaces', array('SUBNET_ID' => $subnet['id']));
+        // BUSINESS RULE: We delete hosts that have only one interface (and it's on this subnet)
+        // BUSINESS RULE: We delete interfaces from hosts that have multiple interfaces
+        list($status, $rows, $interfaces) = db_get_records($onadb, 'interfaces', array('subnet_id' => $subnet['id']));
         $hosts_to_delete = array();
         $interfaces_to_delete = array();
         foreach ($interfaces as $interface) {
@@ -802,7 +794,7 @@ EOM
         // Return the success notice
         $ip = ip_mangle($subnet['ip_addr'], 'dotted');
         $cidr = ip_mangle($subnet['ip_mask'], 'cidr');
-        $self['error'] = "NOTICE => Subnet (subnet) DELETED: {$subnet['name']} IP: {$ip}/{$cidr}";
+        $self['error'] = "NOTICE => Subnet DELETED: {$subnet['name']} IP: {$ip}/{$cidr}";
         printmsg($self['error'], 0);
         return(array(0, $self['error'] . "\n"));
     }
@@ -828,6 +820,8 @@ EOM
     list($status, $tmp) = subnet_display("subnet={$subnet['id']}&verbose=N");
     $text .= "\n" . $tmp;
 
+/* FIXME: Add all this in sometime!
+    
     // Display assignments to any DHCP servers
     list($status, $rows, $records) = db_get_records($onadb, 'DHCP_SERVER_subnetS_B', array('SUBNET_ID' => $subnet['id']));
     if ($rows) $text .= "\nASSOCIATED DHCP SERVER ASSIGNMENT RECORDS ({$rows}):\n";
@@ -850,9 +844,11 @@ EOM
         $text .= "  {$dhcp['DHCP_name']} => {$dhcp['DHCP_PARAMETER_VALUE']}\n";
     }
 
+*/
+
     // Display associated host  / interface records that would be deleted
-    // We delete hosts that have only one interface (and it's on this subnet)
-    // We delete interfaces from hosts that have multiple interfaces (including at least one on a different subnet)
+    // BUSINESS RULE: We delete hosts that have only one interface (and it's on this subnet)
+    // BUSINESS RULE: We delete interfaces from hosts that have multiple interfaces (including at least one on a different subnet)
     list($status, $rows, $interfaces) = db_get_records($onadb, 'interfaces', array('SUBNET_ID' => $subnet['id']));
     $hosts_to_delete = array();
     $interfaces_to_delete = array();

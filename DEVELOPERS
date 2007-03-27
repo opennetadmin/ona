@@ -15,17 +15,26 @@ CODING STANDARDS
     * Scripts must exit with an error code of 0 on success, and non-zero
       on error.
 
+  Misc:
+    * Put the phrase "FIXME: " near areas that need future work.
+    * Put the phrase "BUSINESS RULE: " before comments that describe business
+      rules.  Example: in subnet_del we put "BUSINESS RULE:" near the comments
+      describing the fact that when deleting subnets we automatically delete
+      interfaces from hosts that also have interfaces in other subnets, but
+      we delete the host if it only has one interface, and it's on this subnet.
+
 
 FUNCTION DEFINITIONS
+
 
 GUIDING PRINCIPLES
 
 
 USE OF THE $_SESSION VARIABLE
     * Everything is stored "under" $_SESSION['ona']
-    * All authentication data is stored under $_SESSION['ona']['auth']
-        When a user logs out, only $_SESSION['ona']['auth']* is deleted.
-    *
+    * All authentication  and user data is stored under $_SESSION['ona']['auth']
+        When a user logs out, only $_SESSION['ona']['auth'] is deleted.
+    * 
 
 
 

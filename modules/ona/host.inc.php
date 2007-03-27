@@ -100,6 +100,7 @@ EOM
     // i.e. add .albertsons.com, or find the part of the name provided
     // that will be used as the "zone" or "domain".  This means testing many
     // zone name's against the DB to see what's valid.
+    // FIXME: PK ona_find_zone doesn't default to a zone if the specified one is invalid!
     list($host_name,  $host_zone_name,  $host_zone_id)  = ona_find_zone($options['host']);
     
     // Validate that the DNS name has only valid characters in it
@@ -110,29 +111,30 @@ EOM
         return(array(4, $self['error'] . "\n"));
     }
     // Debugging
-    printmsg("DEBUG => Host selected: {$host_name}{$host_zone_name} Zone ID: $host_zone_id", 2);
+    printmsg("DEBUG => Host selected: {$host_name}{$host_zone_name} Zone ID: $host_zone_id", 3);
     
-    // Validate that there isn't already a host/alias named $host_name in the zone $host_zone_id.
-    //list($z_status, $z_rows, $z_record) = ona_get_zone_record(array('name' => $host_zone_name));
+    // Validate that there isn't already any dns record named $host_name in the zone $host_zone_id.
     $h_status = $h_rows = 0;
+    // does the zone $host_zone_id even exist?
     list($d_status, $d_rows, $d_record) = ona_get_dns_a_record(array('name' => $host_name, 'domain_id' => $host_zone_id));
     if (!$d_status && $d_rows) {
         list($h_status, $h_rows, $h_record) =  ona_get_host_record(array('primary_dns_a_id'    => $d_record[0]));
     }
+    
     error_log($d_status.",".$d_rows.",".print_r($d_record,true));
     error_log($h_status.",".$h_rows.",".print_r($h_record,true));
     if ($h_status or $h_rows) {
-        printmsg("DEBUG => Another host named {$host_name}.{$host_zone_name} already exists!",3);
-        $self['error'] = "ERROR => Another host named {$host_name}.{$host_zone_name} already exists!";
+        printmsg("DEBUG => Another DNS record named {$host_name}.{$host_zone_name} already exists!",3);
+        $self['error'] = "ERROR => Another DNS record named {$host_name}.{$host_zone_name} already exists!";
         return(array(5, $self['error'] . "\n"));
     }
-    list($a_status, $a_rows, $a_record) = ona_get_alias_record(array('ALIAS'       => $host_name, 
-                                                                      'DNS_ZONE_ID' => $host_zone_id));
-    if ($a_status or $a_rows) {
-        printmsg("DEBUG => An alias named {$host_name}.{$host_zone_name} already exists!",3);
-        $self['error'] = "ERROR => An alias named {$host_name}.{$host_zone_name} already exists!";
-        return(array(6, $self['error'] . "\n"));
-    }
+    //list($a_status, $a_rows, $a_record) = ona_get_alias_record(array('ALIAS'       => $host_name, 
+    //                                                                  'DNS_ZONE_ID' => $host_zone_id));
+    //if ($a_status or $a_rows) {
+    //    printmsg("DEBUG => An alias named {$host_name}.{$host_zone_name} already exists!",3);
+    //    $self['error'] = "ERROR => An alias named {$host_name}.{$host_zone_name} already exists!";
+    //    return(array(6, $self['error'] . "\n"));
+    //}
     
     
     // Check permissions

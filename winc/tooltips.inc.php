@@ -360,7 +360,7 @@ EOL;
     $subnet['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
 
     list($status, $rows, $type) = ona_get_subnet_type_record(array('id' => $record['subnet_type_id']));
-    $record['type'] = $type['name'];
+    $record['type'] = $type['display_name'];
 
 
     // Associated location info

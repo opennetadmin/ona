@@ -17,10 +17,10 @@
 
 
 // Check permissions
-//if (!auth('advanced')) {
-//    $window['js'] = "removeElement('{$window_name}'); alert('Permission denied!');";
-//    return;
-//}
+if (!auth('advanced')) {
+    $window['js'] = "removeElement('{$window_name}'); alert('Permission denied!');";
+    return;
+}
 
 // Set the window title:
 $window['title'] = "Subnet Type Administration";
@@ -125,11 +125,11 @@ function ws_display_list($window_name, $form) {
     global $font_family, $color, $style, $images;
     
     // Check permissions
-  //  if (!auth('advanced')) {
-   //     $response = new xajaxResponse();
-    //    $response->addScript("alert('Permission denied!');");
-    //    return($response->getXML());
-    //}
+    if (!auth('advanced')) {
+        $response = new xajaxResponse();
+        $response->addScript("alert('Permission denied!');");
+        return($response->getXML());
+    }
     
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
@@ -146,7 +146,9 @@ function ws_display_list($window_name, $form) {
         
         <!-- Table Header -->
         <tr>
-            <td class="list-header" align="center" style="{$style['borderR']};">Subnet type</td>
+            <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
+            <td class="list-header" align="center" style="{$style['borderR']};">Short Name</td>
+            <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
         
@@ -154,14 +156,14 @@ EOL;
     
     $where = 'id > 0';
     if (is_array($form) and $form['filter']) {
-        $where = 'name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
+        $where = 'display_name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
     // Offset for SQL query
     $offset = ($conf['search_results_per_page'] * ($page - 1));
     if ($offset == 0) { $offset = -1; }
     
     // Get list of elements
-    list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', $where, 'name', $conf['search_results_per_page'], $offset);
+    list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', $where, 'display_name', $conf['search_results_per_page'], $offset);
     
     // If we got less than serach_results_per_page, add the current offset to it
     // so that if we're on the last page $rows still has the right number in it.
@@ -191,7 +193,15 @@ EOL;
                 <a title="Edit subnet type. ID: {$record['id']}"
                    class="act"
                    onClick="xajax_window_submit('app_subnet_type_edit', '{$record['id']}', 'editor');"
-                >{$record['name']}</a>&nbsp;
+                >{$record['display_name']}</a>&nbsp;
+            </td>
+            
+            <td class="list-row">
+                {$record['short_name']}&nbsp;
+            </td>
+            
+            <td class="list-row">
+                {$record['notes']}&nbsp;
             </td>
             
             <td align="right" class="list-row" nowrap="true">
@@ -260,11 +270,11 @@ function ws_delete($window_name, $form='') {
     global $conf, $self, $onadb;
     
     // Check permissions
- //   if (!auth('advanced')) {
-  //      $response = new xajaxResponse();
-   //     $response->addScript("alert('Permission denied!');");
-   //     return($response->getXML());
-   // }
+    if (!auth('advanced')) {
+        $response = new xajaxResponse();
+        $response->addScript("alert('Permission denied!');");
+        return($response->getXML());
+    }
     
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();

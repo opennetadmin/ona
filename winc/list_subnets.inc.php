@@ -74,7 +74,7 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
-    // SUBNET TYPE
+    // ..???
     if ($form['server_id']) {
         $where .= $and . "id IN (SELECT SUBNET_ID FROM DHCP_SERVER_SUBNETS_B WHERE SERVER_ID = " . $onadb->qstr($form['server_id']) . ')';
         $and = " AND ";
@@ -208,7 +208,7 @@ EOL;
         $record['IP_SUBNET_MASK_CIDR'] = ip_mangle($record['ip_mask'], 'cidr');
 
         list($status, $rows, $type) = ona_get_subnet_type_record(array('id' => $record['subnet_type_id']));
-        $record['TYPE'] = $type['name'];
+        $record['type'] = $type['display_name'];
 
         // Calculate the percentage of the subnet that's used (total size - allocated hosts - dhcp pool size)
         $usage_html = get_subnet_usage_html($record['id']);
@@ -237,12 +237,12 @@ EOL;
                 {$usage_html}
             </td>
 
-            <td class="list-row" align="right">
-                {$record['TYPE']}&nbsp;
+            <td class="list-row" align="left">
+                {$record['type']}&nbsp;
             </td>
 
             <td class="list-row" align="right">
-                {$record['LVL']}&nbsp;
+                {$record['level']}&nbsp;
             </td>
 
             <td class="list-row" align="right">

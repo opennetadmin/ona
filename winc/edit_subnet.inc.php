@@ -7,7 +7,7 @@
 //
 // Description:
 //     Displays a form for creating/editing a subnet record.
-//     If $form is a valid SUBNET_ID, it is used to display an existing
+//     If $form is a valid subnet_id, it is used to display an existing
 //     record for editing.  "Save" button calls the ws_save() function.
 //////////////////////////////////////////////////////////////////////////////
 function ws_editor($window_name, $form='') {
@@ -15,13 +15,12 @@ function ws_editor($window_name, $form='') {
     global $font_family, $color, $style, $images;
     $window = array();
 
-  // FIXME: add auth code here!
-  // Check permissions
-  //   if (! (auth('subnet_modify') and auth('subnet_add')) ) {
-  //      $response = new xajaxResponse();
-  //      $response->addScript("alert('Permission denied!');");
-  //      return($response->getXML());
-  //  }
+    // Check permissions
+    if (! (auth('subnet_modify') and auth('subnet_add')) ) {
+        $response = new xajaxResponse();
+        $response->addScript("alert('Permission denied!');");
+        return($response->getXML());
+    }
 
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
@@ -59,13 +58,13 @@ function ws_editor($window_name, $form='') {
 
 
     // Build subnet type list
-    list($status, $rows, $subnettypes) = db_get_records($onadb, 'subnet_types', 'id >= 1', 'name');
+    list($status, $rows, $subnettypes) = db_get_records($onadb, 'subnet_types', 'id > 0', 'display_name');
     $subnet_type_list = '<option value="">&nbsp;</option>\n';
-    $subnettypes['subnet_type_name'] = htmlentities($subnettypes['name']);
+    $subnettypes['subnet_type_name'] = htmlentities($subnettypes['display_name']);
     foreach ($subnettypes as $record) {
         $selected = "";
         if ($record['id'] == $subnet['subnet_type_id']) { $selected = "SELECTED=\"selected\""; }
-        if ($record['id']) {$subnet_type_list .= "<option {$selected} value=\"{$record['id']}\">{$record['name']}</option>\n";}
+        if ($record['id']) {$subnet_type_list .= "<option {$selected} value=\"{$record['id']}\">{$record['display_name']}</option>\n";}
     }
 
 
@@ -112,7 +111,7 @@ EOL;
     // Define the window's inner html
     $window['html'] = <<<EOL
 
-    <!-- Host Edit Form -->
+    <!-- Subnet Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
     <input type="hidden" name="subnet" value="{$subnet['name']}">
     <input type="hidden" name="js" value="{$form['js']}">
@@ -205,7 +204,8 @@ EOL;
 
 EOL;
 
-if (!$subnet['id']) {
+// Show a "keep adding" checkbox if they are adding records
+if (!isset($subnet['id'])) {
         $window['html'] .= <<<EOL
         <tr>
             <td align="right" nowrap="true">
@@ -268,13 +268,12 @@ EOL;
 function ws_save($window_name, $form='') {
     global $include, $conf, $self, $onadb;
 
-    // FIXME: add auth code here!
     // Check permissions
-    //    if (! (auth('subnet_modify') and auth('subnet_add')) ) {
-    //        $response = new xajaxResponse();
-    //        $response->addScript("alert('Permission denied!');");
-    //        return($response->getXML());
-    //    }
+    if (! (auth('subnet_modify') and auth('subnet_add')) ) {
+        $response = new xajaxResponse();
+        $response->addScript("alert('Permission denied!');");
+        return($response->getXML());
+    }
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
@@ -305,7 +304,6 @@ function ws_save($window_name, $form='') {
     }
 
 
-
     // Decide if we're editing or adding
     $module = 'modify';
     // If we're adding, re-map some the array names to match what the "add" module wants
@@ -322,33 +320,22 @@ function ws_save($window_name, $form='') {
         $form['netmask'] = $form['set_netmask'];         unset($form['set_netmask']);
         $form['vlan'] = $form['set_vlan'];               unset($form['set_vlan']);
     }
-
+    
     // Run the module to ADD or MODIFY the SUBNET.
     list($status, $output) = run_module('subnet_'.$module, $form);
 
     // If the module returned an error code display a popup warning
     if ($status)
-        $js .= "alert('Subnet update failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
-    else {
-        // if they have checked the keep adding hosts box then dont remove the window
-        if (!$form['keepadding'])
-            $js .= "removeElement('{$window_name}');";
-        else {
-            $js .= "el('statusinfo_{$window_name}').innerHTML = 'Previously added: {$form['name']}';";
-        }
-
-        if ($form['js']) $js .= $form['js'];
-    }
-    // If the module returned an error code display a popup warning
-    if ($status)
         $js .= "alert('Save failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
     else {
-        // if they have checked the keep adding hosts box then dont remove the window
-        if (!$form['keepadding'])
-            $js .= "removeElement('{$window_name}');";
-        else {
+        // Update the status to tell them what they just did if they just *added* a subnet and the "keep adding" box is checked.
+        // Otherwise just close the edit window.
+        if ($form['keepadding'] and $module == 'add')
             $js .= "el('statusinfo_{$window_name}').innerHTML = 'Previously added: {$form['name']}';";
-        }
+        else
+            $js .= "removeElement('{$window_name}');";
+        
+        // If there is "refresh" javascript, send it to the browser to execute
         if ($form['js']) $js .= $form['js'];
     }
 
@@ -375,13 +362,12 @@ function ws_save($window_name, $form='') {
 function ws_delete($window_name, $form='') {
     global $include, $conf, $self, $onadb;
 
-    // FIXME: add auth code here!
     // Check permissions
-    //    if (!auth('subnet_del')) {
-    //        $response = new xajaxResponse();
-    //        $response->addScript("alert('Permission denied!');");
-    //        return($response->getXML());
-    //    }
+    if (!auth('subnet_del')) {
+        $response = new xajaxResponse();
+        $response->addScript("alert('Permission denied!');");
+        return($response->getXML());
+    }
 
     // If an array in a string was provided, build the array and store it in $form
     $form = parse_options_string($form);

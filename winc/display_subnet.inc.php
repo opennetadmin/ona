@@ -50,14 +50,13 @@ function ws_display($window_name, $form='') {
     // Convert IP and Netmask to a presentable format
     $record['ip_addr'] = ip_mangle($record['ip_addr'], 'dotted');
     $record['ip_mask'] = ip_mangle($record['ip_mask'], 'dotted');
-    $record['IP_SUBNET_MASK_CIDR'] = ip_mangle($record['ip_mask'], 'cidr');
+    $record['ip_subnet_mask_cidr'] = ip_mangle($record['ip_mask'], 'cidr');
 
     // Calculate the percentage of the subnet that's used (total size - allocated hosts - dhcp pool size)
     $usage_html = get_subnet_usage_html($record['id']);
 
     list($status, $rows, $type) = ona_get_subnet_type_record(array('id' => $record['subnet_type_id']));
-    $record['TYPE'] = $type['name'];
-
+    $record['type'] = $type['display_name'];
 
     // Vlan Record
     list($status, $rows, $vlan) = ona_get_vlan_record(array('id' => $record['vlan_id']));
@@ -167,7 +166,7 @@ EOL;
 
                 <tr>
                     <td align="right" nowrap="true"><b>Netmask</b>&nbsp;</td>
-                    <td class="padding" align="left">{$record['ip_mask']} (/{$record['IP_SUBNET_MASK_CIDR']})&nbsp;</td>
+                    <td class="padding" align="left">{$record['ip_mask']} (/{$record['ip_subnet_mask_cidr']})&nbsp;</td>
                 </tr>
 
                 <tr>
@@ -177,7 +176,7 @@ EOL;
 
                 <tr>
                     <td align="right" nowrap="true"><b>Type</b>&nbsp;</td>
-                    <td class="padding" align="left">{$record['TYPE']}&nbsp;</td>
+                    <td class="padding" align="left">{$record['type']}&nbsp;</td>
                 </tr>
 
             </table>

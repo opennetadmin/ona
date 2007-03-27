@@ -1082,10 +1082,6 @@ function ona_get_host_record($array='', $order='') {
     return(ona_get_record($array, 'hosts', $order));
 }
 
-function ona_get_alias_record($array='', $order='') {
-    return(ona_get_record($array, 'HOST_ALIASES_B', $order));
-}
-
 function ona_get_zone_record($array='', $order='') {
     return(ona_get_record($array, 'dns_zones', $order));
 }
@@ -1980,7 +1976,7 @@ function ona_find_device($search="") {
 //
 //  Input:
 //    $search = A string or ID that can uniquly identify a subnet
-//              type from the NETWORK_TYPES_B table in the database.
+//              type from the "subnet_types" table in the database.
 //
 //  Output:
 //    Returns a three part list:
@@ -1989,7 +1985,7 @@ function ona_find_device($search="") {
 //         of the error will be stored in the global variable $self['error']
 //      2. The number of rows that were found - 0 or 1 (0 is returned if
 //         a unique match couldn't be found)
-//      3. An array of a record from the NETWORK_TYPES_B table where
+//      3. An array of a record from the "subnet_types" table where
 //         $search matchs.
 //
 //  Example: list($status, $rows, $net_type) = ona_find_subnet_type('VLAN (802.1Q or ISL)');
@@ -1999,30 +1995,36 @@ function ona_find_subnet_type($search="") {
 
     // Validate input
     if ($search == "") {
+        $self['error'] = "ERROR => No search string for subnet-type search";
         return(array(1, 0, array()));
     }
 
     // If it's numeric, search by record ID
-    if (preg_match('/^\d+$/', $search)) {
+    if (is_numeric($search)) {
         $field = 'id';
         list($status, $rows, $record) = ona_get_subnet_type_record(array($field => $search));
         // If we got it, return it
         if ($status == 0 and $rows == 1) {
             printmsg("DEBUG => ona_find_subnet_type() found device record by $field", 2);
-            return(array(0, $rows, $record));
+            return(array($status, $rows, $record));
         }
     }
 
     // It's a string - do several sql queries and see if we can get a unique match
-    list($status, $rows, $record) = ona_get_subnet_type_record(array('name' => $search));
-    // If we got it, return it
+    list($status, $rows, $record) = ona_get_subnet_type_record(array('display_name' => $search));
+    if ($status == 0 and $rows == 1) {
+        printmsg("DEBUG => ona_find_subnet_type() found subnet_type record by its name", 2);
+        return(array(0, $rows, $record));
+    }
+    
+    list($status, $rows, $record) = ona_get_subnet_type_record(array('short_name' => $search));
     if ($status == 0 and $rows == 1) {
         printmsg("DEBUG => ona_find_subnet_type() found subnet_type record by its name", 2);
         return(array(0, $rows, $record));
     }
 
     // We didn't find it - return and error code, 0 matches, and an empty record.
-    $self['error'] = "NOTICE => couldn't find a unique subnet_type record with specified search criteria";
+    $self['error'] = "NOTICE => Subnet-type not found";
     printmsg($self['error'], 2);
     return(array(2, 0, array()));
 }
