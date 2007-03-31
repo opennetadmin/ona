@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -49,7 +49,7 @@ Adds a new interface to an existing host record
     name=NAME                 interface name (i.e. "FastEthernet0/1.100")
 
   Notes:
-    * DOMAIN will default to .albertsons.com if not specified
+    * DOMAIN will default to FIXME: .albertsons.com if not specified
 \n
 EOM
         ));
@@ -72,7 +72,7 @@ EOM
     }
     printmsg("DEBUG => Host selected: {$host['FQDN']}", 3);
 
-    // Translate IP address to a number
+    // Translate IPv4 address to a number
     $orig_ip= $options['ip'];
     $options['ip'] = ip_mangle($options['ip'], 1);
     if ($options['ip'] == -1) {
