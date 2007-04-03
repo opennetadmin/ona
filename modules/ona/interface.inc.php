@@ -78,13 +78,13 @@ EOM
     }
     
     // Find the Host they are looking for
-    list($host, $zone) = ona_find_host($options['host']);
+    list($host, $domain) = ona_find_host($options['host']);
     if (!$host['id']) {
         printmsg("DEBUG => The host specified, {$options['host']}, does not exist!",3);
         $self['error'] = "ERROR => The host specified, {$options['host']}, does not exist!";
         return(array(2, $self['error'] . "\n"));
     }
-    printmsg("DEBUG => Host selected: {$host['FQDN']}", 3);
+    printmsg("DEBUG => Host selected: {$host['fqdn']}", 3);
 
     // Translate IPv4 address to a number
     $orig_ip= $options['ip'];
@@ -216,7 +216,7 @@ EOM
     }
 
     // Return the success notice
-    $self['error'] = "INFO => Interface ADDED: " . ip_mangle($options['ip'], 'dotted') . " on  {$host['FQDN']}";
+    $self['error'] = "INFO => Interface ADDED: " . ip_mangle($options['ip'], 'dotted') . " on  {$host['fqdn']}";
     printmsg($self['error'], 0);
     return(array(0, $self['error'] . "\n"));
 }
@@ -299,7 +299,7 @@ EOM
     // If a hostname was provided, do a search based on that
     else if ($options['host']) {
         // Find a host by the user's input
-        list($host, $zone) = ona_find_host($options['host']);
+        list($host, $domain) = ona_find_host($options['host']);
         if (!$host['id']) {
             printmsg("DEBUG => Host not found ({$options['host']})!",3);
             $self['error'] = "ERROR => Host not found ({$options['host']})!";
@@ -464,7 +464,7 @@ EOM
     }
     
     // Check permissions
-    list($host, $zone) = ona_find_host($interface['host_id']);
+    list($host, $domain) = ona_find_host($interface['host_id']);
     if (!auth('interface_modify') or !authlvl($host['LVL'])) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
@@ -587,7 +587,7 @@ EOM
     // If a hostname was provided, do a search based on that
  /*   else if ($options['host']) {
         // Find a host by the user's input
-        list($host, $zone) = ona_find_host($options['host']);
+        list($host, $domain) = ona_find_host($options['host']);
         if (!$host['ID']) {
             $self['error'] = "ERROR => No interfaces found: no such host!";
             return(array(2, $self['error'] . "\n"));
@@ -604,14 +604,14 @@ EOM
     }
 
     // Load associated records
-    list($host, $zone) = ona_find_host($interface['host_id']);
+    list($host, $domain) = ona_find_host($interface['host_id']);
     list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
 
     list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $interface['host_id']), '', 0);
     printmsg("DEBUG => total interfaces => {$total_interfaces}", 3);
     if ($total_interfaces == 1) {
-        printmsg("DEBUG => You cannot delete the last interface on a host, you must delete the host itself ({$host['FQDN']}).",3);
-        $self['error'] = "ERROR => You can not delete the last interface on a host, you must delete the host itself ({$host['FQDN']}).";
+        printmsg("DEBUG => You cannot delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).",3);
+        $self['error'] = "ERROR => You can not delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).";
         return(array(13, $self['error'] . "\n"));
     }
 
@@ -635,7 +635,7 @@ EOM
             return(array(5, $self['error']));
         }
         // Build a success notice to return to the user
-        $text = "INFO => Interface DELETED: " . ip_mangle($interface['ip_addr'], 'dotted') . "  from {$host['FQDN']}";
+        $text = "INFO => Interface DELETED: " . ip_mangle($interface['ip_addr'], 'dotted') . "  from {$host['fqdn']}";
         printmsg($text, 0);
 
         // Check to see if there are any other interfaces for the current HOST_ID
@@ -643,8 +643,8 @@ EOM
         // since we've disallowed removal of the last interface, this should never happen!!!!!
         list($status, $rows, $record) = ona_get_interface_record(array('host_id' => $interface['host_id']));
         if ($rows == 0) {
-            printmsg("ERROR => Host {$host['FQDN']} has NO remaining interfaces!", 0);
-            $text .= "\n" . "WARNING => Host {$host['FQDN']} has NO remaining interfaces!\n" .
+            printmsg("ERROR => Host {$host['fqdn']} has NO remaining interfaces!", 0);
+            $text .= "\n" . "WARNING => Host {$host['fqdn']} has NO remaining interfaces!\n" .
                             "           Delete this host or add an interface to it now!\n";
         }
 
@@ -739,7 +739,7 @@ EOM
     // If a hostname was provided, do a search based on that
     else if ($options['host']) {
         // Find a host by the user's input
-        list($host, $zone) = ona_find_host($options['host']);
+        list($host, $domain) = ona_find_host($options['host']);
         if (!$host['id']) {
             printmsg("DEBUG => Host not found ({$options['host']})!",3);
             $self['error'] = "ERROR => Host not found ({$options['host']})";
@@ -990,19 +990,18 @@ EOM
     foreach ($to_move as $interface) {
         // Load the associated host record
         list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
-        list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id']));
-        list($status, $rows, $zone) = ona_get_domain_record(array('id' => $dns['domain_id'], 'type' => 'A'));
+        list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id'], 'type' => 'A'));
         // Check permissions at the subnet level
         if (!authlvl($host['LVL'])) {
-            $self['error'] = "Permission denied! Can't modify Host: {$host['id']} {$dns['name']}.{$zone['name']}";
+            $self['error'] = "Permission denied! Can't modify Host: {$host['id']} {$dns['name']}.{$dns['fqdn']}";
             printmsg($self['error'], 0);
             return(array(14, $self['error'] . "\n"));
         }
         // Check to see if the host has any interfaces in the destination subnet
         list($status, $rows, $interface) = ona_get_interface_record(array('host_id' => $interface['host_id'], 'subnet_id' => $new_subnet['id']));
         if ($status or $rows) {
-            printmsg("DEBUG => Source host {$dns['name']}.{$zone['name']} already has an interface on the destination subnet!",3);
-            $self['error'] = "ERROR => Source host {$dns['name']}.{$zone['name']} (ID {$host['id']}) already has an interface on the destination subnet!";
+            printmsg("DEBUG => Source host {$dns['name']}.{$ddns['fqdn']} already has an interface on the destination subnet!",3);
+            $self['error'] = "ERROR => Source host {$dns['name']}.{$dns['fqdn']} (ID {$host['id']}) already has an interface on the destination subnet!";
             return(array(15, $self['error'] . "\n"));
         }
     }
@@ -1057,9 +1056,8 @@ EOM
         foreach ($to_move as $interface) {
             // Get display the hostname we would have moved, as well as it's IP address.
             list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
-            list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id']));
-            list($status, $rows, $zone) = ona_get_domain_record(array('id' => $dns['domain_id'], 'type' => 'A'));
-            $hostname = strtolower("{$dns['name']}.{$zone['name']}");
+            list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id'], 'type' => 'A'));
+            $hostname = strtolower("{$dns['name']}.{$dns['fqdn']}");
             $text .= "  " . ip_mangle($interface['ip_address'], 'dotted') . " -> " . ip_mangle($interface['new_ip_address'], 'dotted') . "\t({$hostname})\n";
         }
         $text .= "\n";
@@ -1067,28 +1065,28 @@ EOM
     }
 
     // Loop through and update each interface's IP_ADDRESS and NETWORK_ID
-    // FIXME: (PK) Need to work on this section still (4.2.2007):
+    // FIXME: (PK) Need to test this section still (4.3.2007):
     $text = "SUCCESS => {$total_to_move} interface(s) moved\n";
     $text .= "Interface(s) moved:\n\n";
     foreach ($to_move as $interface) {
-        list($status, $rows) = ona_update_record("IP.HOST_NETWORKS_B",
+        list($status, $rows) = ona_update_record("interfaces",
                                                   // Where:
-                                                  array('ID' => $interface['ID']),
+                                                  array('id' => $interface['id']),
                                                   // Update:
                                                   array(
-                                                        'IP_ADDRESS' => $interface['NEW_IP_ADDRESS'],
-                                                        'NETWORK_ID' => $new_subnet['ID'],
+                                                        'ip_addr' => $interface['new_ip_address'],
+                                                        'subnet_id' => $new_subnet['id'],
                                                        )
                                                  );
         if ($status != 0 or $rows != 1) {
             $self['error'] = "ERROR => Database update failed! {$self['error']}";
             return(array(8, $self['error'] . "\n"));
         }
-        // Get display the hostname we would have moved, as well as it's IP address.
-        list($status, $rows, $host) = ona_get_host_record(array('ID' => $interface['HOST_ID']));
-        list($status, $rows, $zone) = ona_get_zone_record(array('ID' => $host['PRIMARY_DNS_ZONE_ID']));
-        $hostname = strtolower("{$host['PRIMARY_DNS_NAME']}.{$zone['ZONE_NAME']}");
-        $text .= "  " . ip_mangle($interface['IP_ADDRESS'], 'dotted') . " -> " . ip_mangle($interface['NEW_IP_ADDRESS'], 'dotted') . "\t({$hostname})\n";
+        // Get display the hostname we would have moved, as well as its IP address.
+        list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
+        list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id'], 'type' => 'A'));
+        $hostname = strtolower("{$dns['name']}.{$dns['fqdn']}");
+        $text .= "  " . ip_mangle($interface['ip_address'], 'dotted') . " -> " . ip_mangle($interface['new_ip_address'], 'dotted') . "\t({$hostname})\n";
     }
 
     // Return the success notice
