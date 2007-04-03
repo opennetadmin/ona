@@ -713,7 +713,6 @@ Displays an interface record from the database
   Required:
     interface=[ID|IP|MAC]         display interface by search string
      or
-BTW, check out http://cangooglehearme.com
     host=NAME[.DOMAIN] or ID      display interface by hostname or HOST_ID
 
   Optional:
@@ -1023,7 +1022,7 @@ EOM
             if ($rows == 0 and $status == 0) {
                 // Since the IP seems available, let's double check and make sure it's not in a DHCP address pool
                 // FIXME: (PK) we haven't implemented the DHCP pool code yet!
-                list($status, $rows, $pool) = ona_get_dhcp_pool_record("IP_ADDRESS_START < '{$low_ip}' AND IP_ADDRESS_END > '{$low_ip}'");
+                // list($status, $rows, $pool) = ona_get_dhcp_pool_record("IP_ADDRESS_START < '{$low_ip}' AND IP_ADDRESS_END > '{$low_ip}'");
                 if ($rows == 0 and $status == 0) {
                     // The IP is available, lets use it!
                     $to_move[$i]['new_ip_address'] = $low_ip;
@@ -1042,8 +1041,8 @@ EOM
     if ($total_assigned != $total_to_move) {
         printmsg("DEBUG => The destination IP range doesn't have enough free IP addresses!", 3);
         $self['error'] = "ERROR => The destination IP range doesn't have enough free IP addresses!\n";
-        if ($pool_interfering)
-            $self['error'] .= "INFO => Some IPs in the destination range were part of a DHCP pool range.\n";
+// FIXME: (PK)        if ($pool_interfering)
+//            $self['error'] .= "INFO => Some IPs in the destination range were part of a DHCP pool range.\n";
         return(array(6, $self['error']));
     }
 
@@ -1058,7 +1057,7 @@ EOM
             list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
             list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id'], 'type' => 'A'));
             $hostname = strtolower("{$dns['name']}.{$dns['fqdn']}");
-            $text .= "  " . ip_mangle($interface['ip_address'], 'dotted') . " -> " . ip_mangle($interface['new_ip_address'], 'dotted') . "\t({$hostname})\n";
+            $text .= "  " . ip_mangle($interface['ip_addr'], 'dotted') . " -> " . ip_mangle($interface['new_ip_address'], 'dotted') . "\t({$hostname})\n";
         }
         $text .= "\n";
         return(array(7, $text));
@@ -1086,7 +1085,7 @@ EOM
         list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
         list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id'], 'type' => 'A'));
         $hostname = strtolower("{$dns['name']}.{$dns['fqdn']}");
-        $text .= "  " . ip_mangle($interface['ip_address'], 'dotted') . " -> " . ip_mangle($interface['new_ip_address'], 'dotted') . "\t({$hostname})\n";
+        $text .= "  " . ip_mangle($interface['ip_addr'], 'dotted') . " -> " . ip_mangle($interface['new_ip_address'], 'dotted') . "\t({$hostname})\n";
     }
 
     // Return the success notice
