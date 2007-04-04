@@ -187,7 +187,7 @@ EOL;
     // SMALL SUBNET MAP
 
     // Get the numeric IP address of our subnet (we replace the last quad with a .0)
-/*    $ip = ip_mangle(preg_replace('/\.\d+$/', '.0', $record['ip_addr']), 'numeric');
+    $ip = ip_mangle(preg_replace('/\.\d+$/', '.0', $record['ip_addr']), 'numeric');
     $ip_subnet = ip_mangle($record['ip_addr'], 'numeric');
 
     $html .= <<<EOL
@@ -231,7 +231,7 @@ EOL;
     // Get javascript to setup the map portal mouse handlers
     // Force ip end to be less than ip start to prevent Block highlighting
     $portal_js .= get_portal_js($window_name, $ip, $ip -1);
-*/
+
     // END SMALL SUBNET MAP
 
 
@@ -289,7 +289,7 @@ EOL;
         foreach ($dhcpservers as $dhcpserver) {
 
             list($host, $zone) = ona_find_host($dhcpserver['SERVER_ID']);
-            $host['FQDN'] = htmlentities($host['FQDN'], ENT_QUOTES);
+            $host['fqdn'] = htmlentities($host['fqdn'], ENT_QUOTES);
             $html .= <<<EOL
                 <tr onMouseOver="this.className='row-highlight';"
                     onMouseOut="this.className='row-normal';">
@@ -297,11 +297,11 @@ EOL;
                         <a title="View server. ID: {$host['id']}"
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$host['id']}\', \'display\')');"
-                        >{$host['FQDN']}</a>&nbsp;
+                        >{$host['fqdn']}</a>&nbsp;
                     </td>
                      <td align="right" nowrap="true">
                         <form id="form_dhcp_serv_{$dhcpserver['id']}"
-                                ><input type="hidden" name="server_id" value="{$host['FQDN']}"
+                                ><input type="hidden" name="server_id" value="{$host['fqdn']}"
                                 ><input type="hidden" name="subnet_id" value="{$dhcpserver['SUBNET_ID']}"
                                 ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
@@ -649,9 +649,7 @@ EOL;
             </tr>
         </table>
 
-        <div id='{$content_id}'>
-            {$conf['loading_icon']}
-        </div>
+        <div id='{$content_id}'>{$conf['loading_icon']}</div>
 
         <!-- ADD HOST LINK -->
         <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}">

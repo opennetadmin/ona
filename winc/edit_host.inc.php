@@ -37,14 +37,14 @@ function ws_editor($window_name, $form='') {
     
     // Load an existing host record (and associated info) if $form is a host_id
     $host = array();
-    $host['FQDN'] = '.';
+    $host['fqdn'] = '.';
     if (is_numeric($form['host_id'])) {
-        list($status, $rows, $host) = ona_get_host_record(array('ID' => $form['host_id']));
+        list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']));
         if ($rows) {
             // Load associated ZONE and INTERFACE records
-            list($status, $rows, $zone) = ona_get_zone_record(array('ID' => $host['PRIMARY_DNS_ZONE_ID']));
+            list($status, $rows, $zone) = ona_get_zone_record(array('id' => $host['primary_dns_zone_id']));
             $host['ZONE_NAME'] = $zone['ZONE_NAME'];
-            $host['FQDN'] = $host['PRIMARY_DNS_NAME'] . '.' . $host['ZONE_NAME'];
+            $host['fqdn'] = $host['PRIMARY_DNS_NAME'] . '.' . $host['ZONE_NAME'];
             list($status, $interfaces, $interface) = ona_get_interface_record(array('HOST_ID' => $host['ID']));
             list($status, $rows, $network) = ona_get_subnet_record(array('ID' => $interface['NETWORK_ID']));
             $interface['IP_ADDRESS'] = ip_mangle($interface['IP_ADDRESS'], 'dotted');
@@ -58,7 +58,7 @@ function ws_editor($window_name, $form='') {
     }
     
     // Set the default security level if there isn't one
-    if (!array_key_exists('LVL', $host)) $host['LVL'] = $conf['ona_lvl'];
+    if (!array_key_exists('lvl', $host)) $host['lvl'] = $conf['ona_lvl'];
     
     // Load a network record if we got passed a network_id
     if ($form['network_id'])
@@ -143,7 +143,7 @@ EOL;
     
     <!-- Host Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
-    <input type="hidden" name="host" value="{$host['FQDN']}">
+    <input type="hidden" name="host" value="{$host['fqdn']}">
     <input type="hidden" name="interface" value="{$interface['ID']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">

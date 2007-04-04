@@ -22,9 +22,7 @@ function ws_display($window_name, $form='') {
     if ($form['host_id'])
         list($status, $rows, $record) = ona_get_host_record(array('ID' => $form['host_id']));
     else if ($form['host']) {
-        list($record, $zone) = ona_find_host($form['host']);
-        if (is_numeric($record['id']))
-            $rows = 1;
+        list($status, $rows, $record) = ona_find_host($form['host']);
     }
     if ($status or !$rows) {
         array_pop($_SESSION['ona']['work_space']['history']);
@@ -33,12 +31,12 @@ function ws_display($window_name, $form='') {
         $response->addAssign("work_space_content", "innerHTML", $html);
         return($response->getXML());
     }
-
+    
     // Update History Title (and tell the browser to re-draw the history div)
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
     if ($history['title'] == $window_name) {
-        $history['title'] = $record['PRIMARY_DNS_NAME'];
+        $history['title'] = $record['name'];
         array_push($_SESSION['ona']['work_space']['history'], $history);
     }
 
@@ -46,15 +44,8 @@ function ws_display($window_name, $form='') {
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
 
-
-    // DNS A record
-    list($status, $rows, $dnsa) = ona_get_dns_a_record(array('id' => $record['primary_dns_a_id']));
-    $record['dns_name'] = $dnsa['name'];
-    if ($rows < 1) {$record['dns_name'] = "NONE SET";}
-
-    // Domain Name
-    list($status, $rows, $dnsdomain) = ona_get_dns_domain_record(array('id' => $dnsa['dns_domain_id']));
-    $record['domain'] = $dnsdomain['ns_fqdn'];
+    // FIXME: umm.. put this somewhere else
+    if (!$record['name']) $record['name'] = "NONE SET";
 
     // Interface (and find out how many there are)
     list($status, $interfaces, $interface) = ona_get_interface_record(array('HOST_ID' => $record['id']), '');
@@ -149,10 +140,10 @@ EOL;
 EOL;
     }
     $html .= <<<EOL
-                     &nbsp;{$record['dns_name']}.<a title="View zone. ID: {$dnsdomain['id']}"
+                     &nbsp;{$record['name']}.<a title="View zone. ID: {$record['domain_id']}"
                                                      class="zone"
-                                                     onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$dnsdomain['id']}\', \'display\')');"
-                                                  >{$record['domain']}</a>
+                                                     onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['domain_id']}\', \'display\')');"
+                                                  >{$record['domain_fqdn']}</a>
                 </td></tr>
 
                 <tr>
@@ -561,7 +552,7 @@ EOL;
                     <td align="left" nowrap="true">
                         <a title="Telnet to host"
                            class="act"
-                           href="telnet:{$record['PRIMARY_DNS_NAME']}.{$record['ZONE']}"
+                           href="telnet:{$record['fqdn']}"
                         ><img src="{$images}/silk/lightning_go.png" border="0">Telnet</a>&nbsp;
                     </td>
                 </tr>
@@ -570,7 +561,7 @@ EOL;
                      <td align="left" nowrap="true">
                         <a title="SSH to host"
                            class="act"
-                           href="ssh:{$record['PRIMARY_DNS_NAME']}.{$record['ZONE']}"
+                           href="ssh:{$record['fqdn']}"
                         ><img src="{$images}/silk/lightning_go.png" border="0">SSH</a>&nbsp;
                     </td>
                 -->

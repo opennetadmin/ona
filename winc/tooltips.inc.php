@@ -991,11 +991,9 @@ function quick_pool_server_search($form) {
         $selected = "";
         if ($record['DHCP_FAILOVER_GROUP_ID'] == $form['failover_group_id']) { $selected = "SELECTED=\"selected\""; }
         if ($record['DHCP_FAILOVER_GROUP_ID']) {
-            $fg_list .= "<option {$selected} value=\"{$record['DHCP_FAILOVER_GROUP_ID']}\">{$fail_host1['FQDN']}/{$fail_host2['FQDN']}</option>\n";
+            $fg_list .= "<option {$selected} value=\"{$record['DHCP_FAILOVER_GROUP_ID']}\">{$fail_host1['fqdn']}/{$fail_host2['fqdn']}</option>\n";
         }
     }
-
-
 
     $js .= <<<EOL
     suggest_setup('pool_server_qf', 'suggest_pool_server_qf');

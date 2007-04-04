@@ -157,10 +157,20 @@ function ws_save($window_name, $form='') {
     $response = new xajaxResponse();
     $js = '';
     
-    // Force short_name to be lower-case
-    $form['short_name'] = strtolower($form['short_name']);
+    // Validate Input
+    if ($form['short_name'] == '' or
+        $form['display_name'] == ''
+       ) {
+        $response->addScript("alert('Please complete all fields to continue!');");
+        return($response->getXML());
+    }
     
-    // FIXME: (bz) verify that short_name only contains \w characters
+    // BUSINESS RULE: Force short_name to be console friendly (a-z,-, & _ only)
+    $form['short_name'] = strtolower($form['short_name']);
+    if (!preg_match('/^[\w-_]+$/', $form['short_name'])) {
+        $response->addScript("alert('Invalid short name! Please use only script-friendly characters: a-z - _ (no spaces)');");
+        return($response->getXML());
+    }
     
     // If you get a numeric in $form, update the record
     if (is_numeric($form['id'])) {

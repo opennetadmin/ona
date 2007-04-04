@@ -329,12 +329,12 @@ EOL;
         if ($interfaces > 1) $interface_style = 'font-weight: bold;';
         
         // DNS A record
-        list($status, $rows, $dnsa) = ona_get_dns_a_record(array('id' => $record['primary_dns_a_id']));
-        $record['dns_name'] = $dnsa['name'];
+        list($status, $rows, $dns) = ona_get_dns_record(array('id' => $record['primary_dns_id']));
+        $record['name'] = $dns['name'];
         
         // Domain Name
-        list($status, $rows, $dnsdomain) = ona_get_dns_domain_record(array('id' => $dnsa['dns_domain_id']));
-        $record['domain'] = $dnsdomain['ns_fqdn'];
+        list($status, $rows, $domain) = ona_get_domain_record(array('id' => $dns['domain_id']));
+        $record['domain'] = $domain['fqdn'];
         
         // Subnet description
         list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $interface['subnet_id']));
@@ -365,10 +365,10 @@ EOL;
                     <a title="View host. ID: {$record['id']}"
                        class="nav"
                        onClick="{$primary_object_js}"
-                    >{$record['dns_name']}</a
-                    >.<a title="View zone. ID: {$dnsdomain['id']}"
+                    >{$record['name']}</a
+                    >.<a title="View zone. ID: {$domain['id']}"
                          class="zone"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$dnsdomain['id']}\', \'display\')');"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$domain['id']}\', \'display\')');"
                     >{$record['domain']}</a>
                 </td>
 
@@ -716,7 +716,7 @@ function ws_display_alias_list($window_name, $form='') {
         list ($status, $hosts, $records) =
             db_get_records(
                 $onadb,
-                'HOSTS_B',
+                'hosts',
                 $form['host_where'] . $filter,
                 "",
                 0
@@ -755,14 +755,13 @@ EOL;
         $record['ZONE'] = $zone['ZONE_NAME'];
 
         // Associated Hostname and zone
-        list($status, $rows, $host) = ona_get_host_record(array('ID' => $record['HOST_ID']));
-        list($status, $rows, $zone) = ona_get_zone_record(array('ID' => $host['PRIMARY_DNS_ZONE_ID']));
-        $record['HOSTNAME'] = $host['PRIMARY_DNS_NAME'];
-        $record['HOST_ZONE'] = $zone['ZONE_NAME'];
-        $record['HOST_ZONE_ID'] = $zone['ID'];
+        list($status, $rows, $host) = ona_get_host_record(array('id' => $record['host_id']));
+        $record['HOSTNAME'] = $host['name'];
+        $record['HOST_ZONE'] = $host['domain_fqdn'];
+        $record['HOST_ZONE_ID'] = $zone['domain_id'];
 
         // Interface (and find out how many there are)
-        list($status, $interfaces, $interface) = ona_get_interface_record(array('HOST_ID' => $record['HOST_ID']), '');
+        list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['HOST_ID']), '');
         $record['ip_addrESS'] = ip_mangle($interface['ip_addrESS'], 'dotted');
         $interface_style = '';
         if ($interfaces > 1) $interface_style = 'font-weight: bold;';
