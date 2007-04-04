@@ -109,7 +109,7 @@ function get_server_suggestions($q, $max_results=10) {
 
 
 function get_host_suggestions($q, $max_results=10) {
-    return(get_text_suggestions($q . '%', 'dns_a', 'name', $max_results));
+    return(get_text_suggestions($q . '%', 'dns', 'name', $max_results));
 }
 
 function get_host_notes_suggestions($q, $max_results=10) {

@@ -1078,20 +1078,19 @@ function ona_get_record($where="", $table="", $order="") {
 //
 ///////////////////////////////////////////////////////////////////////
 
+// Returns some additional fields: 
+//   name        => the base hostname
+//   fqdn        => the fqdn of the host (based on it's primary_dns_id)
+//   domain_id   => domain id for the associated primary_dns_id
+//   domain_name => domain name for the associated primary_dns_id's domain
 function ona_get_host_record($array='', $order='') {
-    return(ona_get_record($array, 'hosts', $order));
-}
-
-function ona_get_zone_record($array='', $order='') {
-    return(ona_get_record($array, 'domains', $order));
-}
-
-function ona_get_dns_domain_record($array='', $order='') {
-    return(ona_get_record($array, 'domains', $order));
-}
-
-function ona_get_zone_server_record($array='', $order='') {
-    return(ona_get_record($array, 'ZONE_SERVERS_B', $order));
+    list($status, $rows, $record) = ona_get_record($array, 'hosts', $order);
+    list($status_dns, $rows_dns, $dns) = ona_get_dns_record($record['primary_dns_id']);
+    $record['name'] = $dns['name'];
+    $record['fqdn'] = $record['name'] . '.' . $dns['fqdn'];
+    $record['domain_id'] = $dns['domain_id'];
+    $record['domain_fqdn'] = $dns['fqdn'];
+    return(array($status + $status_zone, $rows, $record));
 }
 
 function ona_get_block_record($array='', $order='') {
@@ -1106,8 +1105,20 @@ function ona_get_interface_record($array='', $order='') {
     return(ona_get_record($array, 'interfaces', $order));
 }
 
-function ona_get_dns_a_record($array='', $order='') {
-    return(ona_get_record($array, 'dns_a', $order));
+// Returns an additional "fqdn" field
+function ona_get_domain_record($array='', $order='') {
+    list($status, $rows, $record) = ona_get_record($array, 'domains', $order);
+    $record['fqdn'] = ona_build_domain_name($record['id']);
+    return(array($status, $rows, $record));
+}
+
+// Returns an additional "fqdn" field for some dns records
+function ona_get_dns_record($array='', $order='') {
+    list($status, $rows, $record) = ona_get_record($array, 'dns', $order);
+    if ($record['type'] == 'A') {
+        $record['fqdn'] = ona_build_domain_name($record['domain_id']);
+    }
+    return(array($status, $rows, $record));
 }
 
 function ona_get_config_record($array='', $order='ctime DESC') {
@@ -1334,11 +1345,8 @@ function ona_get_next_id($tablename) {
     // Debugging
     printmsg("DEBUG => ona_get_next_id() called", 3);
 
-
-
     // Find the sequence value for the specified tablename
     list($status, $rows, $record) = db_get_record($onadb, 'sequences', array('name' => $tablename));
-
 
     // Init a new sequence when the tablename is not found
     if (!$rows) {
@@ -1377,6 +1385,47 @@ function ona_get_next_id($tablename) {
 
 
 
+///////////////////////////////////////////////////////////////////////
+//  Function: string $domain_name = ona_build_domain_name (id=NUMBER)
+//  
+//  Input:
+//    $id = Row ID for a domain record
+//  
+//  Output:
+//    Returns the full domain name of the specified domain record.
+//  
+//  Description:
+//    Walks up the tree of domain records and returns the full
+//    name of the domain record specified.  Usually used for displaying
+//    a full domain name over the gui.
+//    FIXME: (bz) maybe this should allow a string to be passed too to
+//                provide search abilities?
+//  
+//  Example:  $name = ona_build_domain_name(18);
+///////////////////////////////////////////////////////////////////////
+function ona_build_domain_name($search='') {
+    global $conf, $self, $onadb;
+    $domain_name = '';
+    $status = 0;
+    while ($status == 0) {
+        list($status, $rows, $domain) = db_get_record($onadb, 'domains', array('id' => $search));
+        if (!$domain_name) // i.e. the first pass
+            $domain_name = $domain['name'];
+        else
+            $domain_name .= '.' . $domain['name'];
+        if (!$domain['parent_id'])
+            return($domain_name);
+    }
+}
+
+
+
+
+
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: ona_find_host (string $search)
@@ -1387,27 +1436,25 @@ function ona_get_next_id($tablename) {
 //              a host record.
 //
 //  Output:
-//    Returns a two part array: list($host_record, $zone_record);
-//
+//    Returns a three part array: list($status, $rows, $host)
+//  
 //  Description:
 //    If $search is not an FQDN:
-//      The requested host record is identified and the associated
-//      host and domain (zone) records are returned.
+//      The requested host record is identified via host ID, IP addr, 
+//      or unique dns name, etc, and the associated host record is 
+//      returned.
 //    If $search is an FQDN:
 //      Looks at $fqdn, determines which part of it (if any) is the
 //      domain name and which part is the hostname.  Then searches the
-//      database for matching hostname and domain name records and
-//      returns them.
-//      * In the event that the FQDN does not contain a valid hostname
-//        or alias name, a fake host record is returned with the
-//        "PRIMARY_DNS_NAME" key set to the original host portion of FQDN.
-//      * In the event that the FQDN specified is an alias record, the
-//        associated host record, and that host record's domain are returned.
+//      database for matching hostname record
+//      * In the event that the FQDN does not contain a valid dns name
+//        a "fake" host record is returned with only the "name" and 
+//        "fqdn" keys populated.
 //      * In the event that a valid, existing, domain can not be found in
-//        the FQDN, the domain "default-zone.com" will be returned.
-//        I.E. A valid domain (zone) record will always be returned.
+//        the FQDN, the domain "albertsons.com" will be returned.
+//        I.E. A valid domain record will always be returned.
 //
-//  Example:  list($host, $zone) = ona_find_host('myhost.domain.com');
+//  Example:  list($status, $rows, $host) = ona_find_host('myhost.domain.com');
 ///////////////////////////////////////////////////////////////////////
 function ona_find_host($search="") {
     global $conf, $self, $onadb;
@@ -1416,128 +1463,47 @@ function ona_find_host($search="") {
     // By record ID?
     if (is_numeric($search)) {
         list($status, $rows, $host) = ona_get_host_record(array('id' => $search));
-/*PK        if (!$rows)
-            list($status, $rows, $record) = ona_get_alias_record(array('ID' => $search));
-        if (!$rows)
-            list($status, $rows, $record) = db_get_record($onadb, 'SERVER_B', array('ID' => $search));
-        if (!$rows)
-            list($status, $rows, $record) = db_get_record($onadb, 'HOST_INFOBITS_B', array('ID' => $search));
-        if (!$rows)
-            list($status, $rows, $record) = db_get_record($onadb, 'configurations', array('ID' => $search));
-*/
-
         if ($rows) {
-/*PK            if (!$host['id']) {
-                list($status, $rows, $host) = ona_get_host_record(array('id' => $record['host_id']));
-            }
-*/
-            // FIXME: (PK) This now needs to use $host['primary_dns_a_id'] to look up
-	    //             the matching id in the 'dns_a' table.  Then, take the
-	    //             'domain_id' record from that lookup, and use it to get the 
-	    //             dns domain record.  Update: I think I've got it.  See below.
-	    //list($status, $rows, $zone) = ona_get_dns_domain_record(array('id' => $host['PRIMARY_DNS_ZONE_ID']));
-	    list($status, $rows, $dns_a) = ona_get_dns_a_record(array('id' => $host['primary_dns_a_id']));
-	    list($status, $rows, $zone) = ona_get_dns_domain_record(array('id' => $dns_a['domain_id']));
-
-            // This is just for convenience :)
-            $host['FQDN'] = $dns_a['name'] . '.' . $zone['name'];
-
-            printmsg("DEBUG => ona_find_host({$search}) called, found: {$host['FQDN']}", 3);
-
-            return(array($host, $zone));
+            printmsg("DEBUG => ona_find_host({$search}) called, found: {$host['fqdn']}", 3);
+            return(array($status, $rows, $host));
         }
     }
-
+    
     // By Interface IP?
     list($status, $rows, $interface) = ona_find_interface($search);
     if (!$status and $rows) {
         // Load and return associated info
         list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
-        list($status, $rows, $dns_a) = ona_get_dns_a_record(array('id' => $host['primary_dns_a_id']));
-	list($status, $rows, $zone) = ona_get_dns_domain_record(array('id' => $dns_a['domain_id']));
-//PK	list($status, $rows, $zone) = ona_get_zone_record(array('ID' => $host['PRIMARY_DNS_ZONE_ID']));
-
-        // This is just for convenience :)
-        $host['FQDN'] = $dns_a['name'] . '.' . $zone['name'];
-
-        return(array($host, $zone));
+        return(array($status, $rows, $host));
     }
-
+    
     //
     // It's an FQDN, do a bunch of stuff!
     //
-    $hostname = $zone_name = strtolower($search);
-    $zone = array();
-
+    
     // Find the domain name piece of $search
-    // Strip off everything up to the first period.
-    while ($zone_name = strstr($zone_name, '.')) {
-        // Remove the . from the start of the string
-        $zone_name = substr($zone_name, 1);
-        printmsg("DEBUG => ona_find_host() Checking for existance of zone: $zone_name", 3);
-
-        // Check to see if $zone_name is valid. If it is, fix the hostname and break;
-        list($status, $rows, $zone) = ona_get_zone_record(array('name' => $zone_name));
-        if ($rows) {
-            $hostname = str_replace('.' . $zone_name, '', $hostname);
-            break;
-        }
-
-        // Debugging
-        printmsg("DEBUG => ona_find_host() Checking for existance of zone : {$zone_name}.com", 3);
-
-        // Check to see if $hostname has a valid zone_id in the DB. If it is, fix the hostname and zone-name and break;
-        list($status, $rows, $zone) = ona_get_zone_record(array('name' => $zone_name . '.com'));
-        if ($rows) {
-            $hostname = str_replace('.' . $zone_name, '', $hostname);
-            $zone_name = $zone_name . '.com';
-            break;
-        }
-    }
-
-    // FIXME: If no zone_id yet, use their default zone  
-    // (PK: make the default zone a configuration item, either global or per entity...)
-    if (!$zone['id']) {
-        printmsg('DEBUG => ona_find_host() Zone not found, returning zone_id for "albertsons.com"', 3);
-        list($status, $records, $zone) = ona_get_zone_record(array('name' => 'albertsons.com'));
-    }
-
-    // Now we need to see if we can locate a valid host or alias record from $hostname
-//PK    list($status, $rows, $host) = ona_get_host_record(array('PRIMARY_DNS_NAME' => $hostname, 'PRIMARY_DNS_ZONE_ID' => $zone['ID']));
-    list($status, $rows, $dns_a) = ona_get_dns_a_record(array('name' => $hostname, 'domain_id' => $zone['id']));
+    list($status, $rows, $domain) = ona_find_domain($search);
     
-    if (!$rows) {
-        // We have a DNS A record, now check for a host record
-        list($status, $rows, $host) = ona_get_host_record(array('primary_dns_a_id' => $dns_a['id']));
+    // Now find what the host part of $search is
+    $hostname = str_replace($domain['fqdn'], '', $search);
     
-/*PK        if (!$rows) {
-           // Check for an alias
-           list($status, $rows, $alias) = ona_get_alias_record(array('ALIAS' => $hostname, 'DNS_ZONE_ID' => $zone['ID']));
-           // If we got one, we need to load the associated host record
-           if ($rows) {
-               list($status, $rows, $host) = ona_get_host_record(array('ID' => $alias['HOST_ID']));
-           }
-        }*/
-    }
-
-    // If we have a valid host record, load it's zone record
-    if ($host['id']) {
-        list($status, $rows, $dns_a) = ona_get_dns_a_record(array('name' => $host['primary_dns_a_id']));
-        list($status, $rows, $zone) = ona_get_zone_record(array('id' => $dns_a['domain_id']));
-    }
+    // Let's see if that hostname is valid or not in $domain['id']
+    list($status, $rows, $dns) = ona_get_dns_record(array('domain_id' => $domain['id'], 'name' => $hostname));
     
-    // Otherwise make a "fake" host record
-    // FIXME: PK -> What do we do here?  Create a "fake" DNS_A record *and* HOST record?
-    //              How can we link a fake DNS_A record to a fake HOST record without either
-    //              changing what we return, or saving the DNS_A record in the database?
-    else
-        $host = array('PRIMARY_DNS_NAME' => $hostname, 'PRIMARY_DNS_ZONE_ID' => $zone['ID']);
-
-    // This is just for convenience :)
-    $host['FQDN'] = $dns_a['name'] . '.' . $zone['name'];
-
-    // Return
-    return(array($host, $zone));
+    // If we got a record, lookup the associated host_id, and return it
+    if ($rows)
+        return(ona_get_host_record(array('id' => $dns['host_id'])));
+    
+    // Otherwise, build a fake host record with only a few entries in it and return that
+    $host = array(
+        'id'          => 0,
+        'name'        => $hostname,
+        'fqdn'        => "{$hostname}.{$domain['fqdn']}",
+        'domain_id'   => $domain['id'],
+        'domain_fqdn' => $domain['fqdn'],
+    );
+    
+    return(array(0, 0, $host));
 }
 
 
@@ -1549,90 +1515,52 @@ function ona_find_host($search="") {
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: ona_find_zone (string $hostname)
+//  Function: ona_find_domain (string $fqdn)
+//  
+//  $fqdn = The hostname[.domain] you want to find the domain record
+//          for.
 //
-//  $hostname = The hostname[.domain] you want to find the zone_id,
-//              zone_name, and hostname of.
-//
-//  Looks at $hostname, determines which part of it (if any) is the
-//  domain name, determines the real domain name, and returns a three
-//  element array of data :
-//     ( hostname, zone_name, zone_id )
-//  The domain "something.com" is returned if a domain isn't present
-//  in the hostname supplied.
-//
-//  Example:  list($host_name,  $host_zone_name,  $host_zone_id)  = ona_find_zone('myhost.mydomain.com');
+//  Looks at $fqdn, finds the best-matching domain in it, and returns
+//  it.  If $fqdn does not include a valid domain of any sort, we 
+//  assume $fqdn is a bare hostname, and return the domain record
+//  for the user's default domain.
+//  
+//  FIXME: albertsons.com :P
+//  
+//  Example: list($status, $rows, $domain) = ona_find_domain('myhost.mydomain.com');
 ///////////////////////////////////////////////////////////////////////
-function ona_find_zone($hostname="") {
-    $hostname = strtolower($hostname);
-    printmsg("DEBUG => ona_find_zone({$hostname}) called", 3);
-
-    // FYI: "zone" means "domain"
-    $zone_name = $hostname;
-    $zone = array();
-
-    // Find the zone/domain name
-    // Strip off everything up to the first period.
-    while ($zone_name = strstr($zone_name, '.')) {
-        // Remove the . from the start of the string
-        $zone_name = substr($zone_name, 1);
-
-        // Debugging
-        printmsg("DEBUG => ona_find_zone() Checking for existance of zone : $zone_name", 3);
-
-        // Check to see if $hostname has a vailid zone_id in the DB
-        // If it is, exit the while loop.
-        list($status, $records, $zone) = ona_get_zone_record(array('name' => $zone_name));
-        if ($status == 0 and $records == 1) {
-            // Fix $hostname
-            $hostname = str_replace('.' . $zone_name, '', $hostname);
-            break;
-        }
-
-        // Debugging
-        printmsg("DEBUG => ona_find_zone() Checking for existance of zone : {$zone_name}.com", 3);
-
-        // Check to see if $hostname has a valid zone_id in the DB
-        // If it is, exit the while loop.
-        list($status, $records, $zone) = ona_get_zone_record(array('name' => $zone_name . '.com'));
-        if ($status == 0 and $records == 1) {
-            // Fix $hostname
-            $hostname = str_replace('.' . $zone_name, '', $hostname);
-
-            // Fix $zone_name
-            $zone_name = $zone_name . '.com';
-
-            // Exit the while loop
-            break;
-        }
-
-    }
-
-    // If no zone_id yet, see if it's a HOST or ALIAS ID
-    if (!$zone['ID'] and preg_match('/^\d+$/', $hostname)) {
-        list($status, $records, $host) = ona_get_host_record(array('id' => $hostname));
-        if ($status == 0 and $records == 1) {
-            $hostname = $host['PRIMARY_DNS_NAME'];
-            list($status, $records, $zone) = ona_get_zone_record(array('id' => $host['PRIMARY_DNS_ZONE_ID']));
+function ona_find_domain($fqdn="") {
+    $fqdn = strtolower($fqdn);
+    printmsg("DEBUG => ona_find_domain({$fqdn}) called", 3);
+    
+    // Split it up on '.' and put it in an array backwards
+    $parts = array_reverse(explode('.', $fqdn));
+    
+    // Find the domain name that best matches
+    // www.albertsons.com
+    $name = '';
+    $domain = array();
+    foreach ($parts as $part) {
+        if (!$rows) {
+            if (!$name) $name = $part;
+            else $name = "{$part}.{$name}";
+            list($status, $rows, $record) = ona_get_domain_record(array('name' => $name));
+            if ($rows)
+                $domain = $record;
         }
         else {
-            list($status, $records, $alias) = ona_get_alias_record(array('id' => $hostname));
-            if ($status == 0 and $records == 1) {
-                $hostname = $alias['ALIAS'];
-                list($status, $records, $zone) = ona_get_zone_record(array('id' => $alias['DNS_ZONE_ID']));
-            }
+            list($status, $rows, $record) = ona_get_domain_record(array('name' => $part, 'parent_id' => $domain['id']));
+            if ($rows)
+                $domain = $record;
         }
     }
-
-    // If no zone_id yet, use .com
-    if (!$zone['ID']) {
-        printmsg('DEBUG => Zone not found, returning zone_id for ".com"', 3);
-        $zone_name = '.com';
-        list($status, $records, $zone) = ona_get_zone_record(array('name' => $zone_name));
+    
+    // If we don't have a domain yet, lets assume $fqdn is a basic hostname, and return the default domain
+    if (!array_key_exists('id', $domain)) {
+        list($status, $rows, $record) = ona_get_domain_record(array('name' => 'albertsons.com'));
     }
-
-    // Return
-    return(array($hostname, $zone['ZONE_NAME'], $zone['ID']));
+    
+    return(array(0, 1, $domain));
 }
 
 
@@ -1777,8 +1705,7 @@ function ona_find_interface($search="") {
         }
     }
 
-    // If it's an IP address
-    // FIXME: (PK what does this mean? -->) Save the mac in the format the DB uses (numeric)
+    // If it's an IP address...
     $ip = ip_mangle($search, 1);
     if ($ip != -1) {
         list($status, $rows, $record) = ona_get_interface_record(array('ip_addr' => $ip));
@@ -1799,7 +1726,6 @@ function ona_find_interface($search="") {
 
 
     // If it's a MAC address
-    // Save the mac in the format the DB uses (unformatted)
     $mac = mac_mangle($search, 1);
     if ($mac != -1) {
 
@@ -2301,7 +2227,7 @@ function ona_find_config($options=array()) {
     // Otherwise we're selecting a config by hostname and type
     else if ($options['host'] and $options['type']) {
         // Search for the host first
-        list($name, $zone_name, $zone_id) = ona_find_zone($options['host']);
+        list($name, $domain_name, $zone_id) = ona_find_domain($options['host']);
         list($status, $rows, $host) = ona_get_host_record(array('PRIMARY_DNS_NAME' => $name,
                                                                  'PRIMARY_DNS_ZONE_ID' => $zone_id));
         // Error if the host doesn't exist

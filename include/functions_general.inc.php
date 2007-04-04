@@ -1344,13 +1344,13 @@ function format_array($array=array()) {
         else if ($key == 'host_id')           {
             list($host, $zone) = ona_find_host($array[$key]);
             if ($host['id'])
-                $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['FQDN']})");
+                $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['fqdn']})");
         }
         else if ($key == 'server_id')         {
             list($status, $rows, $server) = ona_get_server_record(array('id' => $array[$key]));
             list($host, $host) = ona_find_host($server['host_id']);
             if ($host['id'])
-                $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['FQDN']})");
+                $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['fqdn']})");
         }
         else if ($key == 'subnet_id')        {
             list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $array[$key]));
