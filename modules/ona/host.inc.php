@@ -100,8 +100,13 @@ EOM
     // i.e. add .albertsons.com, or find the part of the name provided
     // that will be used as the "zone" or "domain".  This means testing many
     // zone name's against the DB to see what's valid.
-    // FIXME: PK ona_find_zone doesn't default to a zone if the specified one is invalid!
-    list($host_name,  $host_zone_name,  $host_zone_id)  = ona_find_zone($options['host']);
+    // 
+    // FIXME: (bz) .. probably some of the variables below should be replaced with $host['xxx']
+    list($status, $rows, $host) = ona_find_host($options['host']);
+    $host_name = $host['name'];
+    $host_zone_name = $host['domain_fqdn'];
+    $host_zone_id = $host['domain_id'];
+    
     
     // Validate that the DNS name has only valid characters in it
     $host_name = sanitize_hostname($host_name);
@@ -116,9 +121,9 @@ EOM
     // Validate that there isn't already any dns record named $host_name in the zone $host_zone_id.
     $h_status = $h_rows = 0;
     // does the zone $host_zone_id even exist?
-    list($d_status, $d_rows, $d_record) = ona_get_dns_a_record(array('name' => $host_name, 'domain_id' => $host_zone_id));
+    list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $host_name, 'domain_id' => $host_zone_id));
     if (!$d_status && $d_rows) {
-        list($h_status, $h_rows, $h_record) =  ona_get_host_record(array('primary_dns_a_id'    => $d_record[0]));
+        list($h_status, $h_rows, $h_record) =  ona_get_host_record(array('primary_dns_id' => $d_record[0]));
     }
     
     error_log($d_status.",".$d_rows.",".print_r($d_record,true));
@@ -317,8 +322,8 @@ EOM
         list($tmp_host, $tmp_zone) = ona_find_host($options['set_host']);
         // If the function above returned a host, and it's not the one we're editing, stop!
         if ($tmp_host['ID'] and $tmp_host['ID'] != $host['ID']) {
-            printmsg("DEBUG => Another host named {$tmp_host['FQDN']} already exists!",3);
-            $self['error'] = "ERROR => Another host named {$tmp_host['FQDN']} already exists!";
+            printmsg("DEBUG => Another host named {$tmp_host['fqdn']} already exists!",3);
+            $self['error'] = "ERROR => Another host named {$tmp_host['fqdn']} already exists!";
             return(array(5, $self['error'] . "\n"));
         }
         $SET['PRIMARY_DNS_NAME']    = $tmp_host['PRIMARY_DNS_NAME'];
@@ -399,7 +404,7 @@ EOM
     list($host, $zone) = ona_find_host($host['ID']);
     
     // Return the success notice
-    $self['error'] = "INFO => Host UPDATED:{$host['ID']}: {$host['FQDN']}";
+    $self['error'] = "INFO => Host UPDATED:{$host['ID']}: {$host['fqdn']}";
     
     $log_msg = "INFO => Host UPDATED:{$host['ID']}: ";
     $more="";
@@ -487,10 +492,10 @@ EOM
     
     // Find the host (and zone) record from $options['host']
     list($host, $zone) = ona_find_host($options['host']);
-    printmsg("DEBUG => host_del() Host: {$host['FQDN']}", 3);
+    printmsg("DEBUG => host_del() Host: {$host['fqdn']}", 3);
     if (!$host['ID']) {
-        printmsg("DEBUG => Unknown host: {$host['FQDN']}",3);
-        $self['error'] = "ERROR => Unknown host: {$host['FQDN']}";
+        printmsg("DEBUG => Unknown host: {$host['fqdn']}",3);
+        $self['error'] = "ERROR => Unknown host: {$host['fqdn']}";
         return(array(2, $self['error'] . "\n"));
     }
     
@@ -544,8 +549,8 @@ EOM
                 }
             }
             if ($serverrow > 0) {
-                printmsg("DEBUG => Host ({$host['FQDN']}) cannot be deleted, it is configured as a server!",3);
-                $self['error'] = "ERROR => Host ({$host['FQDN']}) cannot be deleted, it is configured as a server!";
+                printmsg("DEBUG => Host ({$host['fqdn']}) cannot be deleted, it is configured as a server!",3);
+                $self['error'] = "ERROR => Host ({$host['fqdn']}) cannot be deleted, it is configured as a server!";
                 return(array(5, $self['error'] . "\n"));
             }
         }
@@ -553,8 +558,8 @@ EOM
         // Display an error if it has any entries in CONFIG_TEXT_B
         list($status, $rows, $server) = db_get_record($onadb, 'CONFIG_TEXT_B', array('HOST_ID' => $host['ID']));
         if ($rows) {
-            printmsg("DEBUG => Host ({$host['FQDN']}) cannot be deleted, it has config archives!",3);
-            $self['error'] = "ERROR => Host ({$host['FQDN']}) cannot be deleted, it has config archives!";
+            printmsg("DEBUG => Host ({$host['fqdn']}) cannot be deleted, it has config archives!",3);
+            $self['error'] = "ERROR => Host ({$host['fqdn']}) cannot be deleted, it has config archives!";
             return(array(5, $self['error'] . "\n"));
         }
         
@@ -570,8 +575,8 @@ EOM
         }
         // log deletions
         foreach ($records as $record) {
-            printmsg("INFO => Interface DELETED: " . ip_mangle($record['IP_ADDRESS'], 'dotted') . " from {$host['FQDN']}",0);
-            $add_to_error .= "INFO => Interface DELETED: " . ip_mangle($record['IP_ADDRESS'], 'dotted') . " from {$host['FQDN']}\n";
+            printmsg("INFO => Interface DELETED: " . ip_mangle($record['IP_ADDRESS'], 'dotted') . " from {$host['fqdn']}",0);
+            $add_to_error .= "INFO => Interface DELETED: " . ip_mangle($record['IP_ADDRESS'], 'dotted') . " from {$host['fqdn']}\n";
         }
         
         // Delete alias(es)
@@ -587,9 +592,9 @@ EOM
         // log deletions
         foreach ($records as $record) {
             if (!$azone or $azone['ID'] != $record['DNS_ZONE_ID'])
-                list($status, $rows, $azone) = ona_get_zone_record(array('ID' => $record['DNS_ZONE_ID']));
-            printmsg("INFO => Alias DELETED: {$record['ALIAS']}.{$azone['ZONE_NAME']} from {$host['FQDN']}",0);
-            $add_to_error .= "INFO => Alias DELETED: {$record['ALIAS']}.{$azone['ZONE_NAME']} from {$host['FQDN']}\n";
+                list($status, $rows, $azone) = ona_get_domain_record(array('ID' => $record['DNS_ZONE_ID']));
+            printmsg("INFO => Alias DELETED: {$record['ALIAS']}.{$azone['ZONE_NAME']} from {$host['fqdn']}",0);
+            $add_to_error .= "INFO => Alias DELETED: {$record['ALIAS']}.{$azone['ZONE_NAME']} from {$host['fqdn']}\n";
         }
         
         // Delete infobit entries
@@ -598,7 +603,7 @@ EOM
         $log=array(); $i=0;    
         foreach ($records as $record) {
             list($status, $rows, $infobit) = ona_get_host_infobit_record(array('ID' => $record['ID']));
-            $log[$i]= "INFO => Infobit DELETED: {$infobit['NAME']} ({$infobit['VALUE']}) from {$host['FQDN']}";
+            $log[$i]= "INFO => Infobit DELETED: {$infobit['NAME']} ({$infobit['VALUE']}) from {$host['fqdn']}";
             $i++;
         }
         // do the delete
@@ -619,7 +624,7 @@ EOM
         $log=array(); $i=0;    
         foreach ($records as $record) {
             list($status, $rows, $dhcp) = ona_get_dhcp_entry_record(array('ID' => $record['ID']));
-            $log[$i]= "INFO => DHCP entry DELETED: {$dhcp['DHCP_DESCRIPTION']}={$dhcp['DHCP_PARAMETER_VALUE']} from {$host['FQDN']}";
+            $log[$i]= "INFO => DHCP entry DELETED: {$dhcp['DHCP_DESCRIPTION']}={$dhcp['DHCP_PARAMETER_VALUE']} from {$host['fqdn']}";
             $i++;
         }
         // do the delete
@@ -648,8 +653,8 @@ EOM
         }
         // log deletions
         foreach ($records as $record) {
-            printmsg("INFO => CPE name DELETED: {$record['CPE_NAME']} from {$host['FQDN']}",0);
-            $add_to_error .= "INFO => CPE name DELETED: {$record['CPE_NAME']} from {$host['FQDN']}\n";
+            printmsg("INFO => CPE name DELETED: {$record['CPE_NAME']} from {$host['fqdn']}",0);
+            $add_to_error .= "INFO => CPE name DELETED: {$record['CPE_NAME']} from {$host['fqdn']}\n";
         }
 
         
@@ -662,7 +667,7 @@ EOM
         }
         
         // Return the success notice
-        $self['error'] = "INFO => Host DELETED: {$host['FQDN']}";
+        $self['error'] = "INFO => Host DELETED: {$host['fqdn']}";
         printmsg($self['error'], 0);
         return(array(0, $add_to_error . $self['error'] . "\n"));
     }
@@ -743,7 +748,7 @@ EOM
     if ($rows) $text .= "\nASSOCIATED ALIAS RECORDS ({$rows}):\n";
     foreach ($records as $record) {
         if (!$azone or $azone['ID'] != $record['DNS_ZONE_ID'])
-            list($status, $rows, $azone) = ona_get_zone_record(array('ID' => $record['DNS_ZONE_ID']));
+            list($status, $rows, $azone) = ona_get_domain_record(array('ID' => $record['DNS_ZONE_ID']));
         $text .= "  {$record['ALIAS']}.{$azone['ZONE_NAME']}\n";
     }
     
@@ -845,7 +850,7 @@ EOM
     
     // Find the host (and zone) record from $options['host']
     list($host, $zone) = ona_find_host($options['host']);
-    printmsg("DEBUG => Host: {$host['FQDN']}", 3);
+    printmsg("DEBUG => Host: {$host['fqdn']}", 3);
     if (!$host['ID']) {
         printmsg("DEBUG => Unknown host: {$options['host']}",3);
         $self['error'] = "ERROR => Unknown host: {$options['host']}";
@@ -853,7 +858,7 @@ EOM
     }
     
     // Build text to return
-    $text  = "HOST RECORD ({$host['FQDN']})\n";
+    $text  = "HOST RECORD ({$host['fqdn']})\n";
     $text .= format_array($host);
     
     // If 'verbose' is enabled, grab some additional info to display

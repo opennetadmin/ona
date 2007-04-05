@@ -1,46 +1,48 @@
--- phpMyAdmin SQL Dump
--- version 2.10.0-rc1
--- http://www.phpmyadmin.net
--- 
--- Host: blade2
--- Generation Time: Mar 26, 2007 at 06:36 PM
--- Server version: 5.0.24
--- PHP Version: 4.4.4
+-- MySQL dump 10.10
+--
+-- Host: blade2    Database: ona
+-- ------------------------------------------------------
+-- Server version	5.0.24a-log
 
-SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
--- 
--- Database: `ona`
--- 
-
--- --------------------------------------------------------
-
--- 
+--
 -- Table structure for table `blocks`
--- 
+--
 
 DROP TABLE IF EXISTS `blocks`;
 CREATE TABLE `blocks` (
   `id` int(10) unsigned NOT NULL,
+  `ip_addr_start` int(10) unsigned NOT NULL,
+  `ip_addr_end` int(10) unsigned NOT NULL,
   `name` varchar(63) NOT NULL,
-  `ip_addr` int(10) unsigned NOT NULL,
-  `ip_mask` int(10) unsigned NOT NULL,
+  `notes` text NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='User Defined IP Address Ranges';
 
--- 
+--
 -- Dumping data for table `blocks`
--- 
+--
 
-INSERT INTO `blocks` (`id`, `name`, `ip_addr`, `ip_mask`) VALUES 
-(1, 'TEST_BLOCK', 33686016, 4294967040),
-(2, 'BLOCK2', 167866880, 4294967040);
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `blocks` DISABLE KEYS */;
+LOCK TABLES `blocks` WRITE;
+INSERT INTO `blocks` VALUES (1,33686016,4294967040,'',''),(2,167866880,4294967040,'','');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `blocks` ENABLE KEYS */;
 
--- 
+--
 -- Table structure for table `dcm_module_list`
--- 
+--
 
 DROP TABLE IF EXISTS `dcm_module_list`;
 CREATE TABLE `dcm_module_list` (
@@ -52,28 +54,20 @@ CREATE TABLE `dcm_module_list` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- 
+--
 -- Dumping data for table `dcm_module_list`
--- 
+--
 
-INSERT INTO `dcm_module_list` (`id`, `name`, `description`, `file`) VALUES 
-(1, 'get_module_list', 'Returns the list of available modules', 'get_module_list.inc.php'),
-(2, 'mangle_ip', 'Converts between various IP address representations', 'mangle.inc.php'),
-(3, 'mysql_purge_logs', 'Purges unused replication logs on MySQL masters', 'mysql_purge_logs.inc.php'),
-(4, 'subnet_add', 'Add a new subnet', 'ona/subnet.inc.php'),
-(5, 'subnet_modify', 'Modify an existing subnet', 'ona/subnet.inc.php'),
-(6, 'subnet_del', 'Delete an existing subnet', 'ona/subnet.inc.php'),
-(7, 'subnet_display', 'Display an existing subnet', 'ona/subnet.inc.php'),
-(8, 'host_add', 'Add a new host', 'ona/host.inc.php'),
-(9, 'host_display', 'Display an existing host', 'ona/host.inc.php'),
-(10, 'host_modify', 'Modify an existing host', 'ona/host.inc.php'),
-(11, 'host_del', 'Delete an existing host', 'ona/host.inc.php');
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `dcm_module_list` DISABLE KEYS */;
+LOCK TABLES `dcm_module_list` WRITE;
+INSERT INTO `dcm_module_list` VALUES (1,'get_module_list','Returns the list of available modules','get_module_list.inc.php'),(2,'mangle_ip','Converts between various IP address representations','mangle.inc.php'),(3,'mysql_purge_logs','Purges unused replication logs on MySQL masters','mysql_purge_logs.inc.php'),(4,'subnet_add','Add a new subnet','ona/subnet.inc.php'),(5,'subnet_modify','Modify an existing subnet','ona/subnet.inc.php'),(6,'subnet_del','Delete an existing subnet','ona/subnet.inc.php'),(7,'subnet_display','Display an existing subnet','ona/subnet.inc.php'),(8,'host_add','Add a new host','ona/host.inc.php'),(9,'host_display','Display an existing host','ona/host.inc.php'),(10,'host_modify','Modify an existing host','ona/host.inc.php'),(11,'host_del','Delete an existing host','ona/host.inc.php'),(12,'interface_add','Add an interface to an existing host','ona/interface.inc.php'),(13,'interface_modify','Modify an existing interface','ona/interface.inc.php'),(14,'interface_del','Delete an existing interface','ona/interface.inc.php'),(15,'interface_display','Displays details of an existing interface','ona/interface.inc.php'),(16,'interface_move','Move an interface from one subnet to another','ona/interface.inc.php');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `dcm_module_list` ENABLE KEYS */;
 
--- 
+--
 -- Table structure for table `defaults`
--- 
+--
 
 DROP TABLE IF EXISTS `defaults`;
 CREATE TABLE `defaults` (
@@ -86,39 +80,46 @@ CREATE TABLE `defaults` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
--- 
+--
 -- Dumping data for table `defaults`
--- 
+--
 
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `defaults` DISABLE KEYS */;
+LOCK TABLES `defaults` WRITE;
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `defaults` ENABLE KEYS */;
 
--- 
--- Table structure for table `dns_a`
--- 
+--
+-- Table structure for table `dns`
+--
 
-DROP TABLE IF EXISTS `dns_a`;
-CREATE TABLE `dns_a` (
+DROP TABLE IF EXISTS `dns`;
+CREATE TABLE `dns` (
   `id` int(10) unsigned NOT NULL,
   `domain_id` int(10) unsigned NOT NULL,
   `interface_id` int(10) unsigned NOT NULL,
+  `dns_id` int(10) unsigned NOT NULL default '0' COMMENT 'associated record (cname, ptr, etc)',
+  `type` varchar(15) NOT NULL,
   `ttl` int(10) unsigned NOT NULL,
   `name` varchar(255) NOT NULL COMMENT 'verify/set length',
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='No description needed.  Interface_ID is where it gets the IP';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='IP addr comes from interface_id';
 
--- 
--- Dumping data for table `dns_a`
--- 
+--
+-- Dumping data for table `dns`
+--
 
-INSERT INTO `dns_a` (`id`, `domain_id`, `interface_id`, `ttl`, `name`) VALUES 
-(1, 1, 1, 3600, 'hostname1');
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `dns` DISABLE KEYS */;
+LOCK TABLES `dns` WRITE;
+INSERT INTO `dns` VALUES (1,1,1,0,'A',3600,'hostname1'),(2,1,3,0,'A',3600,'hostname2');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `dns` ENABLE KEYS */;
 
--- 
+--
 -- Table structure for table `domains`
--- 
+--
 
 DROP TABLE IF EXISTS `domains`;
 CREATE TABLE `domains` (
@@ -132,44 +133,24 @@ CREATE TABLE `domains` (
   `minimum` int(10) unsigned NOT NULL,
   `ns_fqdn` varchar(255) NOT NULL COMMENT 'Since this is a text field, user interface needs to indicate when entered text is invalid.',
   `admin_email` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL COMMENT 'The name of the DNS domain (text)',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Domain name definitions';
 
--- 
+--
 -- Dumping data for table `domains`
--- 
+--
 
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `domains` DISABLE KEYS */;
+LOCK TABLES `domains` WRITE;
+INSERT INTO `domains` VALUES (1,0,'2007-04-02 22:10:46','0000-00-00 00:00:00',3600,3600,3600,3600,'ns1.test.com','','opennetadmin.com'),(2,0,'2007-04-04 21:49:53','0000-00-00 00:00:00',3600,3600,3600,3600,'ns1.albertsons.com','admin@albertsons.com','albertsons.com');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `domains` ENABLE KEYS */;
 
--- 
--- Table structure for table `hosts`
--- 
-
-DROP TABLE IF EXISTS `hosts`;
-CREATE TABLE `hosts` (
-  `id` int(10) unsigned NOT NULL,
-  `parent_id` int(10) unsigned NOT NULL COMMENT 'For Virtual Hosts',
-  `primary_dns_a_id` int(10) unsigned NOT NULL,
-  `model_id` int(10) unsigned NOT NULL,
-  `location_id` int(10) unsigned NOT NULL,
-  `notes` varchar(255) NOT NULL,
-  PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Host / device definitions';
-
--- 
--- Dumping data for table `hosts`
--- 
-
-INSERT INTO `hosts` (`id`, `parent_id`, `primary_dns_a_id`, `model_id`, `location_id`, `notes`) VALUES 
-(1, 0, 0, 1, 0, 'testing'),
-(2, 0, 0, 1, 1, 'more notes');
-
--- --------------------------------------------------------
-
--- 
+--
 -- Table structure for table `host_roles`
--- 
+--
 
 DROP TABLE IF EXISTS `host_roles`;
 CREATE TABLE `host_roles` (
@@ -179,16 +160,45 @@ CREATE TABLE `host_roles` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- 
+--
 -- Dumping data for table `host_roles`
--- 
+--
 
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `host_roles` DISABLE KEYS */;
+LOCK TABLES `host_roles` WRITE;
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `host_roles` ENABLE KEYS */;
 
--- 
+--
+-- Table structure for table `hosts`
+--
+
+DROP TABLE IF EXISTS `hosts`;
+CREATE TABLE `hosts` (
+  `id` int(10) unsigned NOT NULL,
+  `parent_id` int(10) unsigned NOT NULL COMMENT 'For Virtual Hosts',
+  `primary_dns_id` int(10) unsigned NOT NULL COMMENT 'So we have a display name for the host',
+  `model_id` int(10) unsigned NOT NULL,
+  `location_id` int(10) unsigned NOT NULL,
+  `notes` varchar(255) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Host / device definitions';
+
+--
+-- Dumping data for table `hosts`
+--
+
+
+/*!40000 ALTER TABLE `hosts` DISABLE KEYS */;
+LOCK TABLES `hosts` WRITE;
+INSERT INTO `hosts` VALUES (1,0,1,1,0,'testing'),(2,0,2,1,1,'more notes');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `hosts` ENABLE KEYS */;
+
+--
 -- Table structure for table `interfaces`
--- 
+--
 
 DROP TABLE IF EXISTS `interfaces`;
 CREATE TABLE `interfaces` (
@@ -197,24 +207,25 @@ CREATE TABLE `interfaces` (
   `host_id` int(10) unsigned NOT NULL,
   `ip_addr` int(10) unsigned NOT NULL,
   `mac_addr` varchar(12) NOT NULL,
-  `name` varchar(127) NOT NULL,
-  `description` varchar(64) default NULL,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(255) default NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='IP addresses and other host interface data';
 
--- 
+--
 -- Dumping data for table `interfaces`
--- 
+--
 
-INSERT INTO `interfaces` (`id`, `subnet_id`, `host_id`, `ip_addr`, `mac_addr`, `name`, `description`) VALUES 
-(1, 1, 1, 33686018, '001122334455', 'test', NULL),
-(2, 8, 1, 151587081, '', '', NULL);
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `interfaces` DISABLE KEYS */;
+LOCK TABLES `interfaces` WRITE;
+INSERT INTO `interfaces` VALUES (1,1,1,33686018,'001122334455','test',NULL),(2,8,1,151587081,'','',NULL),(4,18,2,3232235791,'0000DEADBEEF','Gi0/0','This is a test interface description field'),(5,4,2,16909058,'','FE1/12.2','WAN link to somewhere'),(6,1,2,33686019,'AABBCCDDEEFF','testing','');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `interfaces` ENABLE KEYS */;
 
--- 
+--
 -- Table structure for table `locations`
--- 
+--
 
 DROP TABLE IF EXISTS `locations`;
 CREATE TABLE `locations` (
@@ -227,16 +238,19 @@ CREATE TABLE `locations` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='This table needs re-worked';
 
--- 
+--
 -- Dumping data for table `locations`
--- 
+--
 
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `locations` DISABLE KEYS */;
+LOCK TABLES `locations` WRITE;
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `locations` ENABLE KEYS */;
 
--- 
+--
 -- Table structure for table `manufacturers`
--- 
+--
 
 DROP TABLE IF EXISTS `manufacturers`;
 CREATE TABLE `manufacturers` (
@@ -245,21 +259,20 @@ CREATE TABLE `manufacturers` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- 
+--
 -- Dumping data for table `manufacturers`
--- 
+--
 
-INSERT INTO `manufacturers` (`id`, `name`) VALUES 
-(1, 'Cisco'),
-(2, 'Juniper'),
-(3, 'Unknown'),
-(4, 'Hewlet Packard');
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `manufacturers` DISABLE KEYS */;
+LOCK TABLES `manufacturers` WRITE;
+INSERT INTO `manufacturers` VALUES (1,'Cisco'),(2,'Juniper'),(3,'Unknown'),(4,'Hewlet Packard');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `manufacturers` ENABLE KEYS */;
 
--- 
+--
 -- Table structure for table `models`
--- 
+--
 
 DROP TABLE IF EXISTS `models`;
 CREATE TABLE `models` (
@@ -269,19 +282,20 @@ CREATE TABLE `models` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- 
+--
 -- Dumping data for table `models`
--- 
+--
 
-INSERT INTO `models` (`id`, `manufacturer_id`, `model`) VALUES 
-(1, 1, '2821'),
-(2, 4, 'dv9000t');
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `models` DISABLE KEYS */;
+LOCK TABLES `models` WRITE;
+INSERT INTO `models` VALUES (1,1,'2821'),(2,4,'dv9000t');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `models` ENABLE KEYS */;
 
--- 
+--
 -- Table structure for table `roles`
--- 
+--
 
 DROP TABLE IF EXISTS `roles`;
 CREATE TABLE `roles` (
@@ -290,16 +304,19 @@ CREATE TABLE `roles` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Host roles / functions / services / verb';
 
--- 
+--
 -- Dumping data for table `roles`
--- 
+--
 
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `roles` DISABLE KEYS */;
+LOCK TABLES `roles` WRITE;
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 
--- 
+--
 -- Table structure for table `sequences`
--- 
+--
 
 DROP TABLE IF EXISTS `sequences`;
 CREATE TABLE `sequences` (
@@ -308,20 +325,20 @@ CREATE TABLE `sequences` (
   PRIMARY KEY  (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='All sequences stored here';
 
--- 
+--
 -- Dumping data for table `sequences`
--- 
+--
 
-INSERT INTO `sequences` (`name`, `seq`) VALUES 
-('contexts', 1),
-('subnets', 18),
-('subnet_types', 13);
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `sequences` DISABLE KEYS */;
+LOCK TABLES `sequences` WRITE;
+INSERT INTO `sequences` VALUES ('interfaces',7),('subnets',20),('subnet_types',13);
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `sequences` ENABLE KEYS */;
 
--- 
+--
 -- Table structure for table `sessions`
--- 
+--
 
 DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
@@ -331,20 +348,44 @@ CREATE TABLE `sessions` (
   PRIMARY KEY  (`sesskey`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- 
+--
 -- Dumping data for table `sessions`
--- 
+--
 
-INSERT INTO `sessions` (`sesskey`, `expiry`, `sessvalue`) VALUES 
-('4a53cd17f61b7c6d5d186a0abeaffa11', 1174865141, 'redirect|s:18:"http://blade1/ona/";ona|a:4:{s:4:"auth";a:1:{s:4:"user";a:2:{s:8:"username";s:5:"guest";s:5:"level";s:1:"0";}}s:26:"search_results_filter_form";a:4:{s:10:"content_id";s:19:"search_results_list";s:3:"tab";s:5:"hosts";s:7:"subnets";a:3:{s:1:"q";a:1:{s:9:"subnet_id";s:1:"9";}s:4:"page";s:1:"1";s:6:"filter";s:0:"";}s:5:"hosts";a:3:{s:1:"q";a:1:{s:8:"hostname";s:0:"";}s:4:"page";s:1:"1";s:6:"filter";s:0:"";}}s:10:"work_space";a:1:{s:7:"history";a:1:{i:0;a:3:{s:5:"title";s:8:"WOW-COOL";s:4:"type";s:14:"display_subnet";s:3:"url";s:64:"xajax_window_submit(''display_subnet'', ''subnet_id=>1'', ''display'')";}}}s:22:"list_hosts_filter_form";a:2:{s:3:"tab";s:5:"hosts";s:5:"hosts";a:2:{s:4:"page";s:1:"1";s:6:"filter";s:0:"";}}}tz|i:0;window_position|a:10:{s:15:"app_user_info_x";s:3:"853";s:15:"app_user_info_y";s:3:"173";s:13:"edit_subnet_x";s:3:"199";s:13:"edit_subnet_y";s:3:"205";s:15:"app_user_list_x";s:3:"697";s:15:"app_user_list_y";s:3:"498";s:16:"search_results_x";s:3:"194";s:16:"search_results_y";s:3:"132";s:11:"edit_host_x";s:3:"181";s:11:"edit_host_y";s:3:"268";}'),
-('80834c25e8a3144e1e5a5d661054d353', 1175128480, 'redirect|s:18:"http://blade1/ona/";ona|a:4:{s:4:"auth";a:1:{s:4:"user";a:2:{s:8:"username";s:5:"guest";s:5:"level";s:1:"0";}}s:26:"search_results_filter_form";a:3:{s:10:"content_id";s:19:"search_results_list";s:3:"tab";s:7:"subnets";s:5:"hosts";a:3:{s:1:"q";a:1:{s:8:"hostname";s:0:"";}s:4:"page";s:1:"1";s:6:"filter";s:0:"";}}s:10:"work_space";a:1:{s:7:"history";a:2:{i:0;a:3:{s:5:"title";s:12:"Map: 2.2.2.0";s:4:"type";s:17:"display_block_map";s:3:"url";s:109:"xajax_window_submit(''display_block_map'', ''ip_block_start=>2.2.2.0,ip_block_end=>2.2.2.255,id=>1'', ''display'');";}i:1;a:3:{s:5:"title";s:8:"TEST9DOT";s:4:"type";s:14:"display_subnet";s:3:"url";s:64:"xajax_window_submit(''display_subnet'', ''subnet_id=>8'', ''display'')";}}}s:22:"list_hosts_filter_form";a:2:{s:3:"tab";s:5:"hosts";s:5:"hosts";a:2:{s:4:"page";s:1:"1";s:6:"filter";s:0:"";}}}tz|i:0;window_position|a:10:{s:11:"edit_host_x";s:3:"759";s:11:"edit_host_y";s:3:"371";s:16:"search_results_x";s:3:"148";s:16:"search_results_y";s:2:"63";s:17:"app_admin_tools_x";s:4:"1040";s:17:"app_admin_tools_y";s:3:"388";s:22:"app_subnet_type_list_x";s:3:"259";s:22:"app_subnet_type_list_y";s:3:"401";s:22:"app_subnet_type_edit_x";s:3:"514";s:22:"app_subnet_type_edit_y";s:3:"325";}'),
-('f3fd1f497ab42ab0ae2c914f01202a03', 1175105030, 'redirect|s:18:"http://blade1/ona/";ona|a:1:{s:4:"auth";a:1:{s:4:"user";a:2:{s:8:"username";s:5:"guest";s:5:"level";s:1:"0";}}}tz|i:0;');
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
+LOCK TABLES `sessions` WRITE;
+INSERT INTO `sessions` VALUES ('80834c25e8a3144e1e5a5d661054d353',1175903193,'redirect|s:18:\"http://blade1/ona/\";ona|a:5:{s:4:\"auth\";a:1:{s:4:\"user\";a:2:{s:8:\"username\";s:5:\"guest\";s:5:\"level\";s:1:\"0\";}}s:26:\"search_results_filter_form\";a:3:{s:10:\"content_id\";s:19:\"search_results_list\";s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:3:{s:1:\"q\";a:1:{s:8:\"hostname\";s:0:\"\";}s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:10:\"work_space\";a:1:{s:7:\"history\";a:5:{i:0;a:3:{s:5:\"title\";s:12:\"Map: 1.2.2.0\";s:4:\"type\";s:17:\"display_block_map\";s:3:\"url\";s:79:\"xajax_window_submit(\'display_block_map\', \'ip_block_start=>1.2.2.0\', \'display\');\";}i:1;a:3:{s:5:\"title\";N;s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:60:\"xajax_window_submit(\'display_host\', \'host_id=>2\', \'display\')\";}i:2;a:3:{s:5:\"title\";s:12:\"display_zone\";s:4:\"type\";s:12:\"display_zone\";s:3:\"url\";s:60:\"xajax_window_submit(\'display_zone\', \'zone_id=>1\', \'display\')\";}i:3;a:3:{s:5:\"title\";s:10:\"YEAH-RIGHT\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>5\', \'display\')\";}i:4;a:3:{s:5:\"title\";s:9:\"hostname1\";s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:60:\"xajax_window_submit(\'display_host\', \'host_id=>1\', \'display\')\";}}}s:22:\"list_hosts_filter_form\";a:2:{s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:27:\"list_interfaces_filter_form\";a:2:{s:3:\"tab\";s:10:\"interfaces\";s:10:\"interfaces\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}}tz|i:0;window_position|a:4:{s:16:\"search_results_x\";s:3:\"224\";s:16:\"search_results_y\";s:3:\"170\";s:11:\"edit_host_x\";s:3:\"289\";s:11:\"edit_host_y\";s:3:\"111\";}'),('b24f573920d60e186b4b525c436ad54a',1175796683,'redirect|s:5:\"/ona/\";ona|a:5:{s:4:\"auth\";a:1:{s:4:\"user\";a:2:{s:8:\"username\";s:5:\"guest\";s:5:\"level\";s:1:\"0\";}}s:26:\"search_results_filter_form\";a:3:{s:10:\"content_id\";s:19:\"search_results_list\";s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:3:{s:1:\"q\";a:1:{s:8:\"hostname\";s:0:\"\";}s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:10:\"work_space\";a:1:{s:7:\"history\";a:3:{i:0;a:3:{s:5:\"title\";s:4:\"TEST\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>9\', \'display\')\";}i:1;a:3:{s:5:\"title\";s:6:\"BZTEST\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:65:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>18\', \'display\')\";}i:2;a:3:{s:5:\"title\";N;s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:60:\"xajax_window_submit(\'display_host\', \'host_id=>2\', \'display\')\";}}}s:22:\"list_hosts_filter_form\";a:2:{s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:27:\"list_interfaces_filter_form\";a:2:{s:3:\"tab\";s:10:\"interfaces\";s:10:\"interfaces\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}}tz|i:0;window_position|a:2:{s:16:\"search_results_x\";s:2:\"76\";s:16:\"search_results_y\";s:3:\"607\";}');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 
--- 
+--
+-- Table structure for table `subnet_types`
+--
+
+DROP TABLE IF EXISTS `subnet_types`;
+CREATE TABLE `subnet_types` (
+  `id` int(10) unsigned NOT NULL,
+  `short_name` varchar(31) NOT NULL COMMENT 'Lower case name for use with console / scripts',
+  `display_name` varchar(63) NOT NULL COMMENT 'Name displayed in GUI',
+  `notes` varchar(255) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `subnet_types`
+--
+
+
+/*!40000 ALTER TABLE `subnet_types` DISABLE KEYS */;
+LOCK TABLES `subnet_types` WRITE;
+INSERT INTO `subnet_types` VALUES (1,'loopback','Loopback','Loopback Interfaces (mostly for routers)'),(2,'','WAN',''),(7,'','VLAN',''),(8,'man','MAN','Not sure what this is..'),(9,'','VSAT',''),(10,'p2p','Point-to-Point',''),(11,'','VPN',''),(12,'','Wireless LAN','');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `subnet_types` ENABLE KEYS */;
+
+--
 -- Table structure for table `subnets`
--- 
+--
 
 DROP TABLE IF EXISTS `subnets`;
 CREATE TABLE `subnets` (
@@ -358,56 +399,42 @@ CREATE TABLE `subnets` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='IP subnet definitions';
 
--- 
+--
 -- Dumping data for table `subnets`
--- 
+--
 
-INSERT INTO `subnets` (`id`, `network_role_id`, `subnet_type_id`, `vlan_id`, `ip_addr`, `ip_mask`, `name`) VALUES 
-(1, 0, 8, 1, 33686016, 4294967040, 'WOW-COOL'),
-(2, 0, 8, 0, 50463232, 4294967040, 'DUH'),
-(3, 0, 2, 0, 67372032, 4294967040, 'MORE'),
-(4, 0, 1, 0, 16909056, 4294967040, 'DUDE'),
-(5, 0, 1, 0, 16908800, 4294967040, 'YEAH-RIGHT'),
-(6, 0, 7, 0, 167837696, 4294967040, 'SOME-NAME'),
-(7, 0, 7, 0, 167866880, 4294967040, 'VLAN-110'),
-(8, 0, 8, 2, 151584768, 4294950912, 'TEST9DOT'),
-(9, 0, 0, 0, 16843008, 4294967040, 'TEST'),
-(17, 0, 2, 0, 3232236032, 4294967040, 'PAULK-TEST');
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `subnets` DISABLE KEYS */;
+LOCK TABLES `subnets` WRITE;
+INSERT INTO `subnets` VALUES (1,0,8,1,33686016,4294967040,'WOW-COOL'),(2,0,8,0,50463232,4294967040,'DUH'),(3,0,2,0,67372032,4294967040,'MORE'),(4,0,1,0,16909056,4294967040,'DUDE'),(5,0,1,0,16908800,4294967040,'YEAH-RIGHT'),(6,0,7,0,167837696,4294967040,'SOME-NAME'),(7,0,7,0,167866880,4294967040,'VLAN-110'),(8,0,8,2,151584768,4294950912,'TEST9DOT'),(9,0,0,0,16843008,4294967040,'TEST'),(17,0,2,0,3232236032,4294967040,'PAULK-TEST'),(18,0,11,0,3232235776,4294967040,'BZTEST'),(19,0,11,0,3232236288,4294967168,'BZTEST2');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `subnets` ENABLE KEYS */;
 
--- 
--- Table structure for table `subnet_types`
--- 
+--
+-- Table structure for table `vlan_campuses`
+--
 
-DROP TABLE IF EXISTS `subnet_types`;
-CREATE TABLE `subnet_types` (
+DROP TABLE IF EXISTS `vlan_campuses`;
+CREATE TABLE `vlan_campuses` (
   `id` int(10) unsigned NOT NULL,
-  `short_name` varchar(31) NOT NULL COMMENT 'Lower case name for use with console / scripts',
-  `display_name` varchar(63) NOT NULL COMMENT 'Name displayed in GUI',
-  `notes` varchar(255) NOT NULL,
+  `name` varchar(63) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores vlan campus information (groupings of vlans)';
 
--- 
--- Dumping data for table `subnet_types`
--- 
+--
+-- Dumping data for table `vlan_campuses`
+--
 
-INSERT INTO `subnet_types` (`id`, `short_name`, `display_name`, `notes`) VALUES 
-(1, 'loopback', 'Loopback', 'Loopback Interfaces (mostly for routers)'),
-(2, '', 'WAN', ''),
-(7, '', 'VLAN', ''),
-(8, '', 'MAN', ''),
-(9, '', 'VSAT', ''),
-(10, '', 'Point-to-Point', ''),
-(11, '', 'VPN', ''),
-(12, '', 'Wireless LAN', '');
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `vlan_campuses` DISABLE KEYS */;
+LOCK TABLES `vlan_campuses` WRITE;
+INSERT INTO `vlan_campuses` VALUES (1,'BOISE'),(2,'NAMPA');
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `vlan_campuses` ENABLE KEYS */;
 
--- 
+--
 -- Table structure for table `vlans`
--- 
+--
 
 DROP TABLE IF EXISTS `vlans`;
 CREATE TABLE `vlans` (
@@ -418,31 +445,23 @@ CREATE TABLE `vlans` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores vlan information (groupings of subnets)';
 
--- 
+--
 -- Dumping data for table `vlans`
--- 
+--
 
-INSERT INTO `vlans` (`id`, `vlan_campus_id`, `name`, `number`) VALUES 
-(1, 1, 'DEFAULT', 1),
-(2, 1, 'DESKTOPS', 4);
 
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `vlans` DISABLE KEYS */;
+LOCK TABLES `vlans` WRITE;
+INSERT INTO `vlans` VALUES (1,1,'DEFAULT',1),(2,1,'DESKTOPS',4);
+UNLOCK TABLES;
+/*!40000 ALTER TABLE `vlans` ENABLE KEYS */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
--- 
--- Table structure for table `vlan_campuses`
--- 
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-DROP TABLE IF EXISTS `vlan_campuses`;
-CREATE TABLE `vlan_campuses` (
-  `id` int(10) unsigned NOT NULL,
-  `name` varchar(63) NOT NULL,
-  PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores vlan campus information (groupings of vlans)';
-
--- 
--- Dumping data for table `vlan_campuses`
--- 
-
-INSERT INTO `vlan_campuses` (`id`, `name`) VALUES 
-(1, 'BOISE'),
-(2, 'NAMPA');
