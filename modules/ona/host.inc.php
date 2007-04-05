@@ -279,7 +279,7 @@ EOM
     
     // If they provided a hostname / ID let's look it up
     if ($options['host'])
-        list($host, $zone) = ona_find_host($options['host']);
+        list($status, $rows, $host) = ona_find_host($options['host']);
     
     // If they provided a interface ID, IP address, interface name, or MAC address
     else if ($options['interface']) {
@@ -291,11 +291,11 @@ EOM
             return(array(4, $self['error'] . "\n"));
         }
         // Load the associated host record
-        list($status, $rows, $host) = ona_get_host_record(array('ID' => $interface['HOST_ID']));
+        list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
     }
     
     // If we didn't get a record then exit
-    if (!$host['ID']) {
+    if (!$host['id']) {
         printmsg("DEBUG => Host not found ({$options['host']})!",3);
         $self['error'] = "ERROR => Host not found ({$options['host']})!";
         return(array(4, $self['error'] . "\n"));
@@ -318,16 +318,16 @@ EOM
             $self['error'] = "ERROR => Invalid host name ({$options['set_host']})!";
             return(array(5, $self['error'] . "\n"));
         }
-        // Split the fqdn into it's hostname and zone
-        list($tmp_host, $tmp_zone) = ona_find_host($options['set_host']);
+        // Get the host & domain part
+        list($status, $rows, $tmp_host) = ona_find_host($options['set_host']);
         // If the function above returned a host, and it's not the one we're editing, stop!
-        if ($tmp_host['ID'] and $tmp_host['ID'] != $host['ID']) {
+        if ($tmp_host['id'] and $tmp_host['id'] != $host['id']) {
             printmsg("DEBUG => Another host named {$tmp_host['fqdn']} already exists!",3);
             $self['error'] = "ERROR => Another host named {$tmp_host['fqdn']} already exists!";
             return(array(5, $self['error'] . "\n"));
         }
-        $SET['PRIMARY_DNS_NAME']    = $tmp_host['PRIMARY_DNS_NAME'];
-        $SET['PRIMARY_DNS_ZONE_ID'] = $tmp_zone['ID'];
+        $SET_DNS['name']      = $tmp_host['name'];
+        $SET_DNS['domain_id'] = $tmp_host['domain_id'];
     }
     
     
@@ -335,19 +335,19 @@ EOM
     if ($options['set_type']) {
         // Find the Device ID (i.e. Type) to use
         list($status, $rows, $device) = ona_find_device($options['set_type']);
-        if ($status or $rows != 1 or !$device['ID']) {
+        if ($status or $rows != 1 or !$device['id']) {
             printmsg("DEBUG => The device type specified, {$options['set_type']}, does not exist!",3);
             $self['error'] = "ERROR => The device type specified, {$options['set_type']}, does not exist!";
             return(array(6, $self['error'] . "\n"));
         }
-        printmsg("DEBUG => Device selected: {$device['MODEL_DESCRIPTION']} Device ID: {$device['ID']}", 3);
+        printmsg("DEBUG => Device selected: {$device['MODEL_DESCRIPTION']} Device ID: {$device['id']}", 3);
         
         // Everything looks ok, add it to $SET
-        $SET['DEVICE_MODEL_ID'] = $device['ID'];
+        $SET['model_id'] = $device['id'];
     }
     
     
-    // Set options['set_unit']?
+/*PK    // Set options['set_unit']?
     if ($options['set_unit']) {
         // Find the Unit ID to use
         list($status, $rows, $unit) = ona_find_unit($options['set_unit']);
@@ -358,7 +358,7 @@ EOM
         }
         printmsg("DEBUG => Unit selected: {$unit['UNIT_NAME']} Unit number: {$unit['UNIT_NUMBER']}", 3);
         $SET['UNIT_ID'] = $unit['UNIT_ID'];
-    }
+    }*/
     
     
     // Set options['set_security_level']
@@ -387,26 +387,34 @@ EOM
     }
     
     // Get the host record before updating (logging)
-    list($status, $rows, $original_host) = ona_get_host_record(array('ID' => $host['ID']));
+    list($status, $rows, $original_host) = ona_get_host_record(array('id' => $host['id']));
     
     // Update the host record
-    list($status, $rows) = db_update_record($onadb, 'HOSTS_B', array('ID' => $host['ID']), $SET);
+    list($status, $rows) = db_update_record($onadb, 'hosts', array('id' => $host['id']), $SET);
     if ($status or !$rows) {
         $self['error'] = "ERROR => host_modify() SQL Query failed: " . $self['error'];
         printmsg($self['error'], 0);
         return(array(8, $self['error'] . "\n"));
     }
-    
+    // Update DNS table if necessary
+    if($SET_DNS) {
+        list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $host['primary_dns_id'], $SET_DNS);
+        if ($status or !$rows) {
+            $self['error'] = "ERROR => host_modify() SQL Query failed: " . $self['error'];
+            printmsg($self['error'], 0);
+            return(array(8, $self['error'] . "\n"));
+        }
+    }
     // Get the host record after updating (logging)
-    list($status, $rows, $new_host) = ona_get_host_record(array('ID' => $host['ID']));
+    list($status, $rows, $new_host) = ona_get_host_record(array('id' => $host['id']));
     
     // Load the updated record for display
-    list($host, $zone) = ona_find_host($host['ID']);
+    list($status, $rows, $host) = ona_find_host($host['id']);
     
     // Return the success notice
-    $self['error'] = "INFO => Host UPDATED:{$host['ID']}: {$host['fqdn']}";
+    $self['error'] = "INFO => Host UPDATED:{$host['id']}: {$host['fqdn']}";
     
-    $log_msg = "INFO => Host UPDATED:{$host['ID']}: ";
+    $log_msg = "INFO => Host UPDATED:{$host['id']}: ";
     $more="";
     foreach(array_keys($original_host) as $key) {
         if($original_host[$key] != $new_host[$key]) {
@@ -491,9 +499,9 @@ EOM
     
     
     // Find the host (and zone) record from $options['host']
-    list($host, $zone) = ona_find_host($options['host']);
+    list($status, $rows, $host) = ona_find_host($options['host']);
     printmsg("DEBUG => host_del() Host: {$host['fqdn']}", 3);
-    if (!$host['ID']) {
+    if (!$host['id']) {
         printmsg("DEBUG => Unknown host: {$host['fqdn']}",3);
         $self['error'] = "ERROR => Unknown host: {$host['fqdn']}";
         return(array(2, $self['error'] . "\n"));
@@ -524,7 +532,8 @@ EOM
         //       It could just print a notice or something.
         
         // Check that it is the last entry using the ID from SERVER_B
-        list($status, $rows, $server) = db_get_record($onadb, 'SERVER_B', array('HOST_ID' => $host['ID']));
+        // (pk) FIXME: FIXME FIXME
+        list($status, $rows, $server) = db_get_record($onadb, 'SERVER_B', array('host_id' => $host['id']));
         if ($rows) {
             $serverrow = 0;
             // check ALL the places server_id is used and remove the entry from server_b if it is not used
@@ -849,7 +858,7 @@ EOM
     
     
     // Find the host (and zone) record from $options['host']
-    list($host, $zone) = ona_find_host($options['host']);
+    list($status, $rows, $host) = ona_find_host($options['host']);
     printmsg("DEBUG => Host: {$host['fqdn']}", 3);
     if (!$host['ID']) {
         printmsg("DEBUG => Unknown host: {$options['host']}",3);
@@ -867,7 +876,7 @@ EOM
         // Interface record(s)
         $i = 0;
         do {
-            list($status, $rows, $interface) = ona_get_interface_record(array('HOST_ID' => $host['ID']));
+            list($status, $rows, $interface) = ona_get_interface_record(array('HOST_ID' => $host['id']));
             if ($rows == 0) { break; }
             $i++;
             $text .= "\nASSOCIATED INTERFACE RECORD ({$i} of {$rows})\n";
@@ -875,7 +884,7 @@ EOM
         } while ($i < $rows);
         
         // Model record
-        list($status, $rows, $model) = ona_get_model_record(array('ID' => $host['DEVICE_MODEL_ID']));
+        list($status, $rows, $model) = ona_get_model_record(array('id' => $host['DEVICE_MODEL_ID']));
         if ($rows >= 1) {
             $text .= "\nASSOCIATED MODEL RECORD\n";
             $text .= format_array($model);
@@ -891,7 +900,7 @@ EOM
         // Alias record(s)
         $i = 0;
         do {
-            list($status, $rows, $alias) = ona_get_alias_record(array('HOST_ID' => $host['ID']));
+            list($status, $rows, $alias) = ona_get_alias_record(array('host_id' => $host['id']));
             if ($rows == 0) { break; }
             $i++;
             $text .= "\nASSOCIATED ALIAS RECORD ({$i} of {$rows})\n";

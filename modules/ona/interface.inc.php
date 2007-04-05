@@ -78,7 +78,7 @@ EOM
     }
     
     // Find the Host they are looking for
-    list($host, $domain) = ona_find_host($options['host']);
+    list($status, $rows, $host) = ona_find_host($options['host']);
     if (!$host['id']) {
         printmsg("DEBUG => The host specified, {$options['host']}, does not exist!",3);
         $self['error'] = "ERROR => The host specified, {$options['host']}, does not exist!";
@@ -299,7 +299,7 @@ EOM
     // If a hostname was provided, do a search based on that
     else if ($options['host']) {
         // Find a host by the user's input
-        list($host, $domain) = ona_find_host($options['host']);
+        list($status, $rows, $host) = ona_find_host($options['host']);
         if (!$host['id']) {
             printmsg("DEBUG => Host not found ({$options['host']})!",3);
             $self['error'] = "ERROR => Host not found ({$options['host']})!";
@@ -464,7 +464,7 @@ EOM
     }
     
     // Check permissions
-    list($host, $domain) = ona_find_host($interface['host_id']);
+    list($status, $rows, $host) = ona_find_host($interface['host_id']);
     if (!auth('interface_modify') or !authlvl($host['LVL'])) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
@@ -587,13 +587,13 @@ EOM
     // If a hostname was provided, do a search based on that
  /*   else if ($options['host']) {
         // Find a host by the user's input
-        list($host, $domain) = ona_find_host($options['host']);
-        if (!$host['ID']) {
+        list($status, $rows, $host) = ona_find_host($options['host']);
+        if (!$host['id']) {
             $self['error'] = "ERROR => No interfaces found: no such host!";
             return(array(2, $self['error'] . "\n"));
         }
         // If we got one, load an associated interface
-        list($status, $rows, $interface) = ona_get_interface_record(array('HOST_ID' => $host['ID']));
+        list($status, $rows, $interface) = ona_get_interface_record(array('host_id' => $host['id']));
     }*/
 
     // If we didn't get a record then exit
@@ -604,7 +604,7 @@ EOM
     }
 
     // Load associated records
-    list($host, $domain) = ona_find_host($interface['host_id']);
+    list($status, $rows, $host) = ona_find_host($interface['host_id']);
     list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
 
     list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $interface['host_id']), '', 0);
@@ -738,7 +738,7 @@ EOM
     // If a hostname was provided, do a search based on that
     else if ($options['host']) {
         // Find a host by the user's input
-        list($host, $domain) = ona_find_host($options['host']);
+        list($status, $rows, $host) = ona_find_host($options['host']);
         if (!$host['id']) {
             printmsg("DEBUG => Host not found ({$options['host']})!",3);
             $self['error'] = "ERROR => Host not found ({$options['host']})";
