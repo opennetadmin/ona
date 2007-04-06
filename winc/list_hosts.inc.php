@@ -74,18 +74,18 @@ function ws_display_list($window_name, $form='') {
     }
 
 
-    // ZONE
-    if ($form['zone']) {
+    // DOMAIN
+    if ($form['zone']) { //FIXME: (PK) rename in GUI
         // We do a sub-select to find interface id's that match
-        $where .= $and . "PRIMARY_DNS_ZONE_ID IN ( SELECT ID " .
-                                                "  FROM DNS_ZONES_B " .
-                                                "  WHERE ZONE_NAME LIKE " . $onadb->qstr($form['zone'].'%') . " ) ";
+        $where .= $and . "domain_id IN ( SELECT id " .
+                                                "  FROM dns " .
+                                                "  WHERE name LIKE " . $onadb->qstr($form['zone'].'%') . " ) ";
         $and = " AND ";
     }
 
-    // ZONE ID
+    // DOMAIN ID
     if ($form['zone_id']) {
-        $where .= $and . "PRIMARY_DNS_ZONE_ID = " . $onadb->qstr($form['zone_id']);
+        $where .= $and . "domain_id = " . $onadb->qstr($form['zone_id']);
         $and = " AND ";
     }
 
@@ -108,9 +108,9 @@ function ws_display_list($window_name, $form='') {
         $form['mac'] = preg_replace('/[^%0-9A-F]/', '', $form['mac']);
 
         // We do a sub-select to find interface id's that match
-        $where .= $and . "ID IN ( SELECT HOST_ID " .
-                         "        FROM HOST_subnetS_B " .
-                         "        WHERE DATA_LINK_ADDRESS LIKE " . $onadb->qstr('%'.$form['mac'].'%') . " ) ";
+        $where .= $and . "id IN ( SELECT host_id " .
+                         "        FROM interfaces " .
+                         "        WHERE mac_addr LIKE " . $onadb->qstr('%'.$form['mac'].'%') . " ) ";
         $and = " AND ";
 
     }
@@ -128,9 +128,9 @@ function ws_display_list($window_name, $form='') {
         $ip_end = ip_mangle($ip_end, 'numeric');
         if ($ip != -1 and $ip_end != -1) {
             // We do a sub-select to find interface id's between the specified ranges
-            $where .= $and . "ID IN ( SELECT HOST_ID " .
-                             "        FROM HOST_subnetS_B " .
-                             "        WHERE ip_addrESS >= " . $onadb->qstr($ip) . " AND ip_addrESS <= " . $onadb->qstr($ip_end) . " )";
+            $where .= $and . "id IN ( SELECT host_id " .
+                             "        FROM interfaces " .
+                             "        WHERE ip_addr >= " . $onadb->qstr($ip) . " AND ip_addr <= " . $onadb->qstr($ip_end) . " )";
             $and = " AND ";
         }
     }
@@ -138,7 +138,7 @@ function ws_display_list($window_name, $form='') {
 
     // NOTES
     if ($form['notes']) {
-        $where .= $and . "NOTES LIKE " . $onadb->qstr('%'.$form['notes'].'%');
+        $where .= $and . "notes LIKE " . $onadb->qstr('%'.$form['notes'].'%');
         $and = " AND ";
     }
 
@@ -147,7 +147,7 @@ function ws_display_list($window_name, $form='') {
 
     // DEVICE MODEL
     if ($form['model']) {
-        $where .= $and . "DEVICE_MODEL_ID = " . $onadb->qstr($form['model']);
+        $where .= $and . "model_id = " . $onadb->qstr($form['model']);
         $and = " AND ";
     }
 
@@ -188,7 +188,7 @@ function ws_display_list($window_name, $form='') {
             $and = " AND ";
             $or = "";
             foreach ($records as $record) {
-                $where .= $or . "DEVICE_MODEL_ID = " . $onadb->qstr($record['id']);
+                $where .= $or . "model_id = " . $onadb->qstr($record['id']);
                 $or = " OR ";
             }
             $where .= " ) ";
@@ -225,7 +225,7 @@ function ws_display_list($window_name, $form='') {
 
         // Host names should always be lower case
         $form['filter'] = strtolower($form['filter']);
-        $filter = ' AND primary_dns_name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
+        $filter = ' AND name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
     list ($status, $rows, $results) =
         db_get_records(
@@ -292,7 +292,7 @@ EOL;
             // Count how many rows and assign it back to the interfaces variable
             list($status, $rows, $records) = db_get_records($onadb,
                                                             'interfaces',
-                                                            'HOST_ID = '. $onadb->qstr($record['id']),
+                                                            'host_id = '. $onadb->qstr($record['id']),
                                                             "",
                                                             0);
 
@@ -301,7 +301,7 @@ EOL;
         } else if (is_numeric($ip)) {
             list($status, $interfaces, $interface) = db_get_record($onadb,
                                                             'interfaces',
-                                                            'HOST_ID = '. $onadb->qstr($record['id']) .
+                                                            'host_id = '. $onadb->qstr($record['id']) .
                                                             ' AND ip_addr >= ' . $onadb->qstr($ip) .
                                                             ' AND ip_addr <= ' . $onadb->qstr($ip_end),
                                                             "",
@@ -310,7 +310,7 @@ EOL;
             // Count how many rows and assign it back to the interfaces variable
             list($status, $rows, $records) = db_get_records($onadb,
                                                             'interfaces',
-                                                            'HOST_ID = '. $onadb->qstr($record['id']),
+                                                            'host_id = '. $onadb->qstr($record['id']),
                                                             "",
                                                             0);
 
@@ -318,7 +318,7 @@ EOL;
 
         }  else {
             // Interface (and find out how many there are)
-            list($status, $interfaces, $interface) = ona_get_interface_record(array('HOST_ID' => $record['id']), '');
+            list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id']), '');
         }
         
         // bz: why did someone add this??  You especially want to show hosts with no interfaces so you can fix them!
@@ -337,14 +337,14 @@ EOL;
         $record['domain'] = $domain['fqdn'];
         
         // Subnet description
-        list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $interface['subnet_id']));
+        list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
         $record['subnet'] = $subnet['name'];
         $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
         $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
         
         
         // Device Description
-        list($status, $rows, $device) = ona_get_model_record(array('ID' => $record['model_id']));
+        list($status, $rows, $device) = ona_get_model_record(array('id' => $record['model_id']));
         $record['device'] = "{$device['MANUFACTURER_NAME']}, {$device['model']}";
         $record['device'] = str_replace('Unknown', '?', $record['device']);
 
@@ -624,14 +624,14 @@ function ws_display_alias_list($window_name, $form='') {
 
     // ALIAS_ID
     if ($form['alias_id']) {
-        $where .= $and . "ID = " . $onadb->qstr($form['alias_id']);
+        $where .= $and . "id = " . $onadb->qstr($form['alias_id']);
         $and = " AND ";
     }
 
 
     // HOST_ID
     if ($form['host_id']) {
-        $where .= $and . "HOST_ID = " . $onadb->qstr($form['host_id']);
+        $where .= $and . "host_id = " . $onadb->qstr($form['host_id']);
         $and = " AND ";
     }
 
@@ -646,15 +646,15 @@ function ws_display_alias_list($window_name, $form='') {
     // ZONE
     if ($form['zone']) {
         // We do a sub-select to find interface id's that match
-        $where .= $and . "DNS_ZONE_ID IN ( SELECT ID " .
-                                        "  FROM DNS_ZONES_B " .
-                                        "  WHERE ZONE_NAME LIKE " . $onadb->qstr($form['zone'].'%') . " ) ";
+        $where .= $and . "domain_id IN ( SELECT id " .
+                                        "  FROM dns " .
+                                        "  WHERE name LIKE " . $onadb->qstr($form['zone'].'%') . " ) ";
         $and = " AND ";
     }
 
     // ZONE ID
     if ($form['zone_id']) {
-        $where .= $and . "DNS_ZONE_ID = " . $onadb->qstr($form['zone_id']);
+        $where .= $and . "domain_id = " . $onadb->qstr($form['zone_id']);
         $and = " AND ";
     }
 
@@ -668,14 +668,14 @@ function ws_display_alias_list($window_name, $form='') {
     if ($form['filter']) {
         // Host names should always be lower case
         $form['filter'] = strtolower($form['filter']);
-        $filter = $and . ' ALIAS LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
+        $filter = $and . ' alias LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
     list ($status, $rows, $results) =
         db_get_records(
             $onadb,
             'HOST_ALIASES_B',
             $where . $filter,
-            "ALIAS ASC",
+            "alias ASC",
             $conf['search_results_per_page'],
             $offset
         );
@@ -711,7 +711,7 @@ function ws_display_alias_list($window_name, $form='') {
         if ($form['filter']) {
             // Host names should always be lower case
             $form['filter'] = strtolower($form['filter']);
-            $filter = $and . ' PRIMARY_DNS_NAME LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
+            $filter = $and . ' name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
         }
         list ($status, $hosts, $records) =
             db_get_records(
@@ -750,25 +750,21 @@ EOL;
     foreach($results as $record) {
         // Get additional info about eash alias record //
 
-        // Zone Name
-        list($status, $rows, $zone) = ona_get_zone_record(array('ID' => $record['DNS_ZONE_ID']));
-        $record['ZONE'] = $zone['ZONE_NAME'];
-
         // Associated Hostname and zone
         list($status, $rows, $host) = ona_get_host_record(array('id' => $record['host_id']));
-        $record['HOSTNAME'] = $host['name'];
-        $record['HOST_ZONE'] = $host['domain_fqdn'];
-        $record['HOST_ZONE_ID'] = $zone['domain_id'];
+        $record['name'] = $host['name'];
+        $record['domain_fqdn'] = $host['domain_fqdn'];
+        $record['domain_id'] = $host['domain_id'];
 
         // Interface (and find out how many there are)
-        list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['HOST_ID']), '');
-        $record['ip_addrESS'] = ip_mangle($interface['ip_addrESS'], 'dotted');
+        list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['host_id']), '');
+        $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
         $interface_style = '';
         if ($interfaces > 1) $interface_style = 'font-weight: bold;';
 
         // Subnet description
-        list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $interface['subnet_ID']));
-        $record['subnet'] = $subnet['DESCRIPTION'];
+        list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
+        $record['subnet'] = $subnet['description'];
         $record['IP_subnet_MASK'] = ip_mangle($subnet['IP_subnet_MASK'], 'dotted');
         $record['IP_subnet_MASK_CIDR'] = ip_mangle($subnet['IP_subnet_MASK'], 'cidr');
 
@@ -780,8 +776,8 @@ EOL;
         $record['DEVICE'] = str_replace('Unknown', '?', $record['DEVICE']);
       */
 
-        $record['NOTES'] = $host['NOTES'];
-        $record['NOTES_SHORT'] = truncate($record['NOTES'], 40);
+        $record['notes'] = $host['notes'];
+        $record['NOTES_SHORT'] = truncate($record['notes'], 40);
 
         // Get location_number from the location_id
         list($status, $rows, $location) = ona_get_location_record(array('id' => $host['location_id']));
@@ -793,27 +789,27 @@ EOL;
             <tr onMouseOver="this.className='row-highlight';" onMouseOut="this.className='row-normal';">
 
                 <td class="list-row">
-                    {$record['ALIAS']}.<a title="View zone. ID: {$record['DNS_ZONE_ID']}"
+                    {$record['ALIAS']}.<a title="View zone. ID: {$record['domain_id']}"
                          class="zone"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['DNS_ZONE_ID']}\', \'display\')');"
-                    >{$record['ZONE']}</a>&nbsp;
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['domain_id']}\', \'display\')');"
+                    >{$record['domain_fqdn']}</a>&nbsp;
                 </td>
 
                 <td class="list-row">
-                    <a title="View host. ID: {$record['HOST_ID']}"
+                    <a title="View host. ID: {$record['host_id']}"
                        class="nav"
-                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$record['HOST_ID']}\', \'display\')');"
-                    >{$record['HOSTNAME']}</a
-                    >.<a title="View zone. ID: {$record['HOST_ZONE_ID']}"
+                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$record['host_id']}\', \'display\')');"
+                    >{$record['name']}</a
+                    >.<a title="View zone. ID: {$record['domain_id']}"
                          class="zone"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['HOST_ZONE_ID']}\', \'display\')');"
-                    >{$record['HOST_ZONE']}</a>
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['domain_id']}\', \'display\')');"
+                    >{$record['domain_fqdn']}</a>
                 </td>
 
                 <td class="list-row">
-                    <a title="View subnet. ID: {$subnet['ID']}"
+                    <a title="View subnet. ID: {$subnet['id']}"
                          class="nav"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['ID']}\', \'display\')');"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['id']}\', \'display\')');"
                     >{$record['subnet']}</a>&nbsp;
                 </td>
 
@@ -824,16 +820,16 @@ EOL;
 if ($interfaces > 1) {
         $html .= <<<EOL
                           onMouseOver="wwTT(this, event,
-                                            'id', 'tt_host_interface_list_{$record['HOST_ID']}',
+                                            'id', 'tt_host_interface_list_{$record['host_id']}',
                                             'type', 'velcro',
                                             'styleClass', 'wwTT_niceTitle',
                                             'direction', 'south',
-                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>host_interface_list,id=>tt_host_interface_list_{$record['HOST_ID']},host_id=>{$record['HOST_ID']}\');'
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>host_interface_list,id=>tt_host_interface_list_{$record['host_id']},host_id=>{$record['host_id']}\');'
                                            );"
 EOL;
 }
          $html .= <<<EOL
-                    >{$record['ip_addrESS']}</span>&nbsp;
+                    >{$record['ip_addr']}</span>&nbsp;
                     <span title="{$record['IP_subnet_MASK']}">/{$record['IP_subnet_MASK_CIDR']}</span>&nbsp;
                 </td>
 
@@ -854,7 +850,7 @@ EOL;
                 </td>
 
                 <td class="list-row">
-                    <span title="{$record['NOTES']}">{$record['NOTES_SHORT']}</span>&nbsp;
+                    <span title="{$record['notes']}">{$record['NOTES_SHORT']}</span>&nbsp;
                 </td>
 
                 <!-- ACTION ICONS -->

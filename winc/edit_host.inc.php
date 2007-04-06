@@ -41,41 +41,38 @@ function ws_editor($window_name, $form='') {
     if (is_numeric($form['host_id'])) {
         list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']));
         if ($rows) {
-            // Load associated ZONE and INTERFACE records
-            list($status, $rows, $zone) = ona_get_zone_record(array('id' => $host['primary_dns_zone_id']));
-            $host['ZONE_NAME'] = $zone['ZONE_NAME'];
-            $host['fqdn'] = $host['PRIMARY_DNS_NAME'] . '.' . $host['ZONE_NAME'];
-            list($status, $interfaces, $interface) = ona_get_interface_record(array('HOST_ID' => $host['ID']));
-            list($status, $rows, $network) = ona_get_subnet_record(array('ID' => $interface['NETWORK_ID']));
-            $interface['IP_ADDRESS'] = ip_mangle($interface['IP_ADDRESS'], 'dotted');
-            if ($interface['DATA_LINK_ADDRESS'])
-                $interface['DATA_LINK_ADDRESS'] = mac_mangle($interface['DATA_LINK_ADDRESS'], 2);
+            // Load associated INTERFACE record(s)
+            list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $host['id']));
+            list($status, $rows, $network) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
+            $interface['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
+            if ($interface['mac_addr'])
+                $interface['mac_addr'] = mac_mangle($interface['mac_addr'], 2); //FIXME: (PK) should not use numeric format specifier here!
             // Load associated UNIT record (get unit_number from the unit_id)
-            list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $host['UNIT_ID']));
+//PK            list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $host['UNIT_ID']));
             // Unit number is best displayed as 5 digits zero padded
-            $host['UNIT_NUMBER'] = str_pad($unit['UNIT_NUMBER'], 5, "0", STR_PAD_LEFT);
+//PK            $host['UNIT_NUMBER'] = str_pad($unit['UNIT_NUMBER'], 5, "0", STR_PAD_LEFT);
         }
     }
     
     // Set the default security level if there isn't one
     if (!array_key_exists('lvl', $host)) $host['lvl'] = $conf['ona_lvl'];
     
-    // Load a network record if we got passed a network_id
+    // Load a network record if we got passed a network_id (FIXME: this should be subnet_id, but the GUI code has to change)
     if ($form['network_id'])
-        list($status, $rows, $network) = ona_get_subnet_record(array('ID' => $form['network_id']));
+        list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['network_id']));
     
     // Load a zone record if we got passed a zone_id
     if ($form['zone_id']) {
-        list($status, $rows, $zone) = ona_get_zone_record(array('ID' => $form['zone_id']));
-        $host['ZONE_NAME'] = $zone['ZONE_NAME'];
+        list($status, $rows, $domain) = ona_get_domain_record(array('id' => $form['zone_id']));
+        $host['domain_fqdn'] = $domain['fqdn'];
     }
     
     
-    // Build a device model list
-    list($status, $rows, $records) = db_get_records($onadb, 'DEVICE_MODELS_B', 'ID >= 1');
+/*    // Build a device model list
+    list($status, $rows, $records) = db_get_records($onadb, 'DEVICE_MODELS_B', 'id >= 1');
     $models = array();
     foreach ($records as $model) {
-        list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('ID' => $model['MANUFACTURER_ID']));
+        list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['MANUFACTURER_ID']));
         list($status, $rows, $type) = ona_get_device_type_record(array('ID' => $model['DEVICE_TYPE_ID']));
         $models[$model['ID']] = "{$manufacturer['MANUFACTURER_NAME']} {$model['MODEL_DESCRIPTION']} ({$type['DEVICE_TYPE_DESCRIPTION']})";
     }
@@ -88,7 +85,7 @@ function ws_editor($window_name, $form='') {
         $device_model_list .= "<option value=\"{$id}\" {$selected}>{$models[$id]}</option>\n";
     }
     unset($models, $model);
-    
+*/    
     
     // Escape data for display in html
     foreach(array_keys($host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
@@ -144,7 +141,7 @@ EOL;
     <!-- Host Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
     <input type="hidden" name="host" value="{$host['fqdn']}">
-    <input type="hidden" name="interface" value="{$interface['ID']}">
+    <input type="hidden" name="interface" value="{$interface['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
         
@@ -166,7 +163,7 @@ EOL;
                 <input 
                     name="set_host" 
                     alt="Hostname"
-                    value="{$host['PRIMARY_DNS_NAME']}"
+                    value="{$host['name']}"
                     class="edit" 
                     type="text" 
                     size="20" maxlength="64" 
@@ -183,7 +180,7 @@ EOL;
                     id="set_zone_{$window_name}"
                     name="set_zone" 
                     alt="Zone name"
-                    value="{$host['ZONE_NAME']}"
+                    value="{$host['domain_fqdn']}"
                     class="edit" 
                     type="text" 
                     size="25" maxlength="64" 
@@ -226,7 +223,7 @@ EOL;
                 Notes
             </td>
             <td class="padding" align="left" width="100%">
-                <textarea name="set_notes" class="edit" cols="40" rows="1">{$host['NOTES']}</textarea>
+                <textarea name="set_notes" class="edit" cols="40" rows="1">{$host['notes']}</textarea>
             </td>
         </tr>
         
@@ -296,7 +293,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%" nowrap="true">
                 <span id="associated_network_{$window_name}"
-                >{$network['DESCRIPTION']}</span>
+                >{$subnet['name']}</span>
             </td>
         </tr>
         
@@ -309,7 +306,7 @@ EOL;
                     id="set_ip_{$window_name}"
                     name="set_ip" 
                     alt="IP Address"
-                    value="{$interface['IP_ADDRESS']}"
+                    value="{$interface['ip_addr']}"
                     class="edit" 
                     type="text" 
                     size="25" maxlength="64" 
@@ -327,7 +324,7 @@ EOL;
                 <input 
                     name="set_mac"
                     alt="MAC Address"
-                    value="{$interface['DATA_LINK_ADDRESS']}"
+                    value="{$interface['mac_addr']}"
                     class="edit" 
                     type="text" 
                     size="17" maxlength="17" 
@@ -357,7 +354,7 @@ EOL;
                 <input 
                     name="set_name" 
                     alt="Interface name"
-                    value="{$interface['INTERFACE_NAME']}"
+                    value="{$interface['name']}"
                     class="edit" 
                     type="text" 
                     size="17" maxlength="17" 
@@ -465,8 +462,8 @@ function ws_save($window_name, $form='') {
         $response->addScript("alert('Invalid hostname!');");
         return($response->getXML());
     }
-    // Validate zone is valid
-    list($status, $rows, $zone) = ona_get_zone_record(array('ZONE_NAME' => $form['set_zone']));
+    // Validate domain is valid
+    list($status, $rows, $zone) = ona_get_domain_record(array('name' => $form['set_zone'])); // FIXME: change GUI to reference domain, not zone
     if ($status or !$rows) {
         $response->addScript("alert('Invalid zone!');");
         return($response->getXML());
