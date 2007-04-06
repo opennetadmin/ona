@@ -37,6 +37,7 @@ function ws_editor($window_name, $form='') {
     
     // Load an existing host record (and associated info) if $form is a host_id
     $host = array();
+    $interface = array();
     $host['fqdn'] = '.';
     if (is_numeric($form['host_id'])) {
         list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']));
@@ -75,7 +76,8 @@ function ws_editor($window_name, $form='') {
         list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['MANUFACTURER_ID']));
         list($status, $rows, $type) = ona_get_device_type_record(array('ID' => $model['DEVICE_TYPE_ID']));
         $models[$model['ID']] = "{$manufacturer['MANUFACTURER_NAME']} {$model['MODEL_DESCRIPTION']} ({$type['DEVICE_TYPE_DESCRIPTION']})";
-    }
+    }*/    $models = array("Default default_device (A bogus default device record)"); // FIXME: (PK) temp code!
+    
     asort($models);
     $device_model_list = '<option value="">&nbsp;</option>\n';
     foreach (array_keys($models) as $id) {
@@ -85,17 +87,17 @@ function ws_editor($window_name, $form='') {
         $device_model_list .= "<option value=\"{$id}\" {$selected}>{$models[$id]}</option>\n";
     }
     unset($models, $model);
-*/    
+        
     
     // Escape data for display in html
     foreach(array_keys($host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
-    foreach(array_keys($network) as $key) { $network[$key] = htmlentities($network[$key], ENT_QUOTES); }
+    foreach(array_keys($subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
     foreach(array_keys($interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
     
     
     // Set the window title:
     $window['title'] = "Add Host";
-    if ($host['ID'])
+    if ($host['id'])
         $window['title'] = "Edit Host";
     
     // Javascript to run after the window is built
@@ -364,7 +366,7 @@ EOL;
 EOL;
     }
     
-    if (!$host['ID']) {
+    if (!$host['id']) {
         $window['html'] .= <<<EOL
         <tr>
             <td align="right" nowrap="true">

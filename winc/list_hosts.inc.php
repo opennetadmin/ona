@@ -117,6 +117,7 @@ function ws_display_list($window_name, $form='') {
 
 
     // IP ADDRESS
+    $ip = $ip_end = '';
     if ($form['ip']) {
         // Build $ip and $ip_end from $form['ip'] and $form['ip_thru']
         $ip = ip_complete($form['ip'], '0');

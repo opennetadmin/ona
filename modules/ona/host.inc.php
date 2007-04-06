@@ -167,12 +167,11 @@ EOM
         'hosts',
         array(
             'id'                   => $id,
-            'name'                 => $host['name'],
-            'domain_id'            => $host['domain_id'],
-//            'model_id'             => $device['id'],
+            'primary_dns_id'       => $host['primary_dns_id'],
+            'model_id'             => $device['id'],
 //            'LVL'                  => $options['security_level'],
             'notes'                => $options['notes']
-//            'UNIT_ID'              => $unit['UNIT_ID']
+//            'location_id'          => $unit['UNIT_ID']
         )
     );
     if ($status or !$rows) {
@@ -186,9 +185,11 @@ EOM
         $onadb,
         'dns',
         array(
-            'id'                       => $host['primary_dns_id'],
-            'name'                     => $host['name'],
-            'domain_id'                => $host['domain_id']
+            'id'                   => $host['primary_dns_id'],
+            'type'                 => 'A',
+            'ttl'                  => '3600', // FIXME: (PK) pull this from the parent zone?
+            'name'                 => $host['name'],
+            'domain_id'            => $host['domain_id']
         )
     );
     if ($status or !$rows) {
@@ -590,9 +591,9 @@ EOM
         
         // Delete interface(s)
         // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'HOST_NETWORKS_B', array('host_id' => $host['id']));
+        list($status, $rows, $records) = db_get_records($onadb, 'interfaces', array('host_id' => $host['id']));
         // do the delete
-        list($status, $rows) = db_delete_record($onadb, 'HOST_NETWORKS_B', array('host_id' => $host['id']));
+        list($status, $rows) = db_delete_records($onadb, 'interfaces', array('host_id' => $host['id']));
         if ($status) {
             $self['error'] = "ERROR => host_del() interface delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0); 
@@ -600,13 +601,13 @@ EOM
         }
         // log deletions
         foreach ($records as $record) {
-            printmsg("INFO => Interface DELETED: " . ip_mangle($record['IP_ADDRESS'], 'dotted') . " from {$host['fqdn']}",0);
-            $add_to_error .= "INFO => Interface DELETED: " . ip_mangle($record['IP_ADDRESS'], 'dotted') . " from {$host['fqdn']}\n";
+            printmsg("INFO => Interface DELETED: " . ip_mangle($record['ip_addr'], 'dotted') . " from {$host['fqdn']}",0);
+            $add_to_error .= "INFO => Interface DELETED: " . ip_mangle($record['ip_addr'], 'dotted') . " from {$host['fqdn']}\n";
         }
         
         // Delete infobit entries
         // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
+/*PK        list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
         $log=array(); $i=0;    
         foreach ($records as $record) {
             list($status, $rows, $infobit) = ona_get_host_infobit_record(array('ID' => $record['ID']));
@@ -614,7 +615,7 @@ EOM
             $i++;
         }
         // do the delete
-        list($status, $rows) = db_delete_record($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
+        list($status, $rows) = db_delete_records($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
         if ($status) {
             $self['error'] = "ERROR => host_del() infobit delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0); 
@@ -635,7 +636,7 @@ EOM
             $i++;
         }
         // do the delete
-        list($status, $rows) = db_delete_record($onadb, 'DHCP_ENTRY_B', array('host_id' => $host['id']));
+        list($status, $rows) = db_delete_records($onadb, 'DHCP_ENTRY_B', array('host_id' => $host['id']));
         if ($status) {
             $self['error'] = "ERROR => host_del() DHCP parameter delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0); 
@@ -652,7 +653,7 @@ EOM
         // get list for logging
         list($status, $rows, $records) = db_get_records($onadb, 'CIRCUIT.CPE_B', array('host_id' => $host['id']));
         // do the delete
-        list($status, $rows) = db_update_record($onadb, 'CIRCUIT.CPE_B', array('host_id' => $host['id']), array('host_id' => ''));
+        list($status, $rows) = db_update_records($onadb, 'CIRCUIT.CPE_B', array('host_id' => $host['id']), array('host_id' => ''));
         if ($status) {
             $self['error'] = "ERROR => host_del() circuit update SQL Query failed: {$self['error']}";
             printmsg($self['error'],0); 
@@ -663,10 +664,10 @@ EOM
             printmsg("INFO => CPE name DELETED: {$record['CPE_NAME']} from {$host['fqdn']}",0);
             $add_to_error .= "INFO => CPE name DELETED: {$record['CPE_NAME']} from {$host['fqdn']}\n";
         }
-
+*/
         
         // Delete the host
-        list($status, $rows) = db_delete_record($onadb, 'HOSTS_B', array('ID' => $host['ID']));
+        list($status, $rows) = db_delete_records($onadb, 'hosts', array('id' => $host['id']));
         if ($status) {
             $self['error'] = "ERROR => host_del() host delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0); 
@@ -744,10 +745,10 @@ EOM
     $text .= "\n" . $tmp;
     
     // Display associated interface(s)
-    list($status, $rows, $records) = db_get_records($onadb, 'HOST_NETWORKS_B', array('host_id' => $host['id']));
+    list($status, $rows, $records) = db_get_records($onadb, 'interfaces', array('host_id' => $host['id']));
     if ($rows) $text .= "\nASSOCIATED INTERFACE RECORDS ({$rows}):\n";
     foreach ($records as $record) {
-        $text .= "  " . ip_mangle($record['IP_ADDRESS'], 'dotted') . "\n";
+        $text .= "  " . ip_mangle($record['ip_addr'], 'dotted') . "\n";
     }
     
     // Display associated infobits
@@ -873,14 +874,14 @@ EOM
         } while ($i < $rows);
         
         // Model record
-        list($status, $rows, $model) = ona_get_model_record(array('id' => $host['DEVICE_MODEL_ID']));
+        list($status, $rows, $model) = ona_get_model_record(array('id' => $host['model_id']));
         if ($rows >= 1) {
             $text .= "\nASSOCIATED MODEL RECORD\n";
             $text .= format_array($model);
         }
         
         // Unit record
-        list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $host['UNIT_ID']));
+/*        list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $host['UNIT_ID']));
         if ($rows >= 1) {
             $text .= "\nASSOCIATED UNIT RECORD\n";
             $text .= format_array($unit);
@@ -894,7 +895,7 @@ EOM
             $i++;
             $text .= "\nASSOCIATED ALIAS RECORD ({$i} of {$rows})\n";
             $text .= format_array($alias);
-        } while ($i < $rows);
+        } while ($i < $rows);*/
     }
     
     // Return the success notice

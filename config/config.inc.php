@@ -24,7 +24,7 @@ $conf = array (
     "version"                => "v1.00",
 
     /* Logging - Used by the printmsg() function */
-    "debug"                  => 2,
+    "debug"                  => 5,
     "stdout"                 => 0, // Print logs to the generated web page, not a good idea!
     "db"                     => 1, // Log to a sql log, highly recommended
     "logfile"                => "/var/log/website",

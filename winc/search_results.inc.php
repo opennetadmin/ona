@@ -26,7 +26,7 @@ function ws_search_results_submit($window_name, $form='') {
         'js'    => "",
     );
 
- $js .= "alert('Where: " . str_replace("'", '"', $form['subnet_id']) . "');";
+// $js .= "alert('Where: " . str_replace("'", '"', $form['subnet_id']) . "');";
 
     // Load some html into $window['html']
     $form_id = "{$window_name}_filter_form";

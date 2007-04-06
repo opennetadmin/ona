@@ -1090,7 +1090,7 @@ function ona_get_host_record($array='', $order='') {
     $record['fqdn'] = $record['name'] . '.' . $dns['fqdn'];
     $record['domain_id'] = $dns['domain_id'];
     $record['domain_fqdn'] = $dns['fqdn'];
-    return(array($status + $status_zone, $rows, $record));
+    return(array($status + $status_dns, $rows, $record));
 }
 
 function ona_get_block_record($array='', $order='') {
@@ -1483,6 +1483,7 @@ function ona_find_host($search="") {
     
     // Find the domain name piece of $search
     list($status, $rows, $domain) = ona_find_domain($search);
+    printmsg("DEBUG => ona_find_domain({$search}) returned: {$domain['fqdn']}", 3);
     
     // Now find what the host part of $search is
     $hostname = str_replace($domain['fqdn'], '', $search);
@@ -1490,9 +1491,9 @@ function ona_find_host($search="") {
     // Let's see if that hostname is valid or not in $domain['id']
     list($status, $rows, $dns) = ona_get_dns_record(array('domain_id' => $domain['id'], 'name' => $hostname));
     
-    // If we got a record, lookup the associated host_id, and return it
+    // If we got a valid dns record, lookup the associated host record, and return it
     if ($rows)
-        return(ona_get_host_record(array('id' => $dns['host_id'])));
+        return(ona_get_host_record(array('primary_dns_id' => $dns['id'])));
     
     // Otherwise, build a fake host record with only a few entries in it and return that
     $host = array(
@@ -1558,6 +1559,8 @@ function ona_find_domain($fqdn="") {
     // If we don't have a domain yet, lets assume $fqdn is a basic hostname, and return the default domain
     if (!array_key_exists('id', $domain)) {
         list($status, $rows, $record) = ona_get_domain_record(array('name' => 'albertsons.com'));
+        if($rows)
+            $domain = $record;
     }
     
     return(array(0, 1, $domain));
