@@ -1095,7 +1095,7 @@ function get_host_interface_list_html($form) {
     $html = $js = '';
 
     // Interface Record
-    list($status, $introws, $interfaces) = db_get_records($onadb, 'interfaces', "HOST_ID = {$form['host_id']}", 'ip_addr ASC');
+    list($status, $introws, $interfaces) = db_get_records($onadb, 'interfaces', "host_id = {$form['host_id']}", 'ip_addr ASC');
     if ($introws == 0 or $status) return(array('', ''));
 
     $style['content_box'] = <<<EOL

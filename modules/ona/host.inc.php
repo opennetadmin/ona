@@ -581,7 +581,7 @@ EOM
         }
         
         // Display an error if it has any entries in CONFIG_TEXT_B
-        list($status, $rows, $server) = db_get_record($onadb, 'CONFIG_TEXT_B', array('HOST_ID' => $host['ID']));
+        list($status, $rows, $server) = db_get_record($onadb, 'CONFIG_TEXT_B', array('host_id' => $host['id']));
         if ($rows) {
             printmsg("DEBUG => Host ({$host['fqdn']}) cannot be deleted, it has config archives!",3);
             $self['error'] = "ERROR => Host ({$host['fqdn']}) cannot be deleted, it has config archives!";
@@ -590,9 +590,9 @@ EOM
         
         // Delete interface(s)
         // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'HOST_NETWORKS_B', array('HOST_ID' => $host['ID']));
+        list($status, $rows, $records) = db_get_records($onadb, 'HOST_NETWORKS_B', array('host_id' => $host['id']));
         // do the delete
-        list($status, $rows) = db_delete_record($onadb, 'HOST_NETWORKS_B', array('HOST_ID' => $host['ID']));
+        list($status, $rows) = db_delete_record($onadb, 'HOST_NETWORKS_B', array('host_id' => $host['id']));
         if ($status) {
             $self['error'] = "ERROR => host_del() interface delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0); 
@@ -606,7 +606,7 @@ EOM
         
         // Delete infobit entries
         // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('HOST_ID' => $host['ID']));
+        list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
         $log=array(); $i=0;    
         foreach ($records as $record) {
             list($status, $rows, $infobit) = ona_get_host_infobit_record(array('ID' => $record['ID']));
@@ -614,7 +614,7 @@ EOM
             $i++;
         }
         // do the delete
-        list($status, $rows) = db_delete_record($onadb, 'HOST_INFOBITS_B', array('HOST_ID' => $host['ID']));
+        list($status, $rows) = db_delete_record($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
         if ($status) {
             $self['error'] = "ERROR => host_del() infobit delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0); 
@@ -627,7 +627,7 @@ EOM
         }
         // Delete DHCP parameters
         // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'DHCP_ENTRY_B', array('HOST_ID' => $host['ID']));
+        list($status, $rows, $records) = db_get_records($onadb, 'DHCP_ENTRY_B', array('host_id' => $host['id']));
         $log=array(); $i=0;    
         foreach ($records as $record) {
             list($status, $rows, $dhcp) = ona_get_dhcp_entry_record(array('ID' => $record['ID']));
@@ -635,7 +635,7 @@ EOM
             $i++;
         }
         // do the delete
-        list($status, $rows) = db_delete_record($onadb, 'DHCP_ENTRY_B', array('HOST_ID' => $host['ID']));
+        list($status, $rows) = db_delete_record($onadb, 'DHCP_ENTRY_B', array('host_id' => $host['id']));
         if ($status) {
             $self['error'] = "ERROR => host_del() DHCP parameter delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0); 
@@ -650,9 +650,9 @@ EOM
         // UPDATE circuit info from cpe_b and set host_id to null
         // This is a temp solution till we have a circuit interface
         // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'CIRCUIT.CPE_B', array('HOST_ID' => $host['ID']));
+        list($status, $rows, $records) = db_get_records($onadb, 'CIRCUIT.CPE_B', array('host_id' => $host['id']));
         // do the delete
-        list($status, $rows) = db_update_record($onadb, 'CIRCUIT.CPE_B', array('HOST_ID' => $host['ID']), array('HOST_ID' => ''));
+        list($status, $rows) = db_update_record($onadb, 'CIRCUIT.CPE_B', array('host_id' => $host['id']), array('host_id' => ''));
         if ($status) {
             $self['error'] = "ERROR => host_del() circuit update SQL Query failed: {$self['error']}";
             printmsg($self['error'],0); 
@@ -698,11 +698,11 @@ EOM
             "Displaying record(s) that would have been deleted:\n";
     
     // Display a warning if it has an entry in SERVER_B
-    list($status, $rows, $server) = db_get_record($onadb, 'SERVER_B', array('HOST_ID' => $host['ID']));
+    list($status, $rows, $server) = db_get_record($onadb, 'SERVER_B', array('host_id' => $host['id']));
     if ($rows) {
         $serverrow = 0;
         // check ALL the places server_id is used and remove the entry from server_b if it is not used
-        list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('SERVER_ID' => $server['ID']));
+        list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('SERVER_ID' => $server['id']));
         if ($rows) {
             $text .= "\nWARNING!  This host is a server for the network: {$srecord['DESCRIPTION']}\n";
             $serverrow++;
@@ -735,7 +735,7 @@ EOM
     }
     
     // Display a warning if it has any entries in CONFIG_TEXT_B
-    list($status, $rows, $server) = db_get_record($onadb, 'CONFIG_TEXT_B', array('HOST_ID' => $host['ID']));
+    list($status, $rows, $server) = db_get_record($onadb, 'CONFIG_TEXT_B', array('host_id' => $host['id']));
     if ($rows)
         $text .= "\nWARNING!  Host can not be deleted, it has config archives!\n";
     
@@ -744,14 +744,14 @@ EOM
     $text .= "\n" . $tmp;
     
     // Display associated interface(s)
-    list($status, $rows, $records) = db_get_records($onadb, 'HOST_NETWORKS_B', array('HOST_ID' => $host['ID']));
+    list($status, $rows, $records) = db_get_records($onadb, 'HOST_NETWORKS_B', array('host_id' => $host['id']));
     if ($rows) $text .= "\nASSOCIATED INTERFACE RECORDS ({$rows}):\n";
     foreach ($records as $record) {
         $text .= "  " . ip_mangle($record['IP_ADDRESS'], 'dotted') . "\n";
     }
     
     // Display associated infobits
-    list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('HOST_ID' => $host['ID']));
+    list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
     if ($rows) $text .= "\nASSOCIATED HOST INFOBIT RECORDS ({$rows}):\n";
     foreach ($records as $record) {
         list($status, $rows, $infobit) = ona_get_host_infobit_record(array('ID' => $record['ID']));
@@ -759,7 +759,7 @@ EOM
     }
     
     // Display associated DHCP entries
-    list($status, $rows, $records) = db_get_records($onadb, 'DHCP_ENTRY_B', array('HOST_ID' => $host['ID']));
+    list($status, $rows, $records) = db_get_records($onadb, 'DHCP_ENTRY_B', array('host_id' => $host['id']));
     if ($rows) $text .= "\nASSOCIATED DHCP ENTRY RECORDS ({$rows}):\n";
     foreach ($records as $record) {
         list($status, $rows, $dhcp) = ona_get_dhcp_entry_record(array('ID' => $record['ID']));
@@ -767,7 +767,7 @@ EOM
     }
     
     // Display associated Circuit records
-    list($status, $rows, $records) = db_get_records($onadb, 'CIRCUIT.CPE_B', array('HOST_ID' => $host['ID']));
+    list($status, $rows, $records) = db_get_records($onadb, 'CIRCUIT.CPE_B', array('host_id' => $host['id']));
     if ($rows) $text .= "\nASSOCIATED CIRCUIT RECORDS ({$rows}):\n";
     foreach ($records as $record) {
         $text .= "  {$record['CPE_NAME']}\n";
@@ -865,7 +865,7 @@ EOM
         // Interface record(s)
         $i = 0;
         do {
-            list($status, $rows, $interface) = ona_get_interface_record(array('HOST_ID' => $host['id']));
+            list($status, $rows, $interface) = ona_get_interface_record(array('host_id' => $host['id']));
             if ($rows == 0) { break; }
             $i++;
             $text .= "\nASSOCIATED INTERFACE RECORD ({$i} of {$rows})\n";

@@ -56,7 +56,7 @@ function ws_display_list($window_name, $form='') {
     $and = "";
     $orderby = "";
 
-    // HOST_ID
+    // HOST ID
     if ($form['host_id']) {
         $where .= $and . "id = " . $onadb->qstr($form['host_id']);
         $and = " AND ";
@@ -629,7 +629,7 @@ function ws_display_alias_list($window_name, $form='') {
     }
 
 
-    // HOST_ID
+    // HOST ID
     if ($form['host_id']) {
         $where .= $and . "host_id = " . $onadb->qstr($form['host_id']);
         $and = " AND ";

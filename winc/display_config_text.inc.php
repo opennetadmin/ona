@@ -696,7 +696,7 @@ function ws_delete_configs($window_name, $form='') {
 
     // Delete the config text records that match
     // FIXME, this should probably use a module, but there isn't one!
-    list($status, $rows) = db_delete_record($onadb, 'CONFIG_TEXT_B', array('HOST_ID' => $host['ID'], 'CONFIG_TYPE_ID' => $type['CONFIG_TYPE_ID']));
+    list($status, $rows) = db_delete_record($onadb, 'CONFIG_TEXT_B', array('host_id' => $host['id'], 'CONFIG_TYPE_ID' => $type['CONFIG_TYPE_ID']));
     if ($status or !$rows) {
         $response = new xajaxResponse();
         $response->addScript("alert('Delete failed!');");

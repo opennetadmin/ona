@@ -48,7 +48,7 @@ function ws_display($window_name, $form='') {
     if (!$record['name']) $record['name'] = "NONE SET";
 
     // Interface (and find out how many there are)
-    list($status, $interfaces, $interface) = ona_get_interface_record(array('HOST_ID' => $record['id']), '');
+    list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id']), '');
     $record['IP_ADDRESS'] = ip_mangle($interface['ip_addr'], 'dotted');
     $interface_style = '';
     if ($interfaces > 1) {
@@ -67,7 +67,7 @@ function ws_display($window_name, $form='') {
     $record['device'] = str_replace('Unknown', '?', $record['device']);
 
     // Server info
-    list($status, $rows, $server) = ona_get_server_record(array('HOST_ID' => $record['id']));
+    list($status, $rows, $server) = ona_get_server_record(array('host_id' => $record['id']));
     if ($server['DHCP_SERVER']) {$record['DHCP_SERVER'] = $server['DHCP_SERVER'];}
     if ($server['DNS_SERVER'])  {$record['DNS_SERVER']  = $server['DNS_SERVER'];}
     if ($server['ID'])          {$record['SERVER_ID']   = $server['ID'];}
@@ -315,7 +315,7 @@ EOL;
                 </td></tr>
 EOL;
     // Get a list of infobits, and loop through them
-    list($status, $rows, $infobits) = db_get_records($onadb, 'roles', array('HOST_ID' => $record['id']), '');
+    list($status, $rows, $infobits) = db_get_records($onadb, 'roles', array('host_id' => $record['id']), '');
     if ($rows) {
         foreach ($infobits as $class) {
             list($status, $rows, $infobit) = ona_get_infobit_record(array('ID' => $class['INFOBIT_ID']));
@@ -413,7 +413,7 @@ EOL;
                 <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">DHCP entries</td></tr>
 EOL;
 
-    list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'DHCP_ENTRY_B', array('HOST_ID' => $record['ID']), '');
+    list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'DHCP_ENTRY_B', array('host_id' => $record['ID']), '');
     if ($rows) {
         foreach ($dhcp_entries as $entry) {
             list($status, $rows, $dhcp_type) = ona_get_dhcp_entry_record(array('ID' => $entry['ID']));

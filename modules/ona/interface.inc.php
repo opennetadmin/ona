@@ -185,7 +185,7 @@ EOM
     // Get the next ID for the new interface
     $id = ona_get_next_id('interfaces');
     if (!$id) {
-        $self['error'] = "ERROR => The ona_get_next_id() call failed!";
+        $self['error'] = "ERROR => The ona_get_next_id('interfaces') call failed!";
         printmsg($self['error'], 0);
         return(array(13, $self['error'] . "\n"));
     }
@@ -277,7 +277,7 @@ Modify an interface record
   Where:
     interface=ID or IP or MAC     interface ID or IP address
      or
-    host=NAME[.DOMAIN] or ID      find interface by hostname or HOST_ID
+    host=NAME[.DOMAIN] or ID      find interface by hostname or host_id
 
   Update:
     set_ip=IP                     change IP address (numeric or dotted format)
@@ -638,7 +638,7 @@ EOM
         $text = "INFO => Interface DELETED: " . ip_mangle($interface['ip_addr'], 'dotted') . "  from {$host['fqdn']}";
         printmsg($text, 0);
 
-        // Check to see if there are any other interfaces for the current HOST_ID
+        // Check to see if there are any other interfaces for the current host_id
         // If there aren't, we need to tell the user to delete the host!
         // since we've disallowed removal of the last interface, this should never happen!!!!!
         list($status, $rows, $record) = ona_get_interface_record(array('host_id' => $interface['host_id']));
@@ -713,7 +713,7 @@ Displays an interface record from the database
   Required:
     interface=[ID|IP|MAC]         display interface by search string
      or
-    host=NAME[.DOMAIN] or ID      display interface by hostname or HOST_ID
+    host=NAME[.DOMAIN] or ID      display interface by hostname or host_id
 
   Optional:
     verbose=[yes|no]              display additional info (yes)

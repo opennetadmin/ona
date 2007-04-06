@@ -83,7 +83,7 @@ function get_server_suggestions($q, $max_results=10) {
 
     $table = 'HOSTS_B';
     $field = 'PRIMARY_DNS_NAME';
-    $where  = "{$field} LIKE " . $onadb->qstr($q) . " AND ID IN (SELECT HOST_ID FROM SERVER_B)";
+    $where  = "{$field} LIKE " . $onadb->qstr($q) . " AND id IN (SELECT host_id FROM SERVER_B)";
     $order  = "{$field} ASC";
 
     // Search the db for results

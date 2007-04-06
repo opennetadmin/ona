@@ -460,12 +460,12 @@ EOL;
             // Display information about what server this pool is assigned to
             if ($pool['SERVER_ID']) {
                 list($status, $rows, $dhcp_server)      = ona_get_server_record(array('id' => $pool['SERVER_ID']));
-                list($status, $rows, $dhcp_server_host) = ona_get_host_record(array('id' => $dhcp_server['HOST_ID']));
+                list($status, $rows, $dhcp_server_host) = ona_get_host_record(array('id' => $dhcp_server['host_id']));
                 // foreach(array_keys($dhcp_server_host) as $key) { $dhcp_server_host[$key] = htmlentities($dhcp_server_host[$key], ENT_QUOTES); }
                 $html .= <<<EOL
                         <a title="View DHCP server"
                            class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$dhcp_server['HOST_ID']}\', \'display\')');"
+                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$dhcp_server['host_id']}\', \'display\')');"
                         >{$dhcp_server_host['PRIMARY_DNS_NAME']}</a>&nbsp;
 EOL;
 
@@ -477,17 +477,17 @@ EOL;
 
                 list($status, $rows, $server1)      = ona_get_server_record(array('ID' => $failover_group['PRIMARY_SERVER_ID']));
                 list($status, $rows, $server2)      = ona_get_server_record(array('ID' => $failover_group['SECONDARY_SERVER_ID']));
-                list($status, $rows, $server_host1) = ona_get_host_record(array('ID' => $server1['HOST_ID']));
-                list($status, $rows, $server_host2) = ona_get_host_record(array('ID' => $server2['HOST_ID']));
+                list($status, $rows, $server_host1) = ona_get_host_record(array('ID' => $server1['host_id']));
+                list($status, $rows, $server_host2) = ona_get_host_record(array('ID' => $server2['host_id']));
 
                 $html .= <<<EOL
                         <a title="View DHCP server (Primary failover)"
                            class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server1['HOST_ID']}\', \'display\')');"
+                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server1['host_id']}\', \'display\')');"
                         >{$server_host1['PRIMARY_DNS_NAME']}</a>&#047;
                         <a title="View DHCP server (Secondary failover)"
                            class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server2['HOST_ID']}\', \'display\')');"
+                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server2['host_id']}\', \'display\')');"
                         >{$server_host2['PRIMARY_DNS_NAME']}</a>
 EOL;
 
