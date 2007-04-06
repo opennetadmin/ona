@@ -414,7 +414,7 @@ EOM
     }
     // Update DNS table if necessary
     if($SET_DNS) {
-        list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $host['primary_dns_id'], $SET_DNS);
+        list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $host['primary_dns_id']), $SET_DNS);
         if ($status or !$rows) {
             $self['error'] = "ERROR => host_modify() SQL Query failed: " . $self['error'];
             printmsg($self['error'], 0);
