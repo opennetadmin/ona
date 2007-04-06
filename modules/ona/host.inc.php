@@ -101,27 +101,23 @@ EOM
     // that will be used as the "zone" or "domain".  This means testing many
     // zone name's against the DB to see what's valid.
     // 
-    // FIXME: (bz) .. probably some of the variables below should be replaced with $host['xxx']
     list($status, $rows, $host) = ona_find_host($options['host']);
-    $host_name = $host['name'];
-    $host_zone_name = $host['domain_fqdn'];
-    $host_zone_id = $host['domain_id'];
-    
+   
     
     // Validate that the DNS name has only valid characters in it
-    $host_name = sanitize_hostname($host_name);
-    if (!$host_name) {
-        printmsg("DEBUG => Invalid host name ({$host_name})!", 3);
-        $self['error'] = "ERROR => Invalid host name ({$host_name})!";
+    $host['name'] = sanitize_hostname($host['name']);
+    if (!$host['name']) {
+        printmsg("DEBUG => Invalid host name ({$host['name']})!", 3);
+        $self['error'] = "ERROR => Invalid host name ({$host['name']})!";
         return(array(4, $self['error'] . "\n"));
     }
     // Debugging
-    printmsg("DEBUG => Host selected: {$host_name}{$host_zone_name} Zone ID: $host_zone_id", 3);
+    printmsg("DEBUG => Host selected: {$host['name']}.{$host['domain_fqdn']} Zone ID: {$host['domain_id']}", 3);
     
-    // Validate that there isn't already any dns record named $host_name in the zone $host_zone_id.
+    // Validate that there isn't already any dns record named $host['name'] in the zone $host_zone_id.
     $h_status = $h_rows = 0;
     // does the zone $host_zone_id even exist?
-    list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $host_name, 'domain_id' => $host_zone_id));
+    list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $host['name'], 'domain_id' => $host['domain_id']));
     if (!$d_status && $d_rows) {
         list($h_status, $h_rows, $h_record) =  ona_get_host_record(array('primary_dns_id' => $d_record[0]));
     }
@@ -129,18 +125,10 @@ EOM
     error_log($d_status.",".$d_rows.",".print_r($d_record,true));
     error_log($h_status.",".$h_rows.",".print_r($h_record,true));
     if ($h_status or $h_rows) {
-        printmsg("DEBUG => Another DNS record named {$host_name}.{$host_zone_name} already exists!",3);
-        $self['error'] = "ERROR => Another DNS record named {$host_name}.{$host_zone_name} already exists!";
+        printmsg("DEBUG => Another DNS record named {$host['name']}.{$host['domain_fqdn']} already exists!",3);
+        $self['error'] = "ERROR => Another DNS record named {$host['name']}.{$host['domain_fqdn']} already exists!";
         return(array(5, $self['error'] . "\n"));
-    }
-    //list($a_status, $a_rows, $a_record) = ona_get_alias_record(array('ALIAS'       => $host_name, 
-    //                                                                  'DNS_ZONE_ID' => $host_zone_id));
-    //if ($a_status or $a_rows) {
-    //    printmsg("DEBUG => An alias named {$host_name}.{$host_zone_name} already exists!",3);
-    //    $self['error'] = "ERROR => An alias named {$host_name}.{$host_zone_name} already exists!";
-    //    return(array(6, $self['error'] . "\n"));
-    //}
-    
+    }    
     
     // Check permissions
     if (!auth('host_add')) {
@@ -149,31 +137,42 @@ EOM
         return(array(10, $self['error'] . "\n"));
     }
     
-    // Get the next ID for the new host
-    $id = ona_get_next_id();
+    // Get the next ID for the new host record
+    $id = ona_get_next_id('hosts');
     if (!$id) {
-        $self['error'] = "ERROR => The ona_get_next_id() call failed!";
+        $self['error'] = "ERROR => The ona_get_next_id('hosts') call failed!";
         printmsg($self['error'], 0);
         return(array(7, $self['error'] . "\n"));
     }
-    printmsg("DEBUG => ID for new host: $id", 3);
+    printmsg("DEBUG => ID for new host record: $id", 3);
 
+    // Get the next ID for the new dns record
+    $host['primary_dns_id'] = ona_get_next_id('dns');
+    if (!$id) {
+        $self['error'] = "ERROR => The ona_get_next_id('dns') call failed!";
+        printmsg($self['error'], 0);
+        return(array(7, $self['error'] . "\n"));
+    }
+    printmsg("DEBUG => ID for new dns record: $id", 3);
+    
+    
     // There is an issue with escaping '=' and '&'.  We need to avoid adding escape characters
     $options['notes'] = str_replace('\\=','=',$options['notes']);
     $options['notes'] = str_replace('\\&','&',$options['notes']);
     
-    // Add the host
+    // Add the host record
+    // FIXME: (PK) Needs to insert to multiple tables for e.g. name and domain_id.
     list($status, $rows) = db_insert_record(
         $onadb, 
         'hosts',
         array(
             'id'                   => $id,
-            'PRIMARY_DNS_NAME'     => $host_name,
-            'PRIMARY_DNS_ZONE_ID'  => $host_zone_id,
-            'DEVICE_MODEL_ID'      => $device['ID'],
-            'LVL'                  => $options['security_level'],
-            'NOTES'                => $options['notes'],
-            'UNIT_ID'              => $unit['UNIT_ID']
+            'name'                 => $host['name'],
+            'domain_id'            => $host['domain_id'],
+//            'model_id'             => $device['id'],
+//            'LVL'                  => $options['security_level'],
+            'notes'                => $options['notes']
+//            'UNIT_ID'              => $unit['UNIT_ID']
         )
     );
     if ($status or !$rows) {
@@ -181,14 +180,31 @@ EOM
         printmsg($self['error'], 0);
         return(array(6, $self['error'] . "\n"));
     }
+    
+    // Add the dns record
+    list($status, $rows) = db_insert_record(
+        $onadb,
+        'dns',
+        array(
+            'id'                       => $host['primary_dns_id'],
+            'name'                     => $host['name'],
+            'domain_id'                => $host['domain_id']
+        )
+    );
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => host_add() SQL Query failed: " . $self['error'];
+        printmsg($self['error'], 0);
+        return(array(6, $self['error'] . "\n"));
+    }
+        
     // Else start an output message
-    $text = "INFO => Host ADDED: {$host_name}.{$host_zone_name}";
+    $text = "INFO => Host ADDED: {$host['name']}.{$host['domain_fqdn']}";
     printmsg($text,0);
     $text .= "\n";
     
     // If we are going to add an interface, call that module now:
     if ($options['ip']) {
-        printmsg("DEBUG => host_add() ({$host_name}.{$host_zone_name}) calling interface_add() ({$options['ip']})", 3);   
+        printmsg("DEBUG => host_add() ({$host['name']}.{$host['domain_fqdn']}) calling interface_add() ({$options['ip']})", 3);   
         list($status, $output) = run_module('interface_add', $options);
         if ($status)
             return(array($status, $output));
@@ -588,24 +604,6 @@ EOM
             $add_to_error .= "INFO => Interface DELETED: " . ip_mangle($record['IP_ADDRESS'], 'dotted') . " from {$host['fqdn']}\n";
         }
         
-        // Delete alias(es)
-        // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'HOST_ALIASES_B', array('HOST_ID' => $host['ID']));
-        // do the delete
-        list($status, $rows) = db_delete_record($onadb, 'HOST_ALIASES_B', array('HOST_ID' => $host['ID']));
-        if ($status) {
-            $self['error'] = "ERROR => host_del() alias delete SQL Query failed: {$self['error']}";
-            printmsg($self['error'],0); 
-            return(array(5, $add_to_error . $self['error'] . "\n"));
-        }
-        // log deletions
-        foreach ($records as $record) {
-            if (!$azone or $azone['ID'] != $record['DNS_ZONE_ID'])
-                list($status, $rows, $azone) = ona_get_domain_record(array('ID' => $record['DNS_ZONE_ID']));
-            printmsg("INFO => Alias DELETED: {$record['ALIAS']}.{$azone['ZONE_NAME']} from {$host['fqdn']}",0);
-            $add_to_error .= "INFO => Alias DELETED: {$record['ALIAS']}.{$azone['ZONE_NAME']} from {$host['fqdn']}\n";
-        }
-        
         // Delete infobit entries
         // get list for logging
         list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('HOST_ID' => $host['ID']));
@@ -750,15 +748,6 @@ EOM
     if ($rows) $text .= "\nASSOCIATED INTERFACE RECORDS ({$rows}):\n";
     foreach ($records as $record) {
         $text .= "  " . ip_mangle($record['IP_ADDRESS'], 'dotted') . "\n";
-    }
-    
-    // Display associated alias(es)
-    list($status, $rows, $records) = db_get_records($onadb, 'HOST_ALIASES_B', array('HOST_ID' => $host['ID']));
-    if ($rows) $text .= "\nASSOCIATED ALIAS RECORDS ({$rows}):\n";
-    foreach ($records as $record) {
-        if (!$azone or $azone['ID'] != $record['DNS_ZONE_ID'])
-            list($status, $rows, $azone) = ona_get_domain_record(array('ID' => $record['DNS_ZONE_ID']));
-        $text .= "  {$record['ALIAS']}.{$azone['ZONE_NAME']}\n";
     }
     
     // Display associated infobits

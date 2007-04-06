@@ -99,8 +99,8 @@ function get_server_suggestions($q, $max_results=10) {
     if ($status) { $results[] = "Internal Error: {$self['error']}"; }
 
     foreach ($records as $record) {
-        list($status, $rows, $zone) = db_get_record($onadb, 'DNS_ZONES_B', array('ID' => $record['PRIMARY_DNS_ZONE_ID']));
-        $results[] = $record[$field].".".$zone['ZONE_NAME'];
+        list($status, $rows, $domain) = db_get_record($onadb, 'dns', array('id' => $record['domain_id']));
+        $results[] = $record[$field].".".$domain['fqdn'];
     }
 
     // Return the records

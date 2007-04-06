@@ -42,10 +42,10 @@ function ws_editor($window_name, $form='') {
 
     // Load an existing record (and associated info) if we're editing
     if (is_numeric($form['interface_id'])) {
-        list($status, $rows, $interface) = ona_get_interface_record(array('ID' => $form['interface_id']));
+        list($status, $rows, $interface) = ona_get_interface_record(array('id' => $form['interface_id']));
         if ($rows) {
-            list($host, $zone) = ona_find_host($interface['host_id']);
-            list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $interface['subnet_id']));
+            list($status, $rows, $host) = ona_find_host($interface['host_id']);
+            list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
             $interface['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
             if ($interface['mac_addr']) {
                 $interface['mac_addr'] = mac_mangle($interface['mac_addr']);
@@ -57,12 +57,12 @@ function ws_editor($window_name, $form='') {
         // Maybe we didn't get an interface record, but we got a host record (adding an interface)
         // Set it in $interface so it's available below.
         if (is_numeric($form['host_id'])) $interface['host_id'] = $form['host_id'];
-        if (is_numeric($form['subnet_id'])) list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $form['subnet_id']));
+        if (is_numeric($form['subnet_id'])) list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
 
     }
 
     // Load the host record for display
-    if($interface['host_id']) list($host, $zone) = ona_find_host($interface['host_id']);
+    if($interface['host_id']) list($status, $rows, $host) = ona_find_host($interface['host_id']);
 
     // Prepare some stuff for displaying checkboxes
     if ($interface['CREATE_DNS_ENTRY'] != 'N') { $interface['CREATE_DNS_ENTRY'] = 'CHECKED'; }
@@ -162,7 +162,7 @@ EOL;
                 <input
                     name="host"
                     alt="Hostname"
-                    value="{$host['primary_dns_name']}"
+                    value="{$host['name']}"
                     class="edit"
                     type="text"
                     size="20" maxlength="64"

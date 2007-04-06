@@ -985,8 +985,8 @@ function quick_pool_server_search($form) {
     $fg_list = '<option value="">&nbsp;</option>\n';
 
     foreach ($fg as $record) {
-        list($fail_host1, $fail_zone1) = ona_find_host($record['PRIMARY_SERVER_ID']);
-        list($fail_host2, $fail_zone2) = ona_find_host($record['SECONDARY_SERVER_ID']);
+        list($status, $rows, $fail_host1) = ona_find_host($record['PRIMARY_SERVER_ID']);
+        list($status, $rows, $fail_host2) = ona_find_host($record['SECONDARY_SERVER_ID']);
 
         $selected = "";
         if ($record['DHCP_FAILOVER_GROUP_ID'] == $form['failover_group_id']) { $selected = "SELECTED=\"selected\""; }

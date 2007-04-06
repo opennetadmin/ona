@@ -671,14 +671,14 @@ function db_delete_records($dbh=0, $table="", $where="") {
 //
 //
 //  Example: list($status, $rows, $record) = db_get_record(
-//                                               "HOSTS_B",
-//                                               array('ID' => '12354'),
-//                                               "PRIMARY_DNS_ZONE_ID ASC"
+//                                               "hosts",
+//                                               array('id' => '12354'),
+//                                               "domain_id ASC"
 //                                           );
 //  Example: list($status, $rows, $record) = db_get_record(
-//                                               "HOSTS_B",
-//                                               "ID = '12354'",
-//                                               "PRIMARY_DNS_ZONE_ID ASC"
+//                                               "hosts",
+//                                               "id = '12354'",
+//                                               "domain_id ASC"
 //                                           );
 //  Exit codes:
 //    0  :: No error
@@ -855,10 +855,10 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 //         a record from the $table table where the values in $where match.
 //  
 //  Example: list($status, $rows, $records) = db_get_record(
-//                                                $oracle,
-//                                                'HOSTS_B',
-//                                                array('ID' => '12354'),
-//                                                'PRIMARY_DNS_ZONE_ID ASC',
+//                                                $onadb,
+//                                                'hosts',
+//                                                array('id' => '12354'),
+//                                                'domain_id ASC',
 //                                                '25',
 //                                                '50'
 //                                            );
@@ -2227,11 +2227,10 @@ function ona_find_config($options=array()) {
     // Otherwise we're selecting a config by hostname and type
     else if ($options['host'] and $options['type']) {
         // Search for the host first
-        list($name, $domain_name, $zone_id) = ona_find_domain($options['host']);
-        list($status, $rows, $host) = ona_get_host_record(array('PRIMARY_DNS_NAME' => $name,
-                                                                 'PRIMARY_DNS_ZONE_ID' => $zone_id));
+        list($status, $rows, $host) = ona_find_host($options['host']);
+        
         // Error if the host doesn't exist
-        if (!$host['ID']) {
+        if (!$host['id']) {
             $self['error'] = "ERROR => The host specified, {$options['host']}, does not exist!";
             return(array(3, 0, array()));
         }
@@ -2245,7 +2244,7 @@ function ona_find_config($options=array()) {
         }
 
         // Select the first config record of the specified type and host
-        list($status, $rows, $config) = ona_get_config_record(array('HOST_ID' => $host['ID'],
+        list($status, $rows, $config) = ona_get_config_record(array('host_id' => $host['id'],
                                                                      'CONFIG_TYPE_ID' => $config_type_id));
     }
 

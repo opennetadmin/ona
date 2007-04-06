@@ -27,7 +27,7 @@ function ws_display_list($window_name, $form='') {
     $form = parse_options_string($form);
 
     // Load the host record
-    list($host, $zone) = ona_find_host($form['host_id']);
+    list($status, $rows, $host) = ona_find_host($form['host_id']);
     if (!$host['id']) {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
@@ -102,11 +102,11 @@ function ws_display_list($window_name, $form='') {
                     <a title="View host. ID: {$host['id']}"
                        class="nav"
                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')');"
-                    >{$host['PRIMARY_DNS_NAME']}</a
-                    >.<a title="View zone. ID: {$host['PRIMARY_DNS_ZONE_ID']}"
+                    >{$host['name']}</a
+                    >.<a title="View zone. ID: {$host['domain_id']}"
                          class="zone"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$host['PRIMARY_DNS_ZONE_ID']}\', \'display\')');"
-                    >{$zone['ZONE_NAME']}</a>
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$host['domain_id']}\', \'display\')');"
+                    >{$host['domain_fqdn']}</a>
                 </td>
             </tr>
 
@@ -269,7 +269,7 @@ function ws_display_config($window_name, $form='') {
     }
 
     // Load the asscoiated host record
-    list($host, $zone) = ona_find_host($config['host_id']);
+    list($status, $rows, $host) = ona_find_host($config['host_id']);
     if (!$host['id']) {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
@@ -282,7 +282,7 @@ function ws_display_config($window_name, $form='') {
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
     if ($history['title'] == $window_name) {
-        $history['title'] = "Config text ({$host['PRIMARY_DNS_NAME']})";
+        $history['title'] = "Config text ({$host['name']})";
        array_push($_SESSION['ona']['work_space']['history'], $history);
     }
 
@@ -315,10 +315,10 @@ function ws_display_config($window_name, $form='') {
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')');"
                         >{$host['id']}</a
-                        >.<a title="View zone. ID: {$host['PRIMARY_DNS_ZONE_ID']}"
+                        >.<a title="View zone. ID: {$host['domain_id']}"
                              class="zone"
-                             onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$host['PRIMARY_DNS_ZONE_ID']}\', \'display\')');"
-                        >{$zone['ZONE_NAME']}</a>
+                             onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$host['domain_id']}\', \'display\')');"
+                        >{$host['domain_fqdn']}</a>
                     </td>
                 </tr>
                 <tr>
@@ -418,7 +418,7 @@ function ws_display_diff($window_name, $form='') {
     }
 
     // Load the asscoiated old host record
-    list($old_host, $old_zone) = ona_find_host($old['host_id']);
+    list($status, $rows, $old_host) = ona_find_host($old['host_id']);
     if (!$old_host['id']) {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
@@ -428,7 +428,7 @@ function ws_display_diff($window_name, $form='') {
     }
 
     // Load the asscoiated new host record
-    list($new_host, $new_zone) = ona_find_host($new['host_id']);
+    list($status, $rows, $new_host) = ona_find_host($new['host_id']);
     if (!$new_host['id']) {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
@@ -473,10 +473,10 @@ function ws_display_diff($window_name, $form='') {
                                class="nav"
                                onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$old_host['id']}\', \'display\')');"
                             >{$old_host['PRIMARY_DNS_NAME']}</a
-                            >.<a title="View zone. ID: {$old_host['PRIMARY_DNS_ZONE_ID']}"
+                            >.<a title="View zone. ID: {$old_host['domain_id']}"
                                  class="zone"
-                                 onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$old_host['PRIMARY_DNS_ZONE_ID']}\', \'display\')');"
-                            >{$old_zone['ZONE_NAME']}</a>
+                                 onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$old_host['domain_id']}\', \'display\')');"
+                            >{$old_host['domain_name']}</a>
                         </td>
                     </tr>
                     <tr>
@@ -513,11 +513,11 @@ function ws_display_diff($window_name, $form='') {
                             <a title="View host. ID: {$new_host['id']}"
                                class="nav"
                                onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$new_host['id']}\', \'display\')');"
-                            >{$new_host['PRIMARY_DNS_NAME']}</a
-                            >.<a title="View zone. ID: {$new_host['PRIMARY_DNS_ZONE_ID']}"
+                            >{$new_host['name']}</a
+                            >.<a title="View zone. ID: {$new_host['domain_id']}"
                                  class="zone"
-                                 onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$new_host['PRIMARY_DNS_ZONE_ID']}\', \'display\')');"
-                            >{$new_zone['ZONE_NAME']}</a>
+                                 onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$new_host['domain_id']}\', \'display\')');"
+                            >{$new_host['domain_name']}</a>
                         </td>
                     </tr>
                     <tr>
@@ -606,8 +606,8 @@ function ws_delete_config($window_name, $form='') {
     }
 
     // Load the asscoiated host record
-    list($host, $zone) = ona_find_host($config['HOST_ID']);
-    if (!$host['ID']) {
+    list($status, $rows, $host) = ona_find_host($config['host_id']);
+    if (!$host['id']) {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
@@ -669,7 +669,7 @@ function ws_delete_configs($window_name, $form='') {
     $form = parse_options_string($form);
 
     // Load the host record
-    list($host, $zone) = ona_find_host($form['host_id']);
+    list($status, $rows, $host) = ona_find_host($form['host_id']);
     if (!$host['ID']) {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";

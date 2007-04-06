@@ -288,7 +288,7 @@ EOL;
     if ($rows) {
         foreach ($dhcpservers as $dhcpserver) {
 
-            list($host, $zone) = ona_find_host($dhcpserver['SERVER_ID']);
+            list($status, $rows, $host) = ona_find_host($dhcpserver['SERVER_ID']);
             $host['fqdn'] = htmlentities($host['fqdn'], ENT_QUOTES);
             $html .= <<<EOL
                 <tr onMouseOver="this.className='row-highlight';"

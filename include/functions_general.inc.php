@@ -1342,13 +1342,13 @@ function format_array($array=array()) {
         else if ($key == 'ip_mask')    { $array[$key] = ip_mangle($array[$key]); }
         else if ($key == 'data_link_address') { $array[$key] = mac_mangle($array[$key]); if ($array[$key] == -1) $array[$key] = ''; }
         else if ($key == 'host_id')           {
-            list($host, $zone) = ona_find_host($array[$key]);
+            list($status, $rows, $host) = ona_find_host($array[$key]);
             if ($host['id'])
                 $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['fqdn']})");
         }
         else if ($key == 'server_id')         {
             list($status, $rows, $server) = ona_get_server_record(array('id' => $array[$key]));
-            list($host, $host) = ona_find_host($server['host_id']);
+            list($status, $rows, $host) = ona_find_host($server['host_id']);
             if ($host['id'])
                 $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['fqdn']})");
         }
@@ -1357,9 +1357,9 @@ function format_array($array=array()) {
             if ($subnet['id'])
                 $array[$key] = str_pad($array[$key], 20) . strtoupper("({$subnet['name']})");
         }
-        else if ($key == 'dns_zone_id' or $key == 'primary_dns_zone_id') {
-            list($status, $rows, $zone) = ona_get_zone_record(array('id' => $array[$key]));
-            $array[$key] = str_pad($array[$key], 20) . strtolower("({$zone['ZONE_NAME']})");
+        else if ($key == 'domain_id' or $key == 'primary_dns_domain_id') {
+            list($status, $rows, $domain) = ona_get_domain_record(array('id' => $array[$key]));
+            $array[$key] = str_pad($array[$key], 20) . strtolower("({$domain['fqdn']})");
         }
 
         // Align columns
