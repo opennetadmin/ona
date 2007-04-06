@@ -466,7 +466,7 @@ EOL;
                         <a title="View DHCP server"
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$dhcp_server['host_id']}\', \'display\')');"
-                        >{$dhcp_server_host['PRIMARY_DNS_NAME']}</a>&nbsp;
+                        >{$dhcp_server_host['name']}</a>&nbsp;
 EOL;
 
             }
@@ -484,11 +484,11 @@ EOL;
                         <a title="View DHCP server (Primary failover)"
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server1['host_id']}\', \'display\')');"
-                        >{$server_host1['PRIMARY_DNS_NAME']}</a>&#047;
+                        >{$server_host1['name']}</a>&#047;
                         <a title="View DHCP server (Secondary failover)"
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server2['host_id']}\', \'display\')');"
-                        >{$server_host2['PRIMARY_DNS_NAME']}</a>
+                        >{$server_host2['name']}</a>
 EOL;
 
 

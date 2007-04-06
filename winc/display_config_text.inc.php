@@ -40,7 +40,7 @@ function ws_display_list($window_name, $form='') {
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
     if ($history['title'] == $window_name) {
-        $history['title'] = "Configs: {$host['PRIMARY_DNS_NAME']}";
+        $history['title'] = "Configs: {$host['name']}";
         array_push($_SESSION['ona']['work_space']['history'], $history);
     }
 
@@ -472,7 +472,7 @@ function ws_display_diff($window_name, $form='') {
                             <a title="View host. ID: {$old_host['id']}"
                                class="nav"
                                onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$old_host['id']}\', \'display\')');"
-                            >{$old_host['PRIMARY_DNS_NAME']}</a
+                            >{$old_host['name']}</a
                             >.<a title="View zone. ID: {$old_host['domain_id']}"
                                  class="zone"
                                  onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$old_host['domain_id']}\', \'display\')');"

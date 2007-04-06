@@ -81,8 +81,8 @@ function get_server_suggestions($q, $max_results=10) {
     // wildcard the query before searching
     $q = $q . '%';
 
-    $table = 'HOSTS_B';
-    $field = 'PRIMARY_DNS_NAME';
+    $table = 'hosts';
+    $field = 'name'; // FIXME: (PK) name is no longer in hosts table ... its in dns table.
     $where  = "{$field} LIKE " . $onadb->qstr($q) . " AND id IN (SELECT host_id FROM SERVER_B)";
     $order  = "{$field} ASC";
 
