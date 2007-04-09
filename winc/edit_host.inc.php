@@ -36,9 +36,8 @@ function ws_editor($window_name, $form='') {
     $form = parse_options_string($form);
     
     // Load an existing host record (and associated info) if $form is a host_id
-    $host = array();
+    $host = array('fqdn' => '.');
     $interface = array();
-    $host['fqdn'] = '.';
     if (is_numeric($form['host_id'])) {
         list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']));
         if ($rows) {
@@ -175,12 +174,12 @@ EOL;
         
         <tr>
             <td align="right" nowrap="true">
-                Subdomain (zone)
+                Domain
             </td>
             <td class="padding" align="left" width="100%">
                 <input 
                     id="set_zone_{$window_name}"
-                    name="set_zone" 
+                    name="set_zone"
                     alt="Zone name"
                     value="{$host['domain_fqdn']}"
                     class="edit" 
@@ -206,22 +205,6 @@ EOL;
         
         <tr>
             <td align="right" nowrap="true">
-                Security level
-            </td>
-            <td class="padding" align="left" width="100%">
-                <input 
-                    name="set_security_level" 
-                    alt="Security level"
-                    value="{$host['LVL']}"
-                    class="edit" 
-                    type="text" 
-                    size="2" maxlength="3" 
-                >
-            </td>
-        </tr>
-        
-        <tr>
-            <td align="right" nowrap="true">
                 Notes
             </td>
             <td class="padding" align="left" width="100%">
@@ -229,30 +212,13 @@ EOL;
             </td>
         </tr>
         
-        <tr>
-            <td align="right" nowrap="true">
-                Unit number
-            </td>
-            <td class="padding" align="left" width="100%">
-                <input 
-                    id="set_unit_{$window_name}"
-                    name="set_unit" 
-                    alt="Unit number"
-                    value="{$host['UNIT_NUMBER']}"
-                    class="edit" 
-                    type="text" 
-                    size="7" maxlength="10" 
-                >
-                <span id="qf_unit_{$window_name}" title="Unit Quick Search"><img src="{$images}/silk/find.png" border="0"/></span>
-            </td>
-        </tr>
 EOL;
     
     // Display an interface edit section if it's a new host or there were exactly one interface.
     if (!$interfaces or $interfaces == 1) {
         $window['js'] .= <<<EOL
         
-        /* Setup the Quick Find FREE IP icon */
+        /* Setup the Quick Find for available IPs */
         var _button = el('qf_free_ip_{$window_name}');
         _button.style.cursor = 'pointer';
         _button.onclick = 
@@ -445,8 +411,6 @@ function ws_save($window_name, $form='') {
     if ($form['set_host'] == '' or 
         $form['set_zone'] == '' or 
         $form['set_type'] == '' or
-        $form['set_security_level'] == '' or
-        $form['set_unit'] == '' or
         /* Interface input: required only if adding a host */
         ($form['host'] == '.' and $form['set_ip'] == '')
        ) {
@@ -468,12 +432,6 @@ function ws_save($window_name, $form='') {
     list($status, $rows, $zone) = ona_get_domain_record(array('name' => $form['set_zone'])); // FIXME: change GUI to reference domain, not zone
     if ($status or !$rows) {
         $response->addScript("alert('Invalid zone!');");
-        return($response->getXML());
-    }
-    // Sanitize the security level
-    $form['set_security_level'] = sanitize_security_level($form['set_security_level']);
-    if ($form['set_security_level'] == -1) {
-        $response->addScript("alert('{$self['error']}');");
         return($response->getXML());
     }
     // Make sure the IP address specified is valid

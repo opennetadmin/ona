@@ -325,6 +325,7 @@ EOM
     
     // This variable will contain the updated info we'll insert into the DB
     $SET = array();
+    $SET_DNS = array();
     
     // Set options['set_host']?
     // Validate that the DNS name has only valid characters in it
@@ -377,7 +378,7 @@ EOM
         $SET['UNIT_ID'] = $unit['UNIT_ID'];
     }*/
     
-    
+/* PK
     // Set options['set_security_level']
     if ($options['set_security_level']) {
         // Sanitize "security_level" option
@@ -388,14 +389,18 @@ EOM
         }    
         $SET['LVL'] = $options['set_security_level'];
     }
-    
+*/
+
     // Set options['set_notes'] (it can be a null string!)
     if (array_key_exists('set_notes', $options)) {
         // There is an issue with escaping '=' and '&'.  We need to avoid adding escape characters
         $options['set_notes'] = str_replace('\\=','=',$options['set_notes']);
         $options['set_notes'] = str_replace('\\&','&',$options['set_notes']);
-        $SET['NOTES'] = $options['set_notes'];
+        // If it changed...
+        if ($host['notes'] != $options['set_notes'])
+            $SET['notes'] = $options['set_notes'];
     }
+    
     // Check permissions
     if (!auth('host_modify') or !authlvl($host['LVL'])) {
         $self['error'] = "Permission denied!";
@@ -404,17 +409,19 @@ EOM
     }
     
     // Get the host record before updating (logging)
-    list($status, $rows, $original_host) = ona_get_host_record(array('id' => $host['id']));
+    $original_host = $host;
     
-    // Update the host record
-    list($status, $rows) = db_update_record($onadb, 'hosts', array('id' => $host['id']), $SET);
-    if ($status or !$rows) {
-        $self['error'] = "ERROR => host_modify() SQL Query failed: " . $self['error'];
-        printmsg($self['error'], 0);
-        return(array(8, $self['error'] . "\n"));
+    // Update the host record if necessary
+    if(count($SET) > 0) {
+        list($status, $rows) = db_update_record($onadb, 'hosts', array('id' => $host['id']), $SET);
+        if ($status or !$rows) {
+            $self['error'] = "ERROR => host_modify() SQL Query failed: " . $self['error'];
+            printmsg($self['error'], 0);
+            return(array(8, $self['error'] . "\n"));
+        }
     }
     // Update DNS table if necessary
-    if($SET_DNS) {
+    if(count($SET_DNS) > 0) {
         list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $host['primary_dns_id']), $SET_DNS);
         if ($status or !$rows) {
             $self['error'] = "ERROR => host_modify() SQL Query failed: " . $self['error'];
@@ -425,18 +432,15 @@ EOM
     // Get the host record after updating (logging)
     list($status, $rows, $new_host) = ona_get_host_record(array('id' => $host['id']));
     
-    // Load the updated record for display
-    list($status, $rows, $host) = ona_find_host($host['id']);
-    
     // Return the success notice
-    $self['error'] = "INFO => Host UPDATED:{$host['id']}: {$host['fqdn']}";
+    $self['error'] = "INFO => Host UPDATED:{$host['id']}: {$new_host['fqdn']}";
     
     $log_msg = "INFO => Host UPDATED:{$host['id']}: ";
     $more="";
-    foreach(array_keys($original_host) as $key) {
-        if($original_host[$key] != $new_host[$key]) {
-            $log_msg .= $more . $key . "[" .$original_host[$key] . "=>" . $host[$key] . "]";
-            $more= ";";
+    foreach(array_keys($host) as $key) {
+        if($host[$key] != $new_host[$key]) {
+            $log_msg .= "{$more}{$key}: {$host[$key]} => {$new_host[$key]}";
+            $more= "; ";
         }
     }
     

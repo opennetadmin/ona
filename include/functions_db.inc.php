@@ -1085,7 +1085,7 @@ function ona_get_record($where="", $table="", $order="") {
 //   domain_name => domain name for the associated primary_dns_id's domain
 function ona_get_host_record($array='', $order='') {
     list($status, $rows, $record) = ona_get_record($array, 'hosts', $order);
-    list($status_dns, $rows_dns, $dns) = ona_get_dns_record($record['primary_dns_id']);
+    list($status_dns, $rows_dns, $dns) = ona_get_dns_record(array('id' => $record['primary_dns_id']));
     $record['name'] = $dns['name'];
     $record['fqdn'] = $record['name'] . '.' . $dns['fqdn'];
     $record['domain_id'] = $dns['domain_id'];
@@ -1108,7 +1108,8 @@ function ona_get_interface_record($array='', $order='') {
 // Returns an additional "fqdn" field
 function ona_get_domain_record($array='', $order='') {
     list($status, $rows, $record) = ona_get_record($array, 'domains', $order);
-    $record['fqdn'] = ona_build_domain_name($record['id']);
+    if ($rows)
+        $record['fqdn'] = ona_build_domain_name($record['id']);
     return(array($status, $rows, $record));
 }
 
@@ -1469,7 +1470,7 @@ function ona_find_host($search="") {
         }
     }
     
-    // By Interface IP?
+    // By Interface?
     list($status, $rows, $interface) = ona_find_interface($search);
     if (!$status and $rows) {
         // Load and return associated info
@@ -1486,7 +1487,7 @@ function ona_find_host($search="") {
     printmsg("DEBUG => ona_find_domain({$search}) returned: {$domain['fqdn']}", 3);
     
     // Now find what the host part of $search is
-    $hostname = str_replace($domain['fqdn'], '', $search);
+    $hostname = str_replace(".{$domain['fqdn']}", '', $search);
     
     // Let's see if that hostname is valid or not in $domain['id']
     list($status, $rows, $dns) = ona_get_dns_record(array('domain_id' => $domain['id'], 'name' => $hostname));
