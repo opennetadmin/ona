@@ -1887,6 +1887,12 @@ function ona_find_device($search="") {
         return(array(1, 0, array()));
     }
 
+/* PK BOGUS FUNCTION.  FIXME: remove when the 'devices' table gets set up */
+$retval = array('id' => 1, 'DEVICE_TYPE_ID' => 1, 'MANUFACTURER_ID' => 1, 'MODEL_DESCRIPTION' => "A bogus record");
+return(array(0, 1, $retval));
+/* END BOGUS FUNCTION */
+
+
     // If it's numeric
     if (preg_match('/^\d+$/', $search)) {
         // It's a number - do several sql queries and see if we can get a unique match

@@ -76,14 +76,13 @@ EOM
 //    printmsg("DEBUG => Unit selected: {$unit['UNIT_NAME']} Unit number: {$unit['UNIT_NUMBER']}", 3);
     
     
-// FIXME: commented out by Paul K 3/23/07 because we don't do device types yet
-//    // Find the Device ID (i.e. Type) to use
-//    list($status, $rows, $device) = ona_find_device($options['type']);
-//    if ($status or $rows != 1 or !$device['ID']) {
-//        printmsg("DEBUG => The device type specified, {$options['type']}, does not exist!", 3);
-//        return(array(3, "ERROR => The device type specified, {$options['type']}, does not exist!\n"));
-//    }
-//    printmsg("DEBUG => Device selected: {$device['MODEL_DESCRIPTION']} Device ID: {$device['ID']}", 3);
+   // Find the Device ID (i.e. Type) to use
+   list($status, $rows, $device) = ona_find_device($options['type']);
+   if ($status or $rows != 1 or !$device['ID']) {
+       printmsg("DEBUG => The device type specified, {$options['type']}, does not exist!", 3);
+       return(array(3, "ERROR => The device type specified, {$options['type']}, does not exist!\n"));
+   }
+   printmsg("DEBUG => Device selected: {$device['MODEL_DESCRIPTION']} Device ID: {$device['ID']}", 3);
     
     
     // Sanitize "security_level" option
@@ -342,8 +341,10 @@ EOM
             $self['error'] = "ERROR => Another host named {$tmp_host['fqdn']} already exists!";
             return(array(5, $self['error'] . "\n"));
         }
-        $SET_DNS['name']      = $tmp_host['name'];
-        $SET_DNS['domain_id'] = $tmp_host['domain_id'];
+        if($host['name'] != $tmp_host['name'])
+            $SET_DNS['name']      = $tmp_host['name'];
+        if($host['domain_id'] != $tmp_host['domain_id'])
+            $SET_DNS['domain_id'] = $tmp_host['domain_id'];
     }
     
     
@@ -358,8 +359,9 @@ EOM
         }
         printmsg("DEBUG => Device selected: {$device['MODEL_DESCRIPTION']} Device ID: {$device['id']}", 3);
         
-        // Everything looks ok, add it to $SET
-        $SET['model_id'] = $device['id'];
+        // Everything looks ok, add it to $SET if it changed...
+        if ($host['model_id'] != $device['id'])
+            $SET['model_id'] = $device['id'];
     }
     
     

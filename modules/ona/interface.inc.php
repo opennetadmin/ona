@@ -410,8 +410,10 @@ EOM
         }
 
         // Everything looks ok, add it to $SET
-        $SET['subnet_id'] = $subnet['id'];
-        $SET['ip_addr'] = $options['set_ip'];
+        if($interface['subnet_id'] != $subnet['id'])
+            $SET['subnet_id'] = $subnet['id'];
+        if($interface['ip_addr'] != $options['set_ip'])
+            $SET['ip_addr'] = $options['set_ip'];
     }
 
 
@@ -439,7 +441,8 @@ EOM
                 }
             }
         }
-        $SET['mac_addr'] = $options['set_mac'];
+        if($interface['mac_addr'] != $options['set_mac'])
+            $SET['mac_addr'] = $options['set_mac'];
     }
 
     // Set options[create_a]?
@@ -454,12 +457,12 @@ EOM
 //    }
 
     // Set options[set_name]?
-    if (array_key_exists('set_name', $options)) {
+    if (array_key_exists('set_name', $options) && $interface['name'] != $options['set_name']) {
         $SET['name'] = $options['set_name'];
     }
 
     // Set options[set_description]?
-    if (array_key_exists('set_description', $options)) {
+    if (array_key_exists('set_description', $options) && $interface['description'] != $options['set_description']) {
         $SET['description'] = $options['set_description'];
     }
     
@@ -475,13 +478,15 @@ EOM
     list($status, $rows, $original_interface) = ona_get_interface_record(array('id' => $interface['id']));
 
     // Update the interface record
-    list($status, $rows) = db_update_record($onadb, 'interfaces', array('id' => $interface['id']), $SET);
-    if ($status or !$rows) {
-        $self['error'] = "ERROR => interface_modify() SQL Query failed: " . $self['error'];
-        printmsg($self['error'], 0);
-        return(array(14, $self['error'] . "\n"));
+    if(count($SET) > 0) {
+        list($status, $rows) = db_update_record($onadb, 'interfaces', array('id' => $interface['id']), $SET);
+        if ($status or !$rows) {
+            $self['error'] = "ERROR => interface_modify() SQL Query failed: " . $self['error'];
+            printmsg($self['error'], 0);
+            return(array(14, $self['error'] . "\n"));
+        }
     }
-
+    
     // Get the interface record after updating (logging)
     list($status, $rows, $new_interface) = ona_get_interface_record(array('id' => $interface['id']));
 
