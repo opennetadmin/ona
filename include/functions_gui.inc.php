@@ -121,7 +121,7 @@ function get_alias_suggestions($q, $max_results=10) {
 }
 
 function get_zone_suggestions($q, $max_results=10) {
-    return(get_text_suggestions($q . '%', 'domains', 'ns_name', $max_results));
+    return(get_text_suggestions($q . '%', 'domains', 'name', $max_results));
 }
 
 function get_vlan_campus_suggestions($q, $max_results=10) {

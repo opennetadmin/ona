@@ -75,7 +75,7 @@ function ws_editor($window_name, $form='') {
         list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['MANUFACTURER_ID']));
         list($status, $rows, $type) = ona_get_device_type_record(array('ID' => $model['DEVICE_TYPE_ID']));
         $models[$model['ID']] = "{$manufacturer['MANUFACTURER_NAME']} {$model['MODEL_DESCRIPTION']} ({$type['DEVICE_TYPE_DESCRIPTION']})";
-    }*/    $models = array("Default default_device (A bogus default device record)"); // FIXME: (PK) temp code!
+    }*/    $models = array(); $models[1] = "DEFAULT default_device (A bogus record)"; // FIXME: (PK) temp code!
     
     asort($models);
     $device_model_list = '<option value="">&nbsp;</option>\n';

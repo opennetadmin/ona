@@ -48,10 +48,8 @@ Add a new host
   Required:
     host=NAME[.DOMAIN]        hostname for new DNS record
     type=TYPE or ID           device/model type or ID
-    unit=NAME or ID           location/unit ID ***PK 3/21/07: ERASE THIS***
   
   Optional:
-    security_level=LEVEL      numeric security level ({$conf['ona_lvl']})
     notes=NOTES               textual notes
   
   Optional, add an interface too:
