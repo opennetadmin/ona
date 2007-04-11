@@ -78,11 +78,11 @@ EOM
     
    // Find the Device ID (i.e. Type) to use
    list($status, $rows, $device) = ona_find_device($options['type']);
-   if ($status or $rows != 1 or !$device['ID']) {
+   if ($status or $rows != 1 or !$device['id']) {
        printmsg("DEBUG => The device type specified, {$options['type']}, does not exist!", 3);
        return(array(3, "ERROR => The device type specified, {$options['type']}, does not exist!\n"));
    }
-   printmsg("DEBUG => Device selected: {$device['MODEL_DESCRIPTION']} Device ID: {$device['ID']}", 3);
+   printmsg("DEBUG => Device selected: {$device['MODEL_DESCRIPTION']} Device ID: {$device['id']}", 3);
     
     
     // Sanitize "security_level" option

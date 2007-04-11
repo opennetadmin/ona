@@ -16,7 +16,7 @@ function ws_display_list($window_name, $form='') {
     $js = '';
 
     // If the user supplied an array in a string, build the array and store it in $form
-    //$form = parse_options_string($form);
+    $form = parse_options_string($form);
 
     // Find the "tab" we're on
     $tab = $_SESSION['ona'][$form['form_id']]['tab'];
@@ -29,10 +29,11 @@ function ws_display_list($window_name, $form='') {
     // Also find/set the "page" we're viewing
     $page = 1;
     if ($form['page'] and is_numeric($form['page'])) {
-        //$form = array_merge($form, $_SESSION['ona'][$form['form_id']][$tab]['q']);
+        $form = array_merge($form, $_SESSION['ona'][$form['form_id']][$tab]['q']);
         $_SESSION['ona'][$form['form_id']][$tab]['page'] = $page = $form['page'];
         $_SESSION['ona'][$form['form_id']][$tab]['filter'] = $form['filter'];
     }
+    printmsg("DEBUG => Displaying subnets list page: {$page}", 1);
 
     // Calculate the SQL query offset (based on the page being displayed)
     $offset = ($conf['search_results_per_page'] * ($page - 1));
@@ -128,7 +129,7 @@ function ws_display_list($window_name, $form='') {
 //     }
 
 
-    // Wild card .. if $while is still empty, add a 'ID > 0' to it so you see everything.
+    // Wild card .. if $where is still empty, add a 'ID > 0' to it so you see everything.
     if ($where == '')
         $where = 'id > 0';
 

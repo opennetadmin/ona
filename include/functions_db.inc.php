@@ -1896,7 +1896,7 @@ return(array(0, 1, $retval));
     // If it's numeric
     if (preg_match('/^\d+$/', $search)) {
         // It's a number - do several sql queries and see if we can get a unique match
-        foreach (array('ID', 'DEVICE_TYPE_ID', 'MANUFACTURER_ID') as $field) {
+        foreach (array('id', 'DEVICE_TYPE_ID', 'MANUFACTURER_ID') as $field) {
             list($status, $rows, $record) = ona_get_model_record(array($field => $search));
             // If we got it, return it
             if ($status == 0 and $rows == 1) {

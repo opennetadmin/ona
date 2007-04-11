@@ -121,7 +121,7 @@ EOL;
                $form['q'] = substr($form['q'], 1);
                return(qsearch_command($form['q']));
            }
-           // We have to (unfortunatly) have to do a few sql queries to see what kind of
+           // We (unfortunately) have to do a few sql queries to see what kind of
            // search this is and what "tab" we'll be displaying data on.
            list($tab, $form) = quick_search($form['q']);
 //$window['js'] .= "alert('Where: " . str_replace("'", '"', $form_id) . "');";
@@ -196,10 +196,13 @@ function quick_search($q) {
     //         Look for an alias name (and display associated hosts)
     //         Look for a subnet name
 
+    printmsg("DEBUG => quick_search({$q}) called", 3);
+    
     // See if $q identifies a subnet record (by IP, ID, or Description)
     list($status, $rows, $record) = ona_find_subnet($q);
     // If it was, display the associated subnet record
     if ($rows) {
+        printmsg("DEBUG => quick_search() returning subnet match (ID={$record['id']})", 3);
         return( array('subnets', array('subnet_id' => $record['id']) ) );
     }
 
@@ -207,11 +210,13 @@ function quick_search($q) {
     list($status, $rows, $record) = ona_find_interface($q);
     // If it was, display the associated host record
     if ($rows) {
-        return( array('hosts', array('host_id' => $record['id']) ) );
+        printmsg("DEBUG => quick_search() returning host match (ID={$record['host_id']})", 3);
+        return( array('hosts', array('host_id' => $record['host_id']) ) );
     }
 
 
     // Well, I guess we'll assume $q is a hostname/alias search
+    printmsg("DEBUG => quick_search() found no subnet or host match. Returning hostname = {$q}" ,3);
     return( array('hosts', array('hostname' => $q) ) );
 }
 

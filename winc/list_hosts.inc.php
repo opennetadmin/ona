@@ -37,7 +37,7 @@ function ws_display_list($window_name, $form='') {
     
     // Calculate the SQL query offset (based on the page being displayed)
     $offset = ($conf['search_results_per_page'] * ($page - 1));
-    if ($offset == 0) $offset = -1;
+    if ($offset == 0) { $offset = -1; }
     
     // Search results go in here
     $results = array();
@@ -66,11 +66,10 @@ function ws_display_list($window_name, $form='') {
     // HOSTNAME
     $aliases = 0;
     if ($form['hostname']) {
-        $where .= $and . "primary_dns_name LIKE " . $onadb->qstr('%'.$form['hostname'].'%');
+        $where .= $and . "id IN (SELECT id " .
+                                        "  FROM dns " .
+                                        "  WHERE name LIKE " . $onadb->qstr('%'.$form['hostname'].'%') ." )";
         $and = " AND ";
-
-        // ALIAS NAME
-        list($status, $aliases, $tmp) = db_get_records($onadb, 'HOST_ALIASES_B', 'ALIAS LIKE ' . $onadb->qstr('%'.$form['hostname'].'%'), '', 0);
     }
 
 
