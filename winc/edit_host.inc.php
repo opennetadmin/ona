@@ -114,12 +114,13 @@ function ws_editor($window_name, $form='') {
         suggest_setup('set_zone_{$window_name}',    'suggest_set_zone_{$window_name}');
         
         /* Setup the Quick Find Unit icon */
+        /* (FIXME: commented out by Paul K 4/13/07 - we don't do units right now)
         var _button = el('qf_unit_{$window_name}');
         _button.style.cursor = 'pointer';
         _button.onclick = 
             function(ev) {
                 if (!ev) ev = event;
-                /* Create the popup div */
+                /* Create the popup div */ /*PK
                 wwTT(this, ev, 
                      'id', 'tt_qf_unit_{$window_name}', 
                      'type', 'static',
@@ -132,7 +133,7 @@ function ws_editor($window_name, $form='') {
                          "id=>tt_qf_unit_{$window_name}," +
                          "input_id=>set_unit_{$window_name}');"
                 );
-            };
+            }; */
     
 EOL;
     
@@ -221,7 +222,7 @@ EOL;
         /* Setup the Quick Find for available IPs */
         var _button = el('qf_free_ip_{$window_name}');
         _button.style.cursor = 'pointer';
-        _button.onclick = 
+        _button.onclick =
             function(ev) {
                 if (!ev) ev = event;
                 /* Create the popup div */
