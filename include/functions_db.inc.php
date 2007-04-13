@@ -1197,7 +1197,7 @@ function ona_get_manufacturer_record($array) {
 }
 
 function ona_get_device_type_record($array) {
-    return(ona_get_record($array, 'DEVICE_TYPES_B'));
+    return(ona_get_record($array, 'device_types'));
 }
 
 function ona_get_subnet_record($array) {
@@ -1861,11 +1861,11 @@ function ona_find_subnet($search="") {
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: ona_find_device(string $search)
+//  Function: ona_find_device_type(string $search)
 //
 //  Input:
-//    $search = A string or ID that can uniquly identify a device from
-//              the device models table in the database.
+//    $search = A model name string or device_type ID that can uniquely identify
+//              a device type from the device_types table in the database.
 //
 //  Output:
 //    Returns a three part list:
@@ -1879,7 +1879,7 @@ function ona_find_subnet($search="") {
 //
 //  Example: list($status, $rows, $subnet) = ona_find_device('10.44.10.123');
 ///////////////////////////////////////////////////////////////////////
-function ona_find_device($search="") {
+function ona_find_device_type($search="") {
     global $self;
 
     // Validate input
@@ -1888,14 +1888,21 @@ function ona_find_device($search="") {
     }
 
 /* PK BOGUS FUNCTION.  FIXME: remove when the 'devices' table gets set up */
-$retval = array('id' => 1, 'DEVICE_TYPE_ID' => 1, 'MANUFACTURER_ID' => 1, 'MODEL_DESCRIPTION' => "A bogus record");
-return(array(0, 1, $retval));
+//$retval = array('id' => 1, 'DEVICE_TYPE_ID' => 1, 'MANUFACTURER_ID' => 1, 'MODEL_DESCRIPTION' => "A bogus record");
+//return(array(0, 1, $retval));
 /* END BOGUS FUNCTION */
 
 
     // If it's numeric
     if (preg_match('/^\d+$/', $search)) {
         // It's a number - do several sql queries and see if we can get a unique match
+        list($status, $rows, $record) = ona_get_device_type_record(array('id' => $search));
+        // If we got it, return it
+        if ($status == 0  and $rows == 1) {
+            printmsg("DEBUG => ona_find_device_type() found device_type record by id", 2);
+            return(array(0, $rows, $record));
+        }
+/* PK: this was the original code...       
         foreach (array('id', 'DEVICE_TYPE_ID', 'MANUFACTURER_ID') as $field) {
             list($status, $rows, $record) = ona_get_model_record(array($field => $search));
             // If we got it, return it
@@ -1904,23 +1911,26 @@ return(array(0, 1, $retval));
                 return(array(0, $rows, $record));
             }
         }
-    }
+    }*/
 
     // It's a string - do several sql queries and see if we can get a unique match
-    list($status, $rows, $record) = ona_get_model_record(array('MODEL_DESCRIPTION' => $search));
+    list($status, $rows, $record) = ona_get_model_record(array('model' => $search));
+    if ($status == 0 and $rows == 1) {
+        list($status, $rows, $record) = ona_get_device_type_record(array('model_id' => $record['id']));
+    }
     // If we got it, return it
     if ($status == 0 and $rows == 1) {
-        printmsg("DEBUG => ona_find_device() found device record by MODEL_DESCRIPTION", 2);
+        printmsg("DEBUG => ona_find_device_type() found device_type record by model name", 2);
         return(array(0, $rows, $record));
     }
 
 
     // We didn't find it - return and error code, 0 matches, and an empty record.
-    $self['error'] = "NOTICE => couldn't find a unique device record with specified search criteria";
+    $self['error'] = "NOTICE => couldn't find a unique device_type record with specified search criteria";
     printmsg($self['error'], 2);
     return(array(2, 0, array()));
+    }
 }
-
 
 
 
