@@ -1200,6 +1200,14 @@ function ona_get_device_type_record($array) {
     return(ona_get_record($array, 'device_types'));
 }
 
+function ona_get_device_record($array) {
+    return(ona_get_record($array, 'devices'));
+}
+
+function ona_get_role_record($array) {
+    return(ona_get_record($array, 'roles'));
+}
+
 function ona_get_subnet_record($array) {
     list($status, $rows, $record) = ona_get_record($array, 'subnets');
 
@@ -1470,7 +1478,7 @@ function ona_find_host($search="") {
         }
     }
     
-    // By Interface?
+    // By Interface ID or IP address?
     list($status, $rows, $interface) = ona_find_interface($search);
     if (!$status and $rows) {
         // Load and return associated info
@@ -1847,6 +1855,83 @@ function ona_find_subnet($search="") {
 
     // We didn't find it - return and error code, 0 matches, and an empty record.
     $self['error'] = "NOTICE => couldn't find a unique subnet record with specified search criteria";
+    printmsg($self['error'], 2);
+    return(array(2, 0, array()));
+}
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: ona_find_device(string $search)
+//
+//  Input:
+//    $search = A device ID, IP address, or FQDN that can uniquely identify a device.
+//
+//  Output:
+//    Returns a three part list:
+//      1. The exit status of the function (0 on success, non-zero on error)
+//         When a non-zero exit status is returned a textual description
+//         of the error will be stored in the global variable $self['error']
+//      2. The number of rows that were found - 0 or 1 (0 is returned if
+//         a unique match couldn't be found)
+//      3. An array of a record from the devices table where $search matches.
+//
+//  Example: list($status, $rows, $device) = ona_find_device('1714');
+///////////////////////////////////////////////////////////////////////
+function ona_find_device($search="") {
+    global $self;
+
+    // Validate input
+    if ($search == "") {
+        return(array(1, 0, array()));
+    }
+
+    // If it's numeric, assume its a device ID
+    if (preg_match('/^\d+$/', $search)) {
+        list($status, $rows, $record) = ona_get_device_record(array('id' => $search));
+        // If we got it, return it
+        if ($status == 0 and $rows == 1) {
+            printmsg("DEBUG => ona_find_device() found device record by id", 2);
+            return(array(0, $rows, $record));
+        }
+    }
+
+    // If it's an IP address or an FQDN:
+//    $ip = ip_mangle($search, 'numeric');
+//    if ($ip != -1) {
+        // Look up the host first
+        list($status, $rows, $host) = ona_find_host($search);
+        if ($status == 0 and $rows == 1) {
+            list($status, $rows, $record) = ona_get_device_record(array('id' => $host['device_id']));
+        }
+        
+        // If we got it, return it
+        if ($status == 0 and $rows == 1) {
+            printmsg("DEBUG => ona_find_device() found record by IP address", 2);
+            return(array(0, $rows, $record));
+        }
+
+        // Otherwise return an error
+        if ($rows == 0) {
+            //$ip = ip_mangle($ip, 'dotted');
+            $self['error'] = "NOTICE => ona_find_device() was unable to locate the record by IP or fqdn";
+            printmsg($self['error'], 2);
+            return(array(3, $rows, array()));
+        }
+//        $self['error'] = "NOTICE => ona_find_device() found multiple matching records when searching by IP or fqdn. Data corruption?";
+//        printmsg($self['error'], 2);
+//        return(array(4, $rows, array()));
+//    }
+
+    // We didn't find it - return and error code, 0 matches, and an empty record.
+    $self['error'] = "NOTICE => ona_find_device() couldn't find a unique device record with specified search criteria";
     printmsg($self['error'], 2);
     return(array(2, 0, array()));
 }
