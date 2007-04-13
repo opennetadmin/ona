@@ -154,7 +154,7 @@ function ws_display_list($window_name, $form='') {
             $offset
         );
 
-    // If we got less than serach_results_per_page, add the current offset to it
+    // If we got less than search_results_per_page, add the current offset to it
     // so that if we're on the last page $rows still has the right number in it.
     if ($rows > 0 and $rows < $conf['search_results_per_page']) {
         $rows += ($conf['search_results_per_page'] * ($page - 1));

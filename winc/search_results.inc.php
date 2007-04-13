@@ -180,7 +180,7 @@ EOL;
 // Description:
 //     If a quick-search is being performed, find out if we'll be displaying
 //     subnets or hosts, and return a $tab and $form that will tell the
-//     approperiate display_list() function what to display.
+//     appropriate display_list() function what to display.
 //////////////////////////////////////////////////////////////////////////////
 function quick_search($q) {
     global $conf, $self;
@@ -322,7 +322,7 @@ function ws_change_tab($window_name, $form, $display_list=1, $return_text=0) {
     // Save the new tab in the session
     $old_tab = $_SESSION['ona'][$form_id]['tab'];
     $_SESSION['ona'][$form_id]['tab'] = $tab;
-
+    
     // Make the old tab look inactive
     $js .= "_el = el('{$form_id}_{$old_tab}_tab'); if (_el) _el.className = 'table-tab-inactive';";
 
