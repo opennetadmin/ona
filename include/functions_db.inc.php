@@ -1177,7 +1177,7 @@ function ona_get_model_record($array) {
 
     // Lets be nice and return a little associated info
     list($status_tmp, $rows_tmp, $record_tmp) = ona_get_manufacturer_record(
-                                                    array('ID' => $record['manufacturer_id'])
+                                                    array('id' => $record['manufacturer_id'])
                                                 );
     $status += $status_tmp;
     $record['MANUFACTURER_NAME'] = $record_tmp['name'];
