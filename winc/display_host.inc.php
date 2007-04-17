@@ -424,7 +424,7 @@ EOL;
     // DHCP ENTRIES LIST (this first table has an extra margin-top that the others don't have since the get_location_html doesn't pad itself)
     $html .= <<<EOL
             <!-- DHCP INFORMATION -->
-            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px; margin-top: 8px;">
+            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px; margin-top: 0px;">
 
                 <!-- LABEL -->
                 <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">DHCP entries</td></tr>
