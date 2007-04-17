@@ -70,6 +70,10 @@ function ws_display($window_name, $form='') {
     $record['device'] = "{$manufacturer['name']}, {$model['model']}";
     $record['device'] = str_replace('Unknown', '?', $record['device']);
 
+    // Device serial number and/or asset tag
+    $record['serial_number'] = $device['serial_number'];
+    $record['asset_tag'] = $device['asset_tag'];
+
     // Server info
     list($status, $rows, $server) = ona_get_server_record(array('host_id' => $record['id']));
     if ($server['DHCP_SERVER']) {$record['DHCP_SERVER'] = $server['DHCP_SERVER'];}
@@ -165,6 +169,15 @@ EOL;
                     <td class="padding" align="left" {$notes_width}>{$record['notes']}&nbsp;</td>
                 </tr>
 
+                <tr>
+                    <td align="right" nowrap="true"><b>Serial Number</b>&nbsp;</td>
+                    <td class="padding" align="left">{$record['serial_number']}&nbsp;</td>
+                </tr>
+                
+                <tr>
+                    <td align="right" nowrap="true"><b>Asset Tag</b>&nbsp;</td>
+                    <td class="padding" align="left">{$record['asset_tag']}&nbsp;</td>
+                </tr>                
             </table>
 EOL;
 
