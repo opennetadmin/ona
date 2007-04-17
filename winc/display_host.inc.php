@@ -20,7 +20,7 @@ function ws_display($window_name, $form='') {
 
     // Load the host record
     if ($form['host_id'])
-        list($status, $rows, $record) = ona_get_host_record(array('ID' => $form['host_id']));
+        list($status, $rows, $record) = ona_get_host_record(array('id' => $form['host_id']));
     else if ($form['host']) {
         list($status, $rows, $record) = ona_find_host($form['host']);
     }
@@ -62,8 +62,12 @@ function ws_display($window_name, $form='') {
     $record['IP_SUBNET_MASK_CIDR'] = ip_mangle($subnet['ip_mask'], 'cidr');
 
     // Device Description
-    list($status, $rows, $device) = ona_get_model_record(array('ID' => $record['model_id']));
-    $record['device'] = "{$device['MANUFACTURER_NAME']}, {$device['model']}";
+    list($status, $rows, $device) = ona_get_device_record(array('id' => $record['device_id']));
+    list($status, $rows, $device_type) = ona_get_device_type_record(array('id' => $device['device_type_id']));
+    list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
+    list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
+    list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
+    $record['device'] = "{$manufacturer['name']}, {$model['model']}";
     $record['device'] = str_replace('Unknown', '?', $record['device']);
 
     // Server info
