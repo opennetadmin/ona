@@ -327,6 +327,7 @@ CREATE TABLE `models` (
   `id` int(10) unsigned NOT NULL,
   `manufacturer_id` int(10) unsigned NOT NULL,
   `name` varchar(255) NOT NULL,
+  `snmp_oid` varchar(255) NOT NULL COMMENT 'This is a device-specific SNMP identification string, provided by the device.',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -337,7 +338,7 @@ CREATE TABLE `models` (
 
 /*!40000 ALTER TABLE `models` DISABLE KEYS */;
 LOCK TABLES `models` WRITE;
-INSERT INTO `models` VALUES (1,1,'2821'),(2,4,'dv9000t'),(3,4,'4000m'),(4,4,'8000m'),(5,4,'LJ5000'),(6,1,'2948G-L3'),(7,5,'Optiplex GS560'),(8,9,'24TXM-GLS'),(9,3,'GreaseMaster 1Billion'),(10,6,'Netfinity 2232');
+INSERT INTO `models` VALUES (1,1,'2821',''),(2,4,'dv9000t',''),(3,4,'4000m',''),(4,4,'8000m',''),(5,4,'LJ5000',''),(6,1,'2948G-L3',''),(7,5,'Optiplex GS560',''),(8,9,'24TXM-GLS',''),(9,3,'GreaseMaster 1Billion',''),(10,6,'Netfinity 2232','');
 UNLOCK TABLES;
 /*!40000 ALTER TABLE `models` ENABLE KEYS */;
 
