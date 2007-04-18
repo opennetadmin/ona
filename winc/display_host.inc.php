@@ -67,7 +67,7 @@ function ws_display($window_name, $form='') {
     list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
     list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
     list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
-    $record['device'] = "{$manufacturer['name']}, {$model['model']}";
+    $record['device'] = "{$manufacturer['name']}, {$model['name']}";
     $record['device'] = str_replace('Unknown', '?', $record['device']);
 
     // Device serial number and/or asset tag

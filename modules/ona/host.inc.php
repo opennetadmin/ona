@@ -165,7 +165,7 @@ EOM
         array(
             'id'                   => $id,
             'primary_dns_id'       => $host['primary_dns_id'],
-            'model_id'             => $device['id'],
+            'device_id'            => $device['id'],
 //            'LVL'                  => $options['security_level'],
             'notes'                => $options['notes']
 //            'location_id'          => $unit['UNIT_ID']
@@ -360,8 +360,8 @@ EOM
         printmsg("DEBUG => Device selected: {$device['MODEL_DESCRIPTION']} Device ID: {$device['id']}", 3);
         
         // Everything looks ok, add it to $SET if it changed...
-        if ($host['model_id'] != $device['id'])
-            $SET['model_id'] = $device['id'];
+        if ($host['device_id'] != $device['id'])
+            $SET['device_id'] = $device['id'];
     }
     
     
@@ -877,11 +877,11 @@ EOM
             $text .= format_array($interface);
         } while ($i < $rows);
         
-        // Model record
-        list($status, $rows, $model) = ona_get_model_record(array('id' => $host['model_id']));
+        // Device record
+        list($status, $rows, $device) = ona_get_device_record(array('id' => $host['device_id']));
         if ($rows >= 1) {
-            $text .= "\nASSOCIATED MODEL RECORD\n";
-            $text .= format_array($model);
+            $text .= "\nASSOCIATED DEVICE RECORD\n";
+            $text .= format_array($device);
         }
         
         // Unit record

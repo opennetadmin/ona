@@ -109,7 +109,7 @@ CREATE TABLE `device_types` (
 
 /*!40000 ALTER TABLE `device_types` DISABLE KEYS */;
 LOCK TABLES `device_types` WRITE;
-INSERT INTO `device_types` VALUES (1,1,1),(2,9,6);
+INSERT INTO `device_types` VALUES (1,1,1),(2,9,6),(3,3,2),(4,4,2),(5,5,3);
 UNLOCK TABLES;
 /*!40000 ALTER TABLE `device_types` ENABLE KEYS */;
 
@@ -135,7 +135,7 @@ CREATE TABLE `devices` (
 
 /*!40000 ALTER TABLE `devices` DISABLE KEYS */;
 LOCK TABLES `devices` WRITE;
-INSERT INTO `devices` VALUES (1,1,1,'FQGHX','123456'),(2,1,1,'UYEJK','54321'),(3,2,1,'PTRML','000001');
+INSERT INTO `devices` VALUES (1,1,1,'FQGHX','123456'),(2,1,1,'UYEJK','54321'),(3,2,1,'PTRML','000001'),(4,4,1,'EJCSA','561345'),(5,5,1,'ITRHC','99822'),(6,3,1,'YTMIR','876543');
 UNLOCK TABLES;
 /*!40000 ALTER TABLE `devices` ENABLE KEYS */;
 
@@ -240,7 +240,7 @@ CREATE TABLE `hosts` (
 
 /*!40000 ALTER TABLE `hosts` DISABLE KEYS */;
 LOCK TABLES `hosts` WRITE;
-INSERT INTO `hosts` VALUES (1,0,1,1,'testing again'),(2,0,2,1,'more notes'),(10,0,10,2,''),(11,0,11,1,'hostname 4 test'),(12,0,12,2,'This is the primary polyglot database server'),(13,0,13,3,'This one is yellow-bellied');
+INSERT INTO `hosts` VALUES (1,0,1,1,'testing again'),(2,0,2,2,'more notes'),(10,0,10,3,''),(11,0,11,4,'hostname 4 test'),(12,0,12,5,'This is the primary polyglot database server'),(13,0,13,6,'This one is yellow-bellied');
 UNLOCK TABLES;
 /*!40000 ALTER TABLE `hosts` ENABLE KEYS */;
 
@@ -267,7 +267,7 @@ CREATE TABLE `interfaces` (
 
 /*!40000 ALTER TABLE `interfaces` DISABLE KEYS */;
 LOCK TABLES `interfaces` WRITE;
-INSERT INTO `interfaces` VALUES (1,1,1,33686018,'001122334455','test',NULL),(2,8,1,151587081,'','',NULL),(4,18,2,3232235791,'0000DEADBEEF','Gi0/0','This is a test interface description field'),(5,4,2,16909058,'','FE1/12.2','WAN link to somewhere'),(6,1,2,33686019,'AABBCCDDEEFF','testing',''),(7,1,10,33686020,'003862F8EFDA','eth0',''),(8,18,10,3232235790,'','',''),(9,1,11,33686021,'80FE009F3B8C','',''),(10,1,12,33686023,'000EFE80A03D','sit0',''),(12,8,13,151587090,'8000FE2217ED','',''),(13,4,1,16909059,'00005F4380BB','ath0','');
+INSERT INTO `interfaces` VALUES (1,1,1,33686025,'001122334455','test',NULL),(2,8,1,151587081,'','',NULL),(4,18,2,3232235791,'0000DEADBEEF','Gi0/0','This is a test interface description field'),(5,4,2,16909058,'','FE1/12.2','WAN link to somewhere'),(6,1,2,33686019,'AABBCCDDEEFF','testing',''),(7,1,10,33686020,'003862F8EFDA','eth0',''),(8,18,10,3232235790,'','',''),(9,1,11,33686021,'80FE009F3B8C','',''),(10,1,12,33686023,'000EFE80A03D','sit0',''),(12,8,13,151587090,'8000FE2217ED','',''),(13,4,1,16909059,'00005F4380BB','ath0','');
 UNLOCK TABLES;
 /*!40000 ALTER TABLE `interfaces` ENABLE KEYS */;
 
@@ -326,7 +326,7 @@ DROP TABLE IF EXISTS `models`;
 CREATE TABLE `models` (
   `id` int(10) unsigned NOT NULL,
   `manufacturer_id` int(10) unsigned NOT NULL,
-  `model` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -404,7 +404,7 @@ CREATE TABLE `sessions` (
 
 /*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
 LOCK TABLES `sessions` WRITE;
-INSERT INTO `sessions` VALUES ('6c2d8735efe8c0ecb449cdd3ba224bf1',1176925544,'redirect|s:18:\"http://blade1/ona/\";ona|a:1:{s:4:\"auth\";a:1:{s:4:\"user\";a:2:{s:8:\"username\";s:5:\"guest\";s:5:\"level\";s:1:\"0\";}}}tz|i:0;'),('b24f573920d60e186b4b525c436ad54a',1176500023,'redirect|s:18:\"http://blade1/ona/\";ona|a:5:{s:4:\"auth\";a:1:{s:4:\"user\";a:2:{s:8:\"username\";s:5:\"guest\";s:5:\"level\";s:1:\"0\";}}s:26:\"search_results_filter_form\";a:4:{s:10:\"content_id\";s:19:\"search_results_list\";s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:3:{s:1:\"q\";a:1:{s:8:\"hostname\";s:17:\"\\the cracked eggs\";}s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}s:7:\"subnets\";a:3:{s:1:\"q\";a:1:{s:9:\"subnet_id\";s:1:\"1\";}s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:10:\"work_space\";a:1:{s:7:\"history\";a:7:{i:0;a:3:{s:5:\"title\";s:4:\"TEST\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>9\', \'display\')\";}i:1;a:3:{s:5:\"title\";s:8:\"polyglot\";s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:61:\"xajax_window_submit(\'display_host\', \'host_id=>12\', \'display\')\";}i:2;a:3:{s:5:\"title\";s:9:\"SOME-NAME\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>6\', \'display\')\";}i:3;a:3:{s:5:\"title\";s:9:\"hostname2\";s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:60:\"xajax_window_submit(\'display_host\', \'host_id=>2\', \'display\')\";}i:4;a:3:{s:5:\"title\";s:8:\"VLAN-110\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>7\', \'display\')\";}i:5;a:3:{s:5:\"title\";s:9:\"hostname5\";s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:61:\"xajax_window_submit(\'display_host\', \'host_id=>11\', \'display\')\";}i:6;a:3:{s:5:\"title\";s:8:\"WOW-COOL\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>1\', \'display\')\";}}}s:27:\"list_interfaces_filter_form\";a:2:{s:3:\"tab\";s:10:\"interfaces\";s:10:\"interfaces\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:22:\"list_hosts_filter_form\";a:2:{s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}}tz|i:0;window_position|a:4:{s:11:\"edit_host_x\";s:3:\"733\";s:11:\"edit_host_y\";s:2:\"61\";s:16:\"search_results_x\";s:3:\"661\";s:16:\"search_results_y\";s:2:\"99\";}');
+INSERT INTO `sessions` VALUES ('6c2d8735efe8c0ecb449cdd3ba224bf1',1177111934,'redirect|s:18:\"http://blade1/ona/\";ona|a:7:{s:4:\"auth\";a:1:{s:4:\"user\";a:2:{s:8:\"username\";s:5:\"guest\";s:5:\"level\";s:1:\"0\";}}s:26:\"search_results_filter_form\";a:3:{s:10:\"content_id\";s:19:\"search_results_list\";s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:3:{s:1:\"q\";a:1:{s:8:\"hostname\";s:0:\"\";}s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:10:\"work_space\";a:1:{s:7:\"history\";a:6:{i:0;a:3:{s:5:\"title\";s:9:\"hostname2\";s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:60:\"xajax_window_submit(\'display_host\', \'host_id=>2\', \'display\')\";}i:1;a:3:{s:5:\"title\";s:9:\"hostname4\";s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:61:\"xajax_window_submit(\'display_host\', \'host_id=>11\', \'display\')\";}i:2;a:3:{s:5:\"title\";s:8:\"WOW-COOL\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>1\', \'display\')\";}i:3;a:3:{s:5:\"title\";s:16:\"opennetadmin.com\";s:4:\"type\";s:12:\"display_zone\";s:3:\"url\";s:60:\"xajax_window_submit(\'display_zone\', \'zone_id=>1\', \'display\')\";}i:4;a:3:{s:5:\"title\";s:9:\"hostname1\";s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:60:\"xajax_window_submit(\'display_host\', \'host_id=>1\', \'display\')\";}i:5;a:3:{s:5:\"title\";s:12:\"Map: 2.2.2.0\";s:4:\"type\";s:17:\"display_block_map\";s:3:\"url\";s:79:\"xajax_window_submit(\'display_block_map\', \'ip_block_start=>2.2.2.0\', \'display\');\";}}}s:22:\"list_hosts_filter_form\";a:2:{s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:27:\"list_interfaces_filter_form\";a:2:{s:3:\"tab\";s:10:\"interfaces\";s:10:\"interfaces\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:30:\"list_hosts_aliases_filter_form\";a:2:{s:3:\"tab\";s:7:\"aliases\";s:7:\"aliases\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:28:\"list_hosts_by_ip_filter_form\";a:1:{s:3:\"tab\";s:11:\"hosts_by_ip\";}}tz|i:0;ipdb|a:1:{s:22:\"list_hosts_filter_form\";a:1:{s:3:\"tab\";s:5:\"hosts\";}}window_position|a:2:{s:11:\"edit_host_x\";s:2:\"91\";s:11:\"edit_host_y\";s:2:\"93\";}'),('b24f573920d60e186b4b525c436ad54a',1176500023,'redirect|s:18:\"http://blade1/ona/\";ona|a:5:{s:4:\"auth\";a:1:{s:4:\"user\";a:2:{s:8:\"username\";s:5:\"guest\";s:5:\"level\";s:1:\"0\";}}s:26:\"search_results_filter_form\";a:4:{s:10:\"content_id\";s:19:\"search_results_list\";s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:3:{s:1:\"q\";a:1:{s:8:\"hostname\";s:17:\"\\the cracked eggs\";}s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}s:7:\"subnets\";a:3:{s:1:\"q\";a:1:{s:9:\"subnet_id\";s:1:\"1\";}s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:10:\"work_space\";a:1:{s:7:\"history\";a:7:{i:0;a:3:{s:5:\"title\";s:4:\"TEST\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>9\', \'display\')\";}i:1;a:3:{s:5:\"title\";s:8:\"polyglot\";s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:61:\"xajax_window_submit(\'display_host\', \'host_id=>12\', \'display\')\";}i:2;a:3:{s:5:\"title\";s:9:\"SOME-NAME\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>6\', \'display\')\";}i:3;a:3:{s:5:\"title\";s:9:\"hostname2\";s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:60:\"xajax_window_submit(\'display_host\', \'host_id=>2\', \'display\')\";}i:4;a:3:{s:5:\"title\";s:8:\"VLAN-110\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>7\', \'display\')\";}i:5;a:3:{s:5:\"title\";s:9:\"hostname5\";s:4:\"type\";s:12:\"display_host\";s:3:\"url\";s:61:\"xajax_window_submit(\'display_host\', \'host_id=>11\', \'display\')\";}i:6;a:3:{s:5:\"title\";s:8:\"WOW-COOL\";s:4:\"type\";s:14:\"display_subnet\";s:3:\"url\";s:64:\"xajax_window_submit(\'display_subnet\', \'subnet_id=>1\', \'display\')\";}}}s:27:\"list_interfaces_filter_form\";a:2:{s:3:\"tab\";s:10:\"interfaces\";s:10:\"interfaces\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}s:22:\"list_hosts_filter_form\";a:2:{s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:2:{s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}}tz|i:0;window_position|a:4:{s:11:\"edit_host_x\";s:3:\"733\";s:11:\"edit_host_y\";s:2:\"61\";s:16:\"search_results_x\";s:3:\"661\";s:16:\"search_results_y\";s:2:\"99\";}'),('f465883fd258e884b104d83feef2442d',1177112220,'redirect|s:5:\"/ona/\";ona|a:2:{s:4:\"auth\";a:1:{s:4:\"user\";a:2:{s:8:\"username\";s:5:\"guest\";s:5:\"level\";s:1:\"0\";}}s:26:\"search_results_filter_form\";a:3:{s:10:\"content_id\";s:19:\"search_results_list\";s:3:\"tab\";s:5:\"hosts\";s:5:\"hosts\";a:3:{s:1:\"q\";a:1:{s:8:\"hostname\";s:0:\"\";}s:4:\"page\";s:1:\"1\";s:6:\"filter\";s:0:\"\";}}}tz|i:0;');
 UNLOCK TABLES;
 /*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 

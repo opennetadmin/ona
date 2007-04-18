@@ -68,24 +68,27 @@ function ws_editor($window_name, $form='') {
     }
     
     
-/*    // Build a device model list
-    list($status, $rows, $records) = db_get_records($onadb, 'DEVICE_MODELS_B', 'id >= 1');
-    $models = array();
-    foreach ($records as $model) {
-        list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['MANUFACTURER_ID']));
-        list($status, $rows, $type) = ona_get_device_type_record(array('ID' => $model['DEVICE_TYPE_ID']));
-        $models[$model['ID']] = "{$manufacturer['MANUFACTURER_NAME']} {$model['MODEL_DESCRIPTION']} ({$type['DEVICE_TYPE_DESCRIPTION']})";
-    }*/    $models = array(); $models[1] = "DEFAULT default_device (A bogus record)"; // FIXME: (PK) temp code!
-    
-    asort($models);
-    $device_model_list = '<option value="">&nbsp;</option>\n';
-    foreach (array_keys($models) as $id) {
-        $models[$id] = htmlentities($models[$id]);
-        $selected = '';
-        if ($id == $host['DEVICE_MODEL_ID']) { $selected = 'SELECTED'; }
-        $device_model_list .= "<option value=\"{$id}\" {$selected}>{$models[$id]}</option>\n";
+    // Build a device_types list
+    list($status, $rows, $records) = db_get_records($onadb, 'device_types', 'id >= 1');
+    $device_types = array();
+    foreach ($records as $type) {
+        list($status, $rows, $model) = ona_get_model_record(array('id' => $type['model_id']));
+        list($status, $rows, $role) = ona_get_role_record(array('id' => $type['role_id']));
+        list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
+        $device_types[$type['id']] = "{$manufacturer['name']} {$model['name']} ({$role['name']})";
     }
-    unset($models, $model);
+    //    $models = array(); $models[1] = "DEFAULT default_device (A bogus record)"; // FIXME: (PK) temp code!
+    
+    asort($device_types);
+    $device_model_list = '<option value="">&nbsp;</option>\n';
+    list($status, $rows, $device) = ona_get_device_record(array('id' => $host['device_id']));
+    foreach (array_keys($device_types) as $id) {
+        $device_types[$id] = htmlentities($device_types[$id]);
+        $selected = '';
+        if ($id == $device['device_type_id']) { $selected = 'SELECTED'; }
+        $device_model_list .= "<option value=\"{$id}\" {$selected}>{$device_types[$id]}</option>\n";
+    }
+    unset($device_types, $device, $manufacturer, $role, $model, $records);
         
     
     // Escape data for display in html

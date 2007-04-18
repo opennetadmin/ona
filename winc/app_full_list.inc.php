@@ -275,13 +275,12 @@ EOL;
         $record['IP_SUBNET_MASK_CIDR'] = ip_mangle($subnet['ip_mask'], 'cidr');
         
         // Device Description
-        // FIXME: this stuff is only temporary, until the devices/models/manufacturers/etc DBs are fixed.
         list($status, $rows, $device) = ona_find_device($host['device_id']);
         list($status, $rows, $device_type) = ona_get_device_type_record(array('id' => $device['device_type_id']));
         list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
         list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
         list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
-        $record['DEVICE'] = "{$manufacturer['name']}, {$model['model']} ({$role['name']})";
+        $record['DEVICE'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
         $record['DEVICE'] = str_replace('Unknown', '?', $record['DEVICE']);
         
         $record['NOTES_SHORT'] = truncate($host['notes'], 40);

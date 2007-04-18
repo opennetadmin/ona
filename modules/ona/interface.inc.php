@@ -784,11 +784,11 @@ EOM
             $text .= format_array($subnet);
         }
 
-        // Model record
-        list($status, $rows, $model) = ona_get_model_record(array('id' => $host['model_id']));
+        // Device record
+        list($status, $rows, $device) = ona_get_device_record(array('id' => $host['device_id']));
         if ($rows >= 1) {
-            $text .= "\nASSOCIATED MODEL RECORD\n";
-            $text .= format_array($model);
+            $text .= "\nASSOCIATED DEVICE RECORD\n";
+            $text .= format_array($device);
         }
 
         // Unit record

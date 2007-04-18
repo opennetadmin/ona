@@ -345,7 +345,7 @@ EOL;
         
         // Device Description
         list($status, $rows, $device) = ona_get_model_record(array('id' => $record['model_id']));
-        $record['device'] = "{$device['MANUFACTURER_NAME']}, {$device['model']}";
+        $record['device'] = "{$device['MANUFACTURER_NAME']}, {$device['name']}";
         $record['device'] = str_replace('Unknown', '?', $record['device']);
 
 
@@ -774,7 +774,7 @@ EOL;
         list($status, $rows, $device) = ona_get_model_record(array('ID' => $host['DEVICE_MODEL_ID']));
         $record['DEVICE'] = "{$device['MANUFACTURER_NAME']}, {$device['MODEL_DESCRIPTION']} ({$device['DEVICE_TYPE_DESCRIPTION']})";
         $record['DEVICE'] = str_replace('Unknown', '?', $record['DEVICE']);
-      */
+      */ $record['DEVICE'] = "(BZ: removed, too wide!)";
 
         $record['notes'] = $host['notes'];
         $record['NOTES_SHORT'] = truncate($record['notes'], 40);
