@@ -112,7 +112,15 @@ $window['html'] .= <<<EOL
          title="Manage device models"
     ><img style="vertical-align: middle;" src="{$images}/silk/drive_edit.png" border="0"
      />&nbsp;Manage device models</div>
-
+    
+    <div class="row" 
+         onMouseOver="this.className='hovered';"
+         onMouseOut="this.className='row';"
+         onClick="toggle_window('app_device_role_list');"
+         title="Manage device roles"
+    ><img style="vertical-align: middle;" src="{$images}/silk/drive_edit.png" border="0"
+     />&nbsp;Manage device roles</div>
+     
     <div class="row" 
          onMouseOver="this.className='hovered';"
          onMouseOut="this.className='row';"

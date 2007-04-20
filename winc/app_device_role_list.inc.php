@@ -15,6 +15,7 @@
 //
 //
 
+
 // Check permissions
 if (!auth('advanced')) {
     $window['js'] = "removeElement('{$window_name}'); alert('Permission denied!');";
@@ -22,11 +23,11 @@ if (!auth('advanced')) {
 }
 
 // Set the window title:
-$window['title'] = "Manufacturer Administration";
+$window['title'] = "Role Administration";
 
 // Load some html into $window['html']
 $form_id = "{$window_name}_filter_form";
-$tab = 'manufacturer';
+$tab = 'role';
 $submit_window = $window_name;
 $content_id = "{$window_name}_list";
 $window['html'] .= <<<EOL
@@ -34,7 +35,7 @@ $window['html'] .= <<<EOL
     <table width="100%" cellspacing="0" border="0" cellpadding="0" >
         <tr>
             <td id="{$form_id}_{$tab}_tab" nowrap="true" class="table-tab-active">
-                Manufacturers <span id="{$form_id}_{$tab}_count"></span>
+                Roles <span id="{$form_id}_{$tab}_count"></span>
             </td>
 
             <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
@@ -118,7 +119,7 @@ EOL;
 
 
 
-// This function displays a list (all?) manufacturer types
+// This function displays a list (all?) role types
 function ws_display_list($window_name, $form) {
     global $conf, $self, $onadb;
     global $font_family, $color, $style, $images;
@@ -145,7 +146,7 @@ function ws_display_list($window_name, $form) {
 
         <!-- Table Header -->
         <tr>
-            <td class="list-header" align="center" style="{$style['borderR']};">Manufacturer</td>
+            <td class="list-header" align="center" style="{$style['borderR']};">Role</td>
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
 
@@ -161,7 +162,7 @@ EOL;
 
     // Get list of elements
     list($status, $rows, $records) = db_get_records($onadb, 
-                                            'manufacturers', 
+                                            'roles', 
                                             $where, 
                                             'name', 
                                             $conf['search_results_per_page'], 
@@ -176,7 +177,7 @@ EOL;
     // If there were more than $conf['search_results_per_page'] find out how many records there really are
     else if ($rows >= $conf['search_results_per_page']) {
         list ($status, $rows, $tmp) = db_get_records($onadb, 
-                                            'manufacturers', 
+                                            'roles', 
                                             $where, 
                                             '', 
                                             0);
@@ -196,21 +197,21 @@ EOL;
         <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
 
             <td class="list-row">
-                <a title="Edit manufacturer. id: {$record['id']}"
+                <a title="Edit role. id: {$record['id']}"
                    class="act"
-                   onClick="xajax_window_submit('app_manufacturer_edit', '{$record['id']}', 'editor');"
+                   onClick="xajax_window_submit('app_device_role_edit', '{$record['id']}', 'editor');"
                 >{$record['name']}</a>&nbsp;
             </td>
 
             <td align="right" class="list-row" nowrap="true">
-                <a title="Edit manufacturer. id: {$record['id']}"
+                <a title="Edit role. id: {$record['id']}"
                     class="act"
-                    onClick="xajax_window_submit('app_manufacturer_edit', '{$record['id']}', 'editor');"
+                    onClick="xajax_window_submit('app_device_role_edit', '{$record['id']}', 'editor');"
                 ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 
-                <a title="Delete manufacturer. id: {$record['id']}"
+                <a title="Delete role. id: {$record['id']}"
                     class="act"
-                    onClick="var doit=confirm('Are you sure you want to delete this manufacturer?');
+                    onClick="var doit=confirm('Are you sure you want to delete this role?');
                             if (doit == true)
                                 xajax_window_submit('{$window_name}', '{$record['id']}', 'delete');"
                 ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
@@ -225,16 +226,16 @@ EOL;
 
     <!-- Add a new record -->
     <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}; border-bottom: 1px solid {$color['border']};">
-        <!-- ADD manufacturer LINK -->
-        <a title="New manufacturer"
+        <!-- ADD role LINK -->
+        <a title="New role"
             class="act"
-            onClick="xajax_window_submit('app_manufacturer_edit', ' ', 'editor');"
+            onClick="xajax_window_submit('app_device_role_edit', ' ', 'editor');"
         ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
 
-        <a title="New manufacturer"
+        <a title="New role"
             class="act"
-            onClick="xajax_window_submit('app_manufacturer_edit', ' ', 'editor');"
-        >Add manufacturer</a>&nbsp;
+            onClick="xajax_window_submit('app_device_role_edit', ' ', 'editor');"
+        >Add role</a>&nbsp;
     </div>
 EOL;
 
@@ -246,7 +247,7 @@ EOL;
     // Insert the new table into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_manufacturer_count",  "innerHTML", "({$count})");
+    $response->addAssign("{$form['form_id']}_role_count",  "innerHTML", "({$count})");
     $response->addAssign("{$form['content_id']}", "innerHTML", $html);
     // $response->addScript($js);
     return($response->getXML());
@@ -262,7 +263,7 @@ EOL;
 //     Delete
 //
 // Description:
-//     Deletes a manufacturer.
+//     Deletes a role.
 //////////////////////////////////////////////////////////////////////////////
 function ws_delete($window_name, $form='') {
     global $conf, $self, $onadb;
@@ -279,39 +280,39 @@ function ws_delete($window_name, $form='') {
     $js = '';
 
     // Load the record to make sure it exists
-    list($status, $rows, $manufacturer) = db_get_record($onadb, 
-                                                'manufacturers', 
-                                                array('id' => $form));
+    list($status, $rows, $role) = db_get_record($onadb, 
+                                        'roles', 
+                                        array('id' => $form));
     if ($status or !$rows) {
-        $response->addScript("alert('Delete failed: Manufacturer id {$form} does not exist');");
+        $response->addScript("alert('Delete failed: Role id {$form} does not exist');");
         return($response->getXML());
     }
 
-    // Get a list of device models that use this manufacturer
+    // Get a list of device models that use this role
     list($status, $rows, $devicemodels) = db_get_records($onadb, 
                                                 'models', 
-                                                array('manufacturer_id' => $form), 
+                                                array('role_id' => $form), 
                                                 '', 
                                                 0);
 
     // Check that there are no parent records using this type
     if ($rows > 0) {
-        $js .= "alert('Delete failed: There are {$rows} device models using this manufacturer.');";
+        $js .= "alert('Delete failed: There are {$rows} device models using this role.');";
     }
     else {
         // Delete the record
         list($status, $rows) = db_delete_records($onadb, 
-                                    'manufacturers', 
-                                    array('id' => $manufacturer['id']));
+                                    'roles', 
+                                    array('id' => $role['id']));
 
         if ($status or !$rows) {
             // If the module returned an error code display a popup warning
             $js .= "alert('Delete failed: " . trim($self['error']) . "');";
-            $self['error'] = "ERROR => manufacturer_list ws_delete() SQL Query failed: " . $self['error'];
+            $self['error'] = "ERROR => role_list ws_delete() SQL Query failed: " . $self['error'];
             printmsg($self['error'], 0);
         }
         else {
-            $self['error'] = "INFO => Manufacturer DELETED: {$manufacturer['name']} ";
+            $self['error'] = "INFO => Role DELETED: {$role['name']} ";
             printmsg($self['error'], 0);
         }
     }
