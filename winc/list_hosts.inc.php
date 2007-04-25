@@ -74,17 +74,17 @@ function ws_display_list($window_name, $form='') {
 
 
     // DOMAIN
-    if ($form['zone']) { //FIXME: (PK) rename in GUI
+    if ($form['domain']) {
         // We do a sub-select to find interface id's that match
         $where .= $and . "domain_id IN ( SELECT id " .
                                                 "  FROM dns " .
-                                                "  WHERE name LIKE " . $onadb->qstr($form['zone'].'%') . " ) ";
+                                                "  WHERE name LIKE " . $onadb->qstr($form['domain'].'%') . " ) ";
         $and = " AND ";
     }
 
     // DOMAIN ID
-    if ($form['zone_id']) {
-        $where .= $and . "domain_id = " . $onadb->qstr($form['zone_id']);
+    if ($form['domain_id']) {
+        $where .= $and . "domain_id = " . $onadb->qstr($form['domain_id']);
         $and = " AND ";
     }
 
@@ -366,9 +366,9 @@ EOL;
                        class="nav"
                        onClick="{$primary_object_js}"
                     >{$record['name']}</a
-                    >.<a title="View zone. ID: {$domain['id']}"
-                         class="zone"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$domain['id']}\', \'display\')');"
+                    >.<a title="View domain. ID: {$domain['id']}"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$domain['id']}\', \'display\')');"
                     >{$record['domain']}</a>
                 </td>
 
@@ -643,18 +643,18 @@ function ws_display_alias_list($window_name, $form='') {
     }
 
 
-    // ZONE
-    if ($form['zone']) {
+    // DOMAIN
+    if ($form['domain']) {
         // We do a sub-select to find interface id's that match
         $where .= $and . "domain_id IN ( SELECT id " .
                                         "  FROM dns " .
-                                        "  WHERE name LIKE " . $onadb->qstr($form['zone'].'%') . " ) ";
+                                        "  WHERE name LIKE " . $onadb->qstr($form['domain'].'%') . " ) ";
         $and = " AND ";
     }
 
-    // ZONE ID
-    if ($form['zone_id']) {
-        $where .= $and . "domain_id = " . $onadb->qstr($form['zone_id']);
+    // DOMAIN ID
+    if ($form['domain_id']) {
+        $where .= $and . "domain_id = " . $onadb->qstr($form['domain_id']);
         $and = " AND ";
     }
 
@@ -750,7 +750,7 @@ EOL;
     foreach($results as $record) {
         // Get additional info about eash alias record //
 
-        // Associated Hostname and zone
+        // Associated Hostname and Domain
         list($status, $rows, $host) = ona_get_host_record(array('id' => $record['host_id']));
         $record['name'] = $host['name'];
         $record['domain_fqdn'] = $host['domain_fqdn'];
@@ -789,9 +789,9 @@ EOL;
             <tr onMouseOver="this.className='row-highlight';" onMouseOut="this.className='row-normal';">
 
                 <td class="list-row">
-                    {$record['ALIAS']}.<a title="View zone. ID: {$record['domain_id']}"
-                         class="zone"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['domain_id']}\', \'display\')');"
+                    {$record['ALIAS']}.<a title="View domain. ID: {$record['domain_id']}"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
                     >{$record['domain_fqdn']}</a>&nbsp;
                 </td>
 
@@ -800,9 +800,9 @@ EOL;
                        class="nav"
                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$record['host_id']}\', \'display\')');"
                     >{$record['name']}</a
-                    >.<a title="View zone. ID: {$record['domain_id']}"
-                         class="zone"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['domain_id']}\', \'display\')');"
+                    >.<a title="View domain. ID: {$record['domain_id']}"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
                     >{$record['domain_fqdn']}</a>
                 </td>
 

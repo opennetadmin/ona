@@ -114,7 +114,7 @@ $color['vlink']                = '#6B7DD1';
 $color['alink']                = '#6B7DD1';
 $color['link_nav']             = '#0048FF';  // was '#7E8CD7';
 $color['link_act']             = '#FF8000';  // was '#EB8F1F';
-$color['link_zone']            = 'green';    // was '#5BA65B';
+$color['link_domain']          = 'green';    // was '#5BA65B';
 
 $color['button_normal']        = '#FFFFFF';
 $color['button_hover']         = '#E0E0E0';

@@ -220,12 +220,12 @@ a.button:hover {
 
 /* --------------- AJAX Boxes --------------- */
 
-a.nav        { color: {$color['link_nav']};  cursor: pointer; text-decoration: none; }
-a.nav:hover  { color: {$color['link_nav']};  cursor: pointer; text-decoration: underline; }
-a.act        { color: {$color['link_act']};  cursor: pointer; text-decoration: none; }
-a.act:hover  { color: {$color['link_act']};  cursor: pointer; text-decoration: underline; }
-a.zone       { color: {$color['link_zone']}; cursor: pointer; text-decoration: none; }
-a.zone:hover { color: {$color['link_zone']}; cursor: pointer; text-decoration: underline; }
+a.nav          { color: {$color['link_nav']};  cursor: pointer; text-decoration: none; }
+a.nav:hover    { color: {$color['link_nav']};  cursor: pointer; text-decoration: underline; }
+a.act          { color: {$color['link_act']};  cursor: pointer; text-decoration: none; }
+a.act:hover    { color: {$color['link_act']};  cursor: pointer; text-decoration: underline; }
+a.domain       { color: {$color['link_domain']}; cursor: pointer; text-decoration: none; }
+a.domain:hover { color: {$color['link_domain']}; cursor: pointer; text-decoration: underline; }
 
 .row-normal    { background-color: #FFFFFF; }
 .row-highlight { background-color: #E8E9FD; }

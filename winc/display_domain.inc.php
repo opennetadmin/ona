@@ -18,11 +18,11 @@ function ws_display($window_name, $form='') {
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
     
-    // Load the zone record
-    list($status, $rows, $record) = ona_get_domain_record(array('id' => $form['zone_id']));
+    // Load the domain record
+    list($status, $rows, $record) = ona_get_domain_record(array('id' => $form['domain_id']));
     if ($status or !$rows) {
         array_pop($_SESSION['ona']['work_space']['history']);
-        $html .= "<br><center><font color=\"red\"><b>Zone doesn't exist!</b></font></center>"; 
+        $html .= "<br><center><font color=\"red\"><b>Domain doesn't exist!</b></font></center>"; 
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
         return($response->getXML());
@@ -42,9 +42,9 @@ function ws_display($window_name, $form='') {
     
     // Get associated info
     if ($record['parent_id']) {
-        list($status, $rows, $parent_zone) = ona_get_domain_record(array('id' => $record['parent_id']));
+        list($status, $rows, $parent_domain) = ona_get_domain_record(array('id' => $record['parent_id']));
     } else { 
-        $parent_zone = "";
+        $parent_domain = "";
     }
     
     $style['content_box'] = <<<EOL
@@ -62,7 +62,7 @@ EOL;
 
     // Escape data for display in html
     foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
-    foreach(array_keys($parent_zone) as $key) { $parent_zone[$key] = htmlentities($parent_zone[$key], ENT_QUOTES); }
+    foreach(array_keys($parent_domain) as $key) { $parent_domain[$key] = htmlentities($parent_domain[$key], ENT_QUOTES); }
     
     
     $html .= <<<EOL
@@ -75,13 +75,13 @@ EOL;
 EOL;
     
     
-    // ZONE INFORMATION BOX
+    // DOMAIN INFORMATION BOX
     $html .= <<<EOL
         <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
             <tr>
             <td colspan="99" nowrap="true">
                 <!-- LABEL -->
-                    <form id="form_zone_{$record['id']}"
+                    <form id="form_domain_{$record['id']}"
                         ><input type="hidden" name="id" value="{$record['id']}"
                         ><input type="hidden" name="js" value="{$refresh}"
                     ></form>                
@@ -92,15 +92,15 @@ EOL;
    
     if (auth('advanced',$debug_val)) {
         $html .= <<<EOL
-                            <a title="Edit zone. ID: {$record['id']}"
+                            <a title="Edit domain. ID: {$record['id']}"
                                class="act"
-                               onClick="xajax_window_submit('edit_zone', xajax.getFormValues('form_zone_{$record['id']}'), 'editor');"
+                               onClick="xajax_window_submit('edit_domain', xajax.getFormValues('form_domain_{$record['id']}'), 'editor');"
                             ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
-                            <a title="Delete zone. ID: {$record['id']}"
+                            <a title="Delete domain. ID: {$record['id']}"
                                class="act"
-                               onClick="var doit=confirm('Are you sure you want to delete this zone?');
+                               onClick="var doit=confirm('Are you sure you want to delete this domain?');
                                         if (doit == true)
-                                            xajax_window_submit('edit_zone', xajax.getFormValues('form_zone_{$record['id']}'), 'delete');"
+                                            xajax_window_submit('edit_domain', xajax.getFormValues('form_domain_{$record['id']}'), 'delete');"
                             ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
                         </td>
 EOL;
@@ -116,15 +116,15 @@ EOL;
             </tr>
 EOL;
 
-    if ($parent_zone['id']) {
+    if ($parent_domain['id']) {
     $html .= <<<EOL
             <tr>
-                <td align="right" nowrap="true"><b>Parent Zone</b>&nbsp;</td>
+                <td align="right" nowrap="true"><b>Parent Domain</b>&nbsp;</td>
                 <td class="padding" align="left">
-                    <a title="View zone. ID: {$parent_zone['id']}"
-                       class="zone"
-                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$parent_zone['id']}\', \'display\')');"
-                    >{$parent_zone['name']}</a>
+                    <a title="View domain. ID: {$parent_domain['id']}"
+                       class="domain"
+                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$parent_domain['id']}\', \'display\')');"
+                    >{$parent_domain['name']}</a>
                 </td>
             </tr>
             <tr><td colspan="2" align="left" nowrap="true">&nbsp;</td></tr>
@@ -133,7 +133,7 @@ EOL;
     
     $html .= <<<EOL
             <tr>
-                <td colspan="2" align="left" nowrap="true"><b><u>Zone SOA Parameters</u></b>&nbsp;</td>
+                <td colspan="2" align="left" nowrap="true"><b><u>Domain SOA Parameters</u></b>&nbsp;</td>
             </tr>
             
             <tr>
@@ -173,7 +173,7 @@ EOL;
             
         </table>
 EOL;
-    // END ZONE INFORMATION BOX
+    // END DOMAIN INFORMATION BOX
         
         
     $html .= <<<EOL
@@ -195,16 +195,16 @@ EOL;
 EOL;
 
     // Get a list of servers, and loop through them
-    list($status, $rows, $zoneservers) = db_get_records($ona, 'ZONE_SERVERS_B', array('DNS_ZONES_ID' => $record['ID']),'AUTHORITATIVE_FLAG DESC');
+    list($status, $rows, $domainservers) = db_get_records($ona, 'DOMAIN_SERVERS_B', array('DNS_DOMAINS_ID' => $record['ID']),'AUTHORITATIVE_FLAG DESC');
     if ($rows) {
-        foreach ($zoneservers as $zoneserver) {
+        foreach ($domainservers as $domainserver) {
             // Adjust the text for the authoritative flag to mean something
-            if ($zoneserver['AUTHORITATIVE_FLAG'] == "Y")
-                $zoneserver['AUTHORITATIVE_FLAG'] = "Master";
+            if ($domainserver['AUTHORITATIVE_FLAG'] == "Y")
+                $domainserver['AUTHORITATIVE_FLAG'] = "Master";
             else
-                $zoneserver['AUTHORITATIVE_FLAG'] = "Slave";
+                $domainserver['AUTHORITATIVE_FLAG'] = "Slave";
              
-            list($host, $zone) = ona_find_host($zoneserver['SERVER_ID']);
+            list($host, $domain) = ona_find_host($domainserver['SERVER_ID']);
             $host['FQDN'] = htmlentities($host['FQDN'], ENT_QUOTES);
             $html .= <<<EOL
                 <tr onMouseOver="this.className='row-highlight';"
@@ -217,12 +217,12 @@ EOL;
                         >{$host['FQDN']}</a>&nbsp;
                      </td>
                      <td align="left" nowrap="true">   
-                            {$zoneserver['AUTHORITATIVE_FLAG']}                        
+                            {$domainserver['AUTHORITATIVE_FLAG']}                        
                     </td>
                      <td align="right" nowrap="true">
-                        <form id="{$form['form_id']}_zone_serv_{$zoneserver['ZONE_SERVERS_ID']}"
-                                ><input type="hidden" name="server" value="{$zoneserver['SERVER_ID']}"
-                                ><input type="hidden" name="zone" value="{$zoneserver['DNS_ZONES_ID']}"
+                        <form id="{$form['form_id']}_domain_serv_{$domainserver['DOMAIN_SERVERS_ID']}"
+                                ><input type="hidden" name="server" value="{$domainserver['SERVER_ID']}"
+                                ><input type="hidden" name="domain" value="{$domainserver['DNS_DOMAINS_ID']}"
                                 ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
 EOL;
@@ -230,11 +230,11 @@ EOL;
             if (auth('advanced',$debug_val)) {
                 $html .= <<<EOL
                         
-                        <a title="Remove zone assignment"
+                        <a title="Remove domain assignment"
                            class="act"
-                           onClick="var doit=confirm('Are you sure you want to remove this zone from this DNS server?');
+                           onClick="var doit=confirm('Are you sure you want to remove this domain from this DNS server?');
                            if (doit == true)
-                                xajax_window_submit('edit_zone_server', xajax.getFormValues('{$form['form_id']}_zone_serv_{$zoneserver['ZONE_SERVERS_ID']}'), 'delete');"
+                                xajax_window_submit('edit_domain_server', xajax.getFormValues('{$form['form_id']}_domain_serv_{$domainserver['DOMAIN_SERVERS_ID']}'), 'delete');"
                         ><img src="{$images}/silk/page_delete.png" border="0"></a>
 EOL;
             }
@@ -253,19 +253,19 @@ EOL;
                     
                 <tr>
                     <td colspan="3" align="left" valign="middle" nowrap="true" class="act-box">
-                        <form id="form_zone_server_{$record['id']}"
-                            ><input type="hidden" name="zone" value="{$record['name']}"
+                        <form id="form_domain_server_{$record['id']}"
+                            ><input type="hidden" name="domain" value="{$record['name']}"
                             ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
                         
                         <a title="Assign server"
                            class="act"
-                           onClick="xajax_window_submit('edit_zone_server', xajax.getFormValues('form_zone_server_{$record['id']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('form_domain_server_{$record['id']}'), 'editor');"
                         ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
                         
                         <a title="Assign server"
                            class="act"
-                           onClick="xajax_window_submit('edit_zone_server', xajax.getFormValues('form_zone_server_{$record['id']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('form_domain_server_{$record['id']}'), 'editor');"
                         >Assign to server</a>&nbsp;
                     </td>
                 </tr>
@@ -322,12 +322,12 @@ EOL;
                     <input name="content_id" value="{$content_id}" type="hidden">
                     <input name="form_id" value="{$form_id}" type="hidden">
 EOL;
-    if($record['POINTER_ZONE'] != 'Y') {
+    if($record['POINTER_DOMAIN'] != 'Y') {
         $html .= <<<EOL
-                    <input name="zone_id" value="{$record['id']}" type="hidden">
+                    <input name="domain_id" value="{$record['id']}" type="hidden">
 EOL;
     } else {
-        // list IPs within the PTR zone
+        // list IPs within the PTR domain
         $end_ip = ip_complete($record['name'],255);        
         $html .= <<<EOL
                     <input name="ip" value="{$record['name']}" type="hidden">
@@ -374,7 +374,7 @@ EOL;
         </div>
 EOL;
  
-    if($record['POINTER_ZONE'] == 'Y') {
+    if($record['POINTER_DOMAIN'] == 'Y') {
         $html .= <<<EOL
  
         <!-- List by IP Address LINK -->
@@ -415,8 +415,8 @@ EOL;
 
 
 
-    // Don't list Aliases for PTR zones!
-    if($record['POINTER_ZONE'] != 'Y') {
+    // Don't list Aliases for PTR domains!
+    if($record['POINTER_DOMAIN'] != 'Y') {
 
         // ALIAS LIST
         // (since the display_alias_list() function is in the "list_hosts" window, this is a little tricky.. -brandon)
@@ -441,7 +441,7 @@ EOL;
                         <input id="{$form_id}_page" name="page" value="1" type="hidden">
                         <input name="content_id" value="{$content_id}" type="hidden">
                         <input name="form_id" value="{$form_id}" type="hidden">
-                        <input name="zone_id" value="{$record['id']}" type="hidden">
+                        <input name="domain_id" value="{$record['id']}" type="hidden">
                         <!-- brandon: this tells the alias list to not inform the user of hosts that match the query -->
                         <input name="type" value="aliases" type="hidden">
                         <input name="no_host_search" value="1" type="hidden">

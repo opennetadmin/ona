@@ -120,7 +120,7 @@ function get_alias_suggestions($q, $max_results=10) {
     return(get_text_suggestions($q . '%', 'HOST_ALIASES_B', 'ALIAS', $max_results));
 }
 
-function get_zone_suggestions($q, $max_results=10) {
+function get_domain_suggestions($q, $max_results=10) {
     return(get_text_suggestions($q . '%', 'domains', 'name', $max_results));
 }
 
@@ -358,7 +358,7 @@ function suggest_server($q, $el_input, $el_suggest) {
     $results = array_merge($results, get_server_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
     $results = array_unique($results);
 
-    //TODO: potentialy add a search for get_zone_suggestions here
+    //TODO: potentialy add a search for get_domain_suggestions here
 
     // Build the javascript to return
     $js .= "suggestions = Array(";
@@ -379,7 +379,7 @@ function suggest_server($q, $el_input, $el_suggest) {
 function suggest_pool_server_qf($q, $el_input, $el_suggest) {
     return(suggest_server($q, $el_input, $el_suggest));
 }
-function suggest_zone_server_name($q, $el_input, $el_suggest) {
+function suggest_domain_server_name($q, $el_input, $el_suggest) {
     return(suggest_server($q, $el_input, $el_suggest));
 }
 function suggest_dhcp_server_name($q, $el_input, $el_suggest) {
@@ -392,7 +392,7 @@ function suggest_dhcp_server_name($q, $el_input, $el_suggest) {
 // xajax server
 // This function is called by the suggest() function.
 //////////////////////////////////////////////////////////////////////////////
-function suggest_zone($q, $el_input, $el_suggest) {
+function suggest_domain($q, $el_input, $el_suggest) {
     global $conf;
 
     // Instantiate the xajaxResponse object
@@ -401,8 +401,8 @@ function suggest_zone($q, $el_input, $el_suggest) {
     $js = "";
 
     // Search the DB
-    $results = get_zone_suggestions($q);
-    $results = array_merge($results, get_zone_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = get_domain_suggestions($q);
+    $results = array_merge($results, get_domain_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
     $results = array_unique($results);
 
     // Build the javascript to return
@@ -420,17 +420,17 @@ function suggest_zone($q, $el_input, $el_suggest) {
     $response->addScript($js);
     return($response->getXML());
 }
-function suggest_zone_alias_edit($q, $el_input, $el_suggest) {
-    return(suggest_zone($q, $el_input, $el_suggest));
+function suggest_domain_alias_edit($q, $el_input, $el_suggest) {
+    return(suggest_domain($q, $el_input, $el_suggest));
 }
-function suggest_zone_edit($q, $el_input, $el_suggest) {
-    return(suggest_zone($q, $el_input, $el_suggest));
+function suggest_domain_edit($q, $el_input, $el_suggest) {
+    return(suggest_domain($q, $el_input, $el_suggest));
 }
-function suggest_set_zone_edit_host($q, $el_input, $el_suggest) {
-    return(suggest_zone($q, $el_input, $el_suggest));
+function suggest_set_domain_edit_host($q, $el_input, $el_suggest) {
+    return(suggest_domain($q, $el_input, $el_suggest));
 }
-function suggest_zone_server_edit($q, $el_input, $el_suggest) {
-    return(suggest_zone($q, $el_input, $el_suggest));
+function suggest_domain_server_edit($q, $el_input, $el_suggest) {
+    return(suggest_domain($q, $el_input, $el_suggest));
 }
 
 

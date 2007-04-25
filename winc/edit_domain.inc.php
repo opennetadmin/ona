@@ -35,7 +35,7 @@ function ws_editor($window_name, $form='') {
         $window['title'] = "Edit Domain";
 
         // Prepare some stuff for displaying checkboxes
-        if ($domain['POINTER_ZONE'] != 'N') { $domain['POINTER_ZONE'] = 'CHECKED'; }
+        if ($domain['POINTER_DOMAIN'] != 'N') { $domain['POINTER_DOMAIN'] = 'CHECKED'; }
 
 
     } else {
@@ -48,7 +48,7 @@ function ws_editor($window_name, $form='') {
         $domain['expire']      = $conf['dns']['expire'];
         $domain['minimum']     = $conf['dns']['minimum'];
         $domain['PARENT']      = $conf['dns']['parent'];
-        $domain['AUTH']        = 'Y';    // is server authoritative for this zone
+        $domain['AUTH']        = 'Y';    // is server authoritative for this domain
 
         // Set the window title:
         $window['title'] = "Add Domain";
@@ -76,7 +76,7 @@ function ws_editor($window_name, $form='') {
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
         
-        suggest_setup('zone_edit',     'suggest_zone_edit');
+        suggest_setup('domain_edit',     'suggest_domain_edit');
         el('{$window_name}_edit_form').onsubmit = function() { return false; };
 
 EOL;
@@ -87,7 +87,7 @@ EOL;
     <!-- Domain Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
     <input type="hidden" name="id" value="{$domain['id']}">
-    <input type="hidden" name="zone" value="{$domain['name']}">
+    <input type="hidden" name="domain" value="{$domain['name']}">
     <input type="hidden" name="parent" value="{$domain['id']}">
     <input type="hidden" name="output_file" value=" ">
     <input type="hidden" name="auth" value="{$domain['AUTH']}">
@@ -122,7 +122,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input 
-                    id="zone_edit"
+                    id="domain_edit"
                     name="parent" 
                     alt="Parent Domain"
                     value="{$parent['PARENT']}"
@@ -130,7 +130,7 @@ EOL;
                     type="text" 
                     size="30" maxlength="255" 
                 >
-                <div id="suggest_zone_edit" class="suggest"></div>
+                <div id="suggest_domain_edit" class="suggest"></div>
             </td>
         </tr>
         
@@ -142,7 +142,7 @@ EOL;
                 <input 
                     name="ptr"
                     alt="Pointer Domain"
-                    {$domain['POINTER_ZONE']}
+                    {$domain['POINTER_DOMAIN']}
                     class="edit" 
                     type="checkbox" 
                 >
@@ -325,10 +325,10 @@ function ws_save($window_name, $form='') {
     if (!$form['ptr']) $form['ptr'] = 'N';
 
     // Decide if we're editing or adding
-    $module = 'zone_add';
+    $module = 'domain_add';
     // If we're modifying, re-map some the array names to match what the "modify" module wants
     if ($form['id']) {
-        $module = 'zone_modify';
+        $module = 'domain_modify';
         $form['set_name']    = $form['name']; unset($form['name']);
         $form['set_server']  = $form['server']; unset($form['server']);
         $form['set_admin']   = $form['admin']; unset($form['admin']);
@@ -375,7 +375,7 @@ function ws_save($window_name, $form='') {
 //     Delete Form
 // 
 // Description:
-//     Deletes a zone record.  $form should be an array with a 'zone_id'
+//     Deletes a domain record.  $form should be an array with a 'domain_id'
 //     key defined and optionally a 'js' key with javascript to have the
 //     browser run after a successful delete.
 //////////////////////////////////////////////////////////////////////////////
@@ -397,7 +397,7 @@ function ws_delete($window_name, $form='') {
     $js = '';
     
     // Run the module
-    list($status, $output) = run_module('zone_del', array('zone' => $form['id'], 'commit' => 'Y'));
+    list($status, $output) = run_module('domain_del', array('domain' => $form['id'], 'commit' => 'Y'));
     
     // If the module returned an error code display a popup warning
     if ($status)

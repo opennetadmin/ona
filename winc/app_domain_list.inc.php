@@ -27,7 +27,7 @@ $window['title'] = "DNS Domain Administration";
 
 // Load some html into $window['html']
 $form_id = "{$window_name}_filter_form";
-$tab = 'zone'; // FIXME: rename to 'domain'
+$tab = 'domain'; // FIXME: rename to 'domain'
 $submit_window = $window_name;
 $content_id = "{$window_name}_list";
 
@@ -37,7 +37,7 @@ $window['html'] .= <<<EOL
     <table width="100%" cellspacing="0" border="0" cellpadding="0" >
         <tr>
             <td id="{$form_id}_{$tab}_tab" nowrap="true" class="table-tab-active">
-                Zones <span id="{$form_id}_{$tab}_count"></span>
+                Domains <span id="{$form_id}_{$tab}_count"></span>
             </td>
             
             <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
@@ -202,7 +202,7 @@ EOL;
         
         $html .= <<<EOL
         <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
-            <form id="{$form['form_id']}_list_zone_{$record['id']}"
+            <form id="{$form['form_id']}_list_domain_{$record['id']}"
                     ><input type="hidden" name="id" value="{$record['id']}"
                     ><input type="hidden" name="js" value="{$refresh}"
             ></form>
@@ -210,7 +210,7 @@ EOL;
             <td class="list-row">
                 <a title="Edit DNS domain. ID: {$record['id']}"
                    class="act"
-                   onClick="xajax_window_submit('edit_zone', xajax.getFormValues('{$form['form_id']}_list_zone_{$record['id']}'), 'editor');"
+                   onClick="xajax_window_submit('edit_domain', xajax.getFormValues('{$form['form_id']}_list_domain_{$record['id']}'), 'editor');"
                 >{$record['name']}</a>&nbsp;
             </td>
             
@@ -221,19 +221,19 @@ EOL;
             <td align="right" class="list-row" nowrap="true">
                 <a title="View DNS domain. ID: {$record['id']}"
                     class="act"
-                    onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['id']}\', \'display\')');"
+                    onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['id']}\', \'display\')');"
                 ><img src="{$images}/silk/zoom.png" border="0"></a>&nbsp;
 
                 <a title="Edit DNS domain. ID: {$record['id']}"
                     class="act"
-                    onClick="xajax_window_submit('edit_zone', xajax.getFormValues('{$form['form_id']}_list_zone_{$record['id']}'), 'editor');"
+                    onClick="xajax_window_submit('edit_domain', xajax.getFormValues('{$form['form_id']}_list_domain_{$record['id']}'), 'editor');"
                 ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 
                 <a title="Delete DNS domain: ID: {$record['id']}"
                     class="act"
                     onClick="var doit=confirm('Are you sure you want to delete this domain?');
                             if (doit == true)
-                                xajax_window_submit('edit_zone', xajax.getFormValues('{$form['form_id']}_list_zone_{$record['id']}'), 'delete');"
+                                xajax_window_submit('edit_domain', xajax.getFormValues('{$form['form_id']}_list_domain_{$record['id']}'), 'delete');"
                 ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
             </td>
         
@@ -246,18 +246,18 @@ EOL;
     
     <!-- Add a new record -->
     <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}; border-bottom: 1px solid {$color['border']};">
-        <form id="{$form['form_id']}_add_zone_{$record['id']}"
+        <form id="{$form['form_id']}_add_domain_{$record['id']}"
                 ><input type="hidden" name="js" value="{$refresh}"
         ></form>
         <!-- ADD domain LINK -->
         <a title="New DNS domain"
             class="act"
-            onClick="xajax_window_submit('edit_zone', xajax.getFormValues('{$form['form_id']}_add_zone_{$record['id']}'), 'editor');"
+            onClick="xajax_window_submit('edit_domain', xajax.getFormValues('{$form['form_id']}_add_domain_{$record['id']}'), 'editor');"
         ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
 
         <a title="New DNS domain"
             class="act"
-            onClick="xajax_window_submit('edit_zone', xajax.getFormValues('{$form['form_id']}_add_zone_{$record['id']}'), 'editor');"
+            onClick="xajax_window_submit('edit_domain', xajax.getFormValues('{$form['form_id']}_add_domain_{$record['id']}'), 'editor');"
         >Add DNS domain</a>&nbsp;
     </div>
 EOL;
@@ -270,7 +270,7 @@ EOL;
     // Insert the new table into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_zone_count",  "innerHTML", "({$count})");
+    $response->addAssign("{$form['form_id']}_domain_count",  "innerHTML", "({$count})");
     $response->addAssign("{$form['content_id']}", "innerHTML", $html);
     // $response->addScript($js);
     return($response->getXML());

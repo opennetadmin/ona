@@ -32,7 +32,7 @@ $window['js'] = <<<EOL
         el('{$window_name}_title_r').innerHTML;
     
     suggest_setup('hostname', 'suggest_hostname');
-    suggest_setup('zone',     'suggest_zone');
+    suggest_setup('domain',     'suggest_domain');
     suggest_setup('mac',      'suggest_mac');
     suggest_setup('ip',       'suggest_ip');
     suggest_setup('ip_thru',  'suggest_ip_thru');
@@ -132,8 +132,8 @@ $window['html'] = <<<EOL
             Subdomain (<u>z</u>one)
         </td>
         <td align="left" class="asearch-line">
-            <input id="zone" name="zone" type="text" class="edit" size="17" accesskey="z" />
-            <div id="suggest_zone" class="suggest"></div>
+            <input id="domain" name="domain" type="text" class="edit" size="17" accesskey="z" />
+            <div id="suggest_domain" class="suggest"></div>
         </td>
     </tr>
     

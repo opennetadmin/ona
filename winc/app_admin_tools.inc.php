@@ -140,10 +140,10 @@ $window['html'] .= <<<EOL
     <div class="row" 
          onMouseOver="this.className='hovered';"
          onMouseOut="this.className='row';"
-         onClick="toggle_window('app_zone_list');"
-         title="Manage DNS zones"
+         onClick="toggle_window('app_domain_list');"
+         title="Manage DNS domains"
     ><img style="vertical-align: middle;" src="{$images}/silk/world_edit.png" border="0"
-     />&nbsp;Manage DNS zones</div>
+     />&nbsp;Manage DNS domains</div>
 
     <div class="row" 
          onMouseOver="this.className='hovered';"

@@ -103,9 +103,9 @@ function ws_display_list($window_name, $form='') {
                        class="nav"
                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')');"
                     >{$host['name']}</a
-                    >.<a title="View zone. ID: {$host['domain_id']}"
-                         class="zone"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$host['domain_id']}\', \'display\')');"
+                    >.<a title="View domain. ID: {$host['domain_id']}"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$host['domain_id']}\', \'display\')');"
                     >{$host['domain_fqdn']}</a>
                 </td>
             </tr>
@@ -315,9 +315,9 @@ function ws_display_config($window_name, $form='') {
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')');"
                         >{$host['id']}</a
-                        >.<a title="View zone. ID: {$host['domain_id']}"
-                             class="zone"
-                             onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$host['domain_id']}\', \'display\')');"
+                        >.<a title="View domain. ID: {$host['domain_id']}"
+                             class="domain"
+                             onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$host['domain_id']}\', \'display\')');"
                         >{$host['domain_fqdn']}</a>
                     </td>
                 </tr>
@@ -473,9 +473,9 @@ function ws_display_diff($window_name, $form='') {
                                class="nav"
                                onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$old_host['id']}\', \'display\')');"
                             >{$old_host['name']}</a
-                            >.<a title="View zone. ID: {$old_host['domain_id']}"
-                                 class="zone"
-                                 onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$old_host['domain_id']}\', \'display\')');"
+                            >.<a title="View domain. ID: {$old_host['domain_id']}"
+                                 class="domain"
+                                 onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$old_host['domain_id']}\', \'display\')');"
                             >{$old_host['domain_name']}</a>
                         </td>
                     </tr>
@@ -514,9 +514,9 @@ function ws_display_diff($window_name, $form='') {
                                class="nav"
                                onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$new_host['id']}\', \'display\')');"
                             >{$new_host['name']}</a
-                            >.<a title="View zone. ID: {$new_host['domain_id']}"
-                                 class="zone"
-                                 onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$new_host['domain_id']}\', \'display\')');"
+                            >.<a title="View domain. ID: {$new_host['domain_id']}"
+                                 class="domain"
+                                 onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$new_host['domain_id']}\', \'display\')');"
                             >{$new_host['domain_name']}</a>
                         </td>
                     </tr>

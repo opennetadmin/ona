@@ -273,9 +273,9 @@ EOL;
                             ><input type="hidden" name="js" value="{$refresh}"
                     ></form>
 
-                    <a title="Assign zone"
+                    <a title="Assign domain"
                     class="act"
-                    onClick="xajax_window_submit('edit_zone_server', xajax.getFormValues('{$form['form_id']}_dhcp_serv_{$record['id']}'), 'editor');"
+                    onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('{$form['form_id']}_dhcp_serv_{$record['id']}'), 'editor');"
                     ><img src="{$images}/silk/page_add.png" border="0"></a>
                 </td>
             -->

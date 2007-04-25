@@ -226,8 +226,6 @@ EOL;
     foreach($results as $record) {
         // Get host record
         list($status, $rows, $host) = ona_find_host($record['host_id']); 
-        // Zone Name
-        //$record['ZONE'] = $zone['ZONE_NAME'];
         
         // If a network_id was passed use it as part of the search.  Used to display the IP of the network you searched
         if (is_numeric($form['subnet_id'])) {
@@ -303,8 +301,8 @@ EOL;
                        onClick="{$primary_object_js}"
                     >{$host['name']}</a
                     >.<a title="View domain. ID: {$host['domain_id']}"
-                         class="zone"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'zone_id=>{$host['domain_id']}\', \'display\')');"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$host['domain_id']}\', \'display\')');"
                     >{$host['domain_fqdn']}</a>
                 </td>
                 

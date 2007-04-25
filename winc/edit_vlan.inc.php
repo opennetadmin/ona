@@ -186,7 +186,7 @@ function ws_save($window_name, $form='') {
         $response->addScript("alert('Please complete all fields to continue!');");
         return($response->getXML());
     }
-    // Validate zone is valid
+    // Validate domain is valid
     list($status, $rows, $campus)  = ona_get_vlan_campus_record(array('NAME'  => $form['campus']));
     if ($status or !$rows) {
         $response->addScript("alert('Invalid VLAN campus!');");

@@ -61,9 +61,9 @@ function ws_editor($window_name, $form='') {
     if ($form['network_id'])
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['network_id']));
     
-    // Load a zone record if we got passed a zone_id
-    if ($form['zone_id']) {
-        list($status, $rows, $domain) = ona_get_domain_record(array('id' => $form['zone_id']));
+    // Load a domain record if we got passed a domain_id
+    if ($form['domain_id']) {
+        list($status, $rows, $domain) = ona_get_domain_record(array('id' => $form['domain_id']));
         $host['domain_fqdn'] = $domain['fqdn'];
     }
     
@@ -114,7 +114,7 @@ function ws_editor($window_name, $form='') {
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
         
-        suggest_setup('set_zone_{$window_name}',    'suggest_set_zone_{$window_name}');
+        suggest_setup('set_domain_{$window_name}',    'suggest_set_domain_{$window_name}');
         
         /* Setup the Quick Find Unit icon */
         /* (FIXME: commented out by Paul K 4/13/07 - we don't do units right now)
@@ -182,15 +182,15 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input 
-                    id="set_zone_{$window_name}"
-                    name="set_zone"
-                    alt="Zone name"
+                    id="set_domain_{$window_name}"
+                    name="set_domain"
+                    alt="Domain name"
                     value="{$host['domain_fqdn']}"
                     class="edit" 
                     type="text" 
                     size="25" maxlength="64" 
                 >
-                <div id="suggest_set_zone_{$window_name}" class="suggest"></div>
+                <div id="suggest_set_domain_{$window_name}" class="suggest"></div>
             </td>
         </tr>
         
@@ -413,7 +413,7 @@ function ws_save($window_name, $form='') {
     
     // Validate input
     if ($form['set_host'] == '' or 
-        $form['set_zone'] == '' or 
+        $form['set_domain'] == '' or 
         $form['set_type'] == '' or
         /* Interface input: required only if adding a host */
         ($form['host'] == '.' and $form['set_ip'] == '')
@@ -433,9 +433,9 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
     // Validate domain is valid
-    list($status, $rows, $zone) = ona_get_domain_record(array('name' => $form['set_zone'])); // FIXME: change GUI to reference domain, not zone
+    list($status, $rows, $domain) = ona_get_domain_record(array('name' => $form['set_domain']));
     if ($status or !$rows) {
-        $response->addScript("alert('Invalid zone!');");
+        $response->addScript("alert('Invalid domain!');");
         return($response->getXML());
     }
     // Make sure the IP address specified is valid
@@ -460,7 +460,7 @@ function ws_save($window_name, $form='') {
         $module = 'add';
         
         // Host options
-        $form['host'] = $form['set_host'] . '.' . $form['set_zone'];
+        $form['host'] = $form['set_host'] . '.' . $form['set_domain'];
         $form['type'] = $form['set_type'];
         $form['unit'] = $form['set_unit'];
         $form['security_level'] = $form['set_security_level'];
@@ -475,7 +475,7 @@ function ws_save($window_name, $form='') {
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['host']}\', \'display\')');";
     }
     else {
-        $form['set_host'] .= '.' . $form['set_zone'];
+        $form['set_host'] .= '.' . $form['set_domain'];
     }
     
     // Run the module to ADD the HOST AND INTERFACE, or MODIFY THE HOST.

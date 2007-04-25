@@ -148,9 +148,9 @@ EOL;
 EOL;
     }
     $html .= <<<EOL
-                     &nbsp;{$record['name']}.<a title="View zone. ID: {$record['domain_id']}"
-                                                     class="zone"
-                                                     onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['domain_id']}\', \'display\')');"
+                     &nbsp;{$record['name']}.<a title="View domain. ID: {$record['domain_id']}"
+                                                     class="domain"
+                                                     onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
                                                   >{$record['domain_fqdn']}</a>
                 </td></tr>
 
@@ -187,19 +187,19 @@ EOL;
     $is_dns_server = 0;
     $is_dhcp_server = 0;
     $dhcp_rows = 0;
-    $zone_rows = 0;
+    $domain_rows = 0;
 
     // Determine if this is actaually a server by counting server "uses"
     if ($record['SERVER_ID']) {
         // Is this a DNS server?
-        list($status, $zone_rows, $zone_server) = db_get_records($onadb, 'ZONE_SERVERS_B', 'SERVER_ID = '. $onadb->qstr($record['SERVER_ID']));
-        if ($zone_rows >= 1) { $is_dns_server = 1; }
+        list($status, $domain_rows, $domain_server) = db_get_records($onadb, 'DOMAIN_SERVERS_B', 'SERVER_ID = '. $onadb->qstr($record['SERVER_ID']));
+        if ($domain_rows >= 1) { $is_dns_server = 1; }
 
         // Is this a DHCP server?
         list($status, $dhcp_rows, $dhcp_server) = db_get_records($onadb, 'DHCP_SERVER_SUBNETS_B', 'SERVER_ID = '. $onadb->qstr($record['SERVER_ID']));
         if ($dhcp_rows >= 1) { $is_dhcp_server = 1; }
 
-        // FIXME: added temporarily to display as a server even if it has no subnets/zones assoicated with it
+        // FIXME: added temporarily to display as a server even if it has no subnets/domains assoicated with it
         // I plan on removing this later when server_b is fixed up better.
 //        $is_dns_server = 1;
 //        $is_dhcp_server = 1;
@@ -267,8 +267,8 @@ EOL;
             >
                 <td>DNS</td>
                 <td>Y</td>
-                <td align="right">{$zone_rows}</td>
-                <td align="left"><span style="font-size: 10px;">&nbsp;(Zones)</span></td>
+                <td align="right">{$domain_rows}</td>
+                <td align="left"><span style="font-size: 10px;">&nbsp;(Domains)</span></td>
                 <td align="right"><img src="{$images}/silk/zoom.png" border="0">&nbsp;</td>
             </tr>
 EOL;
@@ -288,7 +288,7 @@ EOL;
         if (auth('advanced',$debug_val)) {
             $serverinfo .= <<<EOL
                 style="cursor: pointer;"
-                onClick="xajax_window_submit('edit_zone_server', xajax.getFormValues('form_dns_serv_{$record['ID']}'), 'editor');"
+                onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('form_dns_serv_{$record['ID']}'), 'editor');"
 EOL;
         }
 
@@ -296,8 +296,8 @@ EOL;
             >
                 <td>DNS</td>
                 <td>N</td>
-                <td align="right">{$zone_rows}</td>
-                <td align="left"><span style="font-size: 10px;">&nbsp;(Zones)</span></td>
+                <td align="right">{$domain_rows}</td>
+                <td align="left"><span style="font-size: 10px;">&nbsp;(Domains)</span></td>
 EOL;
 
         if (auth('advanced',$debug_val)) {

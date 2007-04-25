@@ -95,8 +95,8 @@ EOM
     
     // Determine the real hostname to be used --
     // i.e. add .albertsons.com, or find the part of the name provided
-    // that will be used as the "zone" or "domain".  This means testing many
-    // zone name's against the DB to see what's valid.
+    // that will be used as the "domain".  This means testing many
+    // domain names against the DB to see what's valid.
     // 
     list($status, $rows, $host) = ona_find_host($options['host']);
    
@@ -109,11 +109,11 @@ EOM
         return(array(4, $self['error'] . "\n"));
     }
     // Debugging
-    printmsg("DEBUG => Host selected: {$host['name']}.{$host['domain_fqdn']} Zone ID: {$host['domain_id']}", 3);
+    printmsg("DEBUG => Host selected: {$host['name']}.{$host['domain_fqdn']} Domain ID: {$host['domain_id']}", 3);
     
-    // Validate that there isn't already any dns record named $host['name'] in the zone $host_zone_id.
+    // Validate that there isn't already any dns record named $host['name'] in the domain $host_domain_id.
     $h_status = $h_rows = 0;
-    // does the zone $host_zone_id even exist?
+    // does the domain $host_domain_id even exist?
     list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $host['name'], 'domain_id' => $host['domain_id']));
     if (!$d_status && $d_rows) {
         list($h_status, $h_rows, $h_record) =  ona_get_host_record(array('primary_dns_id' => $d_record[0]));
@@ -184,7 +184,7 @@ EOM
         array(
             'id'                   => $host['primary_dns_id'],
             'type'                 => 'A',
-            'ttl'                  => '3600', // FIXME: (PK) pull this from the parent zone?
+            'ttl'                  => '3600', // FIXME: (PK) pull this from the parent domain?
             'name'                 => $host['name'],
             'domain_id'            => $host['domain_id']
         )
@@ -519,7 +519,7 @@ EOM
     }
     
     
-    // Find the host (and zone) record from $options['host']
+    // Find the host (and domain) record from $options['host']
     list($status, $rows, $host) = ona_find_host($options['host']);
     printmsg("DEBUG => host_del() Host: {$host['fqdn']}", 3);
     if (!$host['id']) {
@@ -549,7 +549,7 @@ EOM
         //   Delete Infobits
         //   Delete DHCP entries
         //  
-        // IDEA: If it's the last host in a zone (maybe do the same for or a networks & vlans in the interface delete)
+        // IDEA: If it's the last host in a domain (maybe do the same for or a networks & vlans in the interface delete)
         //       It could just print a notice or something.
         
         // Check that it is the last entry using the ID from SERVER_B
@@ -564,7 +564,7 @@ EOM
             if ($rows) $serverrow++;
             list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_ENTRY_B', array('SERVER_ID' => $server['ID']));
             if ($rows) $serverrow++;
-            list($status, $rows, $srecord) = db_get_record($onadb, 'ZONE_SERVERS_B', array('SERVER_ID' => $server['ID']));
+            list($status, $rows, $srecord) = db_get_record($onadb, 'DOMAIN_SERVERS_B', array('SERVER_ID' => $server['ID']));
             if ($rows) $serverrow++;
             list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_FAILOVER_GROUP_B', array('PRIMARY_SERVER_ID' => $server['ID']));
             if ($rows) $serverrow++;
@@ -722,9 +722,9 @@ EOM
             $text .= "\nWARNING!  This host is a server which has a server level DHCP entry!\n";
             $serverrow++;
         }
-        list($status, $rows, $srecord) = db_get_record($onadb, 'ZONE_SERVERS_B', array('SERVER_ID' => $server['ID']));
+        list($status, $rows, $srecord) = db_get_record($onadb, 'DOMAIN_SERVERS_B', array('SERVER_ID' => $server['ID']));
         if ($rows) {
-            $text .= "\nWARNING!  This host is a server for one or more zones!\n";
+            $text .= "\nWARNING!  This host is a server for one or more domains!\n";
             $serverrow++;
         }
         list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_FAILOVER_GROUP_B', array('PRIMARY_SERVER_ID' => $server['ID']));
@@ -851,7 +851,7 @@ EOM
     }
     
     
-    // Find the host (and zone) record from $options['host']
+    // Find the host (and domain) record from $options['host']
     list($status, $rows, $host) = ona_find_host($options['host']);
     printmsg("DEBUG => Host: {$host['fqdn']}", 3);
     if (!$host['ID']) {
