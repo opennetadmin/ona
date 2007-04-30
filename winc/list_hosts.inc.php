@@ -67,24 +67,28 @@ function ws_display_list($window_name, $form='') {
     $aliases = 0;
     if ($form['hostname']) {
         $where .= $and . "id IN (SELECT id " .
-                                        "  FROM dns " .
-                                        "  WHERE name LIKE " . $onadb->qstr('%'.$form['hostname'].'%') ." )";
+                                "  FROM dns " .
+                                "  WHERE name LIKE " . $onadb->qstr('%'.$form['hostname'].'%') ." )";
         $and = " AND ";
     }
 
 
     // DOMAIN
     if ($form['domain']) {
+        // FIXME: does this clause work correctly?
+        printmsg("FIXME: => Does \$form['domain'] work correctly in list_hosts.inc.php, line 79?", 2);
         // We do a sub-select to find interface id's that match
         $where .= $and . "domain_id IN ( SELECT id " .
-                                                "  FROM dns " .
-                                                "  WHERE name LIKE " . $onadb->qstr($form['domain'].'%') . " ) ";
+                                        "  FROM dns " .
+                                        "  WHERE name LIKE " . $onadb->qstr($form['domain'].'%') . " ) ";
         $and = " AND ";
     }
 
     // DOMAIN ID
     if ($form['domain_id']) {
-        $where .= $and . "domain_id = " . $onadb->qstr($form['domain_id']);
+        $where .= $and . "primary_dns_id IN ( SELECT id " .
+                                            "  FROM dns " .
+                                            "  WHERE domain_id = " . $onadb->qstr($form['domain_id']) . " )  ";
         $and = " AND ";
     }
 
@@ -92,11 +96,9 @@ function ws_display_list($window_name, $form='') {
     if (is_numeric($form['subnet_id'])) {
         // We do a sub-select to find interface id's that match
         $where .= $and . "id IN ( SELECT host_id " .
-                         "        FROM interfaces " .
-                         "        WHERE subnet_id = " . $form['subnet_id'] . " ) ";
+                                 "  FROM interfaces " .
+                                 "  WHERE subnet_id = " . $onadb->qstr($form['subnet_id']) . " ) ";
         $and = " AND ";
-   // $js .= "alert('Where: " . str_replace("'", '"', $status) . "');";
-
     }
 
 
@@ -344,8 +346,12 @@ EOL;
         
         
         // Device Description
-        list($status, $rows, $device) = ona_get_model_record(array('id' => $record['model_id']));
-        $record['device'] = "{$device['MANUFACTURER_NAME']}, {$device['name']}";
+        list($status, $rows, $device) = ona_get_device_record(array('id' => $record['device_id']));
+        list($status, $rows, $device_type) = ona_get_device_type_record(array('id' => $device['device_type_id']));
+        list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
+        list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
+        list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
+        $record['device'] = "{$manufacturer['name']} {$model['name']} ({$role['name']})";
         $record['device'] = str_replace('Unknown', '?', $record['device']);
 
 
