@@ -390,7 +390,7 @@ EOL;
             >List Hosts by IP</a>&nbsp;
         </div>        
 EOL;
-} 
+    } 
     
     $html .= <<<EOL
     </div>

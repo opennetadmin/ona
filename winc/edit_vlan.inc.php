@@ -11,7 +11,7 @@
 //     record for editing.  "Save" button calls the ws_save() function.
 //////////////////////////////////////////////////////////////////////////////
 function ws_editor($window_name, $form='') {
-    global $conf, $self, $mysql, $oracle;
+    global $conf, $self, $onadb;
     global $font_family, $color, $style, $images;
     $window = array();
 
@@ -27,14 +27,14 @@ function ws_editor($window_name, $form='') {
 
     // Load an existing vlan if $form is a
     if (is_array($form)) {
-        list($status, $rows, $record) = ona_get_vlan_record(array('ID' => $form['vlan_id']));
+        list($status, $rows, $record) = ona_get_vlan_record(array('id' => $form['vlan_id']));
         if ($rows) {
-            list($status, $rows, $vlan_campus) = ona_get_vlan_campus_record(array('ID' => $record['VLAN_CAMPUS_ID']));
-            $record['VLAN_CAMPUS_ID']   = $vlan_campus['ID'];
-            $record['VLAN_CAMPUS_NAME'] = $vlan_campus['NAME'];
+            list($status, $rows, $vlan_campus) = ona_get_vlan_campus_record(array('id' => $record['vlan_campus_id']));
+            $record['vlan_campus_id']   = $vlan_campus['id'];
+            $record['vlan_campus_name'] = $vlan_campus['name'];
         }
         else
-            $record['VLAN_CAMPUS_NAME'] = $form['vlan_campus_name'];
+            $record['vlan_campus_name'] = $form['vlan_campus_name'];
     }
 
 
@@ -45,7 +45,7 @@ function ws_editor($window_name, $form='') {
 
     // Set the window title:
     $window['title'] = "Add VLAN";
-    if ($record['ID'])
+    if ($record['id'])
         $window['title'] = "Edit VLAN";
 
     // Javascript to run after the window is built
@@ -70,7 +70,7 @@ EOL;
 
     <!-- Vlan Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
-    <input type="hidden" name="vlan_id" value="{$record['ID']}">
+    <input type="hidden" name="vlan_id" value="{$record['id']}">
     <input type="hidden" name="vlan_campus_name" value="{$form['vlan_campus_name']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
@@ -91,7 +91,7 @@ EOL;
                     id="vlan_edit"
                     name="campus"
                     alt="Vlan Campus"
-                    value="{$record['VLAN_CAMPUS_NAME']}"
+                    value="{$record['vlan_campus_name']}"
                     class="edit"
                     type="text"
                     size="27" maxlength="255"
@@ -108,7 +108,7 @@ EOL;
                 <input
                     name="name"
                     alt="Vlan Name"
-                    value="{$record['NAME']}"
+                    value="{$record['name']}"
                     class="edit"
                     type="text"
                     size="27" maxlength="255"
@@ -124,7 +124,7 @@ EOL;
                 <input
                     name="number"
                     alt="Vlan Number"
-                    value="{$record['NUM']}"
+                    value="{$record['number']}"
                     class="edit"
                     type="text"
                     size="6" maxlength="10"
@@ -168,7 +168,7 @@ EOL;
 //     Creates/updates a VLAN record.
 //////////////////////////////////////////////////////////////////////////////
 function ws_save($window_name, $form='') {
-    global $base, $include, $conf, $self, $mysql, $oracle;
+    global $base, $include, $conf, $self, $onadb;
 
     // Check permissions
     if (! (auth('advanced')) ) {
@@ -186,8 +186,8 @@ function ws_save($window_name, $form='') {
         $response->addScript("alert('Please complete all fields to continue!');");
         return($response->getXML());
     }
-    // Validate domain is valid
-    list($status, $rows, $campus)  = ona_get_vlan_campus_record(array('NAME'  => $form['campus']));
+    // Validate zone is valid
+    list($status, $rows, $campus)  = ona_get_vlan_campus_record(array('name'  => $form['campus']));
     if ($status or !$rows) {
         $response->addScript("alert('Invalid VLAN campus!');");
         return($response->getXML());
@@ -205,7 +205,7 @@ function ws_save($window_name, $form='') {
 
     // If there's no "refresh" javascript, add a command to view the new host
     if (!preg_match('/\w/', $form['js']))
-        $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_vlan_campus\', \'vlan_campus_id=>{$campus['ID']}\', \'display\')');";
+        $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_vlan_campus\', \'vlan_campus_id=>{$campus['id']}\', \'display\')');";
 
     // Run the module
     list($status, $output) = run_module($module, $form);
@@ -238,7 +238,7 @@ function ws_save($window_name, $form='') {
 //     field.
 //////////////////////////////////////////////////////////////////////////////
 function ws_delete($window_name, $form='') {
-    global $base, $include, $conf, $self, $mysql, $oracle;
+    global $base, $include, $conf, $self, $onadb;
 
     // Check permissions
     if (!auth('advanced')) {

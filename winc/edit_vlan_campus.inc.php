@@ -11,7 +11,7 @@
 //     record for editing.  "Save" button calls the ws_save() function.
 //////////////////////////////////////////////////////////////////////////////
 function ws_editor($window_name, $form='') {
-    global $conf, $self, $mysql, $oracle;
+    global $conf, $self, $onadb;
     global $font_family, $color, $style, $images;
     $window = array();
 
@@ -25,11 +25,11 @@ function ws_editor($window_name, $form='') {
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
 
-    // Load an existing host record (and associated info) if $form is a host_id
+    // Load an existing host record (and associated info) if $form is a vlan_campus_id
     if (is_numeric($form['vlan_campus_id']))
-        list($status, $rows, $vlan_campus) = ona_get_vlan_campus_record(array('ID' => $form['vlan_campus_id']));
+        list($status, $rows, $vlan_campus) = ona_get_vlan_campus_record(array('id' => $form['vlan_campus_id']));
     else
-        list($status, $rows, $vlan_campus) = ona_get_vlan_campus_record(array('NAME' => $form['vlan_campus_name']));
+        list($status, $rows, $vlan_campus) = ona_get_vlan_campus_record(array('name' => $form['vlan_campus_name']));
 
 
     // Escape data for display in html
@@ -38,7 +38,7 @@ function ws_editor($window_name, $form='') {
 
     // Set the window title:
     $window['title'] = "Add VLAN campus";
-    if ($vlan_campus['ID'])
+    if ($vlan_campus['id'])
         $window['title'] = "Edit VLAN campus";
 
 
@@ -61,7 +61,7 @@ EOL;
 
     <!-- Vlan Campus Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
-    <input type="hidden" name="vlan_campus_id" value="{$vlan_campus['ID']}">
+    <input type="hidden" name="vlan_campus_id" value="{$vlan_campus['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
 
@@ -79,28 +79,13 @@ EOL;
                 <input
                     name="name"
                     alt="Vlan Campus Name"
-                    value="{$vlan_campus['NAME']}"
+                    value="{$vlan_campus['name']}"
                     class="edit"
                     type="text"
                     size="17" maxlength="255"
                 >
             </td>
         </tr>
-
-        <tr>
-            <td align="right" nowrap="true" valign="top">
-                VMPS Config Prefix
-            </td>
-            <td class="padding" align="left" width="100%">
-                <textarea
-                    class="edit"
-                    name="vmps"
-                    cols="55"
-                    rows="5"
-                >{$vlan_campus['VMPS_CONFIG_FILE_PREAMBLE']}</textarea>
-            </td>
-        </tr>
-
 
         <tr>
             <td align="right" valign="top" nowrap="true">
@@ -135,7 +120,7 @@ EOL;
 //     Creates/updates a VLAN record.
 //////////////////////////////////////////////////////////////////////////////
 function ws_save($window_name, $form='') {
-    global $base, $include, $conf, $self, $mysql, $oracle;
+    global $base, $include, $conf, $self, $onadb;
 
     // Check permissions
     if (! (auth('advanced')) ) {
@@ -159,7 +144,6 @@ function ws_save($window_name, $form='') {
     if ($form['vlan_campus_id']) {
         $module = 'vlan_campus_modify';
         $form['set_name'] = $form['name'];
-        $form['set_vmps'] = $form['vmps'];
         $form['campus'] = $form['vlan_campus_id'];
     }
 
@@ -204,7 +188,7 @@ function ws_save($window_name, $form='') {
 //     field.
 //////////////////////////////////////////////////////////////////////////////
 function ws_delete($window_name, $form='') {
-    global $base, $include, $conf, $self, $mysql, $oracle;
+    global $base, $include, $conf, $self, $onadb;
 
     // Check permissions
     if (!auth('advanced')) {
@@ -234,12 +218,6 @@ function ws_delete($window_name, $form='') {
     $response->addScript($js);
     return($response->getXML());
 }
-
-
-
-
-
-
 
 
 
