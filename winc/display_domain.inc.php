@@ -298,7 +298,7 @@ EOL;
 
 
     // HOST LIST
-    $tab = 'hosts';
+    $tab = 'records';
     $submit_window = "list_{$tab}";
     $form_id = "{$submit_window}_filter_form";
     $_SESSION['ona'][$form_id]['tab'] = $tab;
