@@ -279,7 +279,7 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Time to Live</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
+                <!-- <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td> -->
                 <td class="list-header" align="center" style="{$style['borderR']};">Data</td>
                 <!-- <td class="list-header" align="center" style="{$style['borderR']};">Device Model</td> -->
                 <!-- <td class="list-header" align="center" style="{$style['borderR']};">Location</td> -->
@@ -304,18 +304,21 @@ EOL;
         } else {
             $record = $results[$i-1];
         
-            // Interface (and find out how many there are)
+            // Check for interface records (and find out how many there are)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id']), '');
             
-            // Domain Name
+            // Get the domain name
             list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
             $record['domain'] = $domain['fqdn'];
-            printmsg("HERE: {$record['domain']}, {$domain['fqdn']}",1);
+                            
+            // Set BOLDING if more than one record is associated with this DNS name
+            // FIXME: need to change the name to something better than $interface_style. (PK)
+            $interface_style = '';
+            if ($last_record_count > 1) { $interface_style = 'font-weight: bold;'; }
                             
             if($interfaces) {        
                 $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
-                $interface_style = '';
-                if ($last_record_count > 1) $interface_style = 'font-weight: bold;';
+
                 
                 // Subnet description
                 list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
@@ -323,16 +326,26 @@ EOL;
                 $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
                 $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
                 
+                // Create string to be embedded in HTML for display
                 $data = <<<EOL
                             >{$record['ip_addr']}</span>&nbsp;
                     <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>&nbsp;
 EOL;
             } else {
-                // Other DNS records which name this record as parent
+                // Get other DNS records which name this record as parent
                 list($status, $rows, $dns_other) = ona_get_host_record(array('id' => $record['dns_id']));
 
-                if($rows) { $data = <<<EOL
-                            >{$dns_other['name']}.{$dns_other['domain_fqdn']}</span>&nbsp;
+                // Create string to be embedded in HTML for display
+                if($rows) { 
+                    $data = <<<EOL
+                    <a title="View host. ID: {$dns_other['id']}"
+                       class="nav"
+                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$dns_other['id']}\', \'display\')');"
+                    >{$dns_other['name']}</a
+                    >.<a title="View domain. ID: {$dns_other['domain_id']}"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$dns_other['domain_id']}\', \'display\')');"
+                    >{$dns_other['domain_fqdn']}</a></span>&nbsp;
 EOL;
                 }
             }
@@ -371,12 +384,12 @@ EOL;
                     >{$record['ttl']} seconds</span>&nbsp;
                 </td>
                 
-                <td class="list-row">
-                    <a title="View subnet. ID: {$subnet['id']}"
+<!--                <td class="list-row"> -->
+<!--                    <a title="View subnet. ID: {$subnet['id']}"
                          class="nav"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['id']}\', \'display\')');"
-                    >{$record['subnet']}</a>&nbsp;
-                </td>
+                    >{$record['subnet']}</a>&nbsp; -->
+<!--                </td> -->
 
                 <td class="list-row" align="left">
                     <span style="{$interface_style}"
