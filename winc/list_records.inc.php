@@ -290,7 +290,7 @@ EOL;
     // Loop and display each record
     $last_record = array('name' => $results[0]['name'], 'domain_id' => $results[0]['domain_id']);
     $last_record_count = 0;
-    //foreach($results as $record) {
+    
     for($i=0; $i<=(count($results)); $i++) {
         $record = $results[$i];
         // Get additional info about each host record
@@ -306,15 +306,16 @@ EOL;
         
             // Interface (and find out how many there are)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id']), '');
-            // Other DNS records which name this record as parent
+            
+            // Domain Name
+            list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
+            $record['domain'] = $domain['fqdn'];
+            printmsg("HERE: {$record['domain']}, {$domain['fqdn']}",1);
+                            
             if($interfaces) {        
                 $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
                 $interface_style = '';
                 if ($last_record_count > 1) $interface_style = 'font-weight: bold;';
-                
-                // Domain Name
-                list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
-                $record['domain'] = $domain['fqdn'];
                 
                 // Subnet description
                 list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
@@ -327,11 +328,11 @@ EOL;
                     <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>&nbsp;
 EOL;
             } else {
-                printmsg("HERE!",1);
+                // Other DNS records which name this record as parent
                 list($status, $rows, $dns_other) = ona_get_host_record(array('id' => $record['dns_id']));
 
                 if($rows) { $data = <<<EOL
-                            >{$dns_other['fqdn']}</span>&nbsp;
+                            >{$dns_other['name']}.{$dns_other['domain_fqdn']}</span>&nbsp;
 EOL;
                 }
             }
