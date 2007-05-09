@@ -91,6 +91,7 @@ function ws_display_list($window_name, $form='') {
         //                                    "  FROM dns " .
         //                                    "  WHERE domain_id = " . $onadb->qstr($form['domain_id']) . " )  ";
         $where .= $and . "domain_id = " . $onadb->qstr($form['domain_id']);
+        $orderby .= "name, domain_id";
         $and = " AND ";
     }
 
@@ -279,7 +280,7 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Time to Live</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Interface</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Data</td>
                 <!-- <td class="list-header" align="center" style="{$style['borderR']};">Device Model</td> -->
                 <!-- <td class="list-header" align="center" style="{$style['borderR']};">Location</td> -->
                 <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
@@ -287,82 +288,56 @@ function ws_display_list($window_name, $form='') {
             </tr>
 EOL;
     // Loop and display each record
-    foreach($results as $record) {
-        // Get additional info about eash host record
+    $last_record = array('name' => $results[0]['name'], 'domain_id' => $results[0]['domain_id']);
+    $last_record_count = 0;
+    //foreach($results as $record) {
+    for($i=0; $i<=(count($results)); $i++) {
+        $record = $results[$i];
+        // Get additional info about each host record
         
         
-        // If a subnet_id was passed use it as part of the search.  Used to display the IP of the subnet you searched
-        if (is_numeric($form['subnet_id'])) {
-            list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id'], 'subnet_id' => $form['subnet_id']), '');
-
-            // Count how many rows and assign it back to the interfaces variable
-            list($status, $rows, $records) = db_get_records($onadb,
-                                                            'interfaces',
-                                                            'host_id = '. $onadb->qstr($record['id']),
-                                                            "",
-                                                            0);
-
-            $interfaces = $rows;
-
-        } else if (is_numeric($ip)) {
-            list($status, $interfaces, $interface) = db_get_record($onadb,
-                                                            'interfaces',
-                                                            'host_id = '. $onadb->qstr($record['id']) .
-                                                            ' AND ip_addr >= ' . $onadb->qstr($ip) .
-                                                            ' AND ip_addr <= ' . $onadb->qstr($ip_end),
-                                                            "",
-                                                            0);
-
-            // Count how many rows and assign it back to the interfaces variable
-            list($status, $rows, $records) = db_get_records($onadb,
-                                                            'interfaces',
-                                                            'host_id = '. $onadb->qstr($record['id']),
-                                                            "",
-                                                            0);
-
-            $interfaces = $rows;
-
-        }  else {
+        // Check if we've already seen this record before.
+        if ($record['name'] == $last_record['name'] &&
+            $record['domain_id'] == $last_record['domain_id']) {
+            $last_record_count++;
+            continue;
+        } else {
+            $record = $results[$i-1];
+        
             // Interface (and find out how many there are)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id']), '');
-        }
-        
-        // bz: why did someone add this??  You especially want to show hosts with no interfaces so you can fix them!
-        // if (!$interfaces) {$count -1; continue;}
-        
-        $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
-        $interface_style = '';
-        if ($interfaces > 1) $interface_style = 'font-weight: bold;';
-        
-        // DNS A record
-        //list($status, $rows, $dns) = ona_get_dns_record(array('id' => $record['primary_dns_id']));
-        //$record['name'] = $dns['name'];
-        
-        // Domain Name
-        list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
-        $record['domain'] = $domain['fqdn'];
-        
-        // Subnet description
-        list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
-        $record['subnet'] = $subnet['name'];
-        $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
-        $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
-        
-        
-        // Device Description
-        //list($status, $rows, $device) = ona_get_device_record(array('id' => $record['device_id']));
-        //list($status, $rows, $device_type) = ona_get_device_type_record(array('id' => $device['device_type_id']));
-        //list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
-        //list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
-        //list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
-        //$record['device'] = "{$manufacturer['name']} {$model['name']} ({$role['name']})";
-        //$record['device'] = str_replace('Unknown', '?', $record['device']);
+            // Other DNS records which name this record as parent
+            if($interfaces) {        
+                $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
+                $interface_style = '';
+                if ($last_record_count > 1) $interface_style = 'font-weight: bold;';
+                
+                // Domain Name
+                list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
+                $record['domain'] = $domain['fqdn'];
+                
+                // Subnet description
+                list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
+                $record['subnet'] = $subnet['name'];
+                $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
+                $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
+                
+                $data = <<<EOL
+                            >{$record['ip_addr']}</span>&nbsp;
+                    <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>&nbsp;
+EOL;
+            } else {
+                printmsg("HERE!",1);
+                list($status, $rows, $dns_other) = ona_get_host_record(array('id' => $record['dns_id']));
 
+                if($rows) { $data = <<<EOL
+                            >{$dns_other['fqdn']}</span>&nbsp;
+EOL;
+                }
+            }
+        }      
 
         $record['notes_short'] = truncate($record['notes'], 40);
-
-        // Get location_number from the location_id
-        //list($status, $rows, $location) = ona_get_location_record(array('id' => $record['location_id']));
 
         // Escape data for display in html
         foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
@@ -406,7 +381,7 @@ EOL;
                     <span style="{$interface_style}"
 EOL;
 
-if ($interfaces > 1) {
+if ($last_record_count > 1) {
         $html .= <<<EOL
                           onMouseOver="wwTT(this, event,
                                             'id', 'tt_host_interface_list_{$record['id']}',
@@ -415,11 +390,10 @@ if ($interfaces > 1) {
                                             'direction', 'south',
                                             'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>host_interface_list,id=>tt_host_interface_list_{$record['id']},host_id=>{$record['id']}\');'
                                            );"
+                           >Number of records: {$last_record_count}</span>&nbsp;
 EOL;
-}
+} else { $html .= $data; }
         $html .= <<<EOL
-                    >{$record['ip_addr']}</span>&nbsp;
-                    <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>&nbsp;
                 </td>
 
 <!--                <td class="list-row">{$record['device']}&nbsp;</td> -->
@@ -474,7 +448,9 @@ EOL;
 
             </tr>
 EOL;
-
+        // reset the record counter before we go back for the next iteration
+        $last_record = array('name' => $record['name'], 'domain_id' => $record['domain_id']);
+        $last_record_count = 1;
     }
 
 
