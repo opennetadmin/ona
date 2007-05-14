@@ -30,7 +30,7 @@ function ws_display_list($window_name, $form='') {
     // Also find/set the "page" we're viewing
     $page = 1;
     if ($form['page'] and is_numeric($form['page'])) {
-        $form = array_merge($form, $_SESSION['ona'][$form['form_id']][$tab]['q']);
+        $form = array_merge($form, (array)$_SESSION['ona'][$form['form_id']][$tab]['q']);
         $_SESSION['ona'][$form['form_id']][$tab]['page'] = $page = $form['page'];
         $_SESSION['ona'][$form['form_id']][$tab]['filter'] = $form['filter'];
     }
