@@ -1138,36 +1138,37 @@ function ona_get_config_type_record($array='', $order='') {
 }
 
 function ona_get_server_record($array) {
-    return(ona_get_record($array, 'SERVER_B'));
+    return(ona_get_record($array, 'servers'));
 }
 
 function ona_get_dhcp_failover_group_record($array) {
-    return(ona_get_record($array, 'IP.DHCP_FAILOVER_GROUP_B'));
+    return(ona_get_record($array, 'dhcp_failover_groups'));
 }
 
-function ona_get_infobit_type_record($array) {
-    return(ona_get_record($array, 'INFOBIT_TYPES_B'));
+function ona_get_custom_attribute_type_record($array) {
+    return(ona_get_record($array, 'custom_attribute_types'));
 }
 
-function ona_get_infobit_record($array) {
-    list($status, $rows, $record) = ona_get_record($array, 'INFOBITS_B');
+function ona_get_custom_attribute_record($array) {
+    list($status, $rows, $record) = ona_get_record($array, 'custom_attributes');
 
     // Lets be nice and return a little associated info
-    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_infobit_type_record(array('ID' => $record['INFOBIT_TYPE_ID']));
+    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_custom_attribute_type_record(array('id' => $record['id']));
     $status += $status_tmp;
-    $record['NAME'] = $record_tmp['NAME'];
+    $record['name'] = $record_tmp['name'];
 
     return(array($status, $rows, $record));
 }
 
+// (PK) FIXME: need to get rid of all mentions of 'infobit'!
 function ona_get_host_infobit_record($array) {
     list($status, $rows, $record) = ona_get_record($array, 'HOST_INFOBITS_B');
 
     // Lets be nice and return a little associated info
-    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_infobit_record(array('ID' => $record['INFOBIT_ID']));
+    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_custom_attribute_record(array('id' => $record['INFOBIT_ID']));
     $status += $status_tmp;
     $record['VALUE'] = $record_tmp['VALUE'];
-    $record['NAME']  = $record_tmp['NAME'];
+    $record['NAME']  = $record_tmp['name'];
 
     return(array($status, $rows, $record));
 }
@@ -1180,14 +1181,7 @@ function ona_get_model_record($array) {
                                                     array('id' => $record['manufacturer_id'])
                                                 );
     $status += $status_tmp;
-    $record['MANUFACTURER_NAME'] = $record_tmp['name'];
-
-    // Lets be nice and return a little associated info
-  //  list($status_tmp, $rows_tmp, $record_tmp) = ona_get_device_type_record(
-    //                                                array('ID' => $record['DEVICE_TYPE_ID'])
-      //                                          );
-   // $status += $status_tmp;
-   // $record['DEVICE_TYPE_DESCRIPTION'] = $record_tmp['DEVICE_TYPE_DESCRIPTION'];
+    $record['manufacturer_name'] = $record_tmp['name'];
 
     return(array($status, $rows, $record));
 }
@@ -1241,7 +1235,7 @@ function ona_get_vlan_campus_record($array) {
 }
 
 function ona_get_dhcp_parm_type_record($array) {
-    return(ona_get_record($array, 'DHCP_PARAMETER_TYPE_B'));
+    return(ona_get_record($array, 'dhcp_parameter_types'));
 }
 
 function ona_get_dhcp_entry_record($array) {

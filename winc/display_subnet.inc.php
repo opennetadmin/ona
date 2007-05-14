@@ -457,19 +457,6 @@ EOL;
 EOL;
 
 
-            // Display information about what server this pool is assigned to
-            if ($pool['SERVER_ID']) {
-                list($status, $rows, $dhcp_server)      = ona_get_server_record(array('id' => $pool['SERVER_ID']));
-                list($status, $rows, $dhcp_server_host) = ona_get_host_record(array('id' => $dhcp_server['host_id']));
-                // foreach(array_keys($dhcp_server_host) as $key) { $dhcp_server_host[$key] = htmlentities($dhcp_server_host[$key], ENT_QUOTES); }
-                $html .= <<<EOL
-                        <a title="View DHCP server"
-                           class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$dhcp_server['host_id']}\', \'display\')');"
-                        >{$dhcp_server_host['name']}</a>&nbsp;
-EOL;
-
-            }
             // Display information about what pool group this pool is assigned to
             // TODO: make this more efficient.  seems like there would be a better way to do this
             if ($pool['DHCP_FAILOVER_GROUP_ID']) {
@@ -477,8 +464,8 @@ EOL;
 
                 list($status, $rows, $server1)      = ona_get_server_record(array('ID' => $failover_group['PRIMARY_SERVER_ID']));
                 list($status, $rows, $server2)      = ona_get_server_record(array('ID' => $failover_group['SECONDARY_SERVER_ID']));
-                list($status, $rows, $server_host1) = ona_get_host_record(array('ID' => $server1['host_id']));
-                list($status, $rows, $server_host2) = ona_get_host_record(array('ID' => $server2['host_id']));
+                list($status, $rows, $server_host1) = ona_get_host_record(array('id' => $server1['host_id']));
+                list($status, $rows, $server_host2) = ona_get_host_record(array('id' => $server2['host_id']));
 
                 $html .= <<<EOL
                         <a title="View DHCP server (Primary failover)"
@@ -499,7 +486,7 @@ EOL;
                     <td align="right" nowrap="true">
                         <form id="form_dhcp_pool_{$pool['DHCP_POOL_ID']}"
                             ><input type="hidden" name="id" value="{$pool['DHCP_POOL_ID']}"
-                            ><input type="hidden" name="subnet" value="{$record['ID']}"
+                            ><input type="hidden" name="subnet" value="{$record['id']}"
                             ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
 EOL;
@@ -533,7 +520,7 @@ EOL;
                 <tr>
                     <td colspan="2" align="left" valign="middle" nowrap="true" class="act-box">
                         <form id="form_pool_add_{$pool['DHCP_POOL_ID']}"
-                            ><input type="hidden" name="subnet" value="{$record['ID']}"
+                            ><input type="hidden" name="subnet" value="{$record['id']}"
                             ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
                         <a title="Add DHCP Pool"
@@ -563,7 +550,7 @@ EOL;
     // It is possible that you can have the same ID in multiple tables, currently.
 /*    $tablename = 'SUBNETS_B';
     require_once('winc/tooltips.inc.php');
-    list($lineshtml, $linesjs) = get_message_lines_html("table_id_ref = {$record['ID']} AND table_name_ref LIKE '{$tablename}'");
+    list($lineshtml, $linesjs) = get_message_lines_html("table_id_ref = {$record['id']} AND table_name_ref LIKE '{$tablename}'");
     if ($lineshtml) {
        $html .= <<<EOL
             <!-- MESSAGES LIST -->
@@ -653,8 +640,8 @@ EOL;
 
         <!-- ADD HOST LINK -->
         <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}">
-            <form id="form_host_add_{$record['ID']}"
-                ><input type="hidden" name="subnet_id" value="{$record['ID']}"
+            <form id="form_host_add_{$record['id']}"
+                ><input type="hidden" name="subnet_id" value="{$record['id']}"
                 ><input type="hidden" name="js" value="{$refresh}"
             ></form>
 EOL;
@@ -663,12 +650,12 @@ EOL;
         $html .= <<<EOL
             <a title="Add host"
                class="act"
-               onClick="xajax_window_submit('edit_host', xajax.getFormValues('form_host_add_{$record['ID']}'), 'editor');"
+               onClick="xajax_window_submit('edit_host', xajax.getFormValues('form_host_add_{$record['id']}'), 'editor');"
             ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
 
             <a title="Add host"
                class="act"
-               onClick="xajax_window_submit('edit_host', xajax.getFormValues('form_host_add_{$record['ID']}'), 'editor');"
+               onClick="xajax_window_submit('edit_host', xajax.getFormValues('form_host_add_{$record['id']}'), 'editor');"
             >Add a new host</a>&nbsp;
 EOL;
     }
@@ -678,12 +665,12 @@ EOL;
 
              <a title="Add interface"
                class="act"
-               onClick="xajax_window_submit('edit_interface', xajax.getFormValues('form_host_add_{$record['ID']}'), 'editor');"
+               onClick="xajax_window_submit('edit_interface', xajax.getFormValues('form_host_add_{$record['id']}'), 'editor');"
             ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
 
             <a title="Add interface"
                class="act"
-               onClick="xajax_window_submit('edit_interface', xajax.getFormValues('form_host_add_{$record['ID']}'), 'editor');"
+               onClick="xajax_window_submit('edit_interface', xajax.getFormValues('form_host_add_{$record['id']}'), 'editor');"
             >Add interface to an existing host</a>&nbsp;
 EOL;
     }
@@ -740,7 +727,7 @@ EOL;
                     <input id="{$form_id}_page" name="page" value="1" type="hidden">
                     <input name="content_id" value="{$content_id}" type="hidden">
                     <input name="form_id" value="{$form_id}" type="hidden">
-                    <input name="subnet" value="{$record['ID']}" type="hidden">
+                    <input name="subnet" value="{$record['id']}" type="hidden">
                     <div id="{$form_id}_filter_overlay"
                          style="position: relative;
                                 display: inline;
@@ -800,15 +787,6 @@ EOL;
     if ($js) { $response->addScript($js . $portal_js); }
     return($response->getXML());
 }
-
-
-
-
-
-
-
-
-
 
 
 

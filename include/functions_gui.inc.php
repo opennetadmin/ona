@@ -29,18 +29,18 @@ function get_subnet_usage($subnet_id) {
 
     list($status, $rows, $subnet) = db_get_record($onadb, 'subnets', array('id' => $subnet_id));
     if ($status or !$rows) { return(0); }
-    $subnet['SIZE'] = (0xffffffff - ip_mangle($subnet['ip_mask'], 'numeric')) - 1;
+    $subnet['size'] = (0xffffffff - ip_mangle($subnet['ip_mask'], 'numeric')) - 1;
 
     // Calculate the percentage used (total size - allocated hosts - dhcp pool size)
-    list($status, $hosts, $tmp) = db_get_records($onadb, 'interfaces', array('SUBNET_ID' => $subnet['id']), "", 0);
-    //list($status, $rows, $pools) = db_get_records($onadb, 'DHCP_POOL_B', array('SUBNET_ID' => $subnet['ID']));
+    list($status, $hosts, $tmp) = db_get_records($onadb, 'interfaces', array('subnet_id' => $subnet['id']), "", 0);
+    //list($status, $rows, $pools) = db_get_records($onadb, 'DHCP_POOL_B', array('subnet_id' => $subnet['id']));
     $pool_size = 0;
   //  foreach ($pools as $pool) {
-  //      $pool_size += ($pool['IP_ADDRESS_END'] - $pool['IP_ADDRESS_START'] + 1);
+  //      $pool_size += ($pool['IP_ADDRESS_END'] - $pool['ip_addr_start'] + 1);
   //  }
     $total_used = $hosts + $pool_size;
-    $percentage = sprintf('%d', ($total_used / $subnet['SIZE']) * 100);
-    return(array($percentage, $total_used, $subnet['SIZE']));
+    $percentage = sprintf('%d', ($total_used / $subnet['size']) * 100);
+    return(array($percentage, $total_used, $subnet['size']));
 }
 
 
@@ -340,6 +340,26 @@ function suggest_hostname($q, $el_input, $el_suggest) {
     return($response->getXML());
 }
 
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+//FIXME: (PK) this function is redundant.  Can we replace it with a call directly
+//       to suggest_hostname()?
+function suggest_failover_pri_hostname($q, $el_input, $el_suggest) {
+    return(suggest_hostname($q, $el_input, $el_suggest));
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+//FIXME: (PK) this function is redundant.  Can we replace it with a call directly
+//       to suggest_hostname()?
+function suggest_failover_sec_hostname($q, $el_input, $el_suggest) {
+    return(suggest_hostname($q, $el_input, $el_suggest));
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // xajax server
