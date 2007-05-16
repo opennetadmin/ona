@@ -1,0 +1,123 @@
+DEVELOPERS
+
+
+CODING STANDARDS
+  Synopsis:
+    * Comments are to begin with two pounds: ##
+    * Use an indent of 4 spaces, with NO TABS!
+    * Functions must have a descriptive header with the name, description,
+      input requirements, output, and example usage.
+    * At least one command line argument is REQUIRED before a script does
+      anything!
+    * When no command line arguments are supplied the script should display
+      a human readable usage summary.
+    * The "-h" and "--help" command line options must be supported.
+    * Scripts must exit with an error code of 0 on success, and non-zero
+      on error.
+
+  Misc:
+    * Put the phrase "FIXME: " near areas that need future work.
+    * Put the phrase "BUSINESS RULE: " before comments that describe business
+      rules.  Example: in subnet_del we put "BUSINESS RULE:" near the comments
+      describing the fact that when deleting subnets we automatically delete
+      interfaces from hosts that also have interfaces in other subnets, but
+      we delete the host if it only has one interface, and it's on this subnet.
+
+
+FUNCTION DEFINITIONS
+
+
+GUIDING PRINCIPLES
+
+
+USE OF THE $_SESSION VARIABLE
+    * Everything is stored "under" $_SESSION['ona']
+    * All authentication  and user data is stored under $_SESSION['ona']['auth']
+        When a user logs out, only $_SESSION['ona']['auth'] is deleted.
+    * 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------
+
+
+Upgrading FCKeditor
+
+--------------------------------------------------
+CLEAN FILES
+--------------------------------------------------
+cd ~/FCKeditor/
+rm -rf _* editor/_source/ fckeditor.afp fckeditor.asp fckeditor.cfc fckeditor.cfm fckeditor.lasso fckeditor.pl fckeditor.py
+
+
+--------------------------------------------------
+Customize Config ~/FCKeditor/fckconfig.js
+--------------------------------------------------
+
+FCKConfig.ToolbarSets["wincFCKeditor"] = [
+    ['Source','-','Save'],
+    ['Cut','Copy','Paste','PasteText','PasteWord','-','SpellCheck'],
+    ['Undo','Redo','-','Find','Replace','-','SelectAll','RemoveFormat'],
+    '/',
+    ['Bold','Italic','Underline','StrikeThrough','-','Subscript','Superscript'],
+    ['OrderedList','UnorderedList','-','Outdent','Indent'],
+    ['JustifyLeft','JustifyCenter','JustifyRight','JustifyFull'],
+    ['TextColor','BGColor'],
+    ['Link','Unlink','Anchor'],
+    ['Image','Table','Rule','Smiley','SpecialChar'],
+    '/',
+    ['Style','FontFormat','FontName','FontSize']
+] ;
+
+
+--------------------------------------------------
+Enable File Uploads
+--------------------------------------------------
+## Edit ~/FCKeditor/fckconfig.js
+var _FileBrowserLanguage        = 'php' ;
+var _QuickUploadLanguage        = 'php' ;
+
+## Edit ~/FCKeditor/editor/filemanager/browser/default/connectors/php/config.php
+## Edit ~/FCKeditor/editor/filemanager/upload/default/connectors/php/config.php
+## (same changes in both)
+
+$Config['Enabled'] = true ;
+$base = dirname(__FILE__);
+while ($base and (!is_dir($base.'/include'))) $base = preg_replace('+/[^/]*$+', '', $base);
+$baseURL = str_replace($_SERVER['DOCUMENT_ROOT'], '', $base); $baseURL = rtrim($baseURL, '/');
+$Config['UserFilesPath'] = "{$baseURL}/uploads/" ;
+$Config['UserFilesAbsolutePath'] = "{$base}/uploads/" ;
+
+## Create some folders
+cd document-root
+mkdir -p uploads/file/ uploads/flash/ uploads/image/ uploads/media/
+chmod -R 777 uploads/
+
+
+-----------------------------------------------------------------------------------------------------------
+Upgrading ADODB
+rm adodb (symlink)
+unzip adodb493.zip
+mv adodb adodb-v493
+ln -s adodb-v493 adodb
+cd adodb
+rm -rf docs/ tests/ cute_icons_for_site/ contrib/ pear/ session/
+
+
+-----------------------------------------------------------------------------------------------------------
+Upgrading xajax
+To cleanup:
+rm -rf tests/ examples/
+
+
