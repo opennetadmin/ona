@@ -396,6 +396,7 @@ function suggest_server($q, $el_input, $el_suggest) {
     return($response->getXML());
 }
 
+// FIXME: (PK) do we still use these functions anywhere?  Check & remove, if not.
 function suggest_pool_server_qf($q, $el_input, $el_suggest) {
     return(suggest_server($q, $el_input, $el_suggest));
 }
