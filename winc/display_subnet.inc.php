@@ -313,7 +313,7 @@ EOL;
                            class="act"
                            onClick="var doit=confirm('Are you sure you want to remove this subnet from this DHCP server?');
                            if (doit == true)
-                                xajax_window_submit('edit_dhcp_server', xajax.getFormValues('form_dhcp_serv_{$dhcpserver['ID']}'), 'delete');"
+                                xajax_window_submit('edit_dhcp_server', xajax.getFormValues('form_dhcp_serv_{$dhcpserver['id']}'), 'delete');"
                         ><img src="{$images}/silk/page_delete.png" border="0"></a>
 EOL;
             }
@@ -331,7 +331,7 @@ EOL;
                 <tr>
                     <td colspan="3" align="left" valign="middle" nowrap="true" class="act-box">
                         <form id="form_dhcp_server_{$record['id']}"
-                                ><input type="hidden" name="subnet" value="{$record['DESCRIPTION']}"
+                                ><input type="hidden" name="subnet" value="{$record['name']}"
                                 ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
                         <!-- ADD SUBNET LINK -->
@@ -362,20 +362,20 @@ EOL;
             <tr><td colspan="2" nowrap="true" style="{$style['label_box']}">DHCP Entries</td></tr>
 EOL;
     // Get dhcp entry records
-    list($status, $rows, $dhcp_entry) = db_get_records($onadb, 'DHCP_ENTRY_B', array('SUBNET_ID' => $record['id']), '');
+    list($status, $rows, $dhcp_entry) = db_get_records($onadb, 'dhcp_option_entries', array('subnet_id' => $record['id']), '');
     if ($rows) {
         foreach ($dhcp_entry as $entry) {
-            list($status, $rows, $dhcp_type) = ona_get_dhcp_entry_record(array('id' => $entry['id']));
+            list($status, $rows, $dhcp_type) = ona_get_dhcp_option_entry_record(array('id' => $entry['id']));
             foreach(array_keys($dhcp_type) as $key) { $dhcp_type[$key] = htmlentities($dhcp_type[$key], ENT_QUOTES); }
 
             $html .= <<<EOL
                 <tr onMouseOver="this.className='row-highlight';"
                     onMouseOut="this.className='row-normal';">
                     <td align="left" nowrap="true">
-                        {$dhcp_type['DHCP_DESCRIPTION']}&nbsp;&#061;&#062;&nbsp;{$dhcp_type['DHCP_PARAMETER_VALUE']}
+                        {$dhcp_type['display_name']}&nbsp;&#061;&#062;&nbsp;{$entry['value']}
                     </td>
                     <td align="right" nowrap="true">
-                        <form id="form_dhcp_entry_{$entry['id']}"
+                        <form id="form_dhcp_option_entry_{$entry['id']}"
                             ><input type="hidden" name="id" value="{$entry['id']}"
                             ><input type="hidden" name="subnet_id" value="{$record['id']}"
                             ><input type="hidden" name="js" value="{$refresh}"
@@ -385,16 +385,16 @@ EOL;
             if (auth('advanced',$debug_val)) {
                 $html .= <<<EOL
 
-                        <a title="Edit DHCP Entry. ID: {$dhcp_type['id']}"
+                        <a title="Edit DHCP Entry. ID: {$entry['id']}"
                            class="act"
-                           onClick="xajax_window_submit('edit_dhcp_entry', xajax.getFormValues('form_dhcp_entry_{$entry['id']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_option_entry_{$entry['id']}'), 'editor');"
                         ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 
-                        <a title="Delete DHCP Entry. ID: {$dhcp_type['id']}"
+                        <a title="Delete DHCP Entry. ID: {$entry['id']}"
                            class="act"
                            onClick="var doit=confirm('Are you sure you want to delete this DHCP entry?');
                                     if (doit == true)
-                                        xajax_window_submit('edit_dhcp_entry', xajax.getFormValues('form_dhcp_entry_{$entry['id']}'), 'delete');"
+                                        xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_option_entry_{$entry['id']}'), 'delete');"
                         ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
             }
@@ -410,19 +410,19 @@ EOL;
         $html .= <<<EOL
                 <tr>
                     <td colspan="2" align="left" valign="middle" nowrap="true" class="act-box">
-                        <form id="form_dhcp_entry_{$record['id']}"
+                        <form id="form_dhcp_option_entry_add_{$record['id']}"
                             ><input type="hidden" name="subnet_id" value="{$record['id']}"
                             ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
 
                         <a title="Add DHCP Entry"
                            class="act"
-                           onClick="xajax_window_submit('edit_dhcp_entry', xajax.getFormValues('form_dhcp_entry_{$record['id']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_option_entry_add_{$record['id']}'), 'editor');"
                         ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
 
                         <a title="Add DHCP Entry"
                            class="act"
-                           onClick="xajax_window_submit('edit_dhcp_entry', xajax.getFormValues('form_dhcp_entry_{$record['id']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_option_entry_add_{$record['id']}'), 'editor');"
                         >Add DHCP Entry</a>&nbsp;
                     </td>
                 </tr>
@@ -443,36 +443,35 @@ EOL;
                 <tr><td colspan="2" nowrap="true" style="{$style['label_box']}">DHCP Pools</td></tr>
 EOL;
     // get dhcp pool records
-    list($status, $rows, $dhcp_pool) = db_get_records($onadb, 'DHCP_POOL_B', array('SUBNET_ID' => $record['id']));
+    list($status, $rows, $dhcp_pool) = db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $record['id']));
     if ($rows) {
         $haspool = 1;
         foreach ($dhcp_pool as $pool) {
-            $pool['ip_addr_START']   = ip_mangle($pool['ip_addr_START'], 'dotted');
-            $pool['ip_addr_END']     = ip_mangle($pool['ip_addr_END'], 'dotted');
+            $pool['ip_addr_start']   = ip_mangle($pool['ip_addr_start'], 'dotted');
+            $pool['ip_addr_end']     = ip_mangle($pool['ip_addr_end'], 'dotted');
 
             $html .= <<<EOL
                 <tr>
                     <td align="left" nowrap="true">
-                        {$pool['ip_addr_START']}&nbsp;Thru&nbsp;{$pool['ip_addr_END']}:&nbsp;
+                        {$pool['ip_addr_start']}&nbsp;Thru&nbsp;{$pool['ip_addr_end']}&nbsp;
 EOL;
+
 
 
             // Display information about what pool group this pool is assigned to
             // TODO: make this more efficient.  seems like there would be a better way to do this
-            if ($pool['DHCP_FAILOVER_GROUP_ID']) {
-                list($status, $rows, $failover_group) = ona_get_dhcp_failover_group_record(array('DHCP_FAILOVER_GROUP_ID' => $pool['DHCP_FAILOVER_GROUP_ID']));
+            if ($pool['dhcp_failover_group_id']) {
+                list($status, $rows, $failover_group) = ona_get_dhcp_failover_group_record(array('id' => $pool['dhcp_failover_group_id']));
 
-                list($status, $rows, $server1)      = ona_get_server_record(array('ID' => $failover_group['PRIMARY_SERVER_ID']));
-                list($status, $rows, $server2)      = ona_get_server_record(array('ID' => $failover_group['SECONDARY_SERVER_ID']));
-                list($status, $rows, $server_host1) = ona_get_host_record(array('id' => $server1['host_id']));
-                list($status, $rows, $server_host2) = ona_get_host_record(array('id' => $server2['host_id']));
+                list($status, $rows, $server_host1) = ona_get_host_record(array('id' => $failover_group['primary_server_id']));
+                list($status, $rows, $server_host2) = ona_get_host_record(array('id' => $failover_group['secondary_server_id']));
 
                 $html .= <<<EOL
-                        <a title="View DHCP server (Primary failover)"
+                        <a title="View DHCP server (Primary failover) - {$server_host1['fqdn']}"
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server1['host_id']}\', \'display\')');"
                         >{$server_host1['name']}</a>&#047;
-                        <a title="View DHCP server (Secondary failover)"
+                        <a title="View DHCP server (Secondary failover) - {$server_host2['fqdn']}"
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server2['host_id']}\', \'display\')');"
                         >{$server_host2['name']}</a>
@@ -484,8 +483,8 @@ EOL;
             $html .= <<<EOL
                 </td>
                     <td align="right" nowrap="true">
-                        <form id="form_dhcp_pool_{$pool['DHCP_POOL_ID']}"
-                            ><input type="hidden" name="id" value="{$pool['DHCP_POOL_ID']}"
+                        <form id="form_dhcp_pool_{$pool['id']}"
+                            ><input type="hidden" name="id" value="{$pool['id']}"
                             ><input type="hidden" name="subnet" value="{$record['id']}"
                             ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
@@ -493,16 +492,16 @@ EOL;
 
             if (auth('advanced',$debug_val)) {
                 $html .= <<<EOL
-                        <a title="Edit DHCP Pool. ID: {$pool['DHCP_POOL_ID']}"
+                        <a title="Edit DHCP Pool. ID: {$pool['id']}"
                            class="act"
-                           onClick="xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_dhcp_pool_{$pool['DHCP_POOL_ID']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_dhcp_pool_{$pool['id']}'), 'editor');"
                         ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 
-                        <a title="Delete DHCP Pool. ID: {$pool['DHCP_POOL_ID']}"
+                        <a title="Delete DHCP Pool. ID: {$pool['id']}"
                            class="act"
                            onClick="var doit=confirm('Are you sure you want to delete this DHCP pool?');
                                     if (doit == true)
-                                        xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_dhcp_pool_{$pool['DHCP_POOL_ID']}'), 'delete');"
+                                        xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_dhcp_pool_{$pool['id']}'), 'delete');"
                         ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
             }
@@ -519,18 +518,18 @@ EOL;
         $html .= <<<EOL
                 <tr>
                     <td colspan="2" align="left" valign="middle" nowrap="true" class="act-box">
-                        <form id="form_pool_add_{$pool['DHCP_POOL_ID']}"
+                        <form id="form_pool_add_{$pool['id']}"
                             ><input type="hidden" name="subnet" value="{$record['id']}"
                             ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
                         <a title="Add DHCP Pool"
                            class="act"
-                           onClick="xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_pool_add_{$pool['DHCP_POOL_ID']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_pool_add_{$pool['id']}'), 'editor');"
                         ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
 
                         <a title="Add DHCP Pool"
                            class="act"
-                           onClick="xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_pool_add_{$pool['DHCP_POOL_ID']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_pool_add_{$pool['id']}'), 'editor');"
                         >Add DHCP Pool</a>&nbsp;
                     </td>
                 </tr>
@@ -546,8 +545,8 @@ EOL;
     // START MESSAGES BOX
     // $tablename is a reference directly to the table that contains the item
     // we are displaying to the user.  This is a kludge since we cannot
-    // directly link the mysql tables to the onadb tables with the ID of the table.
-    // It is possible that you can have the same ID in multiple tables, currently.
+    // directly link the mysql tables to the onadb tables with the id of the table.
+    // It is possible that you can have the same id in multiple tables, currently.
 /*    $tablename = 'SUBNETS_B';
     require_once('winc/tooltips.inc.php');
     list($lineshtml, $linesjs) = get_message_lines_html("table_id_ref = {$record['id']} AND table_name_ref LIKE '{$tablename}'");
@@ -787,6 +786,15 @@ EOL;
     if ($js) { $response->addScript($js . $portal_js); }
     return($response->getXML());
 }
+
+
+
+
+
+
+
+
+
 
 
 

@@ -31,7 +31,7 @@ function ws_display($window_name, $form='') {
         $response->addAssign("work_space_content", "innerHTML", $html);
         return($response->getXML());
     }
-    
+
     // Update History Title (and tell the browser to re-draw the history div)
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
@@ -173,11 +173,11 @@ EOL;
                     <td align="right" nowrap="true"><b>Serial Number</b>&nbsp;</td>
                     <td class="padding" align="left">{$record['serial_number']}&nbsp;</td>
                 </tr>
-                
+
                 <tr>
                     <td align="right" nowrap="true"><b>Asset Tag</b>&nbsp;</td>
                     <td class="padding" align="left">{$record['asset_tag']}&nbsp;</td>
-                </tr>                
+                </tr>
             </table>
 EOL;
 
@@ -430,10 +430,10 @@ EOL;
                 <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">DHCP entries</td></tr>
 EOL;
 
-    list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'DHCP_ENTRY_B', array('host_id' => $record['ID']), '');
+    list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => $record['id']), '');
     if ($rows) {
         foreach ($dhcp_entries as $entry) {
-            list($status, $rows, $dhcp_type) = ona_get_dhcp_entry_record(array('ID' => $entry['ID']));
+            list($status, $rows, $dhcp_type) = ona_get_dhcp_option_entry_record(array('id' => $entry['id']));
             foreach(array_keys($dhcp_type) as $key) { $dhcp_type[$key] = htmlentities($dhcp_type[$key], ENT_QUOTES); }
 
             $html .= <<<EOL
@@ -441,27 +441,27 @@ EOL;
                     onMouseOut="this.className='row-normal';">
 
                     <td align="left" nowrap="true">
-                        {$dhcp_type['DHCP_DESCRIPTION']}&nbsp;&#061;&#062;&nbsp;{$dhcp_type['DHCP_PARAMETER_VALUE']}&nbsp;
+                        {$dhcp_type['display_name']}&nbsp;&#061;&#062;&nbsp;{$dhcp_type['value']}&nbsp;
                     </td>
                     <td align="right">
-                        <form id="form_dhcp_entry_{$entry['ID']}"
-                            ><input type="hidden" name="id" value="{$entry['ID']}"
-                            ><input type="hidden" name="host_id" value="{$record['ID']}"
+                        <form id="form_dhcp_entry_{$entry['id']}"
+                            ><input type="hidden" name="id" value="{$entry['id']}"
+                            ><input type="hidden" name="host_id" value="{$record['id']}"
                             ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
 EOL;
             if (auth('advanced',$debug_val)) {
                 $html .= <<<EOL
-                        <a title="Edit DHCP Entry. ID: {$dhcp_type['ID']}"
+                        <a title="Edit DHCP Entry. ID: {$dhcp_type['id']}"
                            class="act"
-                           onClick="xajax_window_submit('edit_dhcp_entry', xajax.getFormValues('form_dhcp_entry_{$entry['ID']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_{$entry['id']}'), 'editor');"
                         ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 
-                        <a title="Delete DHCP Entry. ID: {$dhcp_type['ID']}"
+                        <a title="Delete DHCP Entry. ID: {$dhcp_type['id']}"
                            class="act"
                            onClick="var doit=confirm('Are you sure you want to delete this DHCP entry?');
                                     if (doit == true)
-                                        xajax_window_submit('edit_dhcp_entry', xajax.getFormValues('form_dhcp_entry_{$entry['ID']}'), 'delete');"
+                                        xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_{$entry['id']}'), 'delete');"
                         ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
 EOL;
             }
@@ -478,19 +478,19 @@ EOL;
                 <tr>
                     <td colspan="2" align="left" valign="middle" nowrap="true" class="act-box">
 
-                        <form id="form_dhcp_entry_{$record['ID']}"
-                            ><input type="hidden" name="host_id" value="{$record['ID']}"
+                        <form id="form_dhcp_entry_add_{$record['id']}"
+                            ><input type="hidden" name="host_id" value="{$record['id']}"
                             ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
 
                         <a title="Add DHCP Entry"
                            class="act"
-                           onClick="xajax_window_submit('edit_dhcp_entry', xajax.getFormValues('form_dhcp_entry_{$record['ID']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_add_{$record['id']}'), 'editor');"
                         ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
 
                         <a title="Add DHCP Entry"
                            class="act"
-                           onClick="xajax_window_submit('edit_dhcp_entry', xajax.getFormValues('form_dhcp_entry_{$record['ID']}'), 'editor');"
+                           onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_add_{$record['id']}'), 'editor');"
                         >Add DHCP Entry</a>&nbsp;
                     </td>
                 </tr>

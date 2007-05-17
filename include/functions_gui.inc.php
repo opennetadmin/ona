@@ -33,11 +33,11 @@ function get_subnet_usage($subnet_id) {
 
     // Calculate the percentage used (total size - allocated hosts - dhcp pool size)
     list($status, $hosts, $tmp) = db_get_records($onadb, 'interfaces', array('subnet_id' => $subnet['id']), "", 0);
-    //list($status, $rows, $pools) = db_get_records($onadb, 'DHCP_POOL_B', array('subnet_id' => $subnet['id']));
+    list($status, $rows, $pools) = db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $subnet['id']));
     $pool_size = 0;
-  //  foreach ($pools as $pool) {
-  //      $pool_size += ($pool['IP_ADDRESS_END'] - $pool['ip_addr_start'] + 1);
-  //  }
+    foreach ($pools as $pool) {
+        $pool_size += ($pool['ip_addr_end'] - $pool['ip_addr_start'] + 1);
+    }
     $total_used = $hosts + $pool_size;
     $percentage = sprintf('%d', ($total_used / $subnet['size']) * 100);
     return(array($percentage, $total_used, $subnet['size']));

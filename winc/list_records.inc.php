@@ -14,16 +14,16 @@ function ws_display_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
-    
+
     // If the user supplied an array in a string, transform it into an array
     $form = parse_options_string($form);
-    
+
     // Find the "tab" we're on
     $tab = $_SESSION['ona'][$form['form_id']]['tab'];
-    
+
     // Build js to refresh this list
     $refresh = "xajax_window_submit('{$window_name}', xajax.getFormValues('{$form['form_id']}'), 'display_list');";
-    
+
     // If it's not a new query, load the previous query from the session
     // into $form and save the current page and filter in the session.
     // Also find/set the "page" we're viewing
@@ -34,23 +34,23 @@ function ws_display_list($window_name, $form='') {
         $_SESSION['ona'][$form['form_id']][$tab]['filter'] = $form['filter'];
     }
     printmsg("DEBUG => Displaying records list page: {$page}", 1);
-    
+
     // Calculate the SQL query offset (based on the page being displayed)
     $offset = ($conf['search_results_per_page'] * ($page - 1));
     if ($offset == 0) { $offset = -1; }
-    
+
     // Search results go in here
     $results = array();
     $count = 0;
-    
-    
-    
-    
+
+
+
+
     //
     // *** ADVANCED RECORD SEARCH ***
     //       FIND RESULT SET
     //
-    
+
     // Start building the "where" clause for the sql query to find the records to display
     $where = "";
     $and = "";
@@ -290,12 +290,12 @@ EOL;
     // Loop and display each record
     $last_record = array('name' => $results[0]['name'], 'domain_id' => $results[0]['domain_id']);
     $last_record_count = 0;
-    
+
     for($i=0; $i<=(count($results)); $i++) {
         $record = $results[$i];
         // Get additional info about each host record
-        
-        
+
+
         // Check if we've already seen this record before.
         if ($record['name'] == $last_record['name'] &&
             $record['domain_id'] == $last_record['domain_id']) {
@@ -303,28 +303,28 @@ EOL;
             continue;
         } else {
             $record = $results[$i-1];
-        
+
             // Check for interface records (and find out how many there are)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id']), '');
-            
+
             // Get the domain name
             list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
             $record['domain'] = $domain['fqdn'];
-                            
+
             // Set BOLDING if more than one record is associated with this DNS name
             // FIXME: need to change the name to something better than $interface_style. (PK)
             $interface_style = '';
             if ($last_record_count > 1) { $interface_style = 'font-weight: bold;'; }
-                            
-            if($interfaces) {        
+
+            if($interfaces) {
                 $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
-                
+
                 // Subnet description
                 list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
                 $record['subnet'] = $subnet['name'];
                 $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
                 $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
-                
+
                 // Create string to be embedded in HTML for display
                 $data = <<<EOL
                             >{$record['ip_addr']}</span>&nbsp;
@@ -335,7 +335,7 @@ EOL;
                 list($status, $rows, $dns_other) = ona_get_host_record(array('id' => $record['dns_id']));
 
                 // Create string to be embedded in HTML for display
-                if($rows) { 
+                if($rows) {
                     $data = <<<EOL
                     <a title="View host. ID: {$dns_other['id']}"
                        class="nav"
@@ -348,7 +348,7 @@ EOL;
 EOL;
                 }
             }
-        }      
+        }
 
         $record['notes_short'] = truncate($record['notes'], 40);
 
@@ -369,20 +369,20 @@ EOL;
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$domain['id']}\', \'display\')');"
                     >{$record['domain']}</a>
                 </td>
-                
+
                 <td class="list-row">
                     <span title="Record Type. ID: {$record['id']}"
                        onClick=""
                     >{$record['type']}</span>&nbsp;
                 </td>
-                 
+
 
                 <td class="list-row">
                     <span title="Time-to-Live. ID: {$record['id']}"
                        onClick=""
                     >{$record['ttl']} seconds</span>&nbsp;
                 </td>
-                
+
 <!--                <td class="list-row"> -->
 <!--                    <a title="View subnet. ID: {$subnet['id']}"
                          class="nav"

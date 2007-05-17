@@ -14,16 +14,16 @@ function ws_display_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
-    
+
     // If the user supplied an array in a string, transform it into an array
     $form = parse_options_string($form);
-    
+
     // Find the "tab" we're on
     $tab = $_SESSION['ona'][$form['form_id']]['tab'];
-    
+
     // Build js to refresh this list
     $refresh = "xajax_window_submit('{$window_name}', xajax.getFormValues('{$form['form_id']}'), 'display_list');";
-    
+
     // If it's not a new query, load the previous query from the session
     // into $form and save the current page and filter in the session.
     // Also find/set the "page" we're viewing
@@ -34,23 +34,23 @@ function ws_display_list($window_name, $form='') {
         $_SESSION['ona'][$form['form_id']][$tab]['filter'] = $form['filter'];
     }
     printmsg("DEBUG => Displaying hosts list page: {$page}", 1);
-    
+
     // Calculate the SQL query offset (based on the page being displayed)
     $offset = ($conf['search_results_per_page'] * ($page - 1));
     if ($offset == 0) { $offset = -1; }
-    
+
     // Search results go in here
     $results = array();
     $count = 0;
-    
-    
-    
-    
+
+
+
+
     //
     // *** ADVANCED HOST SEARCH ***
     //       FIND RESULT SET
     //
-    
+
     // Start building the "where" clause for the sql query to find the hosts to display
     $where = "";
     $and = "";
@@ -285,8 +285,8 @@ EOL;
     // Loop and display each record
     foreach($results as $record) {
         // Get additional info about eash host record
-        
-        
+
+
         // If a subnet_id was passed use it as part of the search.  Used to display the IP of the subnet you searched
         if (is_numeric($form['subnet_id'])) {
             list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id'], 'subnet_id' => $form['subnet_id']), '');
@@ -322,29 +322,29 @@ EOL;
             // Interface (and find out how many there are)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id']), '');
         }
-        
+
         // bz: why did someone add this??  You especially want to show hosts with no interfaces so you can fix them!
         // if (!$interfaces) {$count -1; continue;}
-        
+
         $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
         $interface_style = '';
         if ($interfaces > 1) $interface_style = 'font-weight: bold;';
-        
+
         // DNS A record
         list($status, $rows, $dns) = ona_get_dns_record(array('id' => $record['primary_dns_id']));
         $record['name'] = $dns['name'];
-        
+
         // Domain Name
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $dns['domain_id']));
         $record['domain'] = $domain['fqdn'];
-        
+
         // Subnet description
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
         $record['subnet'] = $subnet['name'];
         $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
         $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
-        
-        
+
+
         // Device Description
         list($status, $rows, $device) = ona_get_device_record(array('id' => $record['device_id']));
         list($status, $rows, $device_type) = ona_get_device_type_record(array('id' => $device['device_type_id']));

@@ -91,7 +91,7 @@ function db_pconnect($type, $name) {
     global $conf;
     global $self;
     global $db_context;
-    
+
     // Get info from $db_context[]
     $which = 'primary';
     $self['db_type']     = $db_context[$type] [$name] [$which] ['db_type'];
@@ -100,27 +100,27 @@ function db_pconnect($type, $name) {
     $self['db_passwd']   = $db_context[$type] [$name] [$which] ['db_passwd'];
     $self['db_database'] = $db_context[$type] [$name] [$which] ['db_database'];
     $self['db_debug']    = $db_context[$type] [$name] [$which] ['db_debug'];
-    
+
     // Create a new ADODB connection object
     $object = NewADOConnection($self['db_type']);
     $object->debug = $self['db_debug'];
-    
+
     // Try connecting to the primary server
     $connected = 0;
     for ($a = 1; $a <= 5 and $connected == 0; $a++) {
         $ok1 = $object->PConnect($self['db_host'], $self['db_login'], $self['db_passwd'], $self['db_database']);
         $ok2 = $object->IsConnected();
         $ok3 = $object->ErrorMsg();
-        
+
         // If the connection didn't work, bail.
         if (!$ok1 or !$ok2 or $ok3)
             printmsg("ERROR => {$self['db_type']} DB connection failed: " . $object->ErrorMsg(), 1);
-        
+
         // Otherwise return the object.
         else
             return $object;
     }
-    
+
     // If we're not connected, try the secondary server
     $which = 'secondary';
     $self['db_type']     = $db_context[$type] [$name] [$which] ['db_type'];
@@ -129,25 +129,25 @@ function db_pconnect($type, $name) {
     $self['db_passwd']   = $db_context[$type] [$name] [$which] ['db_passwd'];
     $self['db_database'] = $db_context[$type] [$name] [$which] ['db_database'];
     $self['db_debug']    = $db_context[$type] [$name] [$which] ['db_debug'];
-    
+
     for ($a = 1; $a <= 5 and $connected == 0; $a++) {
         $ok1 = $object->PConnect($self['db_host'], $self['db_login'], $self['db_passwd'], $self['db_database']);
         $ok2 = $object->IsConnected();
         $ok3 = $object->ErrorMsg();
-        
+
         // If the connection didn't work, bail.
         if (!$ok1 or !$ok2 or $ok3)
             printmsg("ERROR => {$self['db_type']} DB connection failed: " . $object->ErrorMsg(), 1);
-        
+
         // Otherwise return the object.
         else
             return $object;
     }
-    
+
     // If it still isn't connected, return an error.
     if ($connected == 0)
         printmsg("ERROR => {$self['db_type']} DB connection failed after 5 tries!  Maybe server is down? Error: " . $object->ErrorMsg());
-    
+
     return $object;
 }
 
@@ -161,25 +161,25 @@ function db_pconnect($type, $name) {
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: get_content(string $name)
-//  
+//
 //  Input:
 //    $name
 //      The name of the content to load and display from the 'content'
 //      mysql table.
-//  
+//
 //  Output:
 //    Returns the text from the 'text' field of the specified content
 //    record identified by $name.
 ///////////////////////////////////////////////////////////////////////
 function get_content($name) {
     global $onadb;
-    
+
     // Debugging
     printmsg("DEBUG => get_content($name) called", 3);
-    
+
     // Get the content to be displayed on this page
     list($status, $rows, $content) = db_get_record($onadb, 'content', array('name' => $name));
-    
+
     // Build an edit link if they're an editor
     $edit = "";
     if (auth('editor')) {
@@ -188,7 +188,7 @@ function get_content($name) {
 [<span onClick="xajax_window_submit('fckeditor', 'name=>{$name}', 'editor');" style="color: #4B42FF; text-decoration: underline; cursor: pointer; font-size: smaller;">edit</span>]&nbsp;&nbsp;
 EOL;
     }
-    
+
     // If there wasn't content, tell them.
     if ($status or !$rows)
         return("<br/><span style=\"color: red;\"><b>Content could not be loaded, please try back soon!</b></span><br/>\n" . $edit);
@@ -320,7 +320,7 @@ function acl_add($user_id, $perm_name) {
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: db_insert_record($dbh, string $table, array $insert)
-//  
+//
 //  Input:
 //    $dbh    an adodb connection object connected to a database
 //    $table  the table name to insert into.
@@ -329,7 +329,7 @@ function acl_add($user_id, $perm_name) {
 //            is the value to insert into that column.  Values do not
 //            need to be quoted, they will be properly quoted before
 //            being used in the SQL query.
-//  
+//
 //  Output:
 //    Returns a two part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
@@ -338,7 +338,7 @@ function acl_add($user_id, $perm_name) {
 //      2. The number of rows that were inserted (i.e. 1 on success, 0 on
 //         error).  Again, if 0 rows were inserted an error message will
 //         be stored in $self['error']
-//  
+//
 //  Example: list($status, $rows) = db_insert_record(
 //                                      $mysql,
 //                                      "HOSTS_B",
@@ -355,10 +355,10 @@ function acl_add($user_id, $perm_name) {
 function db_insert_record($dbh=0, $table="", $insert="") {
     global $self;
     $self['db_insert_record_count']++;
-    
+
     // Debugging
     printmsg("DEBUG => db_insert_record(\$dbh, $table, \$insert) called", 3);
-    
+
     // Return an error if insufficient input was received
     if ( (!$dbh) or (!$dbh->IsConnected()) or
          (!$table) or
@@ -367,7 +367,7 @@ function db_insert_record($dbh=0, $table="", $insert="") {
         printmsg($self['error'], 3);
         return(array(1, 0));
     }
-    
+
     // Build the SQL query
     $q  = "INSERT INTO {$table} ( ";
     $first = 1;
@@ -382,18 +382,18 @@ function db_insert_record($dbh=0, $table="", $insert="") {
         $q .= $dbh->qstr($insert[$key]);
     }
     $q .= " )";
-    
+
     // Run the SQL
     printmsg("DEBUG => db_insert_record() Running query: $q", 4);
     $ok = $dbh->Execute($q);
     $error = $dbh->ErrorMsg();
-    
+
     // Report any errors
     if ($ok === false or $error) {
-        $self['error'] = 'ERROR => SQL INSERT failed: ' . $error . "\n"; 
+        $self['error'] = 'ERROR => SQL INSERT failed: ' . $error . "\n";
         return(array(2, 0));
     }
-    
+
     // Otherwise return success
     printmsg("DEBUG => db_insert_record() Insert was successful", 4);
     return(array(0, 1));
@@ -415,7 +415,7 @@ function db_insert_record($dbh=0, $table="", $insert="") {
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: db_update_record($dbh, string $table, array/string $where, array $insert)
-//  
+//
 //  Input:
 //    $dbh    an adodb connection object connected to a database
 //    $table  the table name to query from.
@@ -430,7 +430,7 @@ function db_insert_record($dbh=0, $table="", $insert="") {
 //            the value to insert into that column.  Values do not
 //            need to be quoted, they will be properly quoted before
 //            being used in the SQL query.
-//  
+//
 //  Output:
 //    Updates a *single* record in the specified database table.
 //    Returns a two part list:
@@ -440,7 +440,7 @@ function db_insert_record($dbh=0, $table="", $insert="") {
 //      2. The number of rows that were actually updated (i.e. will
 //         always be 1 or 0.)  Note that even if 0 rows are updated
 //         the exit status will still be 0 unless the SQL query fails.
-//  
+//
 //  Example: list($status, $rows) = db_update_record(
 //                                      'HOSTS_B',
 //                                      array('ID' => '12354'),
@@ -454,10 +454,10 @@ function db_insert_record($dbh=0, $table="", $insert="") {
 function db_update_record($dbh=0, $table="", $where="", $insert="") {
     global $self;
     $self['db_update_record_count']++;
-    
+
     // Debugging
     printmsg("DEBUG => db_update_record(\$dbh, $table, \$where, \$insert) called", 3);
-    
+
     // Return an error if insufficient input was received
     if ( (!$dbh) or (!$dbh->IsConnected()) or
          (!$table) or (!$where) or (!$insert) ) {
@@ -465,7 +465,7 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
         printmsg($self['error'], 3);
         return(array(1, 0));
     }
-    
+
     // Build our $set variable
     $set = '';
     $and = '';
@@ -473,7 +473,7 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
         $set .= "{$and}{$key} = " . $dbh->qstr($insert[$key]);
         if (!$and) { $and = ", "; }
     }
-    
+
     // Build the WHERE clause if $where is an array
     if (is_array($where)) {
         $where_str = '';
@@ -487,26 +487,26 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
     else {
         $where_str = $where;
     }
-    
+
     // Build the SQL query
     $q  = "UPDATE {$table} SET {$set} WHERE {$where_str}";
-    
+
     // Execute the query
     printmsg("DEBUG => db_update_record() Running query: $q", 4);
     $rs = $dbh->Execute($q);
-    
+
     // See if the query worked or not
     if ($rs === false) {
-        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg(); 
+        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg();
         printmsg($self['error'], 3);
         return(array(2, 0));
     }
-    
+
     // How many rows were affected?
     $rows = $dbh->Affected_Rows();
     if ($rows === false) { $rows = 0; }
     $rs->Close();
-    
+
     // Return Success
     printmsg("DEBUG => db_update_record() Query updated {$rows} rows", 4);
     return(array(0, $rows));
@@ -528,7 +528,7 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: db_delete_records($dbh, string $table, array/string $where)
-//  
+//
 //  Input:
 //    $dbh    an adodb connection object connected to a database
 //    $table  the table name to delete from.
@@ -538,22 +538,22 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
 //            the sql query instead of generating one from an array.
 //            If you do this MAKE sure special characters are quoted
 //            properly to avoid security issues or bugs.
-//  
+//
 //  Output:
 //    Deletes records from the database.
 //    Returns a two part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
 //         When a non-zero exit status is returned a textual description
 //         of the error will be stored in the global variable $self['error']
-//      2. The number of rows that were actually deleted .  Note that even 
+//      2. The number of rows that were actually deleted .  Note that even
 //         if 0 rows are updated the exit status will still be 0 unless the
 //         SQL query fails.
-//  
+//
 //  Example: list($status, $rows) = db_delete_records(
 //                                      'HOSTS_B',
 //                                      array('ID' => '12354'),
 //                                  );
-//  
+//
 //  Exit codes:
 //    0  :: No error
 //    1  :: Invalid or insufficient input
@@ -562,10 +562,10 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
 function db_delete_records($dbh=0, $table="", $where="") {
     global $self;
     $self['db_delete_records_count']++;
-    
+
     // Debugging
     printmsg("DEBUG => db_delete_records(\$dbh, $table, \$where) called", 3);
-    
+
     // Return an error if insufficient input was received
     if ( empty($dbh) or (!$dbh->IsConnected()) or
          empty($table) or empty($where) ) {
@@ -573,7 +573,7 @@ function db_delete_records($dbh=0, $table="", $where="") {
         printmsg($self['error'], 0);
         return(array(1, 0));
     }
-    
+
     // Build the WHERE clause if $where is an array
     if (is_array($where)) {
         $where_str = '';
@@ -587,27 +587,27 @@ function db_delete_records($dbh=0, $table="", $where="") {
     else {
         $where_str = $where;
     }
-    
+
     // Build the SQL query
     // The LIMIT 1 is only valid in MySQL, so we've removed it.  db_delete_record now deletes all the records that match
     // $q  = "DELETE FROM {$table} WHERE {$where_str} LIMIT 1";
     $q  = "DELETE FROM {$table} WHERE {$where_str}";
-    
+
     // Execute the query
     $rs = $dbh->Execute($q);
-    
+
     // See if the query worked or not
     if ($rs === false) {
-        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg(); 
+        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg();
         printmsg($self['error'], 3);
         return(array(2, 0, array()));
     }
-    
+
     // How many rows were affected?
     $rows = $dbh->Affected_Rows();
     if ($rows === false) { $rows = 0; }
     $rs->Close();
-    
+
     // Return Success
     printmsg("DEBUG => db_delete_records() Query deleted {$rows} row(s)", 4);
     return(array(0, $rows));
@@ -629,11 +629,11 @@ function db_delete_records($dbh=0, $table="", $where="") {
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: db_get_record($dbh, 
-//                          string $table, 
-//                          array/string $where, 
+//  Function: db_get_record($dbh,
+//                          string $table,
+//                          array/string $where,
 //                          string $order)
-//  
+//
 //  Input:
 //    $dbh    an adodb connection object connected to a database
 //    $table the table name to query from.
@@ -644,7 +644,7 @@ function db_delete_records($dbh=0, $table="", $where="") {
 //           If you do this MAKE sure special characters are quoted
 //           properly to avoid security issues or bugs.
 //    $order actual SQL to use in the ORDER BY clause.
-//  
+//
 //  Output:
 //    Returns a three part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
@@ -653,18 +653,18 @@ function db_delete_records($dbh=0, $table="", $where="") {
 //      2. The number of rows (n) that match values in $where, or 0 on no matches.
 //      3. An associative array of a record from the $table table
 //         where the values in $where match.  When more than one record is
-//         returned from the DB, the first record is returned on the 
-//         first call.  Each subsequent call with the same table and 
+//         returned from the DB, the first record is returned on the
+//         first call.  Each subsequent call with the same table and
 //         parameters will cause the function to return the next record.
 //         When 'n' records are found, and the function is called 'n+1'
 //         times, it loops and the first record is returned again.
-//  
+//
 //  Notes:
-//    If you want to "reset" the row offset for a particular query and 
+//    If you want to "reset" the row offset for a particular query and
 //    make sure that your next query is NOT cached, set this global
 //    variable before calling db_get_record():
 //      $self['db_get_record']['reset_cache'] = 1;
-//    These are also globally configurable, but you won't need to set 
+//    These are also globally configurable, but you won't need to set
 //    these after each call to db_get_record().
 //      $self['db_get_record']['min_rows_to_cache']
 //      $self['db_get_record']['secs_to_cache']
@@ -688,10 +688,10 @@ function db_delete_records($dbh=0, $table="", $where="") {
 function db_get_record($dbh=0, $table="", $where="", $order="") {
     global $self;
     $self['db_get_record_count']++;
-    
+
     // Debugging
     printmsg("DEBUG => db_get_record(\$dbh, \$where, $table, $order) called", 3);
-    
+
     // Return an error if insufficient input was received
     if ( (!$dbh) or (!$dbh->IsConnected()) or
          (!$table) or (!$where) ) {
@@ -699,7 +699,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
         printmsg($self['error'], 3);
         return(array(1, 0, array()));
     }
-    
+
     // Build the WHERE clause if $where is an array
     if (is_array($where)) {
         $where_str = '';
@@ -713,7 +713,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
     else {
         $where_str = $where;
     }
-    
+
     // Build the SQL query
     $q = 'SELECT * ' .
          "FROM {$table} " .
@@ -721,8 +721,8 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
     if ($order) {
         $q .= "ORDER BY {$order}";
     }
-    
-    
+
+
     // Caching - our Query Cache policy is this:
     //   1) If this is a new query for $table, don't cache
     //   2) If this isn't a new query for $table and the recordset
@@ -747,17 +747,17 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
         if (!$self['db_get_record']['min_rows_to_cache']) {
             $self['db_get_record']['min_rows_to_cache'] = 20;
         }
-        
+
         // If there are enough records (or were last time we ran this query), lets cache the query this time.
         if ($self['cache']["db_get_{$table}_record"]['rows'] >= $self['db_get_record']['min_rows_to_cache']) {
             $use_cache = 1;
         }
-        
+
         // Increment the row offset, so we know which row to return
         $self['cache']["db_get_{$table}_record"]['row']++;
     }
-    
-    
+
+
     // Select the record from the DB, don't cache results
     if ($use_cache == 0) {
         printmsg("DEBUG => db_get_record() running query: {$q}", 5);
@@ -769,31 +769,31 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
         if (!$self['db_get_record']['secs_to_cache']) {
             $self['db_get_record']['secs_to_cache'] = 60;
         }
-        
+
         printmsg("DEBUG => db_get_record() running (cached) query: {$q}", 5);
         $rs = $dbh->CacheExecute($self['db_get_record']['secs_to_cache'], $q);
     }
-    
-    
+
+
     // See if the query worked or not
     if ($rs === false) {
-        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg(); 
+        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg();
         printmsg($self['error'], 3);
         return(array(2, 0, array()));
     }
-    
-    
+
+
     // Save the number of rows for use later
     $rows = $self['cache']["db_get_{$table}_record"]['rows'] = $rs->RecordCount();
-    
-    
+
+
     // If there were no rows, return 0 rows
     if (!$rows) {
         // Query returned no results
         printmsg("DEBUG => db_get_record() Query returned no results", 4);
         return(array(0, 0, array()));
     }
-    
+
     // If there's more than one record
     else if ( ($rows > 1) and ($self['cache']["db_get_{$table}_record"]['row']) ) {
         // If we need to loop back to row 0, lets do that
@@ -805,7 +805,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
             $rs->Move($self['cache']["db_get_{$table}_record"]['row']);
         }
     }
-    
+
     // Return the row
     printmsg("DEBUG => db_get_record() Returning record " . ($self['cache']["db_get_{$table}_record"]['row'] + 1) . " of " . $rows, 4);
     $array = $rs->FetchRow();
@@ -822,14 +822,14 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: db_get_records($dbh, 
-//                           string $table, 
-//                           array/string $where, 
+//  Function: db_get_records($dbh,
+//                           string $table,
+//                           array/string $where,
 //                           [string $order],
 //                           [int $rows=-1],
 //                           [int $offset=-1]
 //                          )
-//  
+//
 //  Input:
 //    $dbh    an adodb connection object connected to a database
 //    $table  the table name to query from.
@@ -844,16 +844,16 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 //            NOTE: if $rows is 0, the function will do a SELECT COUNT(*)
 //            and return the proper number of total rows.
 //    $offset retrieve rows starting with $offset. $offset is 0 based.
-//  
+//
 //  Output:
 //    Returns a three part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
 //         When a non-zero exit status is returned a textual description
 //         of the error will be stored in the global variable $self['error']
 //      2. The number of rows (n) that match values in $where, or 0 on no matches.
-//      3. An array of arrays.  Each sub-array is an associative array of 
+//      3. An array of arrays.  Each sub-array is an associative array of
 //         a record from the $table table where the values in $where match.
-//  
+//
 //  Example: list($status, $rows, $records) = db_get_record(
 //                                                $onadb,
 //                                                'hosts',
@@ -862,7 +862,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 //                                                '25',
 //                                                '50'
 //                                            );
-//  
+//
 //  Exit codes:
 //    0  :: No error
 //    1  :: Invalid or insufficient input
@@ -871,10 +871,10 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offset=-1) {
     global $self;
     $self['db_get_records_count']++;
-    
+
     // Debugging
     printmsg("DEBUG => db_get_records(\$dbh, \$where, $table, $order, $rows, $offset) called", 3);
-    
+
     // Return an error if insufficient input was received
     if ( (!$dbh) or (!$dbh->IsConnected()) or
          (!$table) or (!$where) ) {
@@ -882,7 +882,7 @@ function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offs
         printmsg($self['error'], 3);
         return(array(1, 0, array()));
     }
-    
+
     // Build the WHERE clause if $where is an array
     if (is_array($where)) {
         $where_str = '';
@@ -896,7 +896,7 @@ function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offs
     else {
         $where_str = $where;
     }
-    
+
     // Return the 0 records, but number of total rows the query would have returned
     // if they requested 0 rows.
     $select = 'SELECT * ';
@@ -906,7 +906,7 @@ function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offs
         $offset = -1;
         $order  = '';
     }
-    
+
     // Build the SQL query
     $q = $select .
          "FROM {$table} " .
@@ -914,41 +914,41 @@ function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offs
     if ($order) {
         $q .= "ORDER BY {$order}";
     }
-    
-    
+
+
     // Select the records from the DB
     printmsg("DEBUG => db_get_records() running query: {$q}", 5);
     $rs = $dbh->SelectLimit($q, $rows, $offset);
-    
-    
+
+
     // See if the query worked or not
     if ($rs === false) {
-        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg(); 
+        $self['error'] = 'ERROR => SQL query failed: ' . $dbh->ErrorMsg();
         printmsg($self['error'], 3);
         return(array(2, 0, array()));
     }
-    
-    
+
+
     // Save the number of rows for use later
     $rows = $rs->RecordCount();
     if ($select == 'SELECT COUNT(*) AS COUNT ') {
         $record = $rs->FetchRow();
         $rows = $record['COUNT'];
     }
-    
+
     // If there were no rows, return 0 rows
     if (!$rows) {
         // Query returned no results
         printmsg("DEBUG => db_get_records() Query returned no results", 4);
         return(array(0, 0, array()));
     }
-    
+
     // Loop and save each row to $recordset
     $recordset = array();
     while (!$rs->EOF) {
         $recordset[] = $rs->FetchRow();
     }
-    
+
     // Return the row
     printmsg("DEBUG => db_get_records() Returning records", 4);
     $rs->Close();
@@ -1078,7 +1078,7 @@ function ona_get_record($where="", $table="", $order="") {
 //
 ///////////////////////////////////////////////////////////////////////
 
-// Returns some additional fields: 
+// Returns some additional fields:
 //   name        => the base hostname
 //   fqdn        => the fqdn of the host (based on it's primary_dns_id)
 //   domain_id   => domain id for the associated primary_dns_id
@@ -1234,26 +1234,26 @@ function ona_get_vlan_campus_record($array) {
     return(ona_get_record($array, 'vlan_campuses'));
 }
 
-function ona_get_dhcp_parm_type_record($array) {
-    return(ona_get_record($array, 'dhcp_parameter_types'));
+function ona_get_dhcp_option_record($array) {
+    return(ona_get_record($array, 'dhcp_options'));
 }
 
-function ona_get_dhcp_entry_record($array) {
-    list($status, $rows, $record) = ona_get_record($array, 'DHCP_ENTRY_B');
+function ona_get_dhcp_option_entry_record($array) {
+    list($status, $rows, $record) = ona_get_record($array, 'dhcp_option_entries');
 
     // Lets be nice and return a little associated info
-    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_dhcp_parm_type_record(array('ID' => $record['DHCP_PARAMETER_TYPE_ID']));
+    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_dhcp_option_record(array('id' => $record['dhcp_option_id']));
     $status += $status_tmp;
-    $record['DHCP_NUMBER'] = $record_tmp['DHCP_NUMBER'];
-    $record['DHCP_TAG'] = $record_tmp['DHCP_TAG'];
-    $record['DHCP_DESCRIPTION'] = $record_tmp['DHCP_DESCRIPTION'];
-    $record['TAG_TYPE'] = $record_tmp['TAG_TYPE'];
+    $record['number'] = $record_tmp['number'];
+    $record['name'] = $record_tmp['name'];
+    $record['display_name'] = $record_tmp['display_name'];
+    $record['type'] = $record_tmp['type'];
 
     return(array($status, $rows, $record));
 }
 
 function ona_get_dhcp_pool_record($array) {
-    return(ona_get_record($array, 'DHCP_POOL_B'));
+    return(ona_get_record($array, 'dhcp_pools'));
 }
 
 function ona_get_dhcp_server_subnet_record($array) {
@@ -1390,20 +1390,20 @@ function ona_get_next_id($tablename) {
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: string $domain_name = ona_build_domain_name (id=NUMBER)
-//  
+//
 //  Input:
 //    $id = Row ID for a domain record
-//  
+//
 //  Output:
 //    Returns the full domain name of the specified domain record.
-//  
+//
 //  Description:
 //    Walks up the tree of domain records and returns the full
 //    name of the domain record specified.  Usually used for displaying
 //    a full domain name over the gui.
 //    FIXME: (bz) maybe this should allow a string to be passed too to
 //                provide search abilities?
-//  
+//
 //  Example:  $name = ona_build_domain_name(18);
 ///////////////////////////////////////////////////////////////////////
 function ona_build_domain_name($search='') {
@@ -1440,21 +1440,21 @@ function ona_build_domain_name($search='') {
 //
 //  Output:
 //    Returns a three part array: list($status, $rows, $host)
-//  
+//
 //  Description:
 //    If $search is not an FQDN:
-//      The requested host record is identified via host ID, IP addr, 
-//      or unique dns name, etc, and the associated host record is 
+//      The requested host record is identified via host ID, IP addr,
+//      or unique dns name, etc, and the associated host record is
 //      returned.
 //    If $search is an FQDN:
 //      Looks at $fqdn, determines which part of it (if any) is the
 //      domain name and which part is the hostname.  Then searches the
 //      database for matching hostname record
 //      * In the event that the FQDN does not contain a valid dns name
-//        a "fake" host record is returned with only the "name" and 
+//        a "fake" host record is returned with only the "name" and
 //        "fqdn" keys populated.
 //      * In the event that a valid, existing, domain can not be found in
-//        the FQDN, the domain "albertsons.com" will be returned.
+//        the FQDN, the domain "something.com" will be returned.
 //        I.E. A valid domain record will always be returned.
 //
 //  Example:  list($status, $rows, $host) = ona_find_host('myhost.domain.com');
@@ -1471,7 +1471,7 @@ function ona_find_host($search="") {
             return(array($status, $rows, $host));
         }
     }
-    
+
     // By Interface ID or IP address?
     list($status, $rows, $interface) = ona_find_interface($search);
     if (!$status and $rows) {
@@ -1479,25 +1479,25 @@ function ona_find_host($search="") {
         list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
         return(array($status, $rows, $host));
     }
-    
+
     //
     // It's an FQDN, do a bunch of stuff!
     //
-    
+
     // Find the domain name piece of $search
     list($status, $rows, $domain) = ona_find_domain($search);
     printmsg("DEBUG => ona_find_domain({$search}) returned: {$domain['fqdn']}", 3);
-    
+
     // Now find what the host part of $search is
     $hostname = str_replace(".{$domain['fqdn']}", '', $search);
-    
+
     // Let's see if that hostname is valid or not in $domain['id']
     list($status, $rows, $dns) = ona_get_dns_record(array('domain_id' => $domain['id'], 'name' => $hostname));
-    
+
     // If we got a valid dns record, lookup the associated host record, and return it
     if ($rows)
         return(ona_get_host_record(array('primary_dns_id' => $dns['id'])));
-    
+
     // Otherwise, build a fake host record with only a few entries in it and return that
     $host = array(
         'id'          => 0,
@@ -1506,7 +1506,7 @@ function ona_find_host($search="") {
         'domain_id'   => $domain['id'],
         'domain_fqdn' => $domain['fqdn'],
     );
-    
+
     return(array(0, 0, $host));
 }
 
@@ -1520,28 +1520,25 @@ function ona_find_host($search="") {
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: ona_find_domain (string $fqdn)
-//  
+//
 //  $fqdn = The hostname[.domain] you want to find the domain record
 //          for.
 //
 //  Looks at $fqdn, finds the best-matching domain in it, and returns
-//  it.  If $fqdn does not include a valid domain of any sort, we 
+//  it.  If $fqdn does not include a valid domain of any sort, we
 //  assume $fqdn is a bare hostname, and return the domain record
 //  for the user's default domain.
-//  
-//  FIXME: albertsons.com :P
-//  
+//
 //  Example: list($status, $rows, $domain) = ona_find_domain('myhost.mydomain.com');
 ///////////////////////////////////////////////////////////////////////
 function ona_find_domain($fqdn="") {
     $fqdn = strtolower($fqdn);
     printmsg("DEBUG => ona_find_domain({$fqdn}) called", 3);
-    
+
     // Split it up on '.' and put it in an array backwards
     $parts = array_reverse(explode('.', $fqdn));
-    
+
     // Find the domain name that best matches
-    // www.albertsons.com
     $name = '';
     $domain = array();
     foreach ($parts as $part) {
@@ -1558,14 +1555,15 @@ function ona_find_domain($fqdn="") {
                 $domain = $record;
         }
     }
-    
+
     // If we don't have a domain yet, lets assume $fqdn is a basic hostname, and return the default domain
+    // TODO: set this up to use a configuration variable of what the default domain should be
     if (!array_key_exists('id', $domain)) {
-        list($status, $rows, $record) = ona_get_domain_record(array('name' => 'albertsons.com'));
+        list($status, $rows, $record) = ona_get_domain_record(array('name' => 'opennetadmin.com'));
         if($rows)
             $domain = $record;
     }
-    
+
     return(array(0, 1, $domain));
 }
 
@@ -1799,7 +1797,7 @@ function ona_find_subnet($search="") {
             list($status, $rows, $record) = ona_get_subnet_record(array($field => $search));
             // If we got it, return it
             if ($status == 0 and $rows == 1) {
-                printmsg("DEBUG => ona_find_subnet() found location record by $field", 2);
+                printmsg("DEBUG => ona_find_subnet() found subnet record by $field", 2);
                 return(array(0, $rows, $record));
             }
         }
@@ -1905,7 +1903,7 @@ function ona_find_device($search="") {
         if ($status == 0 and $rows == 1) {
             list($status, $rows, $record) = ona_get_device_record(array('id' => $host['device_id']));
         }
-        
+
         // If we got it, return it
         if ($status == 0 and $rows == 1) {
             printmsg("DEBUG => ona_find_device() found record by IP address", 2);
@@ -1981,7 +1979,7 @@ function ona_find_device_type($search="") {
             printmsg("DEBUG => ona_find_device_type() found device_type record by id", 2);
             return(array(0, $rows, $record));
         }
-/* PK: this was the original code...       
+/* PK: this was the original code...
         foreach (array('id', 'DEVICE_TYPE_ID', 'MANUFACTURER_ID') as $field) {
             list($status, $rows, $record) = ona_get_model_record(array($field => $search));
             // If we got it, return it
@@ -2064,7 +2062,7 @@ function ona_find_subnet_type($search="") {
         printmsg("DEBUG => ona_find_subnet_type() found subnet_type record by its name", 2);
         return(array(0, $rows, $record));
     }
-    
+
     list($status, $rows, $record) = ona_get_subnet_type_record(array('short_name' => $search));
     if ($status == 0 and $rows == 1) {
         printmsg("DEBUG => ona_find_subnet_type() found subnet_type record by its name", 2);
@@ -2154,7 +2152,7 @@ function ona_find_infobit($search="") {
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: ona_find_dhcp_parameter_type(string $search)
+//  Function: ona_find_dhcp_option(string $search)
 //
 //  Input:
 //    $search = A string or ID that can uniquly identify a dhcp parm type
@@ -2172,7 +2170,7 @@ function ona_find_infobit($search="") {
 //
 //  Example: list($status, $rows, $dhcp_type) = ona_find_dhcp_parameter_type('Default gateway(s)');
 ///////////////////////////////////////////////////////////////////////
-function ona_find_dhcp_parameter_type($search="") {
+function ona_find_dhcp_option($search="") {
     global $self;
 
     // Validate input
@@ -2182,22 +2180,22 @@ function ona_find_dhcp_parameter_type($search="") {
 
     // If it's numeric, search by record ID
     if (is_numeric($search)) {
-        $field = 'ID';
-        list($status, $rows, $record) = ona_get_dhcp_parm_type_record(array($field => $search));
+        $field = 'id';
+        list($status, $rows, $record) = ona_get_dhcp_option_record(array($field => $search));
         // If we got it, return it
         if ($status == 0 and $rows == 1) {
-            printmsg("DEBUG => ona_find_dhcp_parameter_type(): found type record by $field", 2);
+            printmsg("DEBUG => ona_find_dhcp_option(): found type record by $field", 2);
             return(array(0, $rows, $record));
         }
     }
 
-    foreach (array('DHCP_DESCRIPTION', 'DHCP_TAG', 'DHCP_NUMBER') as $field) {
+    foreach (array('name', 'display_name', 'number', 'tag') as $field) {
         // Do several sql queries and see if we can get a unique match
-        list($status, $rows, $record) = ona_get_dhcp_parm_type_record(array($field => $search));
+        list($status, $rows, $record) = ona_get_dhcp_option_record(array($field => $search));
 
         // If we got it, return it
         if ($status == 0 and $rows == 1) {
-            printmsg("DEBUG => ona_find_dhcp_parameter_type(): Found type record -> {$record['DHCP_DESCRIPTION']}", 2);
+            printmsg("DEBUG => ona_find_dhcp_option(): Found type record -> {$record['display_name']}", 2);
             return(array(0, $rows, $record));
         }
     }
@@ -2327,7 +2325,7 @@ function ona_find_config($options=array()) {
     else if ($options['host'] and $options['type']) {
         // Search for the host first
         list($status, $rows, $host) = ona_find_host($options['host']);
-        
+
         // Error if the host doesn't exist
         if (!$host['id']) {
             $self['error'] = "ERROR => The host specified, {$options['host']}, does not exist!";

@@ -829,11 +829,11 @@ function quick_free_ip_search($form) {
     $font_color = '#FFFFFF';
 
     // Build subnet type list
-    list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', 'id >= 1', 'name');
+    list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', 'id >= 1', 'display_name');
     $subnet_type_list = '<option value="">&nbsp;</option>\n';
-    $record['name'] = htmlentities($record['name']);
+    $record['display_name'] = htmlentities($record['display_name']);
     foreach ($records as $record) {
-        $subnet_type_list .= "<option value=\"{$record['id']}\">{$record['name']}</option>\n";
+        $subnet_type_list .= "<option value=\"{$record['id']}\">{$record['display_name']}</option>\n";
     }
 
     $js .= <<<EOL
@@ -973,25 +973,18 @@ function quick_pool_server_search($form) {
     $font_color = '#FFFFFF';
 
 
-    if ($form['server_id']) {
-        $servername = $form['server_name'];
-    } else {
-        $servername = '';
-    }
-
-
     // Build failover group list
-    list($status, $rows, $fg) = db_get_records($onadb, 'IP.DHCP_FAILOVER_GROUP_B', 'DHCP_FAILOVER_GROUP_ID >= 1', 'DHCP_FAILOVER_GROUP_ID');
+    list($status, $rows, $fg) = db_get_records($onadb, 'dhcp_failover_groups', 'id >= 1', 'id');
     $fg_list = '<option value="">&nbsp;</option>\n';
 
     foreach ($fg as $record) {
-        list($status, $rows, $fail_host1) = ona_find_host($record['PRIMARY_SERVER_ID']);
-        list($status, $rows, $fail_host2) = ona_find_host($record['SECONDARY_SERVER_ID']);
+        list($status, $rows, $fail_host1) = ona_find_host($record['primary_server_id']);
+        list($status, $rows, $fail_host2) = ona_find_host($record['secondary_server_id']);
 
         $selected = "";
-        if ($record['DHCP_FAILOVER_GROUP_ID'] == $form['failover_group_id']) { $selected = "SELECTED=\"selected\""; }
-        if ($record['DHCP_FAILOVER_GROUP_ID']) {
-            $fg_list .= "<option {$selected} value=\"{$record['DHCP_FAILOVER_GROUP_ID']}\">{$fail_host1['fqdn']}/{$fail_host2['fqdn']}</option>\n";
+        if ($record['id'] == $form['failover_group_id']) { $selected = "SELECTED=\"selected\""; }
+        if ($record['id']) {
+            $fg_list .= "<option {$selected} value=\"{$record['id']}\">{$fail_host1['fqdn']}/{$fail_host2['fqdn']}</option>\n";
         }
     }
 
@@ -1042,28 +1035,9 @@ EOL;
         <td align="right" class="qf-search-line">
             &nbsp;
         </td>
-        <td align="left" class="qf-search-line">
-            -or-
-        </td>
-    </tr>
-
-    <tr>
-        <td align="right" class="qf-search-line" nowrap="true">
-            <u>S</u>ingle server
-        </td>
-        <td align="left" class="qf-search-line">
-            <input id="pool_server_qf" name="server" type="text" class="edit" size="20" value= "{$servername}" accesskey="s" onClick="el('failover_group_qf').value = '';" />
-            <div id="suggest_pool_server_qf" class="suggest"></div>
-        </td>
-    </tr>
-
-    <tr>
-        <td align="right" class="qf-search-line">
-            &nbsp;
-        </td>
         <td align="right" class="qf-search-line">
             <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
-            <input class="button" type="button" name="select" value="Select" accesskey="s" onClick="el('{$form['failover_group']}').value = failover_group_qf.options[failover_group_qf.selectedIndex].value; el('{$form['server']}').value = pool_server_qf.value; if (failover_group_qf.options[failover_group_qf.selectedIndex].value) el('{$form['text_id']}').innerHTML = failover_group_qf.options[failover_group_qf.selectedIndex].innerHTML; else el('{$form['text_id']}').innerHTML = pool_server_qf.value; removeElement('{$form['id']}');">
+            <input class="button" type="button" name="select" value="Select" accesskey="s" onClick="el('{$form['failover_group']}').value = failover_group_qf.options[failover_group_qf.selectedIndex].value; if (failover_group_qf.options[failover_group_qf.selectedIndex].value) el('{$form['text_id']}').innerHTML = failover_group_qf.options[failover_group_qf.selectedIndex].innerHTML; removeElement('{$form['id']}');">
         </td>
     </tr>
 
