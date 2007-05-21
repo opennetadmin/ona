@@ -80,7 +80,7 @@ function ws_display_list($window_name, $form='') {
             $onadb,
             'blocks',
             $where . $filter,
-            "ip_addr ASC",
+            "ip_addr_start ASC",
             $conf['search_results_per_page'],
             $offset
         );
@@ -113,7 +113,6 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Block Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Starting IP</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Ending IP</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Mask</td>
                 <td class="list-header" align="center">&nbsp;</td>
             </tr>
 EOL;
@@ -122,15 +121,14 @@ EOL;
         foreach($results as $record) {
             // Grab some info from the associated block record
             list($status, $rows, $block) = ona_get_block_record(array('id' => $record['id']));
-            $num_hosts = 0xffffffff - $block['ip_mask'];
+            $num_hosts = 0xffffffff - $block['ip_addr_end'];
             $block['ip_block_end'] = ($block['ip_addr'] + $num_hosts);
 
             $record['name'] = $block['name'];
 
             // Convert IP and Netmask to a presentable format
-            $record['ip_addr'] = ip_mangle($record['ip_addr'], 'dotted');
-            $record['ip_block_end'] = ip_mangle($block['ip_block_end'], 'dotted');
-            $record['ip_mask'] = ip_mangle($record['ip_mask'], 'dotted');
+            $record['ip_addr_start'] = ip_mangle($record['ip_addr_start'], 'dotted');
+            $record['ip_addr_end'] = ip_mangle($block['ip_addr_end'], 'dotted');
 
             // Escape data for display in html
             foreach(array_keys($record) as $key) {
@@ -149,15 +147,11 @@ EOL;
                 </td>
 
                 <td class="list-row" align="left">
-                    {$record['ip_addr']}&nbsp;
+                    {$record['ip_addr_start']}&nbsp;
                 </td>
 
                 <td class="list-row" align="left">
-                    {$record['ip_block_end']}&nbsp;
-                </td>
-
-                <td class="list-row" align="left">
-                    {$record['ip_mask']}&nbsp;
+                    {$record['ip_addr_end']}&nbsp;
                 </td>
 
                 <td class="list-row" align="right">

@@ -1,5 +1,6 @@
 <?
-
+// Include map portal functions
+include('include/functions_network_map.inc.php');
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -40,13 +41,8 @@ function ws_display($window_name, $form='') {
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
 
-    // Calculate the end IP address
-    $num_hosts = 0xffffffff - $record['ip_mask'];
-    $record['ip_block_end']   = ($record['ip_addr'] + $num_hosts);
-    $record['ip_block_end']   = ip_mangle($record['ip_block_end'], 'dotted');
-    $record['ip_addr'] = ip_mangle($record['ip_addr'], 'dotted');
-    $record['ip_mask']  = ip_mangle($record['ip_mask'], 'dotted');
-    $record['ip_mask_cidr'] = ip_mangle($record['ip_mask'], 'cidr');
+    $record['ip_addr_start'] = ip_mangle($record['ip_addr_start'], 'dotted');
+    $record['ip_addr_end']  = ip_mangle($record['ip_addr_end'], 'dotted');
 
     $style['content_box'] = <<<EOL
         margin: 10px 20px;
@@ -85,11 +81,6 @@ EOL;
                         ><input type="hidden" name="block_id" value="{$record['id']}"
                         ><input type="hidden" name="js" value="{$refresh}"
                     ></form>
-
-                    <a title="Display block map"
-                       class="act"
-                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_block_map\', \'ip_block_start=>{$record['ip_addr']},ip_block_end=>{$record['ip_block_end']},id=> {$record['id']}\', \'display\');');"
-                    ><img src="{$images}/silk/shape_align_left.png" border="0"></a>&nbsp;
 EOL;
     if (auth('advanced',$debug_val)) {
         $html .= <<<EOL
@@ -111,17 +102,28 @@ EOL;
                     {$record['name']}
                 </td></tr>
                 <tr>
-                    <td align="right" nowrap="true"><b>Description</b>&nbsp;</td>
+                    <td align="right" nowrap="true"><b>Name</b>&nbsp;</td>
                     <td class="padding" align="left">{$record['name']}&nbsp;</td>
                 </tr>
 
                 <tr>
-                    <td align="right" nowrap="true"><b>IP block</b>&nbsp;</td>
+                    <td align="right" nowrap="true"><b>IP start</b>&nbsp;</td>
                     <td class="padding" align="left">
-                        {$record['ip_addr']}
-                        <span title="{$record['ip_mask']}">
-                            /{$record['ip_mask_cidr']}
-                        </span>
+                        {$record['ip_addr_start']}
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" nowrap="true"><b>IP end</b>&nbsp;</td>
+                    <td class="padding" align="left">
+                        {$record['ip_addr_end']}
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" nowrap="true"><b>Notes</b>&nbsp;</td>
+                    <td class="padding" align="left">
+                        {$record['notes']}
                         &nbsp;
                     </td>
                 </tr>
@@ -140,6 +142,55 @@ EOL;
         <td valign="top" style="padding-right: 15px;">
 EOL;
 
+    // SMALL SUBNET MAP
+
+    // Get the numeric IP address of our subnet (we replace the last quad with a .0)
+    $ip = ip_mangle(preg_replace('/\.\d+$/', '.0', $record['ip_addr_start']), 'numeric');
+    $ip_subnet = ip_mangle($record['ip_addr_start'], 'numeric');
+
+    $html .= <<<EOL
+            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
+                <tr><td colspan="99" nowrap="true">
+                    <!-- LABEL -->
+                    <div style="{$style['label_box']}">
+                        <a title="Display full sized subnet map"
+                           class="act"
+                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_block_map\', \'ip_block_start=>{$record['ip_addr_start']},ip_block_end=>{$record['ip_addr_end']},id=>{$record['id']}\', \'display\');');"
+                        ><img src="{$images}/silk/shape_align_left.png" border="0"></a>&nbsp;
+                        <a title="Highlight start of block"
+                           class="act"
+                           onClick="
+                             var _el = el('{$ip_subnet}_row_label');
+                             if (_el) {
+                               if (_el.style.isHighlighted) {
+                                 _el.style.backgroundColor = '#000000';
+                                 _el.style.isHighlighted = false;
+                               }
+                               else {
+                                 _el.style.backgroundColor = '{$color['bgcolor_map_selected']}';
+                                 _el.style.isHighlighted = true;
+                               }
+                             }
+                           "
+                        ><img src="{$images}/silk/paintbrush.png" border="0"></a>&nbsp;
+                        <b>Block Map</b>
+                    </div>
+                </td></tr>
+
+                <tr><td colspan="99" nowrap="true">
+                    <input type="hidden" id="{$window_name}_zoom" name="zoom" value="7">
+                    <div id="{$window_name}_portal" style="position: relative; height: 150px; width: 355px;">
+                        <span id="{$window_name}_substrate"></span>
+                    </div>
+                </td></tr>
+            </table>
+EOL;
+
+    // Get javascript to setup the map portal mouse handlers
+    // Force ip end to be less than ip start to prevent Block highlighting
+    $portal_js .= get_portal_js($window_name, $ip, $ip -1);
+
+    // END SMALL SUBNET MAP
 
     $html .= <<<EOL
         <!-- END OF SECOND COLUMN OF SMALL BOXES -->
@@ -247,7 +298,7 @@ EOL;
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     $response->addAssign("work_space_content", "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
+    if ($js) { $response->addScript($js . $portal_js); }
     return($response->getXML());
 }
 
