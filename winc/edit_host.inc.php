@@ -4,10 +4,10 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // Function: ws_editor($window_name, $form)
-// 
+//
 // Description:
 //     Displays a form for creating/editing a host record.
-// 
+//
 // Input:
 //     $window_name the name of the "window" to use.
 //     $form  A string-based-array or an array or a host ID.
@@ -24,17 +24,17 @@ function ws_editor($window_name, $form='') {
     global $conf, $self, $onadb;
     global $font_family, $color, $style, $images;
     $window = array();
-    
+
     // Check permissions
     if (! (auth('host_modify') and auth('host_add')) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
     }
-    
+
     // If an array in a string was provided, build the array and store it in $form
     $form = parse_options_string($form);
-    
+
     // Load an existing host record (and associated info) if $form is a host_id
     $host = array('fqdn' => '.');
     $interface = array();
@@ -43,7 +43,7 @@ function ws_editor($window_name, $form='') {
         if ($rows) {
             // Load associated INTERFACE record(s)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $host['id']));
-            list($status, $rows, $network) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
+            list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
             $interface['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
             if ($interface['mac_addr'])
                 $interface['mac_addr'] = mac_mangle($interface['mac_addr'], 2); //FIXME: (PK) should not use numeric format specifier here!
@@ -53,21 +53,21 @@ function ws_editor($window_name, $form='') {
 //PK            $host['UNIT_NUMBER'] = str_pad($unit['UNIT_NUMBER'], 5, "0", STR_PAD_LEFT);
         }
     }
-    
+
     // Set the default security level if there isn't one
     if (!array_key_exists('lvl', $host)) $host['lvl'] = $conf['ona_lvl'];
-    
-    // Load a network record if we got passed a network_id (FIXME: this should be subnet_id, but the GUI code has to change)
-    if ($form['network_id'])
-        list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['network_id']));
-    
+
+    // Load a subnet record if we got passed a subnet_id (FIXME: this should be subnet_id, but the GUI code has to change)
+    if ($form['subnet_id'])
+        list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
+
     // Load a domain record if we got passed a domain_id
     if ($form['domain_id']) {
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $form['domain_id']));
         $host['domain_fqdn'] = $domain['fqdn'];
     }
-    
-    
+
+
     // Build a device_types list
     list($status, $rows, $records) = db_get_records($onadb, 'device_types', 'id >= 1');
     $device_types = array();
@@ -78,7 +78,7 @@ function ws_editor($window_name, $form='') {
         $device_types[$type['id']] = "{$manufacturer['name']} {$model['name']} ({$role['name']})";
     }
     //    $models = array(); $models[1] = "DEFAULT default_device (A bogus record)"; // FIXME: (PK) temp code!
-    
+
     asort($device_types);
     $device_model_list = '<option value="">&nbsp;</option>\n';
     list($status, $rows, $device) = ona_get_device_record(array('id' => $host['device_id']));
@@ -89,67 +89,67 @@ function ws_editor($window_name, $form='') {
         $device_model_list .= "<option value=\"{$id}\" {$selected}>{$device_types[$id]}</option>\n";
     }
     unset($device_types, $device, $manufacturer, $role, $model, $records);
-        
-    
+
+
     // Escape data for display in html
     foreach(array_keys($host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
     foreach(array_keys($subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
     foreach(array_keys($interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
-    
-    
+
+
     // Set the window title:
     $window['title'] = "Add Host";
     if ($host['id'])
         $window['title'] = "Edit Host";
-    
+
     // Javascript to run after the window is built
     $window['js'] = <<<EOL
         /* Put a minimize icon in the title bar */
-        el('{$window_name}_title_r').innerHTML = 
+        el('{$window_name}_title_r').innerHTML =
             '&nbsp;<a onClick="toggle_window(\'{$window_name}\');" title="Minimize window" style="cursor: pointer;"><img src="{$images}/icon_minimize.gif" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
-        
+
         /* Put a help icon in the title bar */
-        el('{$window_name}_title_r').innerHTML = 
+        el('{$window_name}_title_r').innerHTML =
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
-        
+
         suggest_setup('set_domain_{$window_name}',    'suggest_set_domain_{$window_name}');
-        
+
         /* Setup the Quick Find Unit icon */
         /* (FIXME: commented out by Paul K 4/13/07 - we don't do units right now)
         var _button = el('qf_unit_{$window_name}');
         _button.style.cursor = 'pointer';
-        _button.onclick = 
+        _button.onclick =
             function(ev) {
                 if (!ev) ev = event;
                 /* Create the popup div */ /*PK
-                wwTT(this, ev, 
-                     'id', 'tt_qf_unit_{$window_name}', 
+                wwTT(this, ev,
+                     'id', 'tt_qf_unit_{$window_name}',
                      'type', 'static',
                      'direction', 'south',
                      'delay', 0,
                      'styleClass', 'wwTT_qf',
-                     'javascript', 
-                     "xajax_window_submit('tooltips', '" + 
-                         "tooltip=>qf_unit," + 
+                     'javascript',
+                     "xajax_window_submit('tooltips', '" +
+                         "tooltip=>qf_unit," +
                          "id=>tt_qf_unit_{$window_name}," +
                          "input_id=>set_unit_{$window_name}');"
                 );
             }; */
-    
+
 EOL;
-    
+
     // Define the window's inner html
     $window['html'] = <<<EOL
-    
+
     <!-- Host Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
     <input type="hidden" name="host" value="{$host['fqdn']}">
     <input type="hidden" name="interface" value="{$interface['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
-        
+
         <!-- HOST RECORD -->
         <tr>
             <td align="left" nowrap="true">
@@ -159,54 +159,54 @@ EOL;
                 &nbsp;
             </td>
         </tr>
-        
+
         <tr>
             <td align="right" nowrap="true">
                 DNS Name
             </td>
             <td class="padding" align="left" width="100%">
-                <input 
-                    name="set_host" 
+                <input
+                    name="set_host"
                     alt="Hostname"
                     value="{$host['name']}"
-                    class="edit" 
-                    type="text" 
-                    size="20" maxlength="64" 
+                    class="edit"
+                    type="text"
+                    size="20" maxlength="64"
                 >
             </td>
         </tr>
-        
+
         <tr>
             <td align="right" nowrap="true">
                 Domain
             </td>
             <td class="padding" align="left" width="100%">
-                <input 
+                <input
                     id="set_domain_{$window_name}"
                     name="set_domain"
                     alt="Domain name"
                     value="{$host['domain_fqdn']}"
-                    class="edit" 
-                    type="text" 
-                    size="25" maxlength="64" 
+                    class="edit"
+                    type="text"
+                    size="25" maxlength="64"
                 >
                 <div id="suggest_set_domain_{$window_name}" class="suggest"></div>
             </td>
         </tr>
-        
+
         <tr>
             <td align="right" nowrap="true">
                 Device model
             </td>
             <td class="padding" align="left" width="100%">
-                <select 
-                    name="set_type" 
+                <select
+                    name="set_type"
                     alt="Device model"
                     class="edit"
                 >{$device_model_list}</select>
             </td>
         </tr>
-        
+
         <tr>
             <td align="right" nowrap="true">
                 Notes
@@ -215,13 +215,13 @@ EOL;
                 <textarea name="set_notes" class="edit" cols="40" rows="1">{$host['notes']}</textarea>
             </td>
         </tr>
-        
+
 EOL;
-    
+
     // Display an interface edit section if it's a new host or there were exactly one interface.
     if (!$interfaces or $interfaces == 1) {
         $window['js'] .= <<<EOL
-        
+
         /* Setup the Quick Find for available IPs */
         var _button = el('qf_free_ip_{$window_name}');
         _button.style.cursor = 'pointer';
@@ -229,26 +229,26 @@ EOL;
             function(ev) {
                 if (!ev) ev = event;
                 /* Create the popup div */
-                wwTT(this, ev, 
-                     'id', 'tt_qf_free_ip_{$window_name}', 
+                wwTT(this, ev,
+                     'id', 'tt_qf_free_ip_{$window_name}',
                      'type', 'static',
                      'direction', 'south',
                      'delay', 0,
                      'styleClass', 'wwTT_qf',
-                     'javascript', 
-                     "xajax_window_submit('tooltips', '" + 
-                         "tooltip=>qf_free_ip," + 
+                     'javascript',
+                     "xajax_window_submit('tooltips', '" +
+                         "tooltip=>qf_free_ip," +
                          "id=>tt_qf_free_ip_{$window_name}," +
-                         "text_id=>associated_network_{$window_name}," +
-                         "text_value=>" + el('associated_network_{$window_name}').innerHTML + "," +
+                         "text_id=>associated_subnet_{$window_name}," +
+                         "text_value=>" + el('associated_subnet_{$window_name}').innerHTML + "," +
                          "input_id=>set_ip_{$window_name}');"
                 );
             };
-        
+
 EOL;
-        
+
         $window['html'] .= <<<EOL
-        
+
         <!-- FIRST INTERFACE -->
         <tr>
             <td align="left" nowrap="true">
@@ -258,84 +258,84 @@ EOL;
                 &nbsp;
             </td>
         </tr>
-        
+
         <tr>
             <td align="right" nowrap="true">
-                Network
+                Subnet
             </td>
             <td class="padding" align="left" width="100%" nowrap="true">
-                <span id="associated_network_{$window_name}"
+                <span id="associated_subnet_{$window_name}"
                 >{$subnet['name']}</span>
             </td>
         </tr>
-        
+
         <tr>
             <td align="right" nowrap="true">
                 IP Address
             </td>
             <td class="padding" align="left" width="100%">
-                <input 
+                <input
                     id="set_ip_{$window_name}"
-                    name="set_ip" 
+                    name="set_ip"
                     alt="IP Address"
                     value="{$interface['ip_addr']}"
-                    class="edit" 
-                    type="text" 
-                    size="25" maxlength="64" 
+                    class="edit"
+                    type="text"
+                    size="25" maxlength="64"
                 >
                 <span id="qf_free_ip_{$window_name}" title="Available IP Quick Search"><img src="{$images}/silk/find.png" border="0"/></span>
                 <div id="suggest_set_ip_{$window_name}" class="suggest"></div>
             </td>
         </tr>
-        
+
         <tr>
             <td align="right" nowrap="true">
                 MAC Address
             </td>
             <td class="padding" align="left" width="100%">
-                <input 
+                <input
                     name="set_mac"
                     alt="MAC Address"
                     value="{$interface['mac_addr']}"
-                    class="edit" 
-                    type="text" 
-                    size="17" maxlength="17" 
+                    class="edit"
+                    type="text"
+                    size="17" maxlength="17"
                 >
                 <a class="nav" onClick="this.style.display = 'none'; el('force_{$window_name}').style.display = browser.isIE ? 'block' : 'table-row';">More >></a>
             </td>
         </tr>
-        
+
         <tr id="force_{$window_name}" style="display: none;">
             <td align="right" nowrap="true">
                 &nbsp;
             </td>
             <td class="padding" align="left" width="100%">
-                <input 
-                    name="force" 
+                <input
+                    name="force"
                     alt="Allow duplicate MAC addresses"
-                    type="checkbox" 
+                    type="checkbox"
                 > Allow duplicate MAC addresses
             </td>
         </tr>
-        
+
         <tr>
             <td align="right" nowrap="true">
                 Interface name
             </td>
             <td class="padding" align="left" width="100%">
-                <input 
-                    name="set_name" 
+                <input
+                    name="set_name"
                     alt="Interface name"
                     value="{$interface['name']}"
-                    class="edit" 
-                    type="text" 
-                    size="17" maxlength="17" 
+                    class="edit"
+                    type="text"
+                    size="17" maxlength="17"
                 >
             </td>
         </tr>
 EOL;
     }
-    
+
     if (!$host['id']) {
         $window['html'] .= <<<EOL
         <tr>
@@ -343,10 +343,10 @@ EOL;
                 &nbsp;
             </td>
             <td class="padding" align="left" width="100%">
-                <input 
-                    name="keepadding" 
+                <input
+                    name="keepadding"
                     alt="Keep adding more hosts"
-                    type="checkbox" 
+                    type="checkbox"
                 > Keep adding more hosts
             </td>
         </tr>
@@ -358,28 +358,28 @@ EOL;
         </tr>
 
 EOL;
-    }    
-    
+    }
+
     $window['html'] .= <<<EOL
-        
+
         <tr>
             <td align="right" valign="top" nowrap="true">
                 &nbsp;
             </td>
             <td class="padding" align="right" width="100%">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button" 
-                    name="submit" 
-                    value="Save" 
+                <input class="edit" type="button"
+                    name="submit"
+                    value="Save"
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
                 >
             </td>
         </tr>
-    
+
     </table>
-    </form>        
+    </form>
 EOL;
-    
+
     return(window_open($window_name, $window));
 }
 
@@ -393,27 +393,27 @@ EOL;
 //////////////////////////////////////////////////////////////////////////////
 // Function:
 //     Save Form
-// 
+//
 // Description:
 //     Creates/updates a host record.
 //////////////////////////////////////////////////////////////////////////////
 function ws_save($window_name, $form='') {
     global $include, $conf, $self, $onadb;
-    
+
     // Check permissions
     if (! (auth('host_modify') and auth('host_add')) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
     }
-    
+
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     $js = '';
-    
+
     // Validate input
-    if ($form['set_host'] == '' or 
-        $form['set_domain'] == '' or 
+    if ($form['set_host'] == '' or
+        $form['set_domain'] == '' or
         $form['set_type'] == '' or
         /* Interface input: required only if adding a host */
         ($form['host'] == '.' and $form['set_ip'] == '')
@@ -421,11 +421,11 @@ function ws_save($window_name, $form='') {
         $response->addScript("alert('Please complete all fields to continue!');");
         return($response->getXML());
     }
-    
+
     // Since we're adding two records (host and an interface)
     // we need to do a little validation here to make sure things
     // have a good chance of working!
-    
+
     // Validate the "set_host" name is valid
     $form['set_host'] = sanitize_hostname($form['set_host']);
     if (!$form['set_host']) {
@@ -446,41 +446,41 @@ function ws_save($window_name, $form='') {
             return($response->getXML());
         }
     }
-    
+
     // FIXME: If we're editing, validate the $form['host'] is valid
     // FIXME: If we're editing, validate the $form['interface'] is valid
     // FIXME: Verify that the device "type" ID is valid (not a big risk since they select from a drop-down)
-    
-    
-    
+
+
+
     // Decide if we're editing or adding
     $module = 'modify';
     // If we're adding, re-map some the array names to match what the "add" module wants
     if ($form['host'] == '.') {
         $module = 'add';
-        
+
         // Host options
         $form['host'] = $form['set_host'] . '.' . $form['set_domain'];
         $form['type'] = $form['set_type'];
         $form['unit'] = $form['set_unit'];
         $form['security_level'] = $form['set_security_level'];
         $form['notes'] = $form['set_notes'];
-        
+
         // Interface options
         $form['ip'] = $form['set_ip'];
         $form['mac'] = $form['set_mac'];
         $form['name'] = $form['set_name'];
-        
+
         // If there's no "refresh" javascript, add a command to view the new host
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['host']}\', \'display\')');";
     }
     else {
         $form['set_host'] .= '.' . $form['set_domain'];
     }
-    
+
     // Run the module to ADD the HOST AND INTERFACE, or MODIFY THE HOST.
     list($status, $output) = run_module('host_'.$module, $form);
-    
+
     // If the module returned an error code display a popup warning
     if ($status)
         $js .= "alert('Save failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
@@ -499,11 +499,11 @@ function ws_save($window_name, $form='') {
             else {
                 $js .= "el('statusinfo_{$window_name}').innerHTML = 'Previously added:<br>{$form['host']} => {$form['ip']}';";
             }
-            
+
             if ($form['js']) $js .= $form['js'];
         }
     }
-    
+
     // Insert the new table into the window
     $response->addScript($js);
     return($response->getXML());
@@ -518,32 +518,32 @@ function ws_save($window_name, $form='') {
 //////////////////////////////////////////////////////////////////////////////
 // Function:
 //     Delete Form
-// 
+//
 // Description:
-//     Deletes a host record.  $form should be an array with a 'host_id' 
+//     Deletes a host record.  $form should be an array with a 'host_id'
 //     key defined and optionally a 'js' key with javascript to have the
 //     browser run after a successful delete.
 //////////////////////////////////////////////////////////////////////////////
 function ws_delete($window_name, $form='') {
     global $include, $conf, $self, $onadb, $onadb;
-    
+
     // Check permissions
     if (!auth('host_del')) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
     }
-    
+
     // If an array in a string was provided, build the array and store it in $form
     $form = parse_options_string($form);
-    
+
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     $js = '';
-    
+
     // Run the module
     list($status, $output) = run_module('host_del', array('host' => $form['host_id'], 'commit' => $form['commit']));
-    
+
     // If commit was N, display the confirmation dialog box
     if (!$form['commit']) {
         $build_commit_html = 1;
@@ -551,13 +551,13 @@ function ws_delete($window_name, $form='') {
         include(window_find_include('module_results'));
         return(window_open("{$window_name}_results", $window));
     }
-    
+
     // If the module returned an error code display a popup warning
     if ($status)
         $js .= "alert('Delete failed. " . preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
-    else if ($form['js']) 
+    else if ($form['js'])
         $js .= $form['js'];  // usually js will refresh the window we got called from
-    
+
     // Return an XML response
     $response->addScript($js);
     return($response->getXML());
