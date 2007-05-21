@@ -544,10 +544,9 @@ EOL;
 
     // START MESSAGES BOX
     // $tablename is a reference directly to the table that contains the item
-    // we are displaying to the user.  This is a kludge since we cannot
-    // directly link the mysql tables to the onadb tables with the id of the table.
+    // we are displaying to the user.
     // It is possible that you can have the same id in multiple tables, currently.
-/*    $tablename = 'SUBNETS_B';
+    $tablename = 'subnets';
     require_once('winc/tooltips.inc.php');
     list($lineshtml, $linesjs) = get_message_lines_html("table_id_ref = {$record['id']} AND table_name_ref LIKE '{$tablename}'");
     if ($lineshtml) {
@@ -562,7 +561,7 @@ EOL;
         $html .= $lineshtml;
         $js .= $linesjs;
         $html .= "</td></tr></table>";
-    }    */
+    }
     // END MESSAGES LIST
 
 

@@ -19,6 +19,10 @@ function ws_tooltips_submit($window_name, $form='') {
     printmsg("DEBUG => Displaying tooltip: {$form['tooltip']}", 4);
 
     switch ($form['tooltip']) {
+        case 'sys_alert':
+           list ($html, $js) = get_sys_alert_html($form);
+           break;
+
         case 'start_menu':
            list ($html, $js) = get_start_menu_html();
            break;
@@ -116,6 +120,30 @@ function get_start_menu_html() {
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
+     onClick="removeElement('start_menu'); xajax_window_submit('edit_vlan_campus', ' ', 'editor');"
+     title="Add a new VLAN campus"
+ ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ />&nbsp;Add VLAN campus</div>
+
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="removeElement('start_menu'); xajax_window_submit('edit_vlan', ' ', 'editor');"
+     title="Add a new VLAN"
+ ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ />&nbsp;Add VLAN</div>
+
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="removeElement('start_menu'); xajax_window_submit('edit_block', ' ', 'editor');"
+     title="Add a new block"
+ ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ />&nbsp;Add block</div>
+
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
      onClick="removeElement('start_menu'); toggle_window('app_admin_tools');"
      title="Admin tools"
  ><img style="vertical-align: middle;" src="{$images}/silk/controller.png" border="0"
@@ -126,6 +154,194 @@ EOL;
 
     return(array($html, $js));
 }
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: get_message_lines_html($where)
+//
+// Description:
+//     Builds HTML for messages
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function get_message_lines_html($where) {
+    global $conf, $self, $onadb, $tip_style;
+    global $font_family, $color, $style, $images, $msgtype;
+
+    $html = $js = '';
+    $expire_count = 0;
+
+    list($status, $rows, $messages) = db_get_records($onadb, 'messages', $where, 'priority,mtime', 15, 0);
+
+    // If we don't find any rows, go ahead and return
+    if (!$rows)
+        return(array($html, $js));
+
+    $html .= <<<EOL
+        <div style="overflow: auto;height: 100px;max-height: 100px;">
+        <table style="cursor: pointer;" width="100%" cellspacing="0" border="0" cellpadding="0">
+        <tbody style="max-height: 100px;overflow: auto;overflow-x: hidden;">
+EOL;
+
+    foreach ($messages as $record) {
+        // If the message has expired, dont print it.
+        if (strtotime($record['expiration']) < time()) {
+            $expire_count++;
+            continue;
+        }
+
+
+        // Escape data for display in html
+        foreach(array_keys($record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES);}
+
+        // determine the priority and setup an image for it
+        switch ($record['priority']) {
+            case 0:
+                $priorityimg = "<img src=\"{$images}/silk/bullet_blue.png\" border=\"0\" />";
+                break;
+            case 1:
+                $priorityimg = "<img src=\"{$images}/silk/bullet_red.png\" border=\"0\" />";
+                break;
+            case 2:
+                $priorityimg = "<img src=\"{$images}/silk/bullet_yellow.png\" border=\"0\" />";
+                break;
+            case 3:
+                $priorityimg = "<img src=\"{$images}/silk/bullet_green.png\" border=\"0\" />";
+                break;
+            default:
+                $priorityimg = "";
+                break;
+        }
+
+        // re format the date to something more appropriate
+        $cleandate = date("m/d-h:i a",strtotime($record['mtime']));
+        $expire = strtotime($record['expiration']) . "/" . time() ."=". $test;
+
+        $html .= <<<EOL
+        <tr style="height: 10px;"
+            onMouseOver="this.className='row-highlight';"
+            onMouseOut="this.className='row-normal';"
+        >
+            <td nowrap="true" title="{$record['mtime']} - Priority level: {$record['priority']} - Expires: {$record['expiration']}" valign="top" style="font-size: 10px; pad
+ding: 0px 3px;">{$cleandate} {$priorityimg}</td>
+            <td nowrap="true" valign="top" align="right" style="font-size: 10px; padding: 0px 0px;">{$record['username']} =></td>
+            <td width="200" style="font-size: 10px; padding: 0px 2px;padding-right: 20px;">{$record['message_text']}</td>
+        </tr>
+EOL;
+    }
+
+    if ($expire_count > 0 ) {
+        $html .= <<<EOL
+        <tr class="row-highlight" >
+            <td colspan=3 align="center" nowrap="true" valign="top" style="font-size: 10px; padding: 0px 3px;">There are {$expire_count} expired records not displayed</td>
+        </tr>
+EOL;
+    }
+
+    $html .= <<<EOL
+        </tbody></table></div>
+EOL;
+
+    return(array($html, $js));
+
+}
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: get_sys_alert_html($form)
+//
+// Description:
+//     Builds HTML for changing tacacs enable passwd
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function get_sys_alert_html($form) {
+    global $conf, $self, $onadb, $tip_style;
+    global $font_family, $color, $style, $images, $msgtype;
+
+    $html = $js = '';
+
+
+    $style['content_box'] = <<<EOL
+        padding: 2px 4px;
+        vertical-align: top;
+EOL;
+
+    // WARNING: this one's different than most of them!
+    $style['label_box'] = <<<EOL
+        font-weight: bold;
+        cursor: move;
+        color: #FFFFFF;
+EOL;
+
+    // Display system messages
+    $html .= <<<EOL
+
+    <!-- SYS MESSAGES -->
+    <form id="sys_alert_form" onSubmit="return(false);">
+    <input type="hidden" name="id" value="{$form['id']}">
+    <input type="hidden" name="input_id" value="{$form['input_id']}">
+    <input type="hidden" name="text_id" value="{$form['text_id']}">
+    <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
+
+    <tr><td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition'
+, 0);">
+        System Messages
+    </td></tr>
+
+    <tr>
+        <td colspan="2" align="left" class="qf-search-line">
+            <div
+              id="sys_alert_items"
+              style="
+                background-color: #FFFFFF;
+                overflow: auto;"
+            >
+EOL;
+        // Get a list of messages that have a table name of SYS_*
+        list($lineshtml, $linesjs) = get_message_lines_html("`table_name_ref` LIKE 'SYS_%'");
+        $html .= $lineshtml;
+
+        $html .= <<<EOL
+            </div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            &nbsp;
+        </td>
+        <td align="right" class="qf-search-line">
+            <input class="button" type="button" name="close" value="Close" onClick="removeElement('{$form['id']}');">
+        </td>
+    </tr>
+
+    </table>
+    </form>
+EOL;
+
+
+    return(array($html, $js));
+}
+
+
+
+
+
+
 
 
 
@@ -291,7 +507,7 @@ EOL;
             <tr><td width=100% colspan="2" nowrap="true" style="{$style['label_box']}">
                 <a title="Add a new subnet here"
                    class="act"
-                   onClick="xajax_window_submit('edit_subnet', 'ip_address=>{$subnet_ip}', 'editor');"
+                   onClick="xajax_window_submit('edit_subnet', 'ip_addr=>{$subnet_ip}', 'editor');"
                 >Add a subnet here</a>
             </td></tr>
 
@@ -359,22 +575,15 @@ EOL;
     $subnet['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
     $subnet['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
 
-    list($status, $rows, $type) = ona_get_subnet_type_record(array('id' => $record['subnet_type_id']));
-    $record['type'] = $type['display_name'];
-
-
-    // Associated location info
-    list($status, $rows, $location) = ona_get_location_record(array('id' => $subnet['location_id']));
-    if ($rows == 0 or $status) {
-        $location['reference'] = "ERROR: Location record could not be loaded.  Invalid Location ID: {$subnet['location_id']}";
-    }
+    list($status, $rows, $type) = ona_get_subnet_type_record(array('id' => $subnet['subnet_type_id']));
+    $subnet['type'] = $type['display_name'];
 
 
     // Calculate the percentage of the subnet that's used (total size - allocated hosts - dhcp pool size)
     $usage_html = get_subnet_usage_html($subnet['id']);
 
-  //  foreach(array_keys($subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
-   // foreach(array_keys($location) as $key) { $location[$key] = htmlentities($location[$key], ENT_QUOTES); }
+    foreach(array_keys($subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
+    foreach(array_keys($location) as $key) { $location[$key] = htmlentities($location[$key], ENT_QUOTES); }
 
     $html .= <<<EOL
 
@@ -408,45 +617,7 @@ EOL;
             </tr>
 EOL;
     }
-        $html .= <<<EOL
-            <tr>
-                <td align="right" valign="top" nowrap="true" style="color: {$font_color};"><b>Location number</b>&nbsp;</td>
-                <td class="padding" align="left" style="color: {$font_color};">{$location['reference']}&nbsp;</td>
-            </tr>
 
-EOL;
-    if ($location['name']) {
-        $html .= <<<EOL
-            <tr>
-                <td align="right" valign="top" nowrap="true" style="color: {$font_color};"><b>Name</b>&nbsp;</td>
-                <td class="padding" align="left" style="color: {$font_color};">{$location['name']}&nbsp;</td>
-            </tr>
-EOL;
-    }
-    $address = '';
-    if ($location['address']) {
-        $address .= "{$location['address']}&nbsp;<br>\n";
-    }
-    if ($location['city']) {
-        $address .= $location['city'];
-    }
-    if ($location['state']) {
-        if ($location['city']) {
-            $address .= ", ";
-        }
-        $address .= "{$location['state']}";
-    }
-    $address .= '&nbsp;'.$location['zip_code'];
-    if ($address) {
-        $html .= <<<EOL
-            <tr>
-                <td align="right" valign="top" nowrap="true" style="color: {$font_color};"><b>Address</b>&nbsp;</td>
-                <td class="padding" valign="top" align="left" style="color: {$font_color};">
-                    {$address}&nbsp;
-                </td>
-            </tr>
-EOL;
-    }
 
     $html .= <<<EOL
         </table>

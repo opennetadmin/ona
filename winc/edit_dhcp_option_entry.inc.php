@@ -44,7 +44,7 @@ function ws_editor($window_name, $form='') {
 
     // If they are adding a new DHCP entry they will usually pass a host_id in
     if (is_numeric($form['host_id'])) {
-        list($status, $rows, $host)  = ona_find_host(array('id' => $form['host_id']));
+        list($status, $rows, $host)  = ona_find_host($form['host_id']);
         // Setup a title description for this edit type
         $window['edit_type'] = "Host";
         $window['edit_type_value'] = $host['fqdn'];

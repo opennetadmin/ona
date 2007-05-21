@@ -9,7 +9,7 @@
 //   Displays a host record and all associated info in the work_space div.
 //////////////////////////////////////////////////////////////////////////////
 function ws_display($window_name, $form='') {
-    global $conf, $self, $onadb, $mysql;
+    global $conf, $self, $onadb;
     global $images, $color, $style, $msgtype;
     $html = '';
     $js = '';
@@ -55,7 +55,7 @@ function ws_display($window_name, $form='') {
         $interface_style = 'font-weight: bold;';
     }
 
-    // Network description
+    // Subnet description
     list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $interface['subnet_id']));
     $record['SUBNET'] = $subnet['name'];
     $record['IP_SUBNET_MASK'] = ip_mangle($subnet['ip_mask'], 'dotted');
@@ -584,19 +584,7 @@ EOL;
                 -->
                  </tr>
 EOL;
-    // If this is a switch, print the switchport admin button
-    if (strstr($record['DEVICE'],"Switch") and auth('switchport_admin',$debug_val)) {
-        $html .= <<<EOL
-                 <tr>
-                    <td align="left" nowrap="true">
-                        <a title="Switchport admin"
-                           class="act"
-                           onClick="xajax_window_submit('display_switchport_admin', 'host_id=>{$record['ID']}', 'display');"
-                        ><img src="{$images}/silk/brick_edit.png" border="0">Switchport admin</a>&nbsp;
-                    </td>
-                </tr>
-EOL;
-    }
+
     $html .= <<<EOL
             </table>
 EOL;
@@ -607,25 +595,24 @@ EOL;
 
     // START MESSAGES BOX
     // $tablename is a reference directly to the table that contains the item
-    // we are displaying to the user.  This is a kludge since we cannot
-    // directly link the mysql tables to the onadb tables with the ID of the table.
+    // we are displaying to the user.
     // It is possible that you can have the same ID in multiple tables, currently.
-//     $tablename = 'HOSTS_B';
-//     require_once('winc/tooltips.inc.php');
-//     list($lineshtml, $linesjs) = get_message_lines_html("table_id_ref = {$record['id']} AND table_name_ref LIKE '{$tablename}'");
-//     if ($lineshtml) {
-//        $html .= <<<EOL
-//             <!-- MESSAGES LIST -->
-//             <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-//                 <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">
-//                     Messages
-//                 </td></tr>
-//                 <tr><td>
-// EOL;
-//         $html .= $lineshtml;
-//         $js .= $linesjs;
-//         $html .= "</td></tr></table>";
-//     }
+    $tablename = 'hosts';
+    require_once('winc/tooltips.inc.php');
+    list($lineshtml, $linesjs) = get_message_lines_html("table_id_ref = {$record['id']} AND table_name_ref LIKE '{$tablename}'");
+    if ($lineshtml) {
+       $html .= <<<EOL
+            <!-- MESSAGES LIST -->
+            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
+                <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">
+                    Messages
+                </td></tr>
+                <tr><td>
+EOL;
+        $html .= $lineshtml;
+        $js .= $linesjs;
+        $html .= "</td></tr></table>";
+    }
     // END MESSAGES LIST
 
 

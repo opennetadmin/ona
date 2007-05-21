@@ -93,7 +93,7 @@ EOM
 
     if ($options['host']) {
         // Determine the host is valid
-        list($host, $zone) = ona_find_host($options['host']);
+        list($status, $rows, $host) = ona_find_host($options['host']);
 
         if (!$host['id']) {
             printmsg("DEBUG => The host specified, {$options['host']}, does not exist!",3);
@@ -120,7 +120,7 @@ EOM
         $lvl = $subnet['lvl'];
     } elseif ($options['server']) {
         // Determine the server is valid
-        list($host, $zone) = ona_find_host($options['server']);
+        list($status, $rows, $host) = ona_find_host($options['server']);
 
         if (!$host['id']) {
             printmsg("DEBUG => The server specified, {$options['server']}, does not exist!",3);
@@ -307,7 +307,7 @@ EOM
 
         if ($entry['host_id'] or $entry['server_id']) {
             // Get some host information to display later and determine its valid
-            list($host, $zone) = ona_find_host($search);
+            list($status, $rows, $host) = ona_find_host($search);
 
             // Bail out if you cant find a host
             if (!$host['id']) {
@@ -479,7 +479,7 @@ EOM
     // Load associated host, subnet or server record
     $host = $subnet = $server = array();
     if ($entry['host_id']) {
-       list($host, $zone) = ona_find_host($entry['host_id']);
+       list($status, $rows, $host) = ona_find_host($entry['host_id']);
        $desc = $host['fqdn'];
     }
     if ($entry['subnet_id']) {
@@ -488,7 +488,7 @@ EOM
     }
     if ($entry['server_id']) {
        list($status, $rows, $server)  = ona_get_server_record(array('id' => $entry['server_id']));
-       list($host, $zone) = ona_find_host($entry['host_id']);
+       list($status, $rows, $host) = ona_find_host($entry['host_id']);
        $desc = $host['fqdn'];
     }
 
@@ -662,7 +662,7 @@ EOM
 
     if ($options['host']) {
         // Determine the host is valid
-        list($host, $zone) = ona_find_host($options['host']);
+        list($status, $rows, $host) = ona_find_host($options['host']);
 
         if (!$host['id']) {
             printmsg("DEBUG => The host specified, {$options['host']}, does not exist!", 3);
@@ -689,7 +689,7 @@ EOM
 
     } elseif ($options['server']) {
         // Determine the server is valid
-        list($host, $zone) = ona_find_host($options['server']);
+        list($status, $rows, $host) = ona_find_host($options['server']);
 
         if (!$host['id']) {
             printmsg("DEBUG => The server specified, {$options['server']}, does not exist!", 3);
