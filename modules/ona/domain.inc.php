@@ -35,7 +35,7 @@
 //         error.  All errors messages are stored in $self['error'].
 //      2. A textual message for display on the console or web interface.
 //  
-//  Example: list($status, $result) = domain_add('name=albertsons.com');
+//  Example: list($status, $result) = domain_add('name=something.com');
 ///////////////////////////////////////////////////////////////////////
 function domain_add($options="") {
     global $conf, $self, $onadb;
@@ -457,7 +457,7 @@ EOL;
 //  
 //  Input Options:
 //  Where:
-//    domain=STRING or ID         full name of domain (i.e. name.albertsons.com)
+//    domain=STRING or ID         full name of domain (i.e. name.something.com)
 
 //  Optional:
 //    set_name=STRING           new domain name
@@ -477,7 +477,7 @@ EOL;
 //         error.  All errors messages are stored in $self['error'].
 //      2. A textual message for display on the console or web interface.
 //  
-//  Example: list($status, $result) = domain_modify('alias=test&host=q1234.albertsons.com');
+//  Example: list($status, $result) = domain_modify('alias=test&host=q1234.something.com');
 ///////////////////////////////////////////////////////////////////////
 function domain_modify($options="") {
     global $conf, $self, $onadb;
@@ -517,7 +517,7 @@ Modifies a DNS domain in the database
   Synopsis: domain_modify [KEY=VALUE] ...
   
   Where:
-    domain=STRING or ID         full name of domain (i.e. name.albertsons.com)
+    domain=STRING or ID         full name of domain (i.e. name.something.com)
 
   Optional:
     set_name=STRING           new domain name
@@ -706,7 +706,7 @@ EOM
 //         error.  All errors messages are stored in $self['error'].
 //      2. A textual message for display on the console or web interface.
 //  
-//  Example: list($status, $result) = domain_server_add('domain=test&server=hp34.albertsons.com');
+//  Example: list($status, $result) = domain_server_add('domain=test&server=cool.something.com');
 ///////////////////////////////////////////////////////////////////////
 function domain_server_add($options="") {
     
@@ -888,7 +888,7 @@ EOM
 //         error.  All errors messages are stored in $self['error'].
 //      2. A textual message for display on the console or web interface.
 //  
-//  Example: list($status, $result) = domain_server_del('domain=test&server=hp34.albertsons.com');
+//  Example: list($status, $result) = domain_server_del('domain=test&server=cool.something.com');
 ///////////////////////////////////////////////////////////////////////
 function domain_server_del($options="") {
     

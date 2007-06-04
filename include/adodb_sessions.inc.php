@@ -62,20 +62,20 @@ function sess_close() { return true; }
 function sess_read($key) {
     global $SESS_DBH, $SESS_LIFE;
     printmsg("sess_read($key) called", 3);
-    
+
     list($status, $rows, $record) = db_get_record($SESS_DBH, 'sessions', "`sesskey` = '$key' AND `expiry` > " . time());
     if ($status or $rows == 0) { return false; }
-    
+
     if (array_key_exists('sessvalue', $record)) {
         // Update the expiry time (i.e. keep sessions alive even if nothing in the session has changed)
         $expiry = time() + $SESS_LIFE;
         list($status, $rows) = db_update_record($SESS_DBH, 'sessions', "`sesskey` = '$key' AND `expiry` > " . time(), array('expiry' => $expiry));
         if ($status) { return false; }
-        
+
         // Return the value
         return($record['sessvalue']);
     }
-    
+
     return false;
 }
 
@@ -83,24 +83,24 @@ function sess_read($key) {
 function sess_write($key, $value) {
     global $SESS_DBH, $SESS_LIFE;
     printmsg("sess_write($key, $value) called", 3);
-    
+
     $expiry = time() + $SESS_LIFE;
-    
+
     // Try inserting the value into the DB
     list($status, $rows) = db_insert_record($SESS_DBH, 'sessions', array('sesskey' => $key, 'expiry' => $expiry, 'sessvalue' => $value));
-    
+
     // If the insert failed try an update
     if (!$status or $rows == 0) {
         list($status, $rows) = db_update_record($SESS_DBH, 'sessions', array('sesskey' => $key), array('expiry' => $expiry, 'sessvalue' => $value));
     }
-    
+
     return $rows;
 }
 
 
 function sess_destroy($key) {
     global $SESS_DBH;
-    list($status, $rows) = db_delete_record($SESS_DBH, 'sessions', array('sesskey' => $key));
+    list($status, $rows) = db_delete_records($SESS_DBH, 'sessions', array('sesskey' => $key));
     return $rows;
 }
 
