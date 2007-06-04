@@ -189,7 +189,7 @@ EOL;
         if ($record['parent_id']) {
             list ($status, $rows, $parent) = ona_get_domain_record(array('id' => $record['parent_id']));
         }
-        $record['PARENT_DOMAIN_NAME'] = $parent['name'];
+        $record['parent_domain_name'] = $parent['name'];
         
         // Need to remove this variable, otherwise, if the current record does not have a parent
         // the previous parent domain name will be displayed
@@ -215,7 +215,7 @@ EOL;
             </td>
             
             <td class="list-row">
-                {$record['PARENT_DOMAIN_NAME']}&nbsp;
+                {$record['parent_domain_name']}&nbsp;
             </td>
             
             <td align="right" class="list-row" nowrap="true">

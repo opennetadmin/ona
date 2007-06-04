@@ -67,7 +67,7 @@ Adds a DNS domain into the database
   
   Required:
     name=STRING                             full name of new domain
-                                            (i.e. name.albertsons.com)
+                                            (i.e. name.something.com)
     server=NAME[.DOMAIN] or ID              server identifier to add new domain to
 
   Optional:
@@ -81,9 +81,6 @@ Adds a DNS domain into the database
     parent=DOMAIN_NAME                      Default ({$conf['dns']['parent']})
     auth=[Y|N]                              is server authoritative for domain
                                             Default ({$conf['dns']['auth']})
-    
-  Notes:
-    DOMAIN will default to .albertsons.com if not specified
 
 EOM
 
@@ -146,19 +143,18 @@ EOM
             return(array(5, $self['error'] . "\n"));
         }
     }
-        
+
     if ($options['name']) {
-        
         // If NOT a PTR domain, make sure the domain name is a valid format 
         if($ptr != 'Y'){
-            $domain_name = sanitize_domainname($options['name']);
+            // FIXME: not sure if its needed but this was calling sanitize_domainname, which did not exist
+            $domain_name = sanitize_hostname($options['name']);
             if (!$domain_name) {
                 printmsg("DEBUG => The domain name ({$options['name']}) is invalid!", 3);
                 $self['error'] = "ERROR => The domain name ({$options['name']}) is invalid!";
                 return(array(4, $self['error'] . "\n"));
             }
         } else {
-        
         // If a PTR domain, make sure the domain name is a valid IP address 
             $valid_ptr_domain = ip_mangle($options['name'],1);
             if ($valid_ptr_domain == -1) {
@@ -171,7 +167,6 @@ EOM
             $parent_domain['id'] = '';
         }    
     }
- 
     if ($origin) {
         // Determine the origin is a valid host
         list($status, $rows, $ohost) = ona_find_host($origin);

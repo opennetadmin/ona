@@ -11,7 +11,7 @@
 //     record for editing.  "Save" button calls the ws_save() function.
 //////////////////////////////////////////////////////////////////////////////
 function ws_editor($window_name, $form='') {
-    global $conf, $self, $mysql, $onadb;
+    global $conf, $self, $onadb;
     global $font_family, $color, $style, $images;
     $window = array();
     
@@ -29,8 +29,8 @@ function ws_editor($window_name, $form='') {
     if ($form['id']) {
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $form['id']));
         list($status, $rows, $parent) = ona_get_domain_record(array('id' => $domain['parent_id']));
-        $domain['PARENT'] = $parent['name'];
-        
+        $domain['parent'] = $parent['name'];
+
         // Set the window title:
         $window['title'] = "Edit Domain";
 
@@ -41,13 +41,13 @@ function ws_editor($window_name, $form='') {
     } else {
         // Set up default domain information  * FIXME: *
         $domain['admin_email'] = $conf['dns']['admin'];
-        $domain['PTR']         = $conf['dns']['ptr'] ;
+        $domain['ptr']         = $conf['dns']['ptr'] ;
         $domain['ns_fqdn']     = $conf['dns']['origin']; // this is NOT used currently as origin, it is primary master
         $domain['refresh']     = $conf['dns']['refresh'];
         $domain['retry']       = $conf['dns']['retry'];
         $domain['expire']      = $conf['dns']['expire'];
         $domain['minimum']     = $conf['dns']['minimum'];
-        $domain['PARENT']      = $conf['dns']['parent'];
+        $domain['parent']      = $conf['dns']['parent'];
         $domain['AUTH']        = 'Y';    // is server authoritative for this domain
 
         // Set the window title:
@@ -55,7 +55,7 @@ function ws_editor($window_name, $form='') {
 
     }
     
-    
+
     // Escape data for display in html
     foreach(array_keys($domain) as $key) {
         $domain[$key] = htmlentities($domain[$key], ENT_QUOTES);
@@ -63,7 +63,7 @@ function ws_editor($window_name, $form='') {
     
     
     
-    
+
     // Javascript to run after the window is built
     $window['js'] = <<<EOL
         /* Put a minimize icon in the title bar */
@@ -80,7 +80,7 @@ function ws_editor($window_name, $form='') {
         el('{$window_name}_edit_form').onsubmit = function() { return false; };
 
 EOL;
-    
+printmsg("DEBUG => blah 1 {$options['name']}",3);    
     // Define the window's inner html
     $window['html'] = <<<EOL
     
@@ -125,7 +125,7 @@ EOL;
                     id="domain_edit"
                     name="parent" 
                     alt="Parent Domain"
-                    value="{$parent['PARENT']}"
+                    value="{$parent['parent']}"
                     class="edit" 
                     type="text" 
                     size="30" maxlength="255" 
@@ -183,26 +183,27 @@ EOL;
 EOL;
     // if we are editing an existing domain
     // FIXME: need to ensure serial is converted from 32-bit binary
-    if($form['id']) {
-
-        $window['html'] .= <<<EOL
-        <tr>
-            <td align="right" nowrap="true">
-                Serial Number
-            </td>
-            <td class="padding" align="left" width="100%">
-                <input
-                    name="serial"
-                    alt="Serial Number"
-                    value="{$domain['serial']}"
-                    class="edit"
-                    type="text"
-                    size="17" maxlength="255"
-                >
-            </td>
-        </tr>
-EOL;
-    }
+    // (MP)commented out for not since it is NOT yet converted from binary
+//     if($form['id']) {
+// 
+//         $window['html'] .= <<<EOL
+//         <tr>
+//             <td align="right" nowrap="true">
+//                 Serial Number
+//             </td>
+//             <td class="padding" align="left" width="100%">
+//                 <input
+//                     name="serial"
+//                     alt="Serial Number"
+//                     value="{$domain['serial']}"
+//                     class="edit"
+//                     type="text"
+//                     size="17" maxlength="255"
+//                 >
+//             </td>
+//         </tr>
+// EOL;
+//     }
 
     $window['html'] .= <<<EOL
         <tr>
@@ -303,7 +304,7 @@ EOL;
 //     Creates/updates an interface record.
 //////////////////////////////////////////////////////////////////////////////
 function ws_save($window_name, $form='') {
-    global $include, $conf, $self, $mysql, $onadb;
+    global $include, $conf, $self, $onadb;
     
     // Check permissions (there is no interface_add, it's merged with host_add)
     if (!auth('advanced')) {

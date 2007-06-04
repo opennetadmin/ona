@@ -194,7 +194,14 @@ $db_context = array (
     ),
 );
 
-
+$conf['dns']['admin']   = 'admin@opennetadmin.com';
+$conf['dns']['ptr']     = 'N'; // Is this a pointer domain? in-addr.arpa
+$conf['dns']['origin']  = ''; // this is NOT used currently as origin, it is primary master
+$conf['dns']['refresh'] = '3600';
+$conf['dns']['retry']   = '3600';
+$conf['dns']['expire']  = '3600';
+$conf['dns']['minimum'] = '3600';
+$conf['dns']['parent']  = '';
 
 // Set session inactivity threshold
 ini_set("session.gc_maxlifetime", $conf['cookie_life']);
