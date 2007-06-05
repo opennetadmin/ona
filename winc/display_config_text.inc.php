@@ -68,7 +68,8 @@ function ws_display_list($window_name, $form='') {
     // Generate a SQL query to list configs to display
     $q = "SELECT configurations.id,
                  configuration_types.name,
-                 configurations.md5_checksum
+                 configurations.md5_checksum,
+                 configurations.ctime
             FROM configurations, configuration_types
            WHERE configurations.configuration_type_id = configuration_types.id
              AND configurations.host_id = " . $onadb->qstr($host['id']) . "
@@ -97,7 +98,7 @@ function ws_display_list($window_name, $form='') {
             <table width="100%" cellspacing="0" border="0" cellpadding="2" align="left">
 
             <tr>
-                <td colspan="6" class="list-header" style="padding: 2px 4px; {$style['borderT']}; {$style['borderL']}; {$style['borderR']}; background-color: #FFFFFF;">
+                <td colspan="7" class="list-header" style="padding: 2px 4px; {$style['borderT']}; {$style['borderL']}; {$style['borderR']}; background-color: #FFFFFF;">
                     <b>Configuration archives for:</b>
                     <a title="View host. ID: {$host['id']}"
                        class="nav"
@@ -116,6 +117,7 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" style="padding-right: 8px;">Date </td>
                 <td class="list-header" style="padding-right: 8px;">Type </td>
                 <td class="list-header" style="padding-right: 8px;">MD5 </td>
+                <td class="list-header" style="padding-right: 8px;">Size (chars) </td>
                 <td class="list-header" style="padding-right: 8px; text-align: right; {$style['borderR']}; ">Action</td>
             </tr>
 EOL;
@@ -123,6 +125,7 @@ EOL;
     while (!$rs->EOF) {
         $id++; // Counter used in javascript
         // Color different types of configs differently
+        // FIXME (MP) there will be more config types.. do some sort of dynamic coloring based on anything in the type table
         $color = "#FFFFFF";
         if ($rs->fields['name'] == "IOS_CONFIG")
             $color = "#DEE7EC";
@@ -132,9 +135,14 @@ EOL;
         // Escape data for display in html
         foreach(array_keys($rs->fields) as $key) { $rs->fields[$key] = htmlentities($rs->fields[$key], ENT_QUOTES); }
 
+        // Get the length of the configuration
+        // FIXME (MP) figure out why objects are not returning for these properly.. fix this formatting.
+        $confsize = strlen($rs->fields['config_body']);
+        $timeformat = date('m/d/Y h:i A',$rs->fields['ctime']);
+
         $html .= <<<EOL
             <tr>
-                <td bgcolor="{$color}" class="borderBL" style="padding-right: 4px; width: 20px;"
+                <td bgcolor="{$color}" class="borderBL" style="{$style['borderL']}; padding-right: 4px; width: 20px;"
                   ><input id="old{$id}" name="old" type="radio" value="{$rs->fields['id']}"
                     onClick="
                         var tmp = 1; var obj = el('new' + tmp);
@@ -148,7 +156,8 @@ EOL;
                 <td bgcolor="{$color}" class="borderB"  style="padding-right: 6px;">{$rs->fields['ctime']}</td>
                 <td bgcolor="{$color}" class="borderB"  style="padding-right: 6px;">{$rs->fields['name']}</td>
                 <td bgcolor="{$color}" class="borderB"  style="padding-right: 6px;">{$rs->fields['md5_checksum']}</td>
-                <td bgcolor="{$color}" class="borderBR" style="text-align: right; padding-right: 4px;">
+                <td bgcolor="{$color}" class="borderB"  style="padding-right: 6px;">??</td>
+                <td bgcolor="{$color}" class="borderBR" style="{$style['borderR']};text-align: right; padding-right: 4px;">
                     <a title="View config: {$rs->fields['id']}"
                        class="nav"
                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'config_id=>{$rs->fields['id']}\', \'display_config\')');"
@@ -198,7 +207,7 @@ EOL;
                       xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'old_id=>' + OLD.value + ',new_id=>' + NEW.value + '\', \'display_diff\')');
             ">
             </td>
-            <td colspan="3" align="right" class="list-header" style="{$style['borderR']};">
+            <td colspan="4" align="right" class="list-header" style="{$style['borderR']};">
                 <form id="{$window_name}_list_{$host['id']}"
                     ><input type="hidden" name="type_id" value="{$type['id']}"
                     ><input type="hidden" name="host_id" value="{$host['id']}"
@@ -314,7 +323,7 @@ function ws_display_config($window_name, $form='') {
                         <a title="View host. ID: {$host['id']}"
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')');"
-                        >{$host['id']}</a
+                        >{$host['name']}</a
                         >.<a title="View domain. ID: {$host['domain_id']}"
                              class="domain"
                              onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$host['domain_id']}\', \'display\')');"
@@ -476,7 +485,7 @@ function ws_display_diff($window_name, $form='') {
                             >.<a title="View domain. ID: {$old_host['domain_id']}"
                                  class="domain"
                                  onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$old_host['domain_id']}\', \'display\')');"
-                            >{$old_host['domain_name']}</a>
+                            >{$old_host['domain_fqdn']}</a>
                         </td>
                     </tr>
                     <tr>
@@ -485,7 +494,7 @@ function ws_display_diff($window_name, $form='') {
                     </tr>
                     <tr>
                         <td style="font-weight: bold;">Config type:</td>
-                        <td>{$old['name']}</td>
+                        <td>{$old['config_type_name']}</td>
                     </tr>
                     <tr>
                         <td style="font-weight: bold;">MD5:</td>
@@ -517,7 +526,7 @@ function ws_display_diff($window_name, $form='') {
                             >.<a title="View domain. ID: {$new_host['domain_id']}"
                                  class="domain"
                                  onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$new_host['domain_id']}\', \'display\')');"
-                            >{$new_host['domain_name']}</a>
+                            >{$new_host['domain_fqdn']}</a>
                         </td>
                     </tr>
                     <tr>
@@ -526,7 +535,7 @@ function ws_display_diff($window_name, $form='') {
                     </tr>
                     <tr>
                         <td style="font-weight: bold;">Config type:</td>
-                        <td>{$new['name']}</td>
+                        <td>{$new['config_type_name']}</td>
                     </tr>
                     <tr>
                         <td style="font-weight: bold;">MD5:</td>
@@ -596,8 +605,8 @@ function ws_delete_config($window_name, $form='') {
     $form = parse_options_string($form);
 
     // Load the config text record
-    list($status, $rows, $config) = ona_get_config_record(array('CONFIG_TEXT_ID' => $form['config_id']));
-    if (!$config['CONFIG_TEXT_ID']) {
+    list($status, $rows, $config) = ona_get_config_record(array('id' => $form['config_id']));
+    if (!$config['id']) {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Configuration text record doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
@@ -616,7 +625,7 @@ function ws_delete_config($window_name, $form='') {
     }
 
     // Check permissions
-    if (! (auth('host_config_admin') and authlvl($host['LVL'])) ) {
+    if (! (auth('host_config_admin') and authlvl($host['lvl'])) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
@@ -626,7 +635,7 @@ function ws_delete_config($window_name, $form='') {
 
     // FIXME, this should probably use a module, but there isn't one!
 
-    list($status, $rows) = db_delete_record($onadb, 'CONFIG_TEXT_B', array('CONFIG_TEXT_ID' => $config['CONFIG_TEXT_ID']));
+    list($status, $rows) = db_delete_records($onadb, 'configurations', array('id' => $config['id']));
     if ($status or !$rows) {
         $response = new xajaxResponse();
         $response->addScript("alert('Delete failed!');");
@@ -670,7 +679,7 @@ function ws_delete_configs($window_name, $form='') {
 
     // Load the host record
     list($status, $rows, $host) = ona_find_host($form['host_id']);
-    if (!$host['ID']) {
+    if (!$host['id']) {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
@@ -679,14 +688,14 @@ function ws_delete_configs($window_name, $form='') {
     }
 
     // Check permissions
-    if (! (auth('host_config_admin') and authlvl($host['LVL'])) ) {
+    if (! (auth('host_config_admin') and authlvl($host['lvl'])) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
     }
 
     // Load the config type
-    list($status, $rows, $type) = ona_get_config_type_record(array('CONFIG_TYPE_ID' => $form['type_id']));
+    list($status, $rows, $type) = ona_get_config_type_record(array('id' => $form['type_id']));
     if ($status or !$rows) {
         $response = new xajaxResponse();
         $response->addScript("alert('ERROR => Invalid config type!');");
@@ -696,7 +705,7 @@ function ws_delete_configs($window_name, $form='') {
 
     // Delete the config text records that match
     // FIXME, this should probably use a module, but there isn't one!
-    list($status, $rows) = db_delete_record($onadb, 'CONFIG_TEXT_B', array('host_id' => $host['id'], 'CONFIG_TYPE_ID' => $type['CONFIG_TYPE_ID']));
+    list($status, $rows) = db_delete_records($onadb, 'configurations', array('host_id' => $host['id'], 'configuration_type_id' => $type['id']));
     if ($status or !$rows) {
         $response = new xajaxResponse();
         $response->addScript("alert('Delete failed!');");

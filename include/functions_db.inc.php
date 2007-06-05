@@ -1265,62 +1265,62 @@ function ona_get_dhcp_server_subnet_record($array) {
 
 
 
+// FIXME (MP) currently not in use.. however it does provide lookup by ID or name which is not currently working.. probably should fix this function and call it find_config_type
 
-
-///////////////////////////////////////////////////////////////////////
-//  Function: ona_get_configtype_deref($id or $string)
-//
-//  Translates a config type NAME to an ID, or vice versa.
-//  Returns 0 on error.
-//
-///////////////////////////////////////////////////////////////////////
-function ona_get_configtype_deref($search='') {
-    global $onadb;
-    global $self;
-
-    // Debugging
-    printmsg("DEBUG => ona_get_configtype_deref($search) called", 3);
-
-    // Return 0 if there was no input
-    if (!$search) { return(0); }
-
-    // If $q is numeric
-    if (preg_match('/^\d+$/', $search)) {
-        // Select the type name
-        $q = 'SELECT *
-              FROM IP.CONFIG_TYPE_B
-              WHERE IP.CONFIG_TYPE_B.CONFIG_TYPE_ID=' . $onadb->qstr($search);
-        $rs = $onadb->Execute($q);
-        if ($rs === false) {
-            printmsg('ERROR => SQL query failed: ' . $onadb->ErrorMsg(), 3);
-            return(0);
-        }
-        if ($rs->RecordCount() >= 1) {
-            $row = $rs->FetchRow();
-            return($row['CONFIG_TYPE_NAME']);
-        }
-    }
-
-    // Otherwise lookup ID by NAME
-    else {
-        // Select the type name
-        $q = 'SELECT *
-              FROM IP.CONFIG_TYPE_B
-              WHERE IP.CONFIG_TYPE_B.CONFIG_TYPE_NAME=' . $onadb->qstr($search);
-        $rs = $onadb->Execute($q);
-        if ($rs === false) {
-            printmsg('ERROR => SQL query failed: ' . $onadb->ErrorMsg(), 3);
-            return(0);
-        }
-        if ($rs->RecordCount() >= 1) {
-            $row = $rs->FetchRow();
-            return($row['CONFIG_TYPE_ID']);
-        }
-    }
-
-    // Just in case
-    return(0);
-}
+// ///////////////////////////////////////////////////////////////////////
+// //  Function: ona_get_configtype_deref($id or $string)
+// //
+// //  Translates a config type NAME to an ID, or vice versa.
+// //  Returns 0 on error.
+// //
+// ///////////////////////////////////////////////////////////////////////
+// function ona_get_configtype_deref($search='') {
+//     global $onadb;
+//     global $self;
+// 
+//     // Debugging
+//     printmsg("DEBUG => ona_get_configtype_deref($search) called", 3);
+// 
+//     // Return 0 if there was no input
+//     if (!$search) { return(0); }
+// 
+//     // If $q is numeric
+//     if (preg_match('/^\d+$/', $search)) {
+//         // Select the type name
+//         $q = 'SELECT *
+//               FROM IP.CONFIG_TYPE_B
+//               WHERE IP.CONFIG_TYPE_B.CONFIG_TYPE_ID=' . $onadb->qstr($search);
+//         $rs = $onadb->Execute($q);
+//         if ($rs === false) {
+//             printmsg('ERROR => SQL query failed: ' . $onadb->ErrorMsg(), 3);
+//             return(0);
+//         }
+//         if ($rs->RecordCount() >= 1) {
+//             $row = $rs->FetchRow();
+//             return($row['CONFIG_TYPE_NAME']);
+//         }
+//     }
+// 
+//     // Otherwise lookup ID by NAME
+//     else {
+//         // Select the type name
+//         $q = 'SELECT *
+//               FROM IP.CONFIG_TYPE_B
+//               WHERE IP.CONFIG_TYPE_B.CONFIG_TYPE_NAME=' . $onadb->qstr($search);
+//         $rs = $onadb->Execute($q);
+//         if ($rs === false) {
+//             printmsg('ERROR => SQL query failed: ' . $onadb->ErrorMsg(), 3);
+//             return(0);
+//         }
+//         if ($rs->RecordCount() >= 1) {
+//             $row = $rs->FetchRow();
+//             return($row['CONFIG_TYPE_ID']);
+//         }
+//     }
+// 
+//     // Just in case
+//     return(0);
+// }
 
 
 
@@ -2318,7 +2318,7 @@ function ona_find_config($options=array()) {
             return(array(2, 0, array()));
         }
 
-        list($status, $rows, $config) = ona_get_config_record(array('CONFIG_TEXT_ID' => $options['config']));
+        list($status, $rows, $config) = ona_get_config_record(array('id' => $options['config']));
     }
 
     // Otherwise we're selecting a config by hostname and type
@@ -2333,16 +2333,15 @@ function ona_find_config($options=array()) {
         }
 
         // Now find the ID of the config type they entered
-        $config_type_id = ona_get_configtype_deref($options['type']);
+        $config_type_id = ona_get_config_type_record(array('id' => $options['type']));
         if ($config_type_id == 0) {
-            $self['error'] = "ERROR => The config type specified, {$options['type']}, is invalid!\n" .
-                             "INFO => The only valid types are: add_store, IOS_CONFIG, and IOS_VERSION";
+            $self['error'] = "ERROR => The config type specified, {$options['type']}, is invalid!";
             return(array(4, 0, array()));
         }
 
         // Select the first config record of the specified type and host
         list($status, $rows, $config) = ona_get_config_record(array('host_id' => $host['id'],
-                                                                     'CONFIG_TYPE_ID' => $config_type_id));
+                                                                     'configuration_type_id' => $config_type_id));
     }
 
     // Return the config record we got

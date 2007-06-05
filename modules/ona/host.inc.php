@@ -210,7 +210,7 @@ EOM
         array(
             'id'                   => $host['primary_dns_id'],
             'type'                 => 'A',
-            'ttl'                  => '3600', // FIXME: (PK) pull this from the parent domain?
+            'ttl'                  => '3600', // FIXME: (PK) pull this from the parent domain? (MP) also allow it to be passed on commandline
             'name'                 => $host['name'],
             'domain_id'            => $host['domain_id']
         )
