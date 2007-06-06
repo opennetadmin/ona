@@ -64,6 +64,17 @@ EOM
         ));
     }
 
+    // Validate that there isn't already another interface with the same IP address
+    if ($options['ip']) {
+        list($status, $rows, $interface) = ona_get_interface_record(array('ip_addr' => $options['ip']));
+        if ($rows) {
+            printmsg("DEBUG => host_add() IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!",3);
+            $self['error'] = "ERROR => host_add() IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!";
+            return(array(4, $self['error'] . "\n" .
+                            "INFO => Conflicting interface record ID: {$interface['id']}\n"));
+        }
+    }
+
 
 // FIXME: commented out by Paul K 3/21/07 because we probably won't use units
 //    // Find the Unit ID to use
@@ -233,6 +244,18 @@ EOM
         if ($status)
             return(array($status, $output));
         $text .= $output;
+
+        // Find the interface_id for the interface we just added
+        list($status, $rows, $int) = ona_find_interface($options['ip']);
+
+        // Add the interface_id info into the DNS table
+        list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $host['primary_dns_id']), array('interface_id' => $int['id']));
+        if ($status or !$rows) {
+            $self['error'] = "ERROR => host_add() dns update SQL Query failed: " . $self['error'];
+            printmsg($self['error'], 0);
+            return(array(14, $self['error'] . "\n"));
+        }
+
         return(array(0, $text));
     }
 

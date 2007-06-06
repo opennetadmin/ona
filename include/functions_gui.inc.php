@@ -109,8 +109,38 @@ function get_server_suggestions($q, $max_results=10) {
 
 
 function get_host_suggestions($q, $max_results=10) {
-    return(get_text_suggestions($q . '%', 'dns', 'name', $max_results));
+    global $self, $conf, $onadb;
+    $results = array();
+
+    // wildcard the query before searching
+    $q = $q . '%';
+
+    $table = 'dns';
+    $field = 'name'; // FIXME: (PK) name is no longer in hosts table ... its in dns table.
+    $where  = "{$field} LIKE " . $onadb->qstr($q);
+    $order  = "{$field} ASC";
+
+    // Search the db for results
+    list ($status, $rows, $records) = db_get_records(
+                                        $onadb,
+                                        $table,
+                                        $where,
+                                        $order,
+                                        $max_results
+                                      );
+
+    // If the query didn't work return the error message
+    if ($status) { $results[] = "Internal Error: {$self['error']}"; }
+
+    foreach ($records as $record) {
+        list($status, $rows, $domain) = db_get_record($onadb, 'domains', array('id' => $record['domain_id']));
+        $results[] = $record[$field].".".$domain['name'];
+    }
+
+    // Return the records
+    return($results);
 }
+
 
 function get_host_notes_suggestions($q, $max_results=10) {
     return(get_text_suggestions($q . '%', 'hosts', 'notes', $max_results));

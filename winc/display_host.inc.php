@@ -49,7 +49,7 @@ function ws_display($window_name, $form='') {
 
     // Interface (and find out how many there are)
     list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id']), '');
-    $record['IP_ADDRESS'] = ip_mangle($interface['ip_addr'], 'dotted');
+    $record['ip_address'] = ip_mangle($interface['ip_addr'], 'dotted');
     $interface_style = '';
     if ($interfaces > 1) {
         $interface_style = 'font-weight: bold;';
@@ -57,9 +57,9 @@ function ws_display($window_name, $form='') {
 
     // Subnet description
     list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $interface['subnet_id']));
-    $record['SUBNET'] = $subnet['name'];
-    $record['IP_SUBNET_MASK'] = ip_mangle($subnet['ip_mask'], 'dotted');
-    $record['IP_SUBNET_MASK_CIDR'] = ip_mangle($subnet['ip_mask'], 'cidr');
+    $record['subnet'] = $subnet['name'];
+    $record['ip_subnet_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
+    $record['ip_subnet_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
 
     // Device Description
     list($status, $rows, $device) = ona_get_device_record(array('id' => $record['device_id']));
@@ -67,8 +67,8 @@ function ws_display($window_name, $form='') {
     list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
     list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
     list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
-    $record['device'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
-    $record['device'] = str_replace('Unknown', '?', $record['device']);
+    $record['devicefull'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
+    $record['device'] = str_replace('Unknown', '?', $record['devicefull']);
 
     // Device serial number and/or asset tag
     $record['serial_number'] = $device['serial_number'];
@@ -156,7 +156,7 @@ EOL;
 
                 <tr>
                     <td align="right" nowrap="true"><b>Device Model</b>&nbsp;</td>
-                    <td class="padding" align="left">{$record['device']}&nbsp;</td>
+                    <td class="padding" align="left" title="{$record['devicefull']}">{$record['device']}&nbsp;</td>
                 </tr>
 
                 <tr>

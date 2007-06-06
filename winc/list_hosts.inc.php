@@ -227,7 +227,11 @@ function ws_display_list($window_name, $form='') {
 
         // Host names should always be lower case
         $form['filter'] = strtolower($form['filter']);
-        $filter = ' AND name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
+        // FIXME (MP) for now this uses primary_dns_id, this will NOT find multiple A records or other record types. Find a better way some day
+        $filter = " AND primary_dns_id IN  (SELECT id " .
+                                            " FROM dns " .
+                                            " WHERE name LIKE ". $onadb->qstr('%'.$form['filter'].'%') . " )  ";
+
     }
     list ($status, $rows, $results) =
         db_get_records(
