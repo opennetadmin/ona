@@ -17,7 +17,7 @@ $baseURL = str_replace($_SERVER['DOCUMENT_ROOT'], '', $base); $baseURL = rtrim($
 $images = "{$baseURL}/images";
 
 // help URL location
-$_ENV['help_url'] = "http://www.opennetadmin.com/docs";
+$_ENV['help_url'] = "http://www.opennetadmin.com/docs/";
 
 $conf = array (
     /* General Setup */

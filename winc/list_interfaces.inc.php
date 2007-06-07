@@ -50,6 +50,10 @@ function ws_display_list($window_name, $form='') {
     if ($form['host_id']) {
         $where .= $and . "host_id = " . $onadb->qstr($form['host_id']);
         $and = " AND ";
+
+        // Grab the host record that was passed so we can show some info later
+        list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']));
+        list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id']));
     }
 
     // Do the SQL Query
@@ -94,6 +98,7 @@ function ws_display_list($window_name, $form='') {
 
             <!-- Table Header -->
             <tr>
+                <td class="list-header" align="center" style="{$style['border']}; width: 16px;">&nbsp;</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Interface</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Network</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">MAC</td>
@@ -109,11 +114,17 @@ EOL;
         foreach($results as $record) {
             // Get additional info about eash host record //
 
+            // if the interface is the primary_dns_id for the host then mark it
+            $dnsrecord_type = '<span title="No associated DNS records">&nbsp;</span>';
+            if ($dns['interface_id'] == $record['id']) {
+                $dnsrecord_type = '<img title="Primary DNS interface" src="'.$images.'/silk/font_go.png" border="0">';
+            }
+
             // Grab some info from the associated subnet record
             list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $record['subnet_id']));
             $record['ip_mask'] = $subnet['ip_mask'];
-            $record['SUBNET_ID'] = $subnet['id'];
-            $record['SUBNET_DESCRIPTION'] = $subnet['name'];
+            $record['subnet_id'] = $subnet['id'];
+            $record['subnet_description'] = $subnet['name'];
 
             // Convert IP and Netmask to a presentable format
             $record['ip_addr'] = ip_mangle($record['ip_addr'], 'dotted');
@@ -130,15 +141,17 @@ EOL;
 
             $html .= <<<EOL
             <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
-
+                <td class="list-row">
+                {$dnsrecord_type}
+                </td>
                 <td class="list-row">
 EOL;
 
             if (auth('interface_del')) {
                 $html .= <<<EOL
-                    <a title="Edit interface. ID: {$record['id']}"
-                       class="act"
-                       onClick="xajax_window_submit('edit_interface', xajax.getFormValues('{$form['form_id']}_list_interface_{$record['id']}'), 'editor');">
+                    <a title="View interface. ID: {$record['id']}"
+                       class="nav"
+                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_interface\',\'interface_id=>{$record['id']}\', \'display\')');">
                         {$record['ip_addr']}
                         </a>
 EOL;
@@ -152,10 +165,10 @@ EOL;
                 </td>
 
                 <td class="list-row" align="left">
-                    <a title="View subnet. ID: {$record['id']}"
+                    <a title="View subnet. ID: {$subnet['id']}"
                        class="nav"
                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['id']}\', \'display\')');"
-                    >{$record['SUBNET_DESCRIPTION']}</a>
+                    >{$record['subnet_description']}</a>
                 </td>
 
                 <td class="list-row" align="right">

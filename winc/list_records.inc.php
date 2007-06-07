@@ -62,6 +62,11 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
+    // INTERFACE ID
+    if ($form['interface_id']) {
+        $where .= $and . "interface_id = " . $onadb->qstr($form['interface_id']);
+        $and = " AND ";
+    }
 
     // HOSTNAME
     $aliases = 0;
@@ -305,7 +310,7 @@ EOL;
             $record = $results[$i-1];
 
             // Check for interface records (and find out how many there are)
-            list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $record['id']), '');
+            list($status, $interfaces, $interface) = ona_get_interface_record(array('id' => $record['interface_id']), '');
 
             // Get the domain name
             list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
@@ -355,15 +360,19 @@ EOL;
         // Escape data for display in html
         foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
 
+//         if ($record['type'] == 'A') {
+//             list($status, $rows, $interface) = ona_get_interface_record(array('id' => $record['interface_id']));
+//             list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
+//         }
+
         $primary_object_js = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$record['id']}\', \'display\')');";
         $html .= <<<EOL
             <tr onMouseOver="this.className='row-highlight';" onMouseOut="this.className='row-normal';">
 
                 <td class="list-row">
-                    <a title="View host. ID: {$record['id']}"
-                       class="nav"
-                       onClick="{$primary_object_js}"
-                    >{$record['name']}</a
+                    <span title="Record. ID: {$record['id']}"
+                       onClick=""
+                    >{$record['name']}</span
                     >.<a title="View domain. ID: {$domain['id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$domain['id']}\', \'display\')');"
