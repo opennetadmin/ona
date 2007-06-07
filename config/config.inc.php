@@ -17,7 +17,7 @@ $baseURL = str_replace($_SERVER['DOCUMENT_ROOT'], '', $base); $baseURL = rtrim($
 $images = "{$baseURL}/images";
 
 // help URL location
-$_ENV['help_url'] = "http://www.opennetadmin.com/dokuwiki/doku.php?id=documentation:";
+$_ENV['help_url'] = "http://www.opennetadmin.com/docs";
 
 $conf = array (
     /* General Setup */
@@ -88,8 +88,6 @@ $self = array (
 if ($_SERVER['SERVER_PORT'] == 443) { $self['secure'] = 1; }
 
 
-// Used in various windows to build a "help" link .. we use $_ENV because $conf is site specific.
-$_ENV['help_url'] = '/dokuwiki/doku.php?id=ona_help:';
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,7 +102,7 @@ $color['bar_bg']               = '#D3DBFF';
 $color['border']               = '#1A1A1A';
 $color['form_bg']              = '#FFEFB6';
 
-$color['font_default']         = '#3E3E3E';
+$color['font_default']         = '#000000';
 $color['font_title']           = '#4E4E4E';
 $color['font_subtitle']        = '#5A5A5A';
 $color['font_error']           = '#E35D5D';

@@ -105,7 +105,7 @@ print <<<EOL
     </div>
 
     <!-- Workspace div -->
-    <div id="content_table" style="height: 90%;" class="theWholeBananna">
+    <div id="content_table" style="height: 93%;" class="theWholeBananna">
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>&nbsp;
     </div>
@@ -113,8 +113,7 @@ print <<<EOL
     <!-- Bottom Text -->
     <div id="bottombox_table" class="bottomBox" style="width: 100%; text-align: center;">
         &copy;{$year} <a href="http://www.opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}<br>
-        We recommend <a href="http://www.mozilla.com/firefox/" target="null">Firefox</a> &gt;= 1.5, but this site also works with <a href="http://konqueror.kde.org/" target="null">Konqueror</a> &gt;= 3.5 &amp; Internet Explorer &gt;= 5.5<br>
-        This site was designed, written &amp; tested by <a href="mailto:hornet136@gmail.com">Matt Pascoe</a>, <a href="mailto:deacon@thedeacon.org">Paul Kreiner</a> &amp; <a href="mailto:caspian@dotconf.net">Brandon Zehm</a>.
+        This site was designed, written &amp; tested by <a href="mailto:hornet136@opennetadmin.com">Matt Pascoe</a>, <a href="mailto:deacon@thedeacon.org">Paul Kreiner</a> &amp; <a href="mailto:caspian@dotconf.net">Brandon Zehm</a>.
     </div>
 
 <!-- Javascript for the Task Bar -->

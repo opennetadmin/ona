@@ -355,8 +355,8 @@ EOL;
         list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
         list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
         list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
-        $record['device'] = "{$manufacturer['name']} {$model['name']} ({$role['name']})";
-        $record['device'] = str_replace('Unknown', '?', $record['device']);
+        $record['devicefull'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
+        $record['device'] = str_replace('Unknown', '?', $record['devicefull']);
 
 
         $record['notes_short'] = truncate($record['notes'], 40);
@@ -409,7 +409,7 @@ EOL;
                     <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>&nbsp;
                 </td>
 
-                <td class="list-row">{$record['device']}&nbsp;</td>
+                <td class="list-row" title="{$record['devicefull']}">{$record['device']}&nbsp;</td>
 
                 <td class="list-row" align="right">
                     <span onMouseOver="wwTT(this, event,
