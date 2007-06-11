@@ -565,25 +565,32 @@ EOL;
                 <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">
                     Host actions
                 </td></tr>
-                <tr>
-                    <td align="left" nowrap="true">
-                        <a title="Telnet to host"
-                           class="act"
-                           href="telnet:{$record['fqdn']}"
-                        ><img src="{$images}/silk/lightning_go.png" border="0">Telnet</a>&nbsp;
-                    </td>
-                </tr>
-
-               <!--  If SSH ever becomes something we use a bunch, we could enable it, given browser support
-                     <td align="left" nowrap="true">
-                        <a title="SSH to host"
-                           class="act"
-                           href="ssh:{$record['fqdn']}"
-                        ><img src="{$images}/silk/lightning_go.png" border="0">SSH</a>&nbsp;
-                    </td>
-                -->
-                 </tr>
 EOL;
+    // Build hostaction list from the $conf['hostaction'] array
+    foreach ($conf['hostaction'] as $hostaction=>$hval) {
+        // Use the title if there is one, otherwise just use the arrayname
+        $hval['title']= ($hval['title']) ? $hval['title'] : $hostaction;
+        // Substitute %fqdn and %ip
+        $hval['url'] = str_replace('%fqdn', $record['fqdn'], $hval['url']);
+        $hval['url'] = str_replace('%ip', $record['ip_address'], $hval['url']);
+
+        // If the URL has data in it, print.
+        // TODO: MDP, maybe offer an $hval['icon'] option to use a different icon specified in the $conf['hostaction']['Name']['icon'] variable
+        if ($hval['url']) {
+        $html .= <<<EOL
+            <tr>
+                <td align="left" nowrap="true">
+                    <a title="{$hval['title']}"
+                        class="act"
+                        href="{$hval['url']}"
+                    ><img src="{$images}/silk/lightning_go.png" border="0">{$hostaction}</a>&nbsp;
+                </td>
+            </tr>
+
+EOL;
+        }
+    }
+
 
     $html .= <<<EOL
             </table>

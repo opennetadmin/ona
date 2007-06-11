@@ -201,6 +201,15 @@ $conf['dns']['expire']  = '3600';
 $conf['dns']['minimum'] = '3600';
 $conf['dns']['parent']  = '';
 
+// This section defines host actions. If you leave the url blank it will not show the option in the list
+// You can use %fqdn and %ip as substitutions in the url for the host being displayed
+// You can specify a tooltip title for the option, otherwise it defaults to the hostaction name "Telnet" "Splunk" etc
+// These will be listed in the order specified here.
+$conf['hostaction']['Telnet']['url'] = "telnet:%fqdn";
+$conf['hostaction']['Telnet']['title'] = "Telnet to the host";
+//$conf['hostaction']['Splunk']['url'] = "https://splunk.company.com:8001/?events/?eventspage=1&num=10&q=%fqdn";
+//$conf['hostaction']['Cacti Graph']['url'] = "https://cacti.company.com/cacti/graph_view.php?action=tree&name=%ip";
+
 // Set session inactivity threshold
 ini_set("session.gc_maxlifetime", $conf['cookie_life']);
 
