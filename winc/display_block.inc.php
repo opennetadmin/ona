@@ -241,8 +241,8 @@ EOL;
                     <input id="{$form_id}_page" name="page" value="1" type="hidden">
                     <input name="content_id" value="{$content_id}" type="hidden">
                     <input name="form_id" value="{$form_id}" type="hidden">
-                    <input name="ip_subnet" value="{$record['ip_addr']}" type="hidden">
-                    <input name="ip_subnet_thru" value="{$record['ip_block_end']}" type="hidden">
+                    <input name="ip_subnet" value="{$record['ip_addr_start']}" type="hidden">
+                    <input name="ip_subnet_thru" value="{$record['ip_addr_end']}" type="hidden">
                     <div id="{$form_id}_filter_overlay"
                          style="position: relative;
                                 display: inline;
