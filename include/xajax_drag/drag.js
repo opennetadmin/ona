@@ -35,7 +35,7 @@
 //   onmousedown="dragStart(event, 'id_name')
 // For advanced options after the element_id pass a comma separated list
 // of options and values like this:
-//   onmousedown="dragStart(event, 'id_name', 'savePosition', 0, 'drag', 'vertical')
+//   onmousedown="dragStart(event, 'id_name', 'savePosition', 0, 'drag', 'vertical')"
 // 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -214,6 +214,11 @@ function dragGo(event) {
 
 
 function dragStop(event) {
+    
+    // Bug workaround: "position fixed" below is a workaround for this bug: https://bugzilla.mozilla.org/show_bug.cgi?id=167801
+    if (browser.isNS)
+        if (dragObj.elNode.className == 'window')
+            dragObj.elNode.style.position = 'fixed';
     
     // Update element's z-index
     dragObj.elNode.style.zIndex = dragObj.zIndex;

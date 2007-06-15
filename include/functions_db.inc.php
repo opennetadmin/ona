@@ -1257,7 +1257,7 @@ function ona_get_dhcp_pool_record($array) {
 }
 
 function ona_get_dhcp_server_subnet_record($array) {
-    return(ona_get_record($array, 'DHCP_SERVER_NETWORKS_B'));
+    return(ona_get_record($array, 'dhcp_server_subnets'));
 }
 
 
@@ -1277,13 +1277,13 @@ function ona_get_dhcp_server_subnet_record($array) {
 // function ona_get_configtype_deref($search='') {
 //     global $onadb;
 //     global $self;
-// 
+//
 //     // Debugging
 //     printmsg("DEBUG => ona_get_configtype_deref($search) called", 3);
-// 
+//
 //     // Return 0 if there was no input
 //     if (!$search) { return(0); }
-// 
+//
 //     // If $q is numeric
 //     if (preg_match('/^\d+$/', $search)) {
 //         // Select the type name
@@ -1300,7 +1300,7 @@ function ona_get_dhcp_server_subnet_record($array) {
 //             return($row['CONFIG_TYPE_NAME']);
 //         }
 //     }
-// 
+//
 //     // Otherwise lookup ID by NAME
 //     else {
 //         // Select the type name
@@ -1317,7 +1317,7 @@ function ona_get_dhcp_server_subnet_record($array) {
 //             return($row['CONFIG_TYPE_ID']);
 //         }
 //     }
-// 
+//
 //     // Just in case
 //     return(0);
 // }

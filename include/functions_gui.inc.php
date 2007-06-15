@@ -404,8 +404,8 @@ function suggest_server($q, $el_input, $el_suggest) {
     $js = "";
 
     // Search the DB
-    $results = get_server_suggestions($q);
-    $results = array_merge($results, get_server_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = get_host_suggestions($q);
+    $results = array_merge($results, get_host_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
     $results = array_unique($results);
 
     //TODO: potentialy add a search for get_domain_suggestions here
@@ -427,6 +427,7 @@ function suggest_server($q, $el_input, $el_suggest) {
 }
 
 // FIXME: (PK) do we still use these functions anywhere?  Check & remove, if not.
+// MP: I'm keeping them for now.. I've changed the function to just use host_suggestions.. server_suggestions could be removed??
 function suggest_pool_server_qf($q, $el_input, $el_suggest) {
     return(suggest_server($q, $el_input, $el_suggest));
 }

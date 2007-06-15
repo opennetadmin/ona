@@ -6,7 +6,7 @@
 // Function: ws_display_list()
 //
 // Description:
-//   Displays A list of subnets based on search criteria.
+//   Displays A list of subnets assigned to DHCP server based on search criteria.
 //   Input:  An array from xajaxGetFormValues() from a quick filter form.
 //////////////////////////////////////////////////////////////////////////////
 function ws_display_list($window_name, $form='') {
@@ -14,6 +14,7 @@ function ws_display_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
+    $debug_val = 3;  // used in the auth() calls to supress logging
 
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
@@ -33,7 +34,6 @@ function ws_display_list($window_name, $form='') {
         $_SESSION['ona'][$form['form_id']][$tab]['page'] = $page = $form['page'];
         $_SESSION['ona'][$form['form_id']][$tab]['filter'] = $form['filter'];
     }
-    printmsg("DEBUG => Displaying subnets list page: {$page}", 1);
 
     // Calculate the SQL query offset (based on the page being displayed)
     $offset = ($conf['search_results_per_page'] * ($page - 1));
@@ -44,11 +44,9 @@ function ws_display_list($window_name, $form='') {
     $count = 0;
 
 
-     //   $js .= "alert('Where: " . str_replace("'", '"', $form['subnet_id']) . "');";
 
 
     //
-    // *** ADVANCED SUBNET SEARCH ***
     //       FIND RESULT SET
     //
 
@@ -56,105 +54,35 @@ function ws_display_list($window_name, $form='') {
     $where = "";
     $and = "";
 
-    // SUBNET ID
-    if ($form['subnet_id']) {
-        $where .= $and . "id = " . $form['subnet_id'];
-        $and = " AND ";
-    //$js .= "alert('Where: " . str_replace("'", '"', $where) . "');";
-    }
 
-    // VLAN ID
-    if ($form['vlan_id']) {
-        $where .= $and . "vlan_id = " . $onadb->qstr($form['vlan_id']);
-        $and = " AND ";
-    }
-
-    // SUBNET TYPE
-    if ($form['nettype']) {
-        $where .= $and . "subnet_type_id = " . $onadb->qstr($form['nettype']);
-        $and = " AND ";
-    }
-
-    // ..???
+    // SERVER ID
     if ($form['server_id']) {
         $where .= $and . "id IN (SELECT subnet_id FROM dhcp_server_subnets WHERE host_id = " . $onadb->qstr($form['server_id']) . ')';
         $and = " AND ";
     }
 
-    // SUBNET NAME
-    if ($form['subnetname']) {
-        // This field is always upper case
-        $form['subnetname'] = strtoupper($form['subnetname']);
-        $where .= $and . "name LIKE " . $form['subnetname'];
-//        $where .= $and . "name LIKE " . $onadb->qstr('%'.$form['subnetname'].'%');
-        $and = " AND ";
-        //$js .= "alert('Where: " . str_replace("'", '"', $where) . "');";
 
-    }
-
-    // IP ADDRESS
-    if ($form['ip_subnet']) {
-        // Build $ip and $ip_end from $form['ip_subnet'] and $form['ip_subnet_thru']
-        $ip = ip_complete($form['ip_subnet'], '0');
-        if ($form['ip_subnet_thru']) {
-            $ip = ip_complete($form['ip_subnet'], '0');
-            $ip_end = ip_complete($form['ip_subnet_thru'], '255');
-
-            // Find out if $ip and $ip_end are valid
-            $ip = ip_mangle($ip, 'numeric');
-            $ip_end = ip_mangle($ip_end, 'numeric');
-            if ($ip != -1 and $ip_end != -1) {
-                // Find subnets between the specified ranges
-                $where .= $and . " ip_addr >= " . $ip . " AND ip_addr <= " . $ip_end;
-                $and = " AND ";
-            }
-        }
-        else {
-            list($status, $rows, $record) = ona_find_subnet($ip);
-            if($rows) {
-                $where .= $and . " id = " . $record['id'];
-                $and = " AND ";
-            }
-       }
-    }
-
-//     // UNIT NUMBER
-//     if ($form['unit']) {
-//         // Look up the Unit ID from the unit number
-//         list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_NUMBER' => $form['unit']));
-//         if ($rows) {
-//             $where .= $and . "UNIT_ID = " . $onadb->qstr($unit['UNIT_ID']);
-//             $and = " AND ";
-//         }
-//     }
-
-
-    // Wild card .. if $where is still empty, add a 'ID > 0' to it so you see everything.
-    if ($where == '')
-        $where = 'id > 0';
 
 
 
     // Do the SQL Query
     $filter = '';
     if ($form['filter']) {
-
-        // Subnet namess are always upper case
+        // Subnet descriptions in Albertsons are always upper case
         $form['filter'] = strtoupper($form['filter']);
-        $filter = ' AND name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
+        $filter = $and . ' name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
-
     list ($status, $rows, $results) =
         db_get_records(
             $onadb,
             'subnets',
             $where . $filter,
-            "ip_addr",
+            'ip_addr',
             $conf['search_results_per_page'],
             $offset
         );
 
-    // If we got less than search_results_per_page, add the current offset to it
+    // If we got less than serach_results_per_page, add the current offset to it
     // so that if we're on the last page $rows still has the right number in it.
     if ($rows > 0 and $rows < $conf['search_results_per_page']) {
         $rows += ($conf['search_results_per_page'] * ($page - 1));
@@ -173,9 +101,6 @@ function ws_display_list($window_name, $form='') {
     }
     $count = $rows;
 
- //   $js .= "alert('Where: " . str_replace("'", '"', $where) . "');";
- //   $js .= "alert('Where: " . $form['vlan'] . "');";
-
 
 
 
@@ -186,7 +111,7 @@ function ws_display_list($window_name, $form='') {
     //
     $html .= <<<EOL
     <!-- Subnet Results -->
-    <table id="{$form['form_id']}_subnet_list" class="list-box" cellspacing="0" border="0" cellpadding="0">
+    <table id="{$form['form_id']}_dhcp_server_list" class="list-box" cellspacing="0" border="0" cellpadding="0">
 
         <!-- Table Header -->
         <tr>
@@ -194,6 +119,7 @@ function ws_display_list($window_name, $form='') {
             <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Usage</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
+            <td class="list-header" align="center" style="{$style['borderR']};">Unit</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Lvl</td>
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
@@ -206,10 +132,16 @@ EOL;
         // Convert IP and Netmask to a presentable format
         $record['ip_addr'] = ip_mangle($record['ip_addr'], 'dotted');
         $record['ip_mask'] = ip_mangle($record['ip_mask'], 'dotted');
-        $record['IP_SUBNET_MASK_CIDR'] = ip_mangle($record['ip_mask'], 'cidr');
+        $record['ip_mask_cidr'] = ip_mangle($record['ip_mask'], 'cidr');
 
         list($status, $rows, $type) = ona_get_subnet_type_record(array('id' => $record['subnet_type_id']));
         $record['type'] = $type['display_name'];
+
+// FIXME: MP put back when we do something with locations
+        // Get unit_number from the unit_id
+//         list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $record['UNIT_ID']));
+//         // Unit number is best displayed as 5 digits zero padded
+//         $record['UNIT_NUMBER'] = str_pad($unit['UNIT_NUMBER'], 5, "0", STR_PAD_LEFT);
 
         // Calculate the percentage of the subnet that's used (total size - allocated hosts - dhcp pool size)
         $usage_html = get_subnet_usage_html($record['id']);
@@ -231,24 +163,36 @@ EOL;
             </td>
 
             <td class="list-row" align="left">
-                {$record['ip_addr']} <span title="{$record['ip_mask']}">/{$record['IP_SUBNET_MASK_CIDR']}</span>&nbsp;
+                {$record['ip_addr']} <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>&nbsp;
             </td>
 
             <td class="list-row" align="center" style="vertical-align: middle;">
                 {$usage_html}
             </td>
 
-            <td class="list-row" align="left">
+            <td class="list-row" align="right">
                 {$record['type']}&nbsp;
             </td>
 
             <td class="list-row" align="right">
-                {$record['level']}&nbsp;
+                <span onMouseOver="wwTT(this, event,
+                      'id', 'tt_unit_{$record['UNIT_NUMBER']}',
+                      'type', 'velcro',
+                      'styleClass', 'wwTT_niceTitle',
+                      'direction', 'south',
+                      'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>unit,id=>tt_unit_{$record['UNIT_NUMBER']},unit_id=>{$record['UNIT_NUMBER']}\');'
+                      );"
+                >{$record['UNIT_NUMBER']}</span>&nbsp;
             </td>
 
             <td class="list-row" align="right">
-                <form id="{$form['form_id']}_list_subnet_{$record['id']}"
+                {$record['LVL']}&nbsp;
+            </td>
+
+            <td class="list-row" align="right">
+                <form id="{$form['form_id']}_list_dhcp_server_{$record['id']}"
                     ><input type="hidden" name="subnet_id" value="{$record['id']}"
+                    ><input type="hidden" name="server_id" value="{$form['server_id']}"
                     ><input type="hidden" name="js" value="{$refresh}"
                 ></form>
 
@@ -257,28 +201,30 @@ EOL;
                    onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_block_map\', \'ip_block_start=>{$record['ip_addr']}\', \'display\');');"
                 ><img src="{$images}/silk/shape_align_left.png" border="0"></a>&nbsp;
 EOL;
-    if (auth('subnet_modify')) {
-        $html .= <<<EOL
+        if (auth('subnet_modify',$debug_val)) {
+            $html .= <<<EOL
 
                 <a title="Edit subnet"
                    class="act"
-                   onClick="xajax_window_submit('edit_subnet', xajax.getFormValues('{$form['form_id']}_list_subnet_{$record['id']}'), 'editor');"
+                   onClick="xajax_window_submit('edit_subnet', xajax.getFormValues('{$form['form_id']}_list_dhcp_server_{$record['id']}'), 'editor');"
                 ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 EOL;
-    }
+        }
 
-    if (auth('subnet_del')) {
-        $html .= <<<EOL
+        if (auth('subnet_del',$debug_val)) {
+            $html .= <<<EOL
 
-                <a title="Delete subnet"
+
+                <a title="Remove subnet. ID: {$record['id']}"
                    class="act"
-                   onClick="var doit=confirm('Are you sure you want to delete this subnet?');
-                            if (doit == true)
-                                xajax_window_submit('edit_subnet', xajax.getFormValues('{$form['form_id']}_list_subnet_{$record['id']}'), 'delete');"
-                ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
+                   onClick="var doit=confirm('Are you sure you want to remove this subnet from this DHCP server?');
+                        if (doit == true)
+                            xajax_window_submit('edit_dhcp_server', xajax.getFormValues('{$form['form_id']}_list_dhcp_server_{$record['id']}'), 'delete');"
+                ><img src="{$images}/silk/page_delete.png" border="0"></a>&nbsp;
 EOL;
-    }
+        }
         $html .= <<<EOL
+
             </td>
 
         </tr>
@@ -294,7 +240,7 @@ EOL;
 
     $js .= <<<EOL
         /* Make sure this table is 100% wide */
-        el('{$form['form_id']}_subnet_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
+        el('{$form['form_id']}_dhcp_server_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
 EOL;
 
     // If there was only 1 result, and we're about to display results in the "Search Results" window, display it.

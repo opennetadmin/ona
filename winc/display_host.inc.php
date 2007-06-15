@@ -74,11 +74,12 @@ function ws_display($window_name, $form='') {
     $record['serial_number'] = $device['serial_number'];
     $record['asset_tag'] = $device['asset_tag'];
 
+// FIXME: MP I think this can be removed.. commented out to test that
     // Server info
-    list($status, $rows, $server) = ona_get_server_record(array('host_id' => $record['id']));
-    if ($server['DHCP_SERVER']) {$record['DHCP_SERVER'] = $server['DHCP_SERVER'];}
-    if ($server['DNS_SERVER'])  {$record['DNS_SERVER']  = $server['DNS_SERVER'];}
-    if ($server['ID'])          {$record['SERVER_ID']   = $server['ID'];}
+//    list($status, $rows, $server) = ona_get_server_record(array('host_id' => $record['id']));
+//    if ($server['DHCP_SERVER']) {$record['DHCP_SERVER'] = $server['DHCP_SERVER'];}
+//    if ($server['DNS_SERVER'])  {$record['DNS_SERVER']  = $server['DNS_SERVER'];}
+//    if ($server['ID'])          {$record['SERVER_ID']   = $server['ID'];}
 
     // Get location_number from the location_id
     list($status, $rows, $location) = ona_get_location_record(array('id' => $record['location_id']));
@@ -190,20 +191,20 @@ EOL;
     $domain_rows = 0;
 
     // Determine if this is actaually a server by counting server "uses"
-    if ($record['SERVER_ID']) {
+ //   if ($record['SERVER_ID']) {
         // Is this a DNS server?
         list($status, $domain_rows, $domain_server) = db_get_records($onadb, 'DOMAIN_SERVERS_B', 'SERVER_ID = '. $onadb->qstr($record['SERVER_ID']));
         if ($domain_rows >= 1) { $is_dns_server = 1; }
 
         // Is this a DHCP server?
-        list($status, $dhcp_rows, $dhcp_server) = db_get_records($onadb, 'DHCP_SERVER_SUBNETS_B', 'SERVER_ID = '. $onadb->qstr($record['SERVER_ID']));
+        list($status, $dhcp_rows, $dhcp_server) = db_get_records($onadb, 'dhcp_server_subnets', 'host_id = '. $onadb->qstr($record['id']));
         if ($dhcp_rows >= 1) { $is_dhcp_server = 1; }
 
         // FIXME: added temporarily to display as a server even if it has no subnets/domains assoicated with it
         // I plan on removing this later when server_b is fixed up better.
 //        $is_dns_server = 1;
 //        $is_dhcp_server = 1;
-    }
+//    }
 
     if ($is_dhcp_server==1) {
        $serverinfo .= <<<EOL
@@ -211,7 +212,7 @@ EOL;
                 style="cursor: pointer;"
                 onMouseOver="this.className='row-highlight'"
                 onMouseOut="this.className='row-normal'"
-                onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$record['ID']}\', \'display\')');"
+                onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$record['id']}\', \'display\')');"
             >
                 <td>DHCP</td>
                 <td>Y</td>
@@ -223,9 +224,9 @@ EOL;
     }
     else {
         $serverinfo .= <<<EOL
-            <form id="form_dhcp_serv_{$record['ID']}"
-                ><input type="hidden" name="server" value="{$record['ID']}"
-                ><input type="hidden" name="js" value="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$record['ID']}\', \'display\')');"
+            <form id="form_dhcp_serv_{$record['id']}"
+                ><input type="hidden" name="server" value="{$record['id']}"
+                ><input type="hidden" name="js" value="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$record['id']}\', \'display\')');"
             ></form>
 
             <tr title="Add DHCP service"
@@ -236,7 +237,7 @@ EOL;
         if (auth('advanced',$debug_val)) {
             $serverinfo .= <<<EOL
                 style="cursor: pointer;"
-                onClick="xajax_window_submit('edit_dhcp_server', xajax.getFormValues('form_dhcp_serv_{$record['ID']}'), 'editor');"
+                onClick="xajax_window_submit('edit_dhcp_server', xajax.getFormValues('form_dhcp_serv_{$record['id']}'), 'editor');"
 EOL;
         }
 
