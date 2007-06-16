@@ -61,7 +61,7 @@ EOM
     // Set options[create_ptr] and options[create_a] to Y if they're not set
     $options['create_a'] = sanitize_YN($options['create_a'], 'Y');
     $options['create_ptr'] = sanitize_YN($options['create_ptr'], 'Y');
-    
+
     // Warn about 'name' and 'description' fields exceeding max lengths
     if ($options['force'] == 'N') {
         if(strlen($options['name']) > 255) {
@@ -69,14 +69,14 @@ EOM
             return(array(2, $self['error'] . "\n" .
                 "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n"));
         }
-            
+
         if(strlen($options['description']) > 255) {
             $self['error'] = "ERROR => 'description' exceeds maximum length of 255 characters.";
             return(array(2, $self['error'] . "\n" .
                 "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n"));
         }
     }
-    
+
     // Find the Host they are looking for
     list($status, $rows, $host) = ona_find_host($options['host']);
     if (!$host['id']) {
@@ -387,14 +387,14 @@ EOM
                                   "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n" .
                                   "INFO => Conflicting interface record ID: {$record['id']}\n"));
             }
-            
+
             // Check to be sure we don't exceed maximum lengths
             if(strlen($options['name']) > 255) {
                 $self['error'] = "ERROR => 'name' exceeds maximum length of 255 characters.";
                 return(array(2, $self['error'] . "\n" .
                     "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n"));
             }
-                
+
             if(strlen($options['description']) > 255) {
                 $self['error'] = "ERROR => 'description' exceeds maximum length of 255 characters.";
                 return(array(2, $self['error'] . "\n" .
@@ -465,7 +465,7 @@ EOM
     if (array_key_exists('set_description', $options) && $interface['description'] != $options['set_description']) {
         $SET['description'] = $options['set_description'];
     }
-    
+
     // Check permissions
     list($status, $rows, $host) = ona_find_host($interface['host_id']);
     if (!auth('interface_modify') or !authlvl($host['LVL'])) {
@@ -486,7 +486,7 @@ EOM
             return(array(14, $self['error'] . "\n"));
         }
     }
-    
+
     // Get the interface record after updating (logging)
     list($status, $rows, $new_interface) = ona_get_interface_record(array('id' => $interface['id']));
 
@@ -612,6 +612,18 @@ EOM
     list($status, $rows, $host) = ona_find_host($interface['host_id']);
     list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
 
+    // Check what DNS records are associated with the host.
+    // FIXME: MP for now I'm bailing on the delete.  I wanted to make sure this check was here and have not put a
+    // lot of thought into it yet.  I assume we can display something nice to allow them to remove the dns records too
+    list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']), '', 0);
+    printmsg("DEBUG => total DNS records => {$total_dns}", 3);
+    if ($total_dns > 0) {
+        printmsg("DEBUG => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.",3);
+        $self['error'] = "ERROR => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.";
+        return(array(11, $self['error'] . "\n"));
+    }
+
+    // Check if this is the last interface on a host
     list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $interface['host_id']), '', 0);
     printmsg("DEBUG => total interfaces => {$total_interfaces}", 3);
     if ($total_interfaces == 1) {

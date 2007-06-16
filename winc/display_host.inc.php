@@ -743,6 +743,101 @@ EOL;
 EOL;
 
 
+    // RECORD LIST
+    $tab = 'records';
+    $submit_window = "list_{$tab}";
+    $form_id = "{$submit_window}_filter_form";
+    $_SESSION['ona'][$form_id]['tab'] = $tab;
+    $content_id = "{$window_name}_{$submit_window}";
+    $html .= <<<EOL
+    <!-- INTERFACE LIST -->
+    <div style="border: 1px solid {$color['border']}; margin: 10px 20px;">
+
+        <!-- Tab & Quick Filter -->
+        <table id="{$form_id}_table" cellspacing="0" border="0" cellpadding="0">
+            <tr>
+                <td id="{$form_id}_{$tab}_tab" class="table-tab-active">
+                    Associated {$tab} <span id="{$form_id}_{$tab}_count"></span>
+                </td>
+
+                <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
+                    <form id="{$form_id}" onSubmit="return false;">
+                    <input id="{$form_id}_page" name="page" value="1" type="hidden">
+                    <input name="content_id" value="{$content_id}" type="hidden">
+                    <input name="form_id" value="{$form_id}" type="hidden">
+                    <input name="host_id" value="{$record['id']}" type="hidden">
+                    <div id="{$form_id}_filter_overlay"
+                         style="position: relative;
+                                display: inline;
+                                color: #CACACA;
+                                cursor: text;"
+                         onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
+                    >Filter</div>
+                    <input
+                        id="{$form_id}_filter"
+                        name="filter"
+                        class="filter"
+                        type="text"
+                        value=""
+                        size="10"
+                        maxlength="20"
+                        alt="Quick Filter"
+                        onFocus="el('{$form_id}_filter_overlay').style.display = 'none';"
+                        onBlur="if (this.value == '') el('{$form_id}_filter_overlay').style.display = 'inline';"
+                        onKeyUp="
+                            if (typeof(timer) != 'undefined') clearTimeout(timer);
+                            code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
+                                   '    {$form_id}_last_search = el(\'{$form_id}_filter\').value;' +
+                                   '    document.getElementById(\'{$form_id}_page\').value = 1;' +
+                                   '    xajax_window_submit(\'{$submit_window}\', xajax.getFormValues(\'{$form_id}\'), \'display_list\');' +
+                                   '}';
+                            timer = setTimeout(code, 700);"
+                    >
+                    </form>
+                </td>
+
+            </tr>
+        </table>
+
+        <div id='{$content_id}'>
+            {$conf['loading_icon']}
+        </div>
+EOL;
+
+    if (auth('host_add',$debug_val)) {
+        $html .= <<<EOL
+
+        <!-- ADD RECORD LINK -->
+        <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}">
+            <form id="form_record_{$record['id']}"
+                ><input type="hidden" name="host_id" value="{$record['id']}"
+                ><input type="hidden" name="js" value="{$refresh}"
+            ></form>
+
+            <a title="Add record"
+               class="act"
+               onClick="xajax_window_submit('edit_record', xajax.getFormValues('form_record_{$record['id']}'), 'editor');"
+            ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
+
+            <a title="Add interface"
+               class="act"
+               onClick="xajax_window_submit('edit_record', xajax.getFormValues('form_record_{$record['id']}'), 'editor');"
+            >Add record</a>&nbsp;
+        </div>
+EOL;
+    }
+
+    $html .= "    </div>";
+
+    $js .= <<<EOL
+        /* Setup the quick filter */
+        el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
+        {$form_id}_last_search = '';
+
+        /* Tell the browser to load/display the list */
+        xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display_list');
+EOL;
+
 
     // Insert the new html into the window
     // Instantiate the xajaxResponse object

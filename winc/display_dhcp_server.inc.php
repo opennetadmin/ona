@@ -80,7 +80,10 @@ EOL;
                     DHCP server <a title="View host"
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$record['id']}\', \'display\')');"
-                        >{$record['fqdn']}</a>
+                        >{$record['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
+                                                     class="domain"
+                                                     onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
+                                                  >{$record['domain_fqdn']}</a>
                 </td></tr>
             </table>
 EOL;

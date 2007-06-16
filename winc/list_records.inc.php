@@ -237,37 +237,74 @@ function ws_display_list($window_name, $form='') {
         $form['filter'] = strtolower($form['filter']);
         $filter = ' AND name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
-    list ($status, $rows, $results) =
+
+
+    // If we get a specific host to look for we must do the following
+    // 1. get (A) records that match any interface_id associated with the host
+    // 2. get CNAMES that point to dns records that are using an interface_id associated with the host
+    if ($form['host_id']) {
+        list ($status, $rows, $results) =
         db_get_records(
             $onadb,
             'dns',
-            $where . $filter,
-            $orderby,
+            'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .')',
+            "interface_id",
             $conf['search_results_per_page'],
             $offset
         );
 
-    // If we got less than search_results_per_page, add the current offset to it
-    // so that if we're on the last page $rows still has the right number in it.
-    if ($rows > 0 and $rows < $conf['search_results_per_page']) {
-        $rows += ($conf['search_results_per_page'] * ($page - 1));
-    }
+        // If we got less than search_results_per_page, add the current offset to it
+        // so that if we're on the last page $rows still has the right number in it.
+        if ($rows > 0 and $rows < $conf['search_results_per_page']) {
+            $rows += ($conf['search_results_per_page'] * ($page - 1));
+        }
 
-    // If there were more than $conf['search_results_per_page'] find out how many records there really are
-    else if ($rows >= $conf['search_results_per_page']) {
-        list ($status, $rows, $records) =
+
+        //FIXME: MP not sure how I'm going to do this.. ..............
+        // If there were more than $conf['search_results_per_page'] find out how many records there really are
+        else if ($rows >= $conf['search_results_per_page']) {
+            list ($status, $rows, $records) =
+                db_get_records(
+                    $onadb,
+                    'dns',
+                    $where . $filter,
+                    "",
+                    0
+                );
+        }
+
+    } else {
+        list ($status, $rows, $results) =
             db_get_records(
                 $onadb,
                 'dns',
                 $where . $filter,
-                "",
-                0
+                $orderby,
+                $conf['search_results_per_page'],
+                $offset
             );
+
+
+        // If we got less than search_results_per_page, add the current offset to it
+        // so that if we're on the last page $rows still has the right number in it.
+        if ($rows > 0 and $rows < $conf['search_results_per_page']) {
+            $rows += ($conf['search_results_per_page'] * ($page - 1));
+        }
+
+        // If there were more than $conf['search_results_per_page'] find out how many records there really are
+        else if ($rows >= $conf['search_results_per_page']) {
+            list ($status, $rows, $records) =
+                db_get_records(
+                    $onadb,
+                    'dns',
+                    $where . $filter,
+                    "",
+                    0
+                );
+        }
     }
+
     $count = $rows;
-
-   // $js .= "alert('Where: " . str_replace("'", '"', $status) . "');";
-
 
 
 
@@ -437,30 +474,30 @@ EOL;
 
                 <!-- ACTION ICONS -->
                 <td class="list-row" align="right">
-                    <form id="{$form['form_id']}_list_host_{$record['id']}"
-                        ><input type="hidden" name="host_id" value="{$record['id']}"
+                    <form id="{$form['form_id']}_list_record_{$record['id']}"
+                        ><input type="hidden" name="record_id" value="{$record['id']}"
                         ><input type="hidden" name="js" value="{$refresh}"
                     ></form>&nbsp;
 EOL;
 
-        if (auth('host_modify')) {
+        if (auth('record_modify')) {
             $html .= <<<EOL
 
-                    <a title="Edit host"
+                    <a title="Edit DNS record"
                        class="act"
-                       onClick="xajax_window_submit('edit_host', xajax.getFormValues('{$form['form_id']}_list_host_{$record['id']}'), 'editor');"
+                       onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}_list_host_{$record['id']}'), 'editor');"
                     ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 EOL;
         }
 
-        if (auth('host_del')) {
+        if (auth('record_del')) {
             $html .= <<<EOL
 
-                    <a title="Delete host"
+                    <a title="Delete DNS record"
                        class="act"
-                       onClick="var doit=confirm('Are you sure you want to delete this host?');
+                       onClick="var doit=confirm('Are you sure you want to delete this DNS record?');
                                 if (doit == true)
-                                    xajax_window_submit('edit_host', xajax.getFormValues('{$form['form_id']}_list_host_{$record['id']}'), 'delete');"
+                                    xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}_list_record_{$record['id']}'), 'delete');"
                     ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
         }
@@ -477,12 +514,6 @@ EOL;
 
 
 
-    if ($count == 0 and $form['subnet_id'] and !$form['filter']) {
-        $html .= <<<EOL
-     <tr><td colspan="99" align="center" style="color: red;">Please add the gateway host (router) to this subnet</td></tr>
-EOL;
-    }
-
     $html .= <<<EOL
     </table>
 EOL;
@@ -493,44 +524,8 @@ EOL;
     $js .= <<<EOL
             /* Make sure this table is 100% wide */
             el('{$form['form_id']}_host_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
-            /* Hack to Make sure the other tables are 100% wide */
-            if (el('list_dhcp_leases_filter_form_dhcp_lease_list'))
-                el('list_dhcp_leases_filter_form_dhcp_lease_list').style.width = el('list_dhcp_leases_filter_form_table').offsetWidth + 'px';
-            if (el('list_hosts_aliases_filter_form_alias_list'))
-                el('list_hosts_aliases_filter_form_alias_list').style.width = el('list_hosts_aliases_filter_form_table').offsetWidth + 'px';
 EOL;
 
-    // If there was only 1 result, and we're about to display results in the "Search Results" window, display it.
-    if ($count == 1 and $aliases == 0 and $form['content_id'] == 'search_results_list' and $form['filter'] == '')
-        $js .= $primary_object_js;
-
-    // Add a link to alias results if there were any
-    if ($aliases > 0) {
-        $phrase1 = 'There are also';
-        $phrase2 = 'aliases';
-        $phrase3 = 'that match your search query.';
-        if ($aliases == 1) {
-            $phrase1 = 'There is also';
-            $phrase2 = 'alias';
-            $phrase3 = 'that matches your search query.';
-        }
-
-        $html .= <<<EOL
-    <!-- Alias Links -->
-    <table width="100%" cellspacing="0" border="0" cellpadding="0" style="background-color: #FFFCD5; margin-bottom: 0.2em;">
-        <tr>
-            <td id="page_links" style="font-weight: bold; " class="padding" align="center">
-                {$phrase1}
-                <a title="Display aliases"
-                   class="nav"
-                   onClick="xajax_window_submit('{$window_name}', 'form_id=>{$form['form_id']},type=>aliases', 'change_type');"
-                >{$aliases} {$phrase2}</a>
-                {$phrase3}
-            </td>
-        </tr>
-    </table>
-EOL;
-    }
 
     // Insert the new html into the content div specified
     // Instantiate the xajaxResponse object
