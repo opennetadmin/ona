@@ -484,7 +484,9 @@ function suggest_set_domain_edit_host($q, $el_input, $el_suggest) {
 function suggest_domain_server_edit($q, $el_input, $el_suggest) {
     return(suggest_domain($q, $el_input, $el_suggest));
 }
-
+function suggest_set_domain_edit_record($q, $el_input, $el_suggest) {
+    return(suggest_domain($q, $el_input, $el_suggest));
+}
 
 
 
