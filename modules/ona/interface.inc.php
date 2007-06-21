@@ -59,7 +59,6 @@ EOM
     $options['force'] = sanitize_YN($options['force'], 'N');
 
     // Set options[create_ptr] and options[create_a] to Y if they're not set
-    $options['create_a'] = sanitize_YN($options['create_a'], 'Y');
     $options['create_ptr'] = sanitize_YN($options['create_ptr'], 'Y');
 
     // Warn about 'name' and 'description' fields exceeding max lengths
@@ -203,8 +202,7 @@ EOM
                 'subnet_id'                => $subnet['id'],
                 'ip_addr'                  => $options['ip'],
                 'mac_addr'                 => $options['mac'],
-/* FIXME:               'CREATE_DNS_ENTRY'         => $options['create_a'],
-                'CREATE_REVERSE_DNS_ENTRY' => $options['create_ptr'], */
+/* FIXME:       'CREATE_REVERSE_DNS_ENTRY' => $options['create_ptr'], */
                 'name'                     => $options['name'],
                 'description'              => $options['description']
             )
@@ -260,7 +258,7 @@ function interface_modify($options="") {
        (!$options['interface'] and !$options['host']) or
        (!$options['set_ip'] and
         !$options['set_mac'] and
-        !$options['set_create_a'] and
+        !$options['set_description'] and
         !$options['set_create_ptr'] and
         !$options['set_name']
        ) ) {

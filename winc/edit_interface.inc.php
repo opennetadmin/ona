@@ -21,7 +21,7 @@
 //     sent to the browser after the ws_save() function is called.
 //////////////////////////////////////////////////////////////////////////////
 function ws_editor($window_name, $form='') {
-    global $conf, $self, $mysql, $onadb;
+    global $conf, $self, $onadb;
     global $font_family, $color, $style, $images, $interface;
     $window = array();
 
@@ -65,7 +65,6 @@ function ws_editor($window_name, $form='') {
     if($interface['host_id']) list($status, $rows, $host) = ona_find_host($interface['host_id']);
 
     // Prepare some stuff for displaying checkboxes
-    if ($interface['CREATE_DNS_ENTRY'] != 'N') { $interface['CREATE_DNS_ENTRY'] = 'CHECKED'; }
     if ($interface['CREATE_REVERSE_DNS_ENTRY'] != 'N') { $interface['CREATE_REVERSE_DNS_ENTRY'] = 'CHECKED'; }
 
 
@@ -250,14 +249,16 @@ EOL;
 
         <tr>
             <td align="right" nowrap="true">
-                Create DNS (A) record
+                Interface description
             </td>
             <td class="padding" align="left" width="100%">
                 <input
-                    name="set_create_a"
-                    alt="Create A record"
-                    type="checkbox"
-                    {$interface['CREATE_DNS_ENTRY']}
+                    name="set_description"
+                    alt="Interface description"
+                    value="{$interface['description']}"
+                    class="edit"
+                    type="text"
+                    size="25" maxlength="255"
                 >
             </td>
         </tr>
@@ -314,7 +315,7 @@ EOL;
 //     Creates/updates an interface record.
 //////////////////////////////////////////////////////////////////////////////
 function ws_save($window_name, $form='') {
-    global $include, $conf, $self, $mysql, $onadb;
+    global $include, $conf, $self, $onadb;
 
     // Check permissions (there is no interface_add, it's merged with host_add)
     if (! (auth('interface_modify') and auth('host_add')) ) {
@@ -333,7 +334,6 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
     // set_create_a and set_create_ptr should both be set!
-    if (!$form['set_create_a']) $form['set_create_a'] = 'N';
     if (!$form['set_create_ptr']) $form['set_create_ptr'] = 'N';
 
 
@@ -345,7 +345,7 @@ function ws_save($window_name, $form='') {
         $form['ip'] = $form['set_ip']; unset($form['set_ip']);
         $form['mac'] = $form['set_mac']; unset($form['set_mac']);
         $form['name'] = $form['set_name']; unset($form['set_name']);
-        $form['create_a'] = $form['set_create_a']; unset($form['set_create_a']);
+        $form['description'] = $form['set_description']; unset($form['set_description']);
         $form['create_ptr'] = $form['set_create_ptr']; unset($form['set_create_ptr']);
     }
     else {
@@ -384,7 +384,7 @@ function ws_save($window_name, $form='') {
 //     browser run after a successful delete.
 //////////////////////////////////////////////////////////////////////////////
 function ws_delete($window_name, $form='') {
-    global $include, $conf, $self, $mysql, $onadb;
+    global $include, $conf, $self, $onadb;
 
     // Check permissions
     if (!auth('interface_del')) {

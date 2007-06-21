@@ -103,9 +103,8 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Network</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">MAC</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">DNS</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Description</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">PTR</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Last Ping</td>
                 <td class="list-header" align="center">&nbsp;</td>
             </tr>
 EOL;
@@ -132,12 +131,11 @@ EOL;
             $record['ip_mask_cidr'] = ip_mangle($record['ip_mask'], 'cidr');
             if ($record['mac_addr']) { $record['mac_addr'] = mac_mangle($record['mac_addr']); }
 
+            $record['description_short'] = truncate($record['description'], 40);
+
             // Escape data for display in html
             foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
 
-            // Format the last ping response (colored red if more than 90 days ago)
-            if ((time() - date_mangle($record['LAST_PING_RESPONSE'], 'ts')) > (60 * 60 * 24 * 90) )
-                $record['LAST_PING_RESPONSE'] = "<font color=\"red\">{$record['LAST_PING_RESPONSE']}</font>";
 
             $html .= <<<EOL
             <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
@@ -179,16 +177,12 @@ EOL;
                     {$record['name']}&nbsp;
                 </td>
 
-                <td class="list-row" align="center">
-                    {$record['CREATE_DNS_ENTRY']}&nbsp;
+                <td class="list-row" align="left" title="{$record['description']}">
+                    {$record['description_short']}&nbsp;
                 </td>
 
                 <td class="list-row" align="center">
                     {$record['CREATE_REVERSE_DNS_ENTRY']}&nbsp;
-                </td>
-
-                <td class="list-row" align="left">
-                    {$record['LAST_PING_RESPONSE']}&nbsp;
                 </td>
 
                 <td class="list-row" align="right">
