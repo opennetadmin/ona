@@ -198,13 +198,7 @@ function quick_search($q) {
 
     printmsg("DEBUG => quick_search({$q}) called", 3);
     
-    // See if $q identifies a subnet record (by IP, ID, or Description)
-    list($status, $rows, $record) = ona_find_subnet($q);
-    // If it was, display the associated subnet record
-    if ($rows) {
-        printmsg("DEBUG => quick_search() returning subnet match (ID={$record['id']})", 3);
-        return( array('subnets', array('subnet_id' => $record['id']) ) );
-    }
+
 
     // See if $q identifies an interface record (by IP, MAC, etc)
     list($status, $rows, $record) = ona_find_interface($q);
@@ -214,6 +208,13 @@ function quick_search($q) {
         return( array('hosts', array('host_id' => $record['host_id']) ) );
     }
 
+    // See if $q identifies a subnet record (by IP, ID, or Description)
+    list($status, $rows, $record) = ona_find_subnet($q);
+    // If it was, display the associated subnet record
+    if ($rows) {
+        printmsg("DEBUG => quick_search() returning subnet match (ID={$record['id']})", 3);
+        return( array('subnets', array('subnet_id' => $record['id']) ) );
+    }
 
     // Well, I guess we'll assume $q is a hostname/alias search
     printmsg("DEBUG => quick_search() found no subnet or host match. Returning hostname = {$q}" ,3);

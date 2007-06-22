@@ -58,7 +58,7 @@ function ws_editor($window_name, $form='') {
 
     // Set up the types of records we can edit with this form
     $record_types = array('A','CNAME','TXT','NS','MX','AAAA','SRV');
-    foreach (array_keys($record_types) as $id) {
+    foreach (array_keys((array)$record_types) as $id) {
         //$device_types[$id] = htmlentities($device_types[$id]);
         $selected = '';
         if ($record_types[$id] == $dns_record['type']) { $selected = 'SELECTED'; }
@@ -67,8 +67,8 @@ function ws_editor($window_name, $form='') {
 
 
     // Escape data for display in html
-    foreach(array_keys($dns_record) as $key) { $dns_record[$key] = htmlentities($dns_record[$key], ENT_QUOTES); }
-    foreach(array_keys($interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$dns_record) as $key) { $dns_record[$key] = htmlentities($dns_record[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
 
 
     // Set the window title:

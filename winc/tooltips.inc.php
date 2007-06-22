@@ -199,7 +199,7 @@ EOL;
 
 
         // Escape data for display in html
-        foreach(array_keys($record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES);}
+        foreach(array_keys((array)$record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES);}
 
         // determine the priority and setup an image for it
         switch ($record['priority']) {
@@ -367,7 +367,7 @@ function get_location_html($location_id) {
     list($status, $rows, $location) = ona_get_location_record(array('id' => $location_id));
     if ($rows == 0 or $status) return(array('', ''));
 
-    foreach(array_keys($location) as $key) { $location[$key] = htmlentities($location[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$location) as $key) { $location[$key] = htmlentities($location[$key], ENT_QUOTES); }
 
     $style['content_box'] = <<<EOL
         margin: 10px 20px;
@@ -582,8 +582,8 @@ EOL;
     // Calculate the percentage of the subnet that's used (total size - allocated hosts - dhcp pool size)
     $usage_html = get_subnet_usage_html($subnet['id']);
 
-    foreach(array_keys($subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
-    foreach(array_keys($location) as $key) { $location[$key] = htmlentities($location[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$location) as $key) { $location[$key] = htmlentities($location[$key], ENT_QUOTES); }
 
     $html .= <<<EOL
 
@@ -1026,7 +1026,7 @@ EOL;
         color: #FFFFFF;
 EOL;
 
-    foreach(array_keys($form) as $key) { $form[$key] = htmlentities($form[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$form) as $key) { $form[$key] = htmlentities($form[$key], ENT_QUOTES); }
 
     $html .= <<<EOL
     <!-- FREE IP QUICK SEARCH -->
@@ -1146,7 +1146,7 @@ function quick_pool_server_search($form) {
 
     // Build failover group list
     list($status, $rows, $fg) = db_get_records($onadb, 'dhcp_failover_groups', 'id >= 1', 'id');
-    $fg_list = '<option value="">&nbsp;</option>\n';
+    $fg_list = '<option value="0">&nbsp;</option>\n';
 
     foreach ($fg as $record) {
         list($status, $rows, $fail_host1) = ona_find_host($record['primary_server_id']);
@@ -1272,8 +1272,8 @@ EOL;
 
     foreach($interfaces as $interface) {
         list($status, $rows, $subnet) = ona_get_subnet_record(array('ID'=>$interface['subnet_id']));
-        foreach(array_keys($interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
-        foreach(array_keys($subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
+        foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
+        foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
         $ip = ip_mangle($interface['ip_addr'],'dotted');
 
         $html .= <<<EOL

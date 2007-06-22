@@ -57,9 +57,7 @@ function ws_editor($window_name, $form='') {
     
 
     // Escape data for display in html
-    foreach(array_keys($domain) as $key) {
-        $domain[$key] = htmlentities($domain[$key], ENT_QUOTES);
-    }
+    foreach(array_keys((array)$domain) as $key) {$domain[$key] = htmlentities($domain[$key], ENT_QUOTES);}
     
     
     
@@ -80,7 +78,7 @@ function ws_editor($window_name, $form='') {
         el('{$window_name}_edit_form').onsubmit = function() { return false; };
 
 EOL;
-printmsg("DEBUG => blah 1 {$options['name']}",3);    
+
     // Define the window's inner html
     $window['html'] = <<<EOL
     

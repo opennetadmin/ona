@@ -66,11 +66,11 @@ function ws_editor($window_name, $form='') {
 
 
     // Escape data for display in html
-    foreach(array_keys($subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
-    foreach(array_keys($failover) as $key) { $failover[$key] = htmlentities($failover[$key], ENT_QUOTES); }
-    foreach(array_keys($zone) as $key)  { $zone[$key] = htmlentities($zone[$key], ENT_QUOTES); }
-    foreach(array_keys($host) as $key)  { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
-    foreach(array_keys($server) as $key)  { $server[$key] = htmlentities($server[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$failover) as $key) { $failover[$key] = htmlentities($failover[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$zone) as $key)  { $zone[$key] = htmlentities($zone[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$host) as $key)  { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$server) as $key)  { $server[$key] = htmlentities($server[$key], ENT_QUOTES); }
 
 
 

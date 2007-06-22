@@ -31,7 +31,7 @@ function ws_editor($window_name, $form='') {
 
 
     // Escape data for display in html
-    foreach(array_keys($block) as $key) { $block[$key] = htmlentities($block[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$block) as $key) { $block[$key] = htmlentities($block[$key], ENT_QUOTES); }
 
 
     // Set the window title:

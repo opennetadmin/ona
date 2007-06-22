@@ -85,10 +85,10 @@ function ws_display_list($window_name, $form='') {
     if ($form['subnetname']) {
         // This field is always upper case
         $form['subnetname'] = strtoupper($form['subnetname']);
-        $where .= $and . "name LIKE " . $form['subnetname'];
-//        $where .= $and . "name LIKE " . $onadb->qstr('%'.$form['subnetname'].'%');
+        //$where .= $and . "name LIKE " . $form['subnetname'];
+        $where .= $and . "name LIKE " . $onadb->qstr('%'.$form['subnetname'].'%');
         $and = " AND ";
-        //$js .= "alert('Where: " . str_replace("'", '"', $where) . "');";
+        $js .= "alert('Where: " . str_replace("'", '"', $where) . "');";
 
     }
 

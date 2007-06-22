@@ -7,11 +7,11 @@ global $onadb;
 
 
 // Build subnet type list
-list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', 'id >= 1', 'name');
+list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', 'id >= 0', 'display_name');
 $subnet_type_list = '<option value="">&nbsp;</option>\n';
-$record['name'] = htmlentities($record['name']);
+$record['display_name'] = htmlentities($record['display_name']);
 foreach ($records as $record) {
-    $subnet_type_list .= "<option value=\"{$record['id']}\">{$record['name']}</option>\n";
+    $subnet_type_list .= "<option value=\"{$record['id']}\">{$record['display_name']}</option>\n";
 }
 
 
@@ -169,7 +169,7 @@ $window['html'] = <<<EOL
             <div id="suggest_notes" class="suggest"></div>
         </td>
     </tr>
-
+    <!--
     <tr>
         <td align="right" class="asearch-line">
             <u>U</u>nit number
@@ -180,7 +180,7 @@ $window['html'] = <<<EOL
             <div id="suggest_unit_number" class="suggest"></div>
         </td>
     </tr>
-    
+    -->
     <tr id='more_options_link'>
         <td align="right" class="asearch-line">
             <a class="nav" onClick="xajax_window_submit('{$window_name}', 'show more', 'more_host_options');">More &gt;&gt;</a>
@@ -258,7 +258,7 @@ $window['html'] = <<<EOL
             <div id="suggest_ip_subnet_thru" class="suggest"></div>
         </td>
     </tr>
-    
+    <!--
     <tr>
         <td align="right" class="asearch-line">
             <u>U</u>nit number
@@ -269,7 +269,7 @@ $window['html'] = <<<EOL
             <div id="suggest_unit_number_subnet" class="suggest"></div>
         </td>
     </tr>
-    
+    -->
     <tr>
         <td align="right" class="asearch-line">
             &nbsp;
@@ -341,11 +341,11 @@ function ws_more_host_options($window_name, $form='') {
     
     
     // Build device manufacturer list
-    list($status, $rows, $records) = db_get_records($onadb, 'MANUFACTURERS_B', 'ID >= 1', 'MANUFACTURER_NAME');
+    list($status, $rows, $records) = db_get_records($onadb, 'manufacturers', 'ID >= 1', 'name');
     $device_manufacturer_list = '<option value="">&nbsp;</option>\n';
-    $record['MANUFACTURER_NAME'] = htmlentities($record['MANUFACTURER_NAME']);
+    $record['name'] = htmlentities($record['name']);
     foreach ($records as $record) {
-        $device_manufacturer_list .= "<option value=\"{$record['ID']}\">{$record['MANUFACTURER_NAME']}</option>\n";
+        $device_manufacturer_list .= "<option value=\"{$record['id']}\">{$record['name']}</option>\n";
     }
     
     

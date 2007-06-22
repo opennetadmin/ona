@@ -82,7 +82,7 @@ function ws_editor($window_name, $form='') {
     asort($device_types);
     $device_model_list = '<option value="">&nbsp;</option>\n';
     list($status, $rows, $device) = ona_get_device_record(array('id' => $host['device_id']));
-    foreach (array_keys($device_types) as $id) {
+    foreach (array_keys((array)$device_types) as $id) {
         $device_types[$id] = htmlentities($device_types[$id]);
         $selected = '';
         if ($id == $device['device_type_id']) { $selected = 'SELECTED'; }
@@ -92,9 +92,9 @@ function ws_editor($window_name, $form='') {
 
 
     // Escape data for display in html
-    foreach(array_keys($host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
-    foreach(array_keys($subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
-    foreach(array_keys($interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
 
 
     // Set the window title:

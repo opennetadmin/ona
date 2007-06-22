@@ -66,9 +66,43 @@ function ws_display_list($window_name, $form='') {
     // HOSTNAME
     $aliases = 0;
     if ($form['hostname']) {
+        // Find the domain name piece of the hostname.
+        // FIXME: MP this was taken from the ona_find_domain function. make that function have the option
+        // to NOT return a default domain.
+
+        // Split it up on '.' and put it in an array backwards
+        $parts = array_reverse(explode('.', $form['hostname']));
+    
+        // Find the domain name that best matches
+        $name = '';
+        $domain = array();
+        foreach ($parts as $part) {
+            if (!$rows) {
+                if (!$name) $name = $part;
+                else $name = "{$part}.{$name}";
+                list($status, $rows, $record) = ona_get_domain_record(array('name' => $name));
+                if ($rows)
+                    $domain = $record;
+            }
+            else {
+                list($status, $rows, $record) = ona_get_domain_record(array('name' => $part, 'parent_id' => $domain['id']));
+                if ($rows)
+                    $domain = $record;
+            }
+        }
+
+        $withdomain = '';
+        $hostname = $form['hostname'];
+        if (array_key_exists('id', $domain)) {
+            $withdomain = "AND domain_id = {$domain['id']}";
+        
+    
+        // Now find what the host part of $search is
+        $hostname = str_replace(".{$domain['fqdn']}", '', $form['hostname']);
+        }
         $where .= $and . "id IN (SELECT id " .
                                 "  FROM dns " .
-                                "  WHERE name LIKE " . $onadb->qstr('%'.$form['hostname'].'%') ." )";
+                                "  WHERE name LIKE '%{$hostname}%' {$withdomain} )";
         $and = " AND ";
     }
 
@@ -181,8 +215,8 @@ function ws_display_list($window_name, $form='') {
         // Find model_id's that have a device_type_id of $form['type']
         list($status, $rows, $records) =
             db_get_records($onadb,
-                           'DEVICE_MODELS_B',
-                           array('MANUFACTURER_ID' => $form['manufacturer'])
+                           'models',
+                           array('manufacturer_id' => $form['manufacturer'])
                           );
         // If there were results, add each one to the $where clause
         if ($rows > 0) {

@@ -119,8 +119,8 @@ function ws_display_list($window_name, $form='') {
             <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Usage</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
-            <td class="list-header" align="center" style="{$style['borderR']};">Unit</td>
-            <td class="list-header" align="center" style="{$style['borderR']};">Lvl</td>
+            <!--  <td class="list-header" align="center" style="{$style['borderR']};">Unit</td>
+            <td class="list-header" align="center" style="{$style['borderR']};">Lvl</td>    -->
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
 EOL;
@@ -174,7 +174,7 @@ EOL;
                 {$record['type']}&nbsp;
             </td>
 
-            <td class="list-row" align="right">
+            <!-- <td class="list-row" align="right">
                 <span onMouseOver="wwTT(this, event,
                       'id', 'tt_unit_{$record['UNIT_NUMBER']}',
                       'type', 'velcro',
@@ -187,7 +187,7 @@ EOL;
 
             <td class="list-row" align="right">
                 {$record['LVL']}&nbsp;
-            </td>
+            </td>  -->
 
             <td class="list-row" align="right">
                 <form id="{$form['form_id']}_list_dhcp_server_{$record['id']}"
@@ -215,7 +215,7 @@ EOL;
             $html .= <<<EOL
 
 
-                <a title="Remove subnet. ID: {$record['id']}"
+                <a title="Remove subnet association with server."
                    class="act"
                    onClick="var doit=confirm('Are you sure you want to remove this subnet from this DHCP server?');
                         if (doit == true)
