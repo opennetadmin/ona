@@ -105,7 +105,7 @@ print <<<EOL
     </div>
 
     <!-- Workspace div -->
-    <div id="content_table" style="height: 93%;" class="theWholeBananna">
+    <div id="content_table" style="height: 92%;" class="theWholeBananna">
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>&nbsp;
     </div>

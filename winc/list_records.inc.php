@@ -243,6 +243,9 @@ function ws_display_list($window_name, $form='') {
     // 1. get (A) records that match any interface_id associated with the host
     // 2. get CNAMES that point to dns records that are using an interface_id associated with the host
     if ($form['host_id']) {
+        // Get the host record so we know what the primary interface is
+        list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']), '');
+
         list ($status, $rows, $results) =
         db_get_records(
             $onadb,
@@ -318,6 +321,7 @@ function ws_display_list($window_name, $form='') {
 
             <!-- Table Header -->
             <tr>
+                <td class="list-header" align="center" style="{$style['border']}; width: 16px;">&nbsp;</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Time to Live</td>
@@ -338,6 +342,7 @@ EOL;
         // Get additional info about each host record
 
 
+
         // Check if we've already seen this record before.
         if ($record['name'] == $last_record['name'] &&
             $record['domain_id'] == $last_record['domain_id']) {
@@ -345,6 +350,12 @@ EOL;
             continue;
         } else {
             $record = $results[$i-1];
+
+            // if the interface is the primary_dns_id for the host then mark it
+            $primary_record = '&nbsp;';
+            if ($host['primary_dns_id'] == $record['id']) {
+                $primary_record = '<img title="Primary DNS record" src="'.$images.'/silk/font_go.png" border="0">';
+            }
 
             // Check for interface records (and find out how many there are)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('id' => $record['interface_id']), '');
@@ -405,6 +416,9 @@ EOL;
         $primary_object_js = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$record['id']}\', \'display\')');";
         $html .= <<<EOL
             <tr onMouseOver="this.className='row-highlight';" onMouseOut="this.className='row-normal';">
+                <td class="list-row">
+                {$primary_record}
+                </td>
 
                 <td class="list-row">
                     <span title="Record. ID: {$record['id']}"

@@ -284,11 +284,11 @@ EOL;
 
 EOL;
     // Get a list of servers
-    list($status, $rows, $dhcpservers) = db_get_records($onadb, 'DHCP_SERVER_SUBNETS_B', array('SUBNET_ID' => $record['id']));
+    list($status, $rows, $dhcpservers) = db_get_records($onadb, 'dhcp_server_subnets', array('subnet_id' => $record['id']));
     if ($rows) {
         foreach ($dhcpservers as $dhcpserver) {
 
-            list($status, $rows, $host) = ona_find_host($dhcpserver['SERVER_ID']);
+            list($status, $rows, $host) = ona_find_host($dhcpserver['host_id']);
             $host['fqdn'] = htmlentities($host['fqdn'], ENT_QUOTES);
             $html .= <<<EOL
                 <tr onMouseOver="this.className='row-highlight';"
@@ -301,8 +301,8 @@ EOL;
                     </td>
                      <td align="right" nowrap="true">
                         <form id="form_dhcp_serv_{$dhcpserver['id']}"
-                                ><input type="hidden" name="server_id" value="{$host['fqdn']}"
-                                ><input type="hidden" name="subnet_id" value="{$dhcpserver['SUBNET_ID']}"
+                                ><input type="hidden" name="server" value="{$host['fqdn']}"
+                                ><input type="hidden" name="subnet" value="{$dhcpserver['subnet_id']}"
                                 ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
 EOL;
