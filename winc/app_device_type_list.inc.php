@@ -147,6 +147,7 @@ function ws_display_list($window_name, $form) {
         <!-- Table Header -->
         <tr>
             <td class="list-header" align="center" style="{$style['borderR']};">Device type</td>
+            <td class="list-header" align="center" style="{$style['borderR']};">Usage</td>
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
 
@@ -188,8 +189,10 @@ printmsg($record[''], 0);
         list($status, $rows, $role) = ona_get_role_record(array('id' => $record['role_id']));
         $record['role_name'] = $role['name'];
 
+        list ($status, $usage_rows, $tmp) = db_get_records($onadb, 'devices', "device_type_id = {$record['id']}", '', 0);
+
         // Escape data for display in html
-        foreach(array_keys($record) as $key) {
+        foreach(array_keys((array)$record) as $key) {
             $record[$key] = htmlentities($record[$key], ENT_QUOTES);
         }
 
@@ -201,6 +204,10 @@ printmsg($record[''], 0);
                    class="act"
                    onClick="xajax_window_submit('app_device_type_edit', '{$record['id']}', 'editor');"
                 >{$record['manufacturer_name']}, {$record['model_name']} ({$record['role_name']})</a>&nbsp;
+            </td>
+
+            <td class="list-row">
+                {$usage_rows}&nbsp;
             </td>
 
             <td align="right" class="list-row" nowrap="true">

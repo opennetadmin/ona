@@ -149,7 +149,6 @@ function ws_display_list($window_name, $form) {
             <td class="list-header" align="center" style="{$style['borderR']};">Manufacturer</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Device model</td>
             <td class="list-header" align="center" style="{$style['borderR']};">SNMP sysobjectid</td>
-            <td class="list-header" align="center" style="{$style['borderR']};">Count</td>
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
 
@@ -185,10 +184,8 @@ EOL;
         list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $record['manufacturer_id']));
         $record['manufacturer_name'] = $manufacturer['name'];
 
-        list ($status, $usage_rows, $tmp) = db_get_records($onadb, 'device_types', "model_id = {$record['id']}", '', 0);
-
         // Escape data for display in html
-        foreach(array_keys($record) as $key) {
+        foreach(array_keys((array)$record) as $key) {
             $record[$key] = htmlentities($record[$key], ENT_QUOTES);
         }
 
@@ -208,10 +205,6 @@ EOL;
 
             <td class="list-row">
                 {$record['snmp_sysobjectid']}&nbsp;
-            </td>
-
-            <td class="list-row">
-                {$usage_rows}&nbsp;
             </td>
 
             <td align="right" class="list-row" nowrap="true">
