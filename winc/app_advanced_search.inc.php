@@ -300,27 +300,27 @@ function ws_more_host_options($window_name, $form='') {
     $html = '';
     $js = '';
     
-    // Build classification list
-    list($status, $rows, $records) = db_get_records($onadb, 'INFOBIT_TYPES_B', 'ID >= 1', 'NAME');
+    // Build custom attribute list
+    // TODO: MP fix this crap for custom_attributes
+    list($status, $rows, $records) = db_get_records($onadb, 'custom_attributes', 'id >= 1', 'custom_attribute_type_id');
     $classification_list = '<option value="">&nbsp;</option>\n';
     foreach ($records as $record) {
-        list($status, $rows, $infobits) = db_get_records($onadb, 'INFOBITS_B', array('INFOBIT_TYPE_ID' => $record['ID']), 'VALUE');
+        list($status, $rows, $customs) = db_get_records($onadb, 'custom_attribute_types', array('INFOBIT_TYPE_ID' => $record['ID']), 'VALUE');
         $record['NAME'] = htmlentities($record['NAME']);
         $infobit['VALUE'] = htmlentities($infobit['VALUE']);
-        foreach ($infobits as $infobit) {
-            $classification_list .= "<option value=\"{$infobit['ID']}\">{$record['NAME']} ({$infobit['VALUE']})</option>\n";
+        foreach ($customs as $custom) {
+            $custom_attribute_list .= "<option value=\"{$custom['ID']}\">{$record['NAME']} ({$custom['VALUE']})</option>\n";
         }
-        unset($infobits, $infobit);
+        unset($customs, $custom);
     }
     
     
     // Build device model list
-    list($status, $rows, $records) = db_get_records($onadb, 'DEVICE_MODELS_B', 'ID >= 1');
+    list($status, $rows, $records) = db_get_records($onadb, 'models', 'id >= 1');
     $models = array();
     foreach ($records as $record) {
-        list($status, $rows, $manufacturer) = ipdb_get_manufacturer_record(array('ID' => $record['MANUFACTURER_ID']));
-        list($status, $rows, $type) = ipdb_get_device_type_record(array('ID' => $record['DEVICE_TYPE_ID']));
-        $models[$record['ID']] = "{$manufacturer['MANUFACTURER_NAME']} {$record['MODEL_DESCRIPTION']} ({$type['DEVICE_TYPE_DESCRIPTION']})";
+        list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $record['manufacturer_id']));
+        $models[$record['id']] = "{$manufacturer['name']}, {$record['name']}";
     }
     asort($models);
     $device_model_list = '<option value="">&nbsp;</option>\n';
@@ -332,11 +332,11 @@ function ws_more_host_options($window_name, $form='') {
     
     
     // Build device type list
-    list($status, $rows, $records) = db_get_records($onadb, 'DEVICE_TYPES_B', 'ID >= 1', 'DEVICE_TYPE_DESCRIPTION');
-    $device_type_list = '<option value="">&nbsp;</option>\n';
-    $record['DEVICE_TYPE_DESCRIPTION'] = htmlentities($record['DEVICE_TYPE_DESCRIPTION']);
+    list($status, $rows, $records) = db_get_records($onadb, 'roles', 'id >= 1', 'name');
+    $device_role_list = '<option value="">&nbsp;</option>\n';
+    $record['name'] = htmlentities($record['name']);
     foreach ($records as $record) {
-        $device_type_list .= "<option value=\"{$record['ID']}\">{$record['DEVICE_TYPE_DESCRIPTION']}</option>\n";
+        $device_role_list .= "<option value=\"{$record['id']}\">{$record['name']}</option>\n";
     }
     
     
@@ -354,11 +354,11 @@ function ws_more_host_options($window_name, $form='') {
     <table cellspacing="0" border="0" cellpadding="0">
     <tr>
         <td align="right" class="asearch-line">
-            <u>C</u>lassification
+            <u>C</u>ustom attribute
         </td>
         <td align="left" class="asearch-line">
-            <select id="classification" name="classification" class="edit" accesskey="c">
-                {$classification_list}
+            <select id="custom_attribute" name="custom_attribute" class="edit" accesskey="c">
+                {$custom_attribute_list}
             </select>
         </td>
     </tr>
@@ -376,11 +376,11 @@ function ws_more_host_options($window_name, $form='') {
 
     <tr>
         <td align="right" class="asearch-line">
-            Device <u>t</u>ype
+            Device <u>t</u>ype Role
         </td>
         <td align="left" class="asearch-line">
-            <select id="type" name="type" class="edit" accesskey="t">
-                {$device_type_list}
+            <select id="role" name="role" class="edit" accesskey="t">
+                {$device_role_list}
             </select>
         </td>
     </tr>

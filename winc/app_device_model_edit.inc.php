@@ -63,7 +63,7 @@ EOL;
 
 
     // Escape data for display in html
-    foreach(array_keys($record) as $key) {
+    foreach(array_keys((array)$record) as $key) {
         $record[$key] = htmlentities($record[$key], ENT_QUOTES);
     }
 
@@ -200,7 +200,7 @@ function ws_save($window_name, $form='') {
 
             $log_msg = "INFO => Device Model UPDATED:{$new_model['id']}: ";
             $more="";
-            foreach(array_keys($original_model) as $key) {
+            foreach(array_keys((array)$original_model) as $key) {
                 if($original_model[$key] != $new_model[$key]) {
                     $log_msg .= $more . $key . "[" .$original_model[$key] . "=>" . $new_model[$key] . "]";
                     $more= ";";

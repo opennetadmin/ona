@@ -738,6 +738,8 @@ EOL;
         el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
         {$form_id}_last_search = '';
 
+
+
         /* Tell the browser to load/display the list */
         xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display_list');
 EOL;

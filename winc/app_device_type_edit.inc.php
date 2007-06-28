@@ -74,7 +74,7 @@ EOL;
     }
 
     // Escape data for display in html
-    foreach(array_keys($record) as $key) {
+    foreach(array_keys((array)$record) as $key) {
         $record[$key] = htmlentities($record[$key], ENT_QUOTES);
     }
 

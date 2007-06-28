@@ -178,6 +178,8 @@ function get_mac_suggestions($q, $max_results=10) {
 
     $q = strtoupper($q);
     //if (preg_match('/[^\%\:\.\-0-9A-F]/', $q)) return(array()); // It's not a mac address ;)
+    // MP: I added the %3A line because some searches were comming through with the : replaced.
+    $q = preg_replace('/\%3A/', '', $q);  // Discard characters that aren't stored in the db
     $q = preg_replace('/[\:\.\-]/', '', $q);  // Discard characters that aren't stored in the db
 
     $results = get_text_suggestions($q . '%', 'interfaces', 'mac_addr', $max_results);

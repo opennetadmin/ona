@@ -95,14 +95,14 @@ function ws_display_list($window_name, $form='') {
         $hostname = $form['hostname'];
         if (array_key_exists('id', $domain)) {
             $withdomain = "AND domain_id = {$domain['id']}";
-        
-    
-        // Now find what the host part of $search is
-        $hostname = str_replace(".{$domain['fqdn']}", '', $form['hostname']);
+            // Now find what the host part of $search is
+            $hostname = str_replace(".{$domain['fqdn']}", '', $form['hostname']);
         }
-        $where .= $and . "id IN (SELECT id " .
+        // TODO: MP this seems to be kinda slow (gee I wonder why).. look into speeding things up somehow.
+        //       This also does not search for CNAME records etc.  only things with interface_id.. how to fix that issue.......?
+        $where .= $and . "id IN (select host_id from interfaces where id in (SELECT interface_id " .
                                 "  FROM dns " .
-                                "  WHERE name LIKE '%{$hostname}%' {$withdomain} )";
+                                "  WHERE name LIKE '%{$hostname}%' {$withdomain} ))";
         $and = " AND ";
     }
 
@@ -111,11 +111,42 @@ function ws_display_list($window_name, $form='') {
     if ($form['domain']) {
         // FIXME: does this clause work correctly?
         printmsg("FIXME: => Does \$form['domain'] work correctly in list_hosts.inc.php, line 79?", 2);
-        // We do a sub-select to find interface id's that match
-        $where .= $and . "domain_id IN ( SELECT id " .
-                                        "  FROM dns " .
-                                        "  WHERE name LIKE " . $onadb->qstr($form['domain'].'%') . " ) ";
-        $and = " AND ";
+        // Find the domain name piece of the hostname.
+        // FIXME: MP this was taken from the ona_find_domain function. make that function have the option
+        // to NOT return a default domain.
+
+        // Split it up on '.' and put it in an array backwards
+        $parts = array_reverse(explode('.', $form['domain']));
+    
+        // Find the domain name that best matches
+        $name = '';
+        $domain = array();
+        foreach ($parts as $part) {
+            if (!$rows) {
+                if (!$name) $name = $part;
+                else $name = "{$part}.{$name}";
+                list($status, $rows, $record) = ona_get_domain_record(array('name' => $name));
+                if ($rows)
+                    $domain = $record;
+            }
+            else {
+                list($status, $rows, $record) = ona_get_domain_record(array('name' => $part, 'parent_id' => $domain['id']));
+                if ($rows)
+                    $domain = $record;
+            }
+        }
+
+        if (array_key_exists('id', $domain)) {
+    
+            // We do a sub-select to find id's that match
+            $where .= $and . "id IN (SELECT host_id ".
+                                       "FROM interfaces " .
+                                        "WHERE id IN (" .
+                                            "( SELECT interface_id " .
+                                            "  FROM dns " .
+                                            "  WHERE domain_id = " . $onadb->qstr($domain['id']) . " )) )";
+            $and = " AND ";
+        }
     }
 
     // DOMAIN ID
@@ -183,18 +214,19 @@ function ws_display_list($window_name, $form='') {
 
     // DEVICE MODEL
     if ($form['model']) {
-        $where .= $and . "model_id = " . $onadb->qstr($form['model']);
+        $where .= $and . "device_id in (select id from devices where device_type_id in (select id from device_types
+                        where model_id = {$form['model']}))";
         $and = " AND ";
     }
 
 
     // DEVICE TYPE
-    if ($form['dev_type']) {
-        // Find model_id's that have a device_type_id of $form['type']
+    if ($form['role']) {
+        // Find model_id's that have a device_type_id of $form['role']
         list($status, $rows, $records) =
             db_get_records($onadb,
-                           'DEVICE_MODELS_B',
-                           array('DEVICE_TYPE_ID' => $form['dev_type'])
+                           'roles',
+                           array('id' => $form['role'])
                           );
         // If there were results, add each one to the $where clause
         if ($rows > 0) {
@@ -202,7 +234,9 @@ function ws_display_list($window_name, $form='') {
             $and = " AND ";
             $or = "";
             foreach ($records as $record) {
-                $where .= $or . "DEVICE_MODEL_ID = " . $onadb->qstr($record['id']);
+                // Yes this is one freakin nasty query but it works.
+                $where .= $or . "device_id in (select id from devices where device_type_id in (select id from device_types
+                        where role_id = " . $onadb->qstr($record['id']) ."))";
                 $or = " OR ";
             }
             $where .= " ) ";
@@ -212,7 +246,7 @@ function ws_display_list($window_name, $form='') {
 
     // DEVICE MANUFACTURER
     if ($form['manufacturer']) {
-        // Find model_id's that have a device_type_id of $form['type']
+        // Find model_id's that have a device_type_id of $form['manufacturer']
         list($status, $rows, $records) =
             db_get_records($onadb,
                            'models',
@@ -224,7 +258,9 @@ function ws_display_list($window_name, $form='') {
             $and = " AND ";
             $or = "";
             foreach ($records as $record) {
-                $where .= $or . "model_id = " . $onadb->qstr($record['id']);
+                // Yes this is one freakin nasty query but it works.
+                $where .= $or . "device_id in (select id from devices where device_type_id in (select id from device_types
+                        where model_id = " . $onadb->qstr($record['id']) ."))";
                 $or = " OR ";
             }
             $where .= " ) ";

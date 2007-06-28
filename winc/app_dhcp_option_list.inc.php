@@ -323,7 +323,7 @@ function ws_delete($window_name, $form='') {
     }
     else {
         // Delete the record
-        list($status, $rows) = db_delete_record($onadb, 'dhcp_options', array('id' => $dhcp_option['id']));
+        list($status, $rows) = db_delete_records($onadb, 'dhcp_options', array('id' => $dhcp_option['id']));
 
         if ($status or !$rows) {
             // If the module returned an error code display a popup warning

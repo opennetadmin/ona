@@ -250,12 +250,12 @@ function ws_free_ip($window_name, $form='') {
 
     // Get a list of dhcp pools on the selected subnet
     list($status, $rows, $pools) =
-        db_get_records($onadb, 'DHCP_POOL_B', array('SUBNET_ID' => $subnet['id']));
+        db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $subnet['id']));
 
     // Add DHCP pool addresses into the list of used ips
     foreach ($pools as $pool)
-        for ($ip = $pool['IP_ADDRESS_START']; $ip <= $pool['IP_ADDRESS_END']; $ip++)
-            $used_ips["{$ip}"] = $pool['DHCP_POOL_ID'];
+        for ($ip = $pool['ip_addr_start']; $ip <= $pool['ip_addr_end']; $ip++)
+            $used_ips["{$ip}"] = $pool['id'];
 
     // Create a few variables that will be handy later
     $num_ips = 0xffffffff - $subnet['ip_mask'];
