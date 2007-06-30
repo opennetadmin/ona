@@ -1,18 +1,46 @@
 these are just rambling thoughts at this point
 
 requirements:
-mysql
-php
-mod-php
+apache2-server
+mysql-server
+php4
+	php4-gmp
+	php4-mysql
+-------------
+This is the original way to install
 
-have to create a db called "ona"
+cd /var/www
+sudo svn co http://svn.opennetadmin.com/repos/ona
+sudo touch /opt/ona/log/ona.log
+sudo chown www-data /opt/ona/log/ona.log
 
-add a user called ona-sys with a password of "onar0x"
+---------------
+This is the new way I'd like to look into
 
-give taht user full read/write type privs.. doenst need admin (create drop etc)
+cd /opt
+tar -zxvf opennetadmin-1.0.tar.gz
+
+adduser ona
+addgroup ona
+ona:x:1001:1001:OpenNetAdmin,,,:/opt/ona:/bin/false
+chown -R ona:ona /opt/ona
+
+cd /opt/ona
+
+add a symlink in your web server root that points ona -> /opt/ona/www
+this may also require some apache config stuff that makes it right
+
+export PATH=$PATH:/opt/ona/bin
+
+add a symlink of /tftpboot/ona -> /opt/ona/<something>
 
 
-==== DCM CONFIGURATION ====
+mysqladmin -u root create ona
+mysql -u root ona < ona.sql
+mysql -u root ona -e "GRANT ALL ON ona.* TO ona_sys@localhost IDENTIFIED BY 'youshouldchangethis'"
 
-Set web host to "localhost:80" or something.
-Set dcm interface path (default: "/dcm.pl").
+
+
+FIXME: at this point the apache DocumentRoot should not have a trailing / as it screws up the baseURL variable.
+
+
