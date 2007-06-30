@@ -27,9 +27,9 @@ $conf = array (
     "debug"                  => 5,
     "stdout"                 => 0, // Print logs to the generated web page, not a good idea!
     "db"                     => 1, // Log to a sql log, highly recommended
-    "logfile"                => "/var/log/website",
+    "logfile"                => "/var/log/ona.log",
     "syslog"                 => 1, // It only syslogs if debug is 0.
-    
+
     // Database Context
     // For possible values see the $db_context() array and description below
     "mysql_context"          => 'default',
@@ -39,22 +39,22 @@ $conf = array (
     "date_format"            => 'M jS, g:ia',
     "search_results_per_page"=> 10,
     "suggest_max_results"    => 10,
-    
-    
+
+
     /* Used in header.php */
     "title"                  => 'Open Network Admin :: ',
     "meta_description"       => '',
     "meta_keywords"          => '',
     "html_headers"           => '',
-    
+
     /* Session Settings */
     "cookie_life"            => (60*60*24*2), // 2 days
-    
+
     /* Include Files: HTML */
     "html_style_sheet"       => "$include/html_style_sheet.inc.php",
     "html_desktop"           => "$include/html_desktop.inc.php",
     "loading_icon"           => "<br><center><img src=\"{$images}/loading.gif\"></center><br>",
-    
+
     /* Include Files: Functions */
     "inc_functions"          => "$include/functions_general.inc.php",
     "inc_functions_gui"      => "$include/functions_gui.inc.php",
@@ -63,7 +63,7 @@ $conf = array (
     "inc_adodb"              => "$include/adodb/adodb.inc.php",
     "inc_xajax_stuff"        => "$include/xajax_setup.inc.php",
     "inc_diff"               => "$include/DifferenceEngine.php",
-    
+
     /* Settings for dcm.pl */
     "dcm_module_dir"         => "$base/modules",
 );
@@ -174,17 +174,19 @@ $db_context = array (
             'description' => 'Website metadata',
             'primary' => array(
                 'db_type'     => 'mysql',
-                'db_host'     => 'blade2',
-                'db_login'    => 'root',
-                'db_passwd'   => '',
+                'db_host'     => 'localhost',
+                'db_login'    => 'ona_sys',
+                'db_passwd'   => 'youshouldchangethis',
                 'db_database' => 'ona',
                 'db_debug'    => false,
             ),
+            // You can use this to connect to a secondary server that is
+            // syncronized on the back end.
             'secondary' => array(
                 'db_type'     => 'mysql',
-                'db_host'     => 'blade3',
-                'db_login'    => 'root',
-                'db_passwd'   => '',
+                'db_host'     => 'localhost',
+                'db_login'    => 'ona_sys',
+                'db_passwd'   => 'youshouldchangethis',
                 'db_database' => 'ona',
                 'db_debug'    => false,
             ),
