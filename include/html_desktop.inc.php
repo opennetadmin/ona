@@ -5,6 +5,47 @@ header("Cache-control: private");
 
 $year = date('Y');
 
+
+
+
+// Set up a generic where clause
+$where = 'id > 0';
+
+// Start getting various record counts
+list ($status, $host_count, $records)       = db_get_records($onadb, 'hosts', $where, "", 0);
+list ($status, $dns_count, $records)        = db_get_records($onadb, 'dns', $where, "", 0);
+list ($status, $interface_count, $records)  = db_get_records($onadb, 'interfaces', $where, "", 0);
+list ($status, $domain_count, $records)     = db_get_records($onadb, 'domains', $where, "", 0);
+//   list ($status, $host_count, $records) = db_get_records($onadb, 'hosts', $where, "", 0);
+//   list ($status, $host_count, $records) = db_get_records($onadb, 'hosts', $where, "", 0);
+//   list ($status, $host_count, $records) = db_get_records($onadb, 'hosts', $where, "", 0);
+
+
+// The following checks with the opennetadmin server to see what the most current version is.
+// It will do this each time the interface is opened so the traffic should be very minimal.
+ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']);
+$file = fopen ("http://server/check_version.php", "r");
+$onaver = "";
+if (!$file) {
+    $onaver .= "<p>Unable to open remote file.\n";
+    exit;
+}
+while (!feof ($file)) {
+    $buffer = trim(fgets ($file, 4096));
+    $onaver .= $buffer;
+}
+fclose($file);
+
+if ($conf['version'] == $onaver) {
+    $versit = "<img src='{$images}/silk/accept.png'> You are on the most current version! ({$onaver})";
+}
+else {
+    $versit = "<img src='{$images}/silk/exclamation.png'> You are NOT on the most current version<br>Your version = {$conf['version']}<br>Latest version = {$onaver}";
+}
+
+
+
+// Lets start building the page!
 print <<<EOL
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!-- This web site is copyrighted (c) {$year} -->
@@ -16,6 +57,40 @@ print <<<EOL
     <link rel="shortcut icon" type="image/ico" href="{$images}/favicon.ico">
     <script type="text/javascript" src="{$baseURL}/include/js/global.js" language="javascript"></script>
 {$conf['html_headers']}
+
+
+    <script language="JavaScript1.2">
+    // MP: I left this in in case I use it later.  it wont scale right for counting records.
+
+        //JavaScript Graph-it! (Percentage)- by javascriptkit.com
+        //Visit JavaScript Kit (http://javascriptkit.com) for script
+        //Credit must stay intact for use
+
+        //DEFINE GRAPH VALUES [Item name, Percentage value]
+        var graphv=new Array()
+        graphv[0]=["Hosts","{$host_count}"]
+        graphv[1]=["Interfaces","{$interface_count}"]
+        graphv[2]=["DNS Records","{$dns_count}"]
+        graphv[3]=["DNS Domains","{$domain_count}"]
+
+
+        //YOU CAN DEFINE MULTIPLE GRAPHS, eg:
+        //var graphz=new Array()
+
+        function graphitP(g,gwidth){
+            outputP='<table border="0" cellspacing="0" cellpadding="0">'
+            for (i=0;i<g.length;i++){
+                calwidthP=gwidth*(parseInt(g[i][1])/100)
+                outputP+='<tr><td nowrap="true">'+g[i][0]+'&nbsp;</td><td nowrap="true"><img src="{$images}/graph_bar.gif" width="'+calwidthP+'" height="10"> '+g[i][1]+'</td></tr>'
+            }
+            outputP+='</table>'
+            document.write(outputP)
+        }
+
+        //CALL GRAPHIT FUNCTION
+        //graphitP(NAME OF GRAPH ARRAY, MAXIMUM WIDTH IN PIXELS)
+    </script>
+
 
 </head>
 <body bgcolor="{$color['bg']}" link="{$color['link']}" alink="{$color['alink']}" vlink="{$color['vlink']}">
@@ -106,8 +181,65 @@ print <<<EOL
 
     <!-- Workspace div -->
     <div id="content_table" style="height: 92%;" class="theWholeBananna">
+
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>&nbsp;
+
+        <!-- FORMATTING TABLE -->
+        <div valign="center" align="center" style="{$style['content_box']};padding-left: 8px;">
+        <table cellspacing="0" border="0" cellpadding="0"><tr>
+
+            <!-- START OF FIRST COLUMN OF SMALL BOXES -->
+            <td nowrap="true" valign="top" style="padding-right: 15px;">
+
+                <b>Record Counts</b>
+                <table>
+                    <tr><td>Hosts</td><td>{$host_count}</td>
+                    <tr><td>interfaces</td><td>{$interface_count}</td>
+                    <tr><td>DNS Records</td><td>{$dns_count}</td>
+                    <tr><td>DNS Domains</td><td>{$domain_count}</td>
+                </table>
+
+            <!-- END OF FIRST COLUMN OF SMALL BOXES -->
+            </td>
+
+            <!-- START OF SECOND COLUMN OF SMALL BOXES -->
+            <td valign="top" style="padding-right: 15px;">
+
+                If you are wondering where to start, try one of these tasks:<br>
+                <a title="Add subnet"
+                class="act"
+                onClick="xajax_window_submit('edit_subnet', ' ', 'editor');"
+                ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
+                <a title="Add subnet"
+                class="act"
+                onClick="xajax_window_submit('edit_subnet', ' ', 'editor');"
+                >Add a new subnet</a>&nbsp;
+                <br>
+                <a title="Add host"
+                class="act"
+                onClick="xajax_window_submit('edit_host', ' ', 'editor');"
+                ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
+                <a title="Add host"
+                class="act"
+                onClick="xajax_window_submit('edit_host', ' ', 'editor');"
+                >Add a new host</a>&nbsp;
+            <!-- END OF SECOND COLUMN OF SMALL BOXES -->
+            </td>
+
+            <!-- START OF THIRD COLUMN OF SMALL BOXES -->
+            <td valign="top" style="padding-right: 15px;">
+                {$versit}
+                <br><br>
+                If you need further assistance, look for the <img src='{$images}/silk/help.png'> icon in the title bar of windows.<br>
+                You can also try the main help index located <a href='{$_ENV['help_url']}'>here</a><br>
+
+                Here is a "tip" ??????<br><br><br>
+            </td>
+            <!-- END OF THIRD COLUMN OF SMALL BOXES -->
+        </tr></table>
+        </div>
+        <!-- END OF TOP SECTION -->
     </div>
 
     <!-- Bottom Text -->
@@ -173,6 +305,7 @@ print <<<EOL
 
     /* Go ahead and process_alerts on the initial load */
     xajax_window_submit('process_alerts', '');
+
 
     /* Setup mouse handlers for the "Start" button */
     var _button = el('menu-apps-button');
