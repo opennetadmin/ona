@@ -141,9 +141,6 @@ function get_portal_js($window_name, $ip) {
     _el.style.left = '0px';
 
 
-    /*** Send a fake mouseup event to draw the initial map view ***/
-    el('{$window_name}_portal').myonmouseup('fake event');
-
 EOL;
     return($js);
 }

@@ -23,24 +23,24 @@ list ($status, $domain_count, $records)     = db_get_records($onadb, 'domains', 
 
 // The following checks with the opennetadmin server to see what the most current version is.
 // It will do this each time the interface is opened so the traffic should be very minimal.
-ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']);
-$file = fopen ("http://server/check_version.php", "r");
-$onaver = "";
-if (!$file) {
-    $onaver .= "<p>Unable to open remote file.\n";
-    exit;
+@ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']);
+$onachkserver = @gethostbynamel('opennetadmin.com');
+if ($onachkserver[0]) {
+    $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
 }
-while (!feof ($file)) {
-    $buffer = trim(fgets ($file, 4096));
-    $onaver .= $buffer;
+$onaver = "Unable to determine";
+if ($file) {
+    while (!feof ($file)) {
+        $buffer = trim(fgets ($file, 4096));
+        $onaver .= $buffer;
+    }
+    fclose($file);
 }
-fclose($file);
-
 if ($conf['version'] == $onaver) {
     $versit = "<img src='{$images}/silk/accept.png'> You are on the most current version! ({$onaver})";
 }
 else {
-    $versit = "<img src='{$images}/silk/exclamation.png'> You are NOT on the most current version<br>Your version = {$conf['version']}<br>Latest version = {$onaver}";
+    $versit = "<div style='background-color: #ffddee;'><img src='{$images}/silk/exclamation.png'> You are NOT on the most current version<br>Your version = {$conf['version']}<br>Latest version = {$onaver}</div>";
 }
 
 
@@ -206,7 +206,8 @@ print <<<EOL
             <!-- START OF SECOND COLUMN OF SMALL BOXES -->
             <td valign="top" style="padding-right: 15px;">
 
-                If you are wondering where to start, try one of these tasks:<br>
+                If you are wondering where to start,<br>
+                try one of these tasks:<br>
                 <a title="Add subnet"
                 class="act"
                 onClick="xajax_window_submit('edit_subnet', ' ', 'editor');"
@@ -230,8 +231,9 @@ print <<<EOL
             <!-- START OF THIRD COLUMN OF SMALL BOXES -->
             <td valign="top" style="padding-right: 15px;">
                 {$versit}
-                <br><br>
-                If you need further assistance, look for the <img src='{$images}/silk/help.png'> icon in the title bar of windows.<br>
+                <br>
+                If you need further assistance, look for the <img src='{$images}/silk/help.png'> icon<br>
+                in the title bar of windows.<br>
                 You can also try the main help index located <a href='{$_ENV['help_url']}'>here</a><br>
 
                 Here is a "tip" ??????<br><br><br>

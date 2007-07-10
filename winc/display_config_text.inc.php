@@ -216,6 +216,7 @@ EOL;
 
                 <input type="button"
                     name="delete"
+                    title="Delete all configs from host ID: {$host['id']}"
                     value="Delete All"
                     class="button"
                     onClick="var doit=confirm('Are you sure you want to delete ALL of these config records?');
