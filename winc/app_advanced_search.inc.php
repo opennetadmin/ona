@@ -7,7 +7,7 @@ global $onadb;
 
 
 // Build subnet type list
-list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', 'id >= 0', 'display_name');
+list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', 'id >= 1', 'display_name');
 $subnet_type_list = '<option value="">&nbsp;</option>\n';
 $record['display_name'] = htmlentities($record['display_name']);
 foreach ($records as $record) {
@@ -39,8 +39,8 @@ $window['js'] = <<<EOL
     suggest_setup('notes',    'suggest_notes');
     suggest_setup('ip_subnet', 'suggest_ip_subnet');
     suggest_setup('ip_subnet_thru',  'suggest_ip_subnet_thru');
-    suggest_setup('unit_number', 'suggest_unit_number');
-    suggest_setup('unit_number_subnet', 'suggest_unit_number_subnet');
+ /*   suggest_setup('unit_number', 'suggest_unit_number');
+    suggest_setup('unit_number_subnet', 'suggest_unit_number_subnet');*/
     suggest_setup('subnet', 'suggest_subnet');
     el('host_search_form').onsubmit = function() { return false; };
     el('subnet_search_form').onsubmit = function() { return false; };
@@ -65,7 +65,7 @@ $window['js'] = <<<EOL
                      "input_id=>unit_number');"
             );
         };
-
+/*
     /* Setup the Quick Find Unit icon */
     var _button = el('qf_unit_subnet_{$window_name}');
     _button.style.cursor = 'pointer';
@@ -86,7 +86,7 @@ $window['js'] = <<<EOL
                      "input_id=>unit_number_subnet');"
             );
         };
-
+*/
 EOL;
 
 // Define the window's inner html

@@ -84,6 +84,8 @@ EOL;
 
     // Get javascript to setup the map portal
     $js .= get_portal_js($window_name, $ip);
+    //*** Send a fake mouseup event to draw the initial map view ***
+    $js .= "el('{$window_name}_portal').myonmouseup('fake event');";
 
 
     // Insert the new html into the window

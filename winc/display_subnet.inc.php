@@ -221,7 +221,8 @@ EOL;
 
                 <tr><td colspan="99" nowrap="true">
                     <input type="hidden" id="{$window_name}_zoom" name="zoom" value="7">
-                    <div id="{$window_name}_portal" style="position: relative; height: 150px; width: 355px;">
+                    <div id="{$window_name}_portal" onclick="el('{$window_name}_portal').style.color = '#FFFFFF';" style="text-align: center;color: #999999;position: relative; height: 150px; width: 355px;">
+                        Click here to show map
                         <span id="{$window_name}_substrate"></span>
                     </div>
                 </td></tr>

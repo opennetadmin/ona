@@ -42,7 +42,7 @@ function ws_editor($window_name, $form='') {
             el('{$window_name}_title_r').innerHTML;
 EOL;
 
-    // If we got a class type, load it for display
+    // If we got a manufacturer, load it for display
     $overwrite = 'no';
     if (is_numeric($form)) {
         list($status, $rows, $record) = db_get_record($onadb, 
@@ -53,9 +53,7 @@ EOL;
 
 
     // Escape data for display in html
-    foreach(array_keys($record) as $key) {
-        $record[$key] = htmlentities($record[$key], ENT_QUOTES);
-    }
+    foreach(array_keys((array)$record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES);}
 
     // Load some html into $window['html']
     $window['html'] .= <<<EOL

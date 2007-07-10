@@ -75,7 +75,7 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
-    // ..???
+    // find subnets that are associated with dhcp server
     if ($form['server_id']) {
         $where .= $and . "id IN (SELECT subnet_id FROM dhcp_server_subnets WHERE host_id = " . $onadb->qstr($form['server_id']) . ')';
         $and = " AND ";
