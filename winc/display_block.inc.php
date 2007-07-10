@@ -189,6 +189,8 @@ EOL;
     // Get javascript to setup the map portal mouse handlers
     // Force ip end to be less than ip start to prevent Block highlighting
     $portal_js .= get_portal_js($window_name, $ip, $ip -1);
+    //*** Send a fake mouseup event to draw the initial map view ***
+    $portal_js .= "el('{$window_name}_portal').myonmouseup('fake event');";
 
     // END SMALL SUBNET MAP
 
