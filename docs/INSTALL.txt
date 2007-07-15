@@ -44,3 +44,4 @@ mysql -u root ona -e "GRANT ALL ON ona.* TO ona_sys@localhost IDENTIFIED BY 'you
 FIXME: at this point the apache DocumentRoot should not have a trailing / as it screws up the baseURL variable.
 
 
+I recommend using something like eaccelerator.. so far it seems to help things out

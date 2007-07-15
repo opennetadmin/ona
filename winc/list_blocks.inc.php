@@ -173,7 +173,7 @@ EOL;
         $html .= <<<EOL
                     <a title="Display subnet map"
                        class="act"
-                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_block_map\', \'ip_block_start=>{$record['ip_addr']},ip_block_end=>{$record['ip_block_end']},id=>{$record['id']}\', \'display\');');"
+                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_block_map\', \'ip_block_start=>{$record['ip_addr_start']},ip_block_end=>{$record['ip_addr_end']},id=>{$record['id']}\', \'display\');');"
                     ><img src="{$images}/silk/shape_align_left.png" border="0"></a>&nbsp;
 EOL;
 
