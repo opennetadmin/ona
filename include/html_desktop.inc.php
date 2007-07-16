@@ -163,11 +163,29 @@ print <<<EOL
                                             'direction', 'southwest',
                                             'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>sys_alert,id=>tt_sys_alert\');'
                                            );"
-            ><img src="{$images}/email_error_fade.gif" border="0" /></span>
+            ><img src="{$images}/silk/comment.png" border="0" /></span>
 
             <span class="topmenu-item" style="cursor: pointer;" title="Display user info" onClick="toggle_window('app_user_info');">
                 <img style="vertical-align: middle;" src="{$images}/silk/user_gray.png" border="0" />
             </span>
+            <input id="login_userid"
+                    title="Current logged in user, click to change"
+                    class="edit"
+                    type="text"
+                    value="{$_SESSION['ona']['auth']['user']['username']}"
+                    name="login_userid"
+                    size="12"
+                    onclick="wwTT(this, event,
+                                        'id', 'tt_loginform',
+                                        'type', 'static',
+                                        'delay', 0,
+                                        'styleClass', 'wwTT_qf',
+                                        'direction', 'south',
+                                        'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>loginform,id=>tt_loginform\');'
+                                        );"
+            >
+
+
             <span class="topmenu-item" style="cursor: pointer;" title="Open online help" onClick="document.location = '{$_ENV['help_url']}'; /* FIXME: Open help in an iframe in a window */">
                 <img style="vertical-align: middle;" title="Global help index" src="{$images}/silk/help.png" border="0" />
             </span>
@@ -303,10 +321,10 @@ print <<<EOL
     setInterval('update_task_bar(el(\'window_container\'), el(\'menu-window-list\'));', 1000);
 
     /* Call the process_alerts function to look for alerts to display at a regular interval*/
-    setInterval('xajax_window_submit(\'process_alerts\', \'\');', 300000);
+    setInterval('xajax_window_submit(\'process_alerts\', \'fake=>junk\');', 300000);
 
     /* Go ahead and process_alerts on the initial load */
-    xajax_window_submit('process_alerts', '');
+    xajax_window_submit('process_alerts', 'fake=>junk');
 
 
     /* Setup mouse handlers for the "Start" button */

@@ -11,9 +11,7 @@ $base;
 $include;
 
 // Used in URL links
-$http   = "http://{$_SERVER['HTTP_HOST']}";
-$https  = "http://{$_SERVER['HTTP_HOST']}";  // Change this to "https" if your server supports https
-$baseURL = str_replace($_SERVER['DOCUMENT_ROOT'], '', $base); $baseURL = rtrim($baseURL, '/');
+$baseURL=str_replace('/index.php', '',$_SERVER['REQUEST_URI']); $baseURL = rtrim($baseURL, '/');
 $images = "{$baseURL}/images";
 
 // help URL location
@@ -29,7 +27,7 @@ $conf = array (
     "stdout"                 => 0, // Print logs to the generated web page, not a good idea!
     "db"                     => 1, // Log to a sql log, highly recommended
     "logfile"                => "/var/log/ona.log",
-    "syslog"                 => 1, // It only syslogs if debug is 0.
+    "syslog"                 => 0, // It only syslogs if debug is 0.
 
     // Database Context
     // For possible values see the $db_context() array and description below

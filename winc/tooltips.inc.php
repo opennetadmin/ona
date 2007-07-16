@@ -23,6 +23,10 @@ function ws_tooltips_submit($window_name, $form='') {
            list ($html, $js) = get_sys_alert_html($form);
            break;
 
+        case 'loginform':
+           list ($html, $js) = get_loginform_html($form);
+           break;
+
         case 'start_menu':
            list ($html, $js) = get_start_menu_html();
            break;
@@ -336,6 +340,72 @@ EOL;
 
     return(array($html, $js));
 }
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: get_loginform_html($form)
+//
+// Description:
+//     Builds HTML for logging in as a new user
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function get_loginform_html($form) {
+    global $conf, $self, $onadb, $tip_style;
+    global $font_family, $color, $style, $images;
+
+    $html = $js = '';
+
+
+    $style['content_box'] = <<<EOL
+        padding: 2px 4px;
+        vertical-align: top;
+EOL;
+
+    // WARNING: this one's different than most of them!
+    $style['label_box'] = <<<EOL
+        font-weight: bold;
+        cursor: move;
+        color: #FFFFFF;
+EOL;
+
+    // Display system messages
+    $html .= <<<EOL
+
+    <!-- LOGIN PROMPT -->
+    <form id="loginform_form" onSubmit="return(false);">
+    <input id="onausername" type="hidden" name="onausername">
+    <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
+
+    <tr><td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
+    Password
+    </td></tr>
+
+    <tr>
+        <td>
+            <input id="onapassword" name="onapassword" type="text" size="12">
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            <input class="button" type="button" name="login" value="Login" onClick="el('onausername').value = el('login_userid').value; removeElement('{$form['id']}');">
+        </td>
+    </tr>
+
+    </table>
+    </form>
+EOL;
+
+
+    return(array($html, $js));
+}
+
 
 
 
