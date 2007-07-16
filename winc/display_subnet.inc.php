@@ -62,10 +62,7 @@ function ws_display($window_name, $form='') {
     list($status, $rows, $vlan) = ona_get_vlan_record(array('id' => $record['vlan_id']));
     $record['vlan_name']        = $vlan['name'];
     $record['vlan_campus_id']   = $vlan['vlan_campus_id'];
-
-    // Vlan Campus Record
-    list($status, $rows, $vlan_campus) = ona_get_vlan_campus_record(array('id' => $record['vlan_campus_id']));
-    $record['vlan_campus_name'] = $vlan_campus['name'];
+    $record['vlan_campus_name'] = $vlan['vlan_campus_name'];
 
 
     $style['content_box'] = <<<EOL
@@ -151,7 +148,7 @@ EOL;
                         >{$record['vlan_campus_name']}</a>&nbsp;&#047;&nbsp;<a title="View Vlan"
                            class="nav"
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_vlan\', \'vlan_id=>{$record['vlan_id']}\', \'display\')');"
-                        >{$record['name']}</a>
+                        >{$record['vlan_name']}</a>
                      </td>
                 </tr>
 EOL;
