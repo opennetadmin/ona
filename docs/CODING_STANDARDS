@@ -3,7 +3,7 @@ DEVELOPERS
 
 CODING STANDARDS
   Synopsis:
-    * Comments are to begin with two pounds: ##
+    * Comments are to begin with two forward slashes: //
     * Use an indent of 4 spaces, with NO TABS!
     * Functions must have a descriptive header with the name, description,
       input requirements, output, and example usage.

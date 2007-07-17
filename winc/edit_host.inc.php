@@ -333,6 +333,22 @@ EOL;
                 >
             </td>
         </tr>
+
+        <tr>
+            <td align="right" nowrap="true">
+                Interface description
+            </td>
+            <td class="padding" align="left" width="100%">
+                <input
+                    name="set_description"
+                    alt="Interface description"
+                    value="{$interface['description']}"
+                    class="edit"
+                    type="text"
+                    size="25" maxlength="255"
+                >
+            </td>
+        </tr>
 EOL;
     }
 

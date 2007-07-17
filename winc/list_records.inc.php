@@ -69,7 +69,6 @@ function ws_display_list($window_name, $form='') {
     }
 
     // HOSTNAME
-    $aliases = 0;
     if ($form['hostname']) {
         $where .= $and . "id IN (SELECT id " .
                                 "  FROM dns " .
@@ -100,31 +99,6 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
-    // subnet ID
-    if (is_numeric($form['subnet_id'])) {
-        // We do a sub-select to find interface id's that match
-        $where .= $and . "id IN ( SELECT host_id " .
-                                 "  FROM interfaces " .
-                                 "  WHERE subnet_id = " . $onadb->qstr($form['subnet_id']) . " ) ";
-        $and = " AND ";
-    }
-
-
-    // MAC
-    if ($form['mac']) {
-        // Clean up the mac address
-        $form['mac'] = strtoupper($form['mac']);
-        $form['mac'] = preg_replace('/[^%0-9A-F]/', '', $form['mac']);
-
-        // We do a sub-select to find interface id's that match
-        $where .= $and . "id IN ( SELECT host_id " .
-                         "        FROM interfaces " .
-                         "        WHERE mac_addr LIKE " . $onadb->qstr('%'.$form['mac'].'%') . " ) ";
-        $and = " AND ";
-
-    }
-
-
     // IP ADDRESS
     $ip = $ip_end = '';
     if ($form['ip']) {
@@ -146,82 +120,9 @@ function ws_display_list($window_name, $form='') {
     }
 
 
-    // NOTES
-    if ($form['notes']) {
-        $where .= $and . "notes LIKE " . $onadb->qstr('%'.$form['notes'].'%');
-        $and = " AND ";
-    }
 
 
 
-
-    // DEVICE MODEL
-    if ($form['model']) {
-        $where .= $and . "model_id = " . $onadb->qstr($form['model']);
-        $and = " AND ";
-    }
-
-
-    // DEVICE TYPE
-    if ($form['dev_type']) {
-        // Find model_id's that have a device_type_id of $form['type']
-        list($status, $rows, $records) =
-            db_get_records($onadb,
-                           'DEVICE_MODELS_B',
-                           array('DEVICE_TYPE_ID' => $form['dev_type'])
-                          );
-        // If there were results, add each one to the $where clause
-        if ($rows > 0) {
-            $where .= $and . " ( ";
-            $and = " AND ";
-            $or = "";
-            foreach ($records as $record) {
-                $where .= $or . "DEVICE_MODEL_ID = " . $onadb->qstr($record['id']);
-                $or = " OR ";
-            }
-            $where .= " ) ";
-        }
-    }
-
-
-    // DEVICE MANUFACTURER
-    if ($form['manufacturer']) {
-        // Find model_id's that have a device_type_id of $form['type']
-        list($status, $rows, $records) =
-            db_get_records($onadb,
-                           'DEVICE_MODELS_B',
-                           array('MANUFACTURER_ID' => $form['manufacturer'])
-                          );
-        // If there were results, add each one to the $where clause
-        if ($rows > 0) {
-            $where .= $and . " ( ";
-            $and = " AND ";
-            $or = "";
-            foreach ($records as $record) {
-                $where .= $or . "model_id = " . $onadb->qstr($record['id']);
-                $or = " OR ";
-            }
-            $where .= " ) ";
-        }
-    }
-
-
-    // LOCATION No.
-    if ($form['location']) {
-        $where .= $and . "location_id = " . $onadb->qstr($form['location']);
-        $and = " AND ";
-    }
-
-
-
-
-
-    // HIJACK!!!
-    // If $form['type'] == aliases, jump to that function
-    if ($form['type'] == 'aliases') {
-        $form['host_where'] = $where;
-        return(ws_display_alias_list($window_name, $form));
-    }
 
 
     // Wild card .. if $while is still empty, add a 'ID > 0' to it so you see everything.
@@ -232,7 +133,6 @@ function ws_display_list($window_name, $form='') {
     // Do the SQL Query
     $filter = '';
     if ($form['filter']) {
-
         // Host names should always be lower case
         $form['filter'] = strtolower($form['filter']);
         $filter = ' AND name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
@@ -323,32 +223,32 @@ function ws_display_list($window_name, $form='') {
             <tr>
                 <td class="list-header" align="center" style="{$style['border']}; width: 16px;">&nbsp;</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Time to Live</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
                 <!-- <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td> -->
                 <td class="list-header" align="center" style="{$style['borderR']};">Data</td>
-                <!-- <td class="list-header" align="center" style="{$style['borderR']};">Device Model</td> -->
-                <!-- <td class="list-header" align="center" style="{$style['borderR']};">Location</td> -->
                 <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
                 <td class="list-header" align="center">&nbsp;</td>
             </tr>
 EOL;
     // Loop and display each record
-    $last_record = array('name' => $results[0]['name'], 'domain_id' => $results[0]['domain_id']);
-    $last_record_count = 0;
+  //  $last_record = array('name' => $results[0]['name'], 'domain_id' => $results[0]['domain_id']);
+  //  $last_record_count = 0;
 
-    for($i=0; $i<=(count($results)); $i++) {
+    for($i=1; $i<=(count($results)); $i++) {
         $record = $results[$i];
         // Get additional info about each host record
 
 
 
-        // Check if we've already seen this record before.
-        if ($record['name'] == $last_record['name'] &&
-            $record['domain_id'] == $last_record['domain_id']) {
-            $last_record_count++;
-            continue;
-        } else {
+        // Check if we've seen this record before.
+
+//FIXME: MP remove this, I believe we sould always get back unique info.  Dont see a need for this anymore
+//         if ($record['name'] == $last_record['name'] &&
+//             $record['domain_id'] == $last_record['domain_id']) {
+//             $last_record_count++;
+//             continue;
+//         } else {
             $record = $results[$i-1];
 
             // if the interface is the primary_dns_id for the host then mark it
@@ -361,13 +261,14 @@ EOL;
             list($status, $interfaces, $interface) = ona_get_interface_record(array('id' => $record['interface_id']), '');
 
             // Get the domain name
+            $ttl_style = 'title="Time-to-Live"';
             list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
             $record['domain'] = $domain['fqdn'];
-
-            // Set BOLDING if more than one record is associated with this DNS name
-            // FIXME: need to change the name to something better than $interface_style. (PK)
-            $interface_style = '';
-            if ($last_record_count > 1) { $interface_style = 'font-weight: bold;'; }
+            // if the ttl is blank, use the one in the domain (minimum)
+            if (!$record['ttl']) {
+                $record['ttl'] = $domain['minimum'];
+                $ttl_style = 'style="font-style: italic;" title="Using TTL from domain"';
+            }
 
             if($interfaces) {
                 $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
@@ -380,8 +281,8 @@ EOL;
 
                 // Create string to be embedded in HTML for display
                 $data = <<<EOL
-                            >{$record['ip_addr']}</span>&nbsp;
-                    <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>&nbsp;
+                            {$record['ip_addr']}&nbsp;
+
 EOL;
             } else {
                 // Get other DNS records which name this record as parent
@@ -397,21 +298,46 @@ EOL;
                     >.<a title="View domain. ID: {$dns_other['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$dns_other['domain_id']}\', \'display\')');"
-                    >{$dns_other['domain_fqdn']}</a></span>&nbsp;
+                    >{$dns_other['domain_fqdn']}</a>&nbsp;
 EOL;
                 }
             }
-        }
+//         }
 
-        $record['notes_short'] = truncate($record['notes'], 40);
 
-        // Escape data for display in html
-        foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
+        $record['notes_short'] = truncate($record['notes'], 30);
 
 //         if ($record['type'] == 'A') {
 //             list($status, $rows, $interface) = ona_get_interface_record(array('id' => $record['interface_id']));
 //             list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
 //         }
+
+        // Process PTR record
+        if ($record['type'] == 'PTR') {
+            list($status, $rows, $pointsto) = ona_get_dns_record(array('id' => $record['dns_id']), '');
+            $record['name'] = ip_mangle($record['ip_addr'],'flip').'.IN-ADDR.ARPA';
+            $data = <<<EOL
+                    {$pointsto['name']}.<a title="View domain. ID: {$record['domain_id']}"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
+                    >{$pointsto['fqdn']}</a>&nbsp;
+EOL;
+        }
+
+        // Process CNAME record
+        if ($record['type'] == 'CNAME') {
+            list($status, $rows, $cname) = ona_get_dns_record(array('id' => $record['dns_id']), '');
+            $data = <<<EOL
+                    {$cname['name']}.<a title="View domain. ID: {$record['domain_id']}"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
+                    >{$cname['fqdn']}</a>&nbsp;
+EOL;
+        }
+
+
+        // Escape data for display in html
+        foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
 
         $primary_object_js = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$record['id']}\', \'display\')');";
         $html .= <<<EOL
@@ -431,56 +357,34 @@ EOL;
                 </td>
 
                 <td class="list-row">
-                    <span title="Record Type. ID: {$record['id']}"
+                    <span
+                       onClick=""
+                       {$ttl_style}
+                    >{$record['ttl']} seconds</span>&nbsp;
+                </td>
+
+                <td class="list-row">
+                    <span title="Record Type"
                        onClick=""
                     >{$record['type']}</span>&nbsp;
                 </td>
 
 
-                <td class="list-row">
-                    <span title="Time-to-Live. ID: {$record['id']}"
-                       onClick=""
-                    >{$record['ttl']} seconds</span>&nbsp;
-                </td>
-
 <!--                <td class="list-row"> -->
-<!--                    <a title="View subnet. ID: {$subnet['id']}"
+<!--                    <a title="View subnet"
                          class="nav"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['id']}\', \'display\')');"
                     >{$record['subnet']}</a>&nbsp; -->
 <!--                </td> -->
 
                 <td class="list-row" align="left">
-                    <span style="{$interface_style}"
 EOL;
 
-if ($last_record_count > 1) {
-        $html .= <<<EOL
-                          onMouseOver="wwTT(this, event,
-                                            'id', 'tt_host_interface_list_{$record['id']}',
-                                            'type', 'velcro',
-                                            'styleClass', 'wwTT_niceTitle',
-                                            'direction', 'south',
-                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>host_interface_list,id=>tt_host_interface_list_{$record['id']},host_id=>{$record['id']}\');'
-                                           );"
-                           >Number of records: {$last_record_count}</span>&nbsp;
-EOL;
-} else { $html .= $data; }
+        $html .= $data;
         $html .= <<<EOL
                 </td>
 
 <!--                <td class="list-row">{$record['device']}&nbsp;</td> -->
-
-<!--                <td class="list-row" align="right"> -->
-<!--                    <span onMouseOver="wwTT(this, event,
-                                            'id', 'tt_location_{$record['location_id']}',
-                                            'type', 'velcro',
-                                            'styleClass', 'wwTT_niceTitle',
-                                            'direction', 'south',
-                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>location,id=>tt_location_{$record['location_id']},location_id=>{$record['location_id']}\');'
-                                           );"
-                    >{$location['reference']}</span>&nbsp; -->
-<!--                </td> -->
 
                 <td class="list-row">
                     <span title="{$record['notes']}">{$record['notes_short']}</span>&nbsp;
@@ -555,42 +459,6 @@ EOL;
 
 
 
-
-
-//////////////////////////////////////////////////////////////////////////////
-// Function:
-//     change_type (string $window_name, int $page)
-//
-// Description:
-//     This function changes the "type" being displayed.  i.e. this is only
-//     used by the list_hosts() file to determine wether to display hosts
-//     or aliases.
-//
-//     $form NEEDS form_id => id && type => [hosts|aliases]
-//////////////////////////////////////////////////////////////////////////////
-function ws_change_type($window_name, $form) {
-    global $conf, $self;
-
-    // If the user supplied an array in a string, build the array and store it in $form
-    $form = parse_options_string($form);
-
-    // Instantiate the xajaxResponse object
-    $response = new xajaxResponse();
-    $js = '';
-
-    // Basically we're going to create a new hidden input field in the filter form
-    // that tells display_list() that we'll be displaying aliases.
-    // Then we just have the browser do an xajax callback to update the list being displayed.
-    $response->addScript("removeElement('{$form['form_id']}_type');");
-    $response->addCreateInput($form['form_id'], "hidden", "type", "{$form['form_id']}_type");
-    $js .= "el('{$form['form_id']}_page').value = '1';";
-    $js .= "el('{$form['form_id']}_type').value = '{$form['type']}';";
-    $js .= "xajax_window_submit('{$window_name}', xajax.getFormValues('{$form['form_id']}'), 'display_list');";
-
-    // Send an XML response to the window
-    $response->addScript($js);
-    return($response->getXML());
-}
 
 
 

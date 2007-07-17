@@ -48,7 +48,7 @@ Adds a new interface to an existing host record
     description=TEXT          brief description of the interface
 
   Notes:
-    * DOMAIN will default to FIXME: .albertsons.com if not specified
+    * DOMAIN will default to {$conf['dns']['defaultdomain']} if not specified
 \n
 EOM
         ));
@@ -133,20 +133,25 @@ EOM
         return(array(8, $self['error'] . "\n"));
     }
 
+
+// FIXME: MP this was removed as many situations call for same subnet interfaces on a single host
+//        I do feel however that a warning or message could be usefull.  find a clean way to indicate this and add it in
+
+
     // Validate that the specified host doesn't have any other interfaces on the
     // same subnet as the new ip address.  Allow an override though.
-    if ($options['force'] == 'N') {
-        // Search for any existing interfaces on the same subnet
-        list($status, $rows, $interface) = ona_get_interface_record(array('subnet_id' => $subnet['id'],
-                                                                           'host_id'    => $host['id']));
-        if ($status or $rows) {
-            printmsg("DEBUG => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").",3);
-            $self['error'] = "ERROR => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").";
-            return(array(9, $self['error'] . "\n" .
-                            "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n" .
-                            "INFO => Conflicting interface record ID: {$interface['id']}\n"));
-        }
-    }
+//     if ($options['force'] == 'N') {
+//         // Search for any existing interfaces on the same subnet
+//         list($status, $rows, $interface) = ona_get_interface_record(array('subnet_id' => $subnet['id'],
+//                                                                            'host_id'    => $host['id']));
+//         if ($status or $rows) {
+//             printmsg("DEBUG => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").",3);
+//             $self['error'] = "ERROR => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").";
+//             return(array(9, $self['error'] . "\n" .
+//                             "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n" .
+//                             "INFO => Conflicting interface record ID: {$interface['id']}\n"));
+//         }
+//     }
 
     // Remove any MAC address formatting
     if ($options['mac']) {
@@ -164,9 +169,9 @@ EOM
             list($status, $rows, $interface) = ona_get_interface_record(array('mac_addr' => $options['mac']));
             if ($status or $rows) {
                 printmsg("DEBUG => MAC conflict: That MAC address ({$options['mac']}) is already in use!",3);
-                $self['error'] = "ERROR => MAC conflict: That MAC address ({$options['mac']}) is already in use";
+                $self['error'] = "WARNING => MAC conflict: That MAC address ({$options['mac']}) is already in use";
                 return(array(11, $self['error'] . "\n" .
-                                "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n" .
+                                "NOTICE => You may ignore this warning and add the interface anyway with the \"force=yes\" option.\n" .
                                 "INFO => Conflicting interface record ID: {$interface['id']}\n"));
             }
         }
@@ -567,7 +572,7 @@ Deletes an interface (ip address) from the database
 
   Notes:
     * If search returns more than one interface, the first will be deleted
-    * DOMAIN will default to .albertsons.com if not specified
+    * DOMAIN will default to {$conf['dns']['defaultdomain']} if not specified
 \n
 EOM
         ));
@@ -735,7 +740,7 @@ Displays an interface record from the database
 
   Notes:
     * If search returns more than one interface, an error is displayed
-    * DOMAIN will default to .albertsons.com if not specified
+    * DOMAIN will default to {$conf['dns']['defaultdomain']} if not specified
 \n
 EOM
         ));

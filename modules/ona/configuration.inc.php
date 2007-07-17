@@ -87,7 +87,7 @@ function find_config($options=array()) {
 //    Returns a two part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
 //      2. A textual message displaying information on the selected unit
-//         record from the IPDB.
+//         record from the database.
 //  
 //  Example: list($status, $text) = config_display('config=12345');
 //  
@@ -197,7 +197,7 @@ EOM
 //    Returns a two part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
 //      2. A textual message displaying information on the selected unit
-//         record from the IPDB.
+//         record from the database.
 //  
 //  Example: list($status, $result) = config_chksum('config=12345');
 //  
@@ -287,7 +287,7 @@ EOM
 //    Returns a two part list:
 //      1. The exit status of the function (0 on success, non-zero on error)
 //      2. A textual message displaying information on the selected unit
-//         record from the IPDB.
+//         record from the database.
 //  
 //  Example: list($status, $result) = config_chksum('config=12345');
 //  

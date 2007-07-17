@@ -281,7 +281,7 @@ div.wwTT_ona_menu .hovered {
 }
 
 /* Nicetitle Style */
-div.wwTT_ipdb
+div.wwTT_ona
 {
     background-color: #007ADE;
     color: #FFFFFF;
@@ -300,7 +300,7 @@ div.wwTT_ipdb
     -khtml-opacity: .87;
     opacity: .87;
 }
-div.wwTT_ipdb .contents
+div.wwTT_ona .contents
 {
     margin: 0;
     padding: 0 3px;
@@ -309,7 +309,7 @@ div.wwTT_ipdb .contents
     -khtml-opacity: 1;
     opacity: 1;
 }
-div.wwTT_ipdb p
+div.wwTT_ona p
 {
     color: #D17E62;
     font-size: 9px;

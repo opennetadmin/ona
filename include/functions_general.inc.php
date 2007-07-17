@@ -279,6 +279,7 @@ function microtime_float() {
 //    7 or ipv6gz:   FE80::202:B3FF:FE1E:8329 or
 //                   ::C000:280 or
 //                   ::ffff:C000:280
+//    8 or flip:     10.1.2.3 changes to 3.2.1.10
 //
 //  (currently unsupported for input or output)  0:0:0:0:0:0:192.0.2.128
 //  (currently unsupported for input or output)  ::ffff:192.0.2.128
@@ -530,6 +531,16 @@ function ip_mangle($ip="", $format="default") {
     // Is output format 7 (compressed IPv6 string)?
     else if ($format == 7 or $format == 'ipv6gz') {
         return(ipv6gz(implode(":", str_split(str_pad(gmp_strval($ip, 16), 32, "0", STR_PAD_LEFT), 4))));
+    }
+
+    // Is output format 8 (flipped IP string)?
+    else if ($format == 8 or $format == 'flip') {
+        if(!is_ipv4($ip)) {
+            $self['error'] = "ERROR => Invalid IPv4 address";
+            return(-1);
+        }
+        $octet = explode('.',long2ip(sprintf("%s", gmp_strval($ip))));
+        return(sprintf("%s.%s.%s.%s",$octet[3],$octet[2],$octet[1],$octet[0]));
     }
 
     else {
@@ -1182,7 +1193,7 @@ function run_module($module='', $options='', $transaction=1) {
 ///////////////////////////////////////////////////////////////////////
 //  Function: parse_options($options)
 //
-//  Takes an options string (passed to a datacom module) and returns
+//  Takes an options string (passed to a dcm module) and returns
 //  an array of the key=value pairs included in it.
 //  Values are allowed to contain "=" and "&" characters as long as
 //  they are escaped with a "\" character.
@@ -1337,10 +1348,10 @@ function format_array($array=array()) {
 
         // Make some data look pretty
         if      ($key == 'ip_addr')        { $array[$key] = ip_mangle($array[$key], 'dotted'); }
-        else if ($key == 'ip_address_start')  { $array[$key] = ip_mangle($array[$key], 'dotted'); }
-        else if ($key == 'ip_address_end')    { $array[$key] = ip_mangle($array[$key], 'dotted'); }
+        else if ($key == 'ip_addr_start')  { $array[$key] = ip_mangle($array[$key], 'dotted'); }
+        else if ($key == 'ip_addr_end')    { $array[$key] = ip_mangle($array[$key], 'dotted'); }
         else if ($key == 'ip_mask')    { $array[$key] = ip_mangle($array[$key]); }
-        else if ($key == 'data_link_address') { $array[$key] = mac_mangle($array[$key]); if ($array[$key] == -1) $array[$key] = ''; }
+        else if ($key == 'mac_addr') { $array[$key] = mac_mangle($array[$key]); if ($array[$key] == -1) $array[$key] = ''; }
         else if ($key == 'host_id')           {
             list($status, $rows, $host) = ona_find_host($array[$key]);
             if ($host['id'])

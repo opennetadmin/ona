@@ -56,9 +56,8 @@ Add a new host
     ip=ADDRESS                ip address (numeric or dotted)
     mac=ADDRESS               mac address (most formats are ok)
     name=NAME                 interface name (i.e. "FastEthernet0/1.100")
+    description=TEXT          brief description of the interface
 
-  Notes:
-    * An interface (IP address) must be added to a new host separately!
 \n
 EOM
         ));
@@ -178,6 +177,7 @@ EOM
 
     // Add the device record
     // FIXME: (MP) quick add of device record. more detail should be looked at here to ensure it is done right
+// FIXME: MP this should use the run_module('device_add')!!! when it is ready
     list($status, $rows) = db_insert_record(
         $onadb,
         'devices',
@@ -214,6 +214,7 @@ EOM
         return(array(6, $self['error'] . "\n"));
     }
 
+// FIXME: MP this should use the run_module('dns_record_add')!!!
     // Add the dns record
     list($status, $rows) = db_insert_record(
         $onadb,
@@ -603,56 +604,70 @@ EOM
         $add_to_error = "";
 
         // SUMMARY:
-        //   Don't allow a delete if it has an entry in SERVER_B, UNLESS its id is not used elsewhere
+        //   Don't allow a delete if it is performing server duties
         //   Don't allow a delete if config text entries exist
         //   Delete Interfaces
-        //   Delete Aliases
+        //   Delete dns records
         //   Delete Infobits
         //   Delete DHCP entries
+        //   Delete device record if it is the last host associated with it.
         //
         // IDEA: If it's the last host in a domain (maybe do the same for or a networks & vlans in the interface delete)
         //       It could just print a notice or something.
 
-        // Check that it is the last entry using the ID from SERVER_B
-        // (pk) FIXME: FIXME FIXME
-        list($status, $rows, $server) = db_get_record($onadb, 'SERVER_B', array('host_id' => $host['id']));
-        if ($rows) {
-            $serverrow = 0;
-            // check ALL the places server_id is used and remove the entry from server_b if it is not used
-            list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('SERVER_ID' => $server['ID']));
-            if ($rows) $serverrow++;
-            list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_POOL_B', array('SERVER_ID' => $server['ID']));
-            if ($rows) $serverrow++;
-            list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_ENTRY_B', array('SERVER_ID' => $server['ID']));
-            if ($rows) $serverrow++;
-            list($status, $rows, $srecord) = db_get_record($onadb, 'DOMAIN_SERVERS_B', array('SERVER_ID' => $server['ID']));
-            if ($rows) $serverrow++;
-            list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_FAILOVER_GROUP_B', array('PRIMARY_SERVER_ID' => $server['ID']));
-            if ($rows) $serverrow++;
-            list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_FAILOVER_GROUP_B', array('SECONDARY_SERVER_ID' => $server['ID']));
-            if ($rows) $serverrow++;
-            if ($serverrow == 0) {
-                list($status, $rows, $records) = db_delete_record($onadb, 'SERVER_B', array('ID' => $server['ID']));
-                if ($status) {
-                    $self['error'] = "ERROR => host_del() server delete SQL Query failed: {$self['error']}";
-                    printmsg($self['error'],0);
-                    return(array(5, $self['error'] . "\n"));
-                }
-            }
-            if ($serverrow > 0) {
-                printmsg("DEBUG => Host ({$host['fqdn']}) cannot be deleted, it is configured as a server!",3);
-                $self['error'] = "ERROR => Host ({$host['fqdn']}) cannot be deleted, it is configured as a server!";
-                return(array(5, $self['error'] . "\n"));
-            }
+        // Check that it is the host is not performing server duties
+        // FIXME: MP mostly fixed..needs testing
+        $serverrow = 0;
+        // check ALL the places server_id is used and remove the entry from server_b if it is not used
+        list($status, $rows, $srecord) = db_get_record($onadb, 'dhcp_server_subnets', array('host_id' => $host['id']));
+        if ($rows) $serverrow++;
+        list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_ENTRY_B', array('SERVER_ID' => $server['ID']));
+        if ($rows) $serverrow++;
+        list($status, $rows, $srecord) = db_get_record($onadb, 'dhcp_failover_groups', array('primary_server_id' => $host['id']));
+        if ($rows) $serverrow++;
+        list($status, $rows, $srecord) = db_get_record($onadb, 'dhcp_failover_groups', array('secondary_server_id' => $host['id']));
+        if ($rows) $serverrow++;
+        if ($serverrow > 0) {
+            printmsg("DEBUG => Host ({$host['fqdn']}) cannot be deleted, it is performing duties as a DHCP server!",3);
+            $self['error'] = "ERROR => Host ({$host['fqdn']}) cannot be deleted, it is performing duties as a DHCP server!";
+            return(array(5, $self['error'] . "\n"));
         }
 
-        // Display an error if it has any entries in CONFIG_TEXT_B
+
+// FIXME: MP do checks for dns server stuff.
+            $serverrow = 0;
+            list($status, $rows, $srecord) = db_get_record($onadb, 'DOMAIN_SERVERS_B', array('SERVER_ID' => $server['ID']));
+            if ($rows) $serverrow++;
+
+            if ($serverrow > 0) {
+                printmsg("DEBUG => Host ({$host['fqdn']}) cannot be deleted, it is performing duties as a DNS server!",3);
+                $self['error'] = "ERROR => Host ({$host['fqdn']}) cannot be deleted, it is performing duties as a DNS server!";
+                return(array(5, $self['error'] . "\n"));
+            }
+
+        // Display an error if it has any entries in configurations
         list($status, $rows, $server) = db_get_record($onadb, 'configurations', array('host_id' => $host['id']));
         if ($rows) {
             printmsg("DEBUG => Host ({$host['fqdn']}) cannot be deleted, it has config archives!",3);
             $self['error'] = "ERROR => Host ({$host['fqdn']}) cannot be deleted, it has config archives!";
             return(array(5, $self['error'] . "\n"));
         }
+
+        // Delete messages
+        // get list for logging
+        list($status, $rows, $records) = db_get_records($onadb, 'messages', array('table_name_ref' => 'hosts','table_id_ref' => $host['id']));
+        // do the delete
+        list($status, $rows) = db_delete_records($onadb, 'messages', array('table_name_ref' => 'hosts','table_id_ref' => $host['id']));
+        if ($status) {
+            $self['error'] = "ERROR => host_del() message delete SQL Query failed: {$self['error']}";
+            printmsg($self['error'],0);
+            return(array(5, $self['error'] . "\n"));
+        }
+        // log deletions
+        printmsg("INFO => {$rows} Message(s) DELETED from {$host['fqdn']}",0);
+        $add_to_error .= "INFO => {$rows} Message(s) DELETED from {$host['fqdn']}\n";
+
+
 
         // Delete interface(s)
         // get list for logging
@@ -671,18 +686,21 @@ EOM
         }
 
         // Delete device record
-        list($status, $rows, $records) = db_get_records($onadb, 'devices', array('id' => $host['device_id']));
-        // do the delete
-        list($status, $rows) = db_delete_records($onadb, 'devices', array('id' => $host['device_id']));
-        if ($status) {
-            $self['error'] = "ERROR => host_del() device delete SQL Query failed: {$self['error']}";
-            printmsg($self['error'],0);
-            return(array(5, $add_to_error . $self['error'] . "\n"));
-        }
-        // log deletions
-        foreach ($records as $record) {
-            printmsg("INFO => Device DELETED: {$record['id']} from {$host['fqdn']}",0);
-            $add_to_error .= "INFO => Device DELETED: {$record['id']} from {$host['fqdn']}\n";
+        // Count how many hosts use this same device
+        list($status, $rows, $records) = db_get_records($onadb, 'hosts', array('device_id' => $host['device_id']));
+        // if device count is just 1 do the delete
+        if ($rows > 1) {
+            list($status, $rows) = db_delete_records($onadb, 'devices', array('id' => $host['device_id']));
+            if ($status) {
+                $self['error'] = "ERROR => host_del() device delete SQL Query failed: {$self['error']}";
+                printmsg($self['error'],0);
+                return(array(5, $add_to_error . $self['error'] . "\n"));
+            }
+            // log deletions
+            foreach ($records as $record) {
+                printmsg("INFO => Device record DELETED: {$record['id']} no remaining hosts",0);
+                $add_to_error .= "INFO => Device record DELETED: {$record['id']} no remaining hosts\n";
+            }
         }
 
         // Delete DNS record
@@ -721,19 +739,20 @@ EOM
             printmsg($log_msg,0);
             $add_to_error .= $log_msg . "\n";
         }
-        // Delete DHCP parameters
+*/
+        // Delete DHCP options
         // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'DHCP_ENTRY_B', array('host_id' => $host['id']));
+        list($status, $rows, $records) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => $host['id']));
         $log=array(); $i=0;
         foreach ($records as $record) {
-            list($status, $rows, $dhcp) = ona_get_dhcp_entry_record(array('ID' => $record['ID']));
-            $log[$i]= "INFO => DHCP entry DELETED: {$dhcp['DHCP_DESCRIPTION']}={$dhcp['DHCP_PARAMETER_VALUE']} from {$host['fqdn']}";
+            list($status, $rows, $dhcp) = ona_get_dhcp_option_entry_record(array('id' => $record['id']));
+            $log[$i]= "INFO => DHCP entry DELETED: {$dhcp['display_name']}={$dhcp['value']} from {$host['fqdn']}";
             $i++;
         }
         // do the delete
-        list($status, $rows) = db_delete_records($onadb, 'DHCP_ENTRY_B', array('host_id' => $host['id']));
+        list($status, $rows) = db_delete_records($onadb, 'dhcp_option_entries', array('host_id' => $host['id']));
         if ($status) {
-            $self['error'] = "ERROR => host_del() DHCP parameter delete SQL Query failed: {$self['error']}";
+            $self['error'] = "ERROR => host_del() DHCP option entry delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0);
             return(array(5, $add_to_error . $self['error'] . "\n"));
         }
@@ -742,24 +761,6 @@ EOM
             printmsg($log_msg,0);
             $add_to_error .= $log_msg . "\n";
         }
-
-        // UPDATE circuit info from cpe_b and set host_id to null
-        // This is a temp solution till we have a circuit interface
-        // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'CIRCUIT.CPE_B', array('host_id' => $host['id']));
-        // do the delete
-        list($status, $rows) = db_update_records($onadb, 'CIRCUIT.CPE_B', array('host_id' => $host['id']), array('host_id' => ''));
-        if ($status) {
-            $self['error'] = "ERROR => host_del() circuit update SQL Query failed: {$self['error']}";
-            printmsg($self['error'],0);
-            return(array(5, $add_to_error . $self['error'] . "\n"));
-        }
-        // log deletions
-        foreach ($records as $record) {
-            printmsg("INFO => CPE name DELETED: {$record['CPE_NAME']} from {$host['fqdn']}",0);
-            $add_to_error .= "INFO => CPE name DELETED: {$record['CPE_NAME']} from {$host['fqdn']}\n";
-        }
-*/
 
         // Delete the host
         list($status, $rows) = db_delete_records($onadb, 'hosts', array('id' => $host['id']));
@@ -788,56 +789,47 @@ EOM
     //   Display Infobits
     //   Display DHCP entries
 
-
     // Otherwise just display the host record for the host we would have deleted
     $text = "Record(s) NOT DELETED (see \"commit\" option)\n" .
             "Displaying record(s) that would have been deleted:\n";
 
-    // Display a warning if it has an entry in SERVER_B
-    list($status, $rows, $server) = db_get_record($onadb, 'SERVER_B', array('host_id' => $host['id']));
+    // Display a warning if host is performing server duties
+    list($status, $rows, $srecord) = db_get_record($onadb, 'dhcp_server_subnets', array('host_id' => $host['id']));
     if ($rows) {
-        $serverrow = 0;
-        // check ALL the places server_id is used and remove the entry from server_b if it is not used
-        list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('SERVER_ID' => $server['id']));
-        if ($rows) {
-            $text .= "\nWARNING!  This host is a server for the network: {$srecord['DESCRIPTION']}\n";
-            $serverrow++;
-        }
-        list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_POOL_B', array('SERVER_ID' => $server['ID']));
-        if ($rows) {
-            $text .= "\nWARNING!  This host is a server for a DHCP pool!\n";
-            $serverrow++;
-        }
-        list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_ENTRY_B', array('SERVER_ID' => $server['ID']));
-        if ($rows) {
-            $text .= "\nWARNING!  This host is a server which has a server level DHCP entry!\n";
-            $serverrow++;
-        }
-        list($status, $rows, $srecord) = db_get_record($onadb, 'DOMAIN_SERVERS_B', array('SERVER_ID' => $server['ID']));
-        if ($rows) {
-            $text .= "\nWARNING!  This host is a server for one or more domains!\n";
-            $serverrow++;
-        }
-        list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_FAILOVER_GROUP_B', array('PRIMARY_SERVER_ID' => $server['ID']));
-        if ($rows) {
-            $text .= "\nWARNING!  This host is a server that is primary in a DHCP failover group\n";
-            $serverrow++;
-        }
-        list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_FAILOVER_GROUP_B', array('SECONDARY_SERVER_ID' => $server['ID']));
-        if ($rows) {
-            $text .= "\nWARNING!  This host is a server that is secondary in a DHCP failover group\n";
-            $serverrow++;
-        }
+        $text .= "\nWARNING!  This host is a DHCP server for {$rows} subnet(s)\n";
+    }
+    list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_ENTRY_B', array('SERVER_ID' => $server['ID']));
+    if ($rows) {
+        $text .= "\nWARNING!  This host is a server which has a server level DHCP entry!\n";
+    }
+    list($status, $rows, $srecord) = db_get_record($onadb, 'DOMAIN_SERVERS_B', array('SERVER_ID' => $server['ID']));
+    if ($rows) {
+        $text .= "\nWARNING!  This host is a server for one or more domains!\n";
+    }
+    list($status, $rows, $srecord) = db_get_record($onadb, 'dhcp_failover_groups', array('primary_server_id' => $host['id']));
+    if ($rows) {
+        $text .= "\nWARNING!  This host is a server that is primary in a DHCP failover group\n";
+    }
+    list($status, $rows, $srecord) = db_get_record($onadb, 'dhcp_failover_groups', array('secondary_server_id' => $host['id']));
+    if ($rows) {
+        $text .= "\nWARNING!  This host is a server that is secondary in a DHCP failover group\n";
     }
 
-    // Display a warning if it has any entries in CONFIG_TEXT_B
+    // Display a warning if it has any configurations
     list($status, $rows, $server) = db_get_record($onadb, 'configurations', array('host_id' => $host['id']));
     if ($rows)
         $text .= "\nWARNING!  Host can not be deleted, it has config archives!\n";
 
+    if ($rows)
+        $text .= "\nWARNING!  Host will NOT be deleted, due to previous warnings!\n";
+
     // Display the Host's complete record
     list($status, $tmp) = host_display("host={$host['id']}&verbose=N");
     $text .= "\n" . $tmp;
+
+    // Display count of messages
+    list($status, $rows, $records) = db_get_records($onadb, 'messages', array('table_name_ref' => 'hosts','table_id_ref' => $host['id']));
+    if ($rows) $text .= "\nASSOCIATED MESSAGE RECORDS ({$rows}):\n";
 
     // Display associated interface(s)
     list($status, $rows, $records) = db_get_records($onadb, 'interfaces', array('host_id' => $host['id']));
@@ -847,12 +839,13 @@ EOM
     }
 
     // Display associated infobits
-    list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
-    if ($rows) $text .= "\nASSOCIATED HOST INFOBIT RECORDS ({$rows}):\n";
-    foreach ($records as $record) {
-        list($status, $rows, $infobit) = ona_get_host_infobit_record(array('ID' => $record['ID']));
-        $text .= "  {$infobit['NAME']} ({$infobit['VALUE']})\n";
-    }
+// FIXME: MP clean this up for custom attributes
+//     list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
+//     if ($rows) $text .= "\nASSOCIATED HOST INFOBIT RECORDS ({$rows}):\n";
+//     foreach ($records as $record) {
+//         list($status, $rows, $infobit) = ona_get_host_infobit_record(array('ID' => $record['ID']));
+//         $text .= "  {$infobit['NAME']} ({$infobit['VALUE']})\n";
+//     }
 
     // Display associated DHCP entries
     list($status, $rows, $records) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => $host['id']));
@@ -966,6 +959,8 @@ EOM
             $text .= "\nASSOCIATED DEVICE RECORD\n";
             $text .= format_array($device);
         }
+
+// FIXME: MP like aliases below, show list of dns records associated
 
         // Unit record
 /*        list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $host['UNIT_ID']));

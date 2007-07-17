@@ -2,7 +2,7 @@
 // DON'T put whitespace at the beginning or end of this file!!!
 
 // Make sure we have necessary functions & DB connectivity
-//(PK): require_once($conf['inc_functions_ipdb']);
+require_once($conf['inc_functions_db']);
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -245,9 +245,9 @@ EOM
 
 // FIXME: (PK) Disabled, we don't track servers yet.
 //    // Get the next domain server ID
-//    $id = ipdb_get_next_id();
+//    $id = ona_get_next_id();
 //    if (!$id) {
-//        $self['error'] = "ERROR => The ipdb_get_next_id() call failed!";
+//        $self['error'] = "ERROR => The ona_get_next_id() call failed!";
 //        printmsg($self['error'], 0);
 //        return(array(6, $self['error'] . "\n"));
 //    }
@@ -361,7 +361,7 @@ EOM
     }
     
     // Debugging
-    list($status, $tmp_rows, $tmp_parent) = ipdb_get_domain_record(array('id'=>$entry['parent_id']));
+    list($status, $tmp_rows, $tmp_parent) = ona_get_domain_record(array('id'=>$entry['parent_id']));
     printmsg("DEBUG => Zone selected: {$entry['name']}.{$tmp_parent['name']}", 3);
     
 
@@ -631,7 +631,7 @@ EOM
 
 // FIXME: (PK) Not supported yet
         // Determine the host that was found is actually a server
-//        list($status, $rows, $server) = ipdb_get_server_record(array('HOST_ID' => $host['ID']));
+//        list($status, $rows, $server) = ona_get_server_record(array('HOST_ID' => $host['ID']));
 
 //        if (!$server['ID']) {
 //            printmsg("DEBUG => The origin host specified ({$host['FQDN']}) is not a server!",3);
@@ -783,9 +783,9 @@ EOM
 
         if (!$server['ID']) {
             // Get the next ID
-            $id = ipdb_get_next_id();
+            $id = ona_get_next_id();
             if (!$id) {
-                $self['error'] = "ERROR => The ipdb_get_next_id() call failed!";
+                $self['error'] = "ERROR => The ona_get_next_id() call failed!";
                 printmsg($self['error'], 0);
                return(array(6, $self['error'] . "\n"));
             }
@@ -821,7 +821,7 @@ EOM
     printmsg("DEBUG => domain_server_add(): Found server, {$host['FQDN']}", 3);
 
     // Test that this domain isnt already assigned to the server
-    list($status, $rows, $domainserver) = ipdb_get_domain_server_record(array('SERVER_ID' => $server['ID'],'DNS_DOMAINS_ID' => $domain['ID']));
+    list($status, $rows, $domainserver) = ona_get_domain_server_record(array('SERVER_ID' => $server['ID'],'DNS_DOMAINS_ID' => $domain['ID']));
     if ($rows) {
         printmsg("DEBUG => Zone {$domain['DOMAIN_NAME']} already assigned to {$host['FQDN']}", 0);
         $self['error'] = "ERROR => Zone {$domain['DOMAIN_NAME']} already assigned to {$host['FQDN']}";
@@ -834,9 +834,9 @@ EOM
     else {$auth = sanitize_YN($conf['dns']['auth'], 'N');}
 
     // Get the next ID
-    $id = ipdb_get_next_id();
+    $id = ona_get_next_id();
     if (!$id) {
-        $self['error'] = "ERROR => The ipdb_get_next_id() call failed!";
+        $self['error'] = "ERROR => The ona_get_next_id() call failed!";
         printmsg($self['error'],0);
         return(array(6, $add_to_error . $self['error'] . "\n"));
     }
@@ -944,7 +944,7 @@ EOM
     }
     
     // Determine the entry itself exists
-    list($status, $rows, $domain) = ipdb_get_domain_record($domainsearch);
+    list($status, $rows, $domain) = ona_get_domain_record($domainsearch);
 
     // Test to see that we were able to find the specified record
     if (!$domain['ID']) {
@@ -957,7 +957,7 @@ EOM
 
     if ($options['server']) {
         // Determine the server is valid
-        list($host, $tmp) = ipdb_find_host($options['server']);
+        list($host, $tmp) = ona_find_host($options['server']);
         
         if (!$host['ID']) {
             printmsg("DEBUG => The server specified ({$options['server']}) does not exist!",3);
@@ -966,7 +966,7 @@ EOM
         }
 
         // Determine the host that was found is actually a server
-        list($status, $rows, $server) = ipdb_get_server_record(array('HOST_ID' => $host['ID']));
+        list($status, $rows, $server) = ona_get_server_record(array('HOST_ID' => $host['ID']));
 
         if (!$server['ID']) {
             printmsg("DEBUG => The host specified ({$host['FQDN']}) is not a server!",3);
@@ -978,7 +978,7 @@ EOM
     printmsg("DEBUG => domain_server_del(): Found server, {$host['FQDN']}", 3);
 
     // Test that this domain is even assigned to the server
-    list($status, $rows, $domainserver) = ipdb_get_domain_server_record(array('SERVER_ID' => $server['ID'],'DNS_DOMAINS_ID' => $domain['ID']));
+    list($status, $rows, $domainserver) = ona_get_domain_server_record(array('SERVER_ID' => $server['ID'],'DNS_DOMAINS_ID' => $domain['ID']));
     if (!$rows) {
         printmsg("DEBUG => The domain specified ({$domain['DOMAIN_NAME']}) is not assigned to the server ({$host['FQDN']})!",3);
         $self['error'] = "ERROR => The domain specified {$domain['DOMAIN_NAME']} is not assigned to the server {$host['FQDN']}";

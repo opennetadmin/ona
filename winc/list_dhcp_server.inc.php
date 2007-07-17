@@ -57,7 +57,18 @@ function ws_display_list($window_name, $form='') {
 
     // SERVER ID
     if ($form['server_id']) {
-        $where .= $and . "id IN (SELECT subnet_id FROM dhcp_server_subnets WHERE host_id = " . $onadb->qstr($form['server_id']) . ')';
+        $where .= $and . 'id IN (SELECT subnet_id
+                                FROM   dhcp_server_subnets
+                                WHERE  host_id = '. $onadb->qstr($form['server_id']).'
+                                UNION
+                                SELECT subnet_id
+                                FROM dhcp_pools 
+                                WHERE dhcp_failover_group_id IN (SELECT id
+                                                                FROM dhcp_failover_groups
+                                                                WHERE primary_server_id = '. $onadb->qstr($form['server_id']) .'
+                                                                OR secondary_server_id = '. $onadb->qstr($form['server_id']) .'))';
+
+
         $and = " AND ";
     }
 
@@ -68,7 +79,7 @@ function ws_display_list($window_name, $form='') {
     // Do the SQL Query
     $filter = '';
     if ($form['filter']) {
-        // Subnet descriptions in Albertsons are always upper case
+        // Subnet descriptions are always upper case
         $form['filter'] = strtoupper($form['filter']);
         $filter = $and . ' name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
@@ -210,10 +221,10 @@ EOL;
                 ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 EOL;
         }
-
-        if (auth('subnet_del',$debug_val)) {
+        // check if the subnet listed is from a failover group or an actual dhcp server subnet assignment
+        list($dhcpsubnetstatus, $dhcpsubnetrows, $dhcpserver) = ona_get_dhcp_server_subnet_record(array('subnet_id' => $record['id'],'host_id' => $form['server_id']));
+        if (auth('subnet_del',$debug_val) && $dhcpsubnetrows == 1) {
             $html .= <<<EOL
-
 
                 <a title="Remove subnet association with server."
                    class="act"
@@ -221,6 +232,11 @@ EOL;
                         if (doit == true)
                             xajax_window_submit('edit_dhcp_server', xajax.getFormValues('{$form['form_id']}_list_dhcp_server_{$record['id']}'), 'delete');"
                 ><img src="{$images}/silk/page_delete.png" border="0"></a>&nbsp;
+EOL;
+        }
+        else {
+            $html .= <<<EOL
+                <span title="You must change the failover group assignment on the pool to remove this entry."><img src="{$images}/silk/comment.png" border="0"></span>&nbsp;
 EOL;
         }
         $html .= <<<EOL

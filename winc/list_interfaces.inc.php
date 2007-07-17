@@ -55,7 +55,8 @@ function ws_display_list($window_name, $form='') {
     // Do the SQL Query
     $filter = '';
     if ($form['filter']) {
-        $filter = $and . ' name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
+        $form['filter'] = ip_mangle($form['filter']);
+        $filter = $and . ' ip_addr LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
     list ($status, $rows, $results) =
         db_get_records(
@@ -99,7 +100,6 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">MAC</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Description</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">PTR</td>
                 <td class="list-header" align="center">&nbsp;</td>
             </tr>
 EOL;
@@ -166,10 +166,6 @@ EOL;
 
                 <td class="list-row" align="left" title="{$record['description']}">
                     {$record['description_short']}&nbsp;
-                </td>
-
-                <td class="list-row" align="center">
-                    {$record['CREATE_REVERSE_DNS_ENTRY']}&nbsp;
                 </td>
 
                 <td class="list-row" align="right">

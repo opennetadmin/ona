@@ -24,6 +24,7 @@ function ws_editor($window_name, $form='') {
     global $conf, $self, $onadb;
     global $font_family, $color, $style, $images;
     $window = array();
+    $window['js'] = '';
 
     // Check permissions
     if (! (auth('record_modify') and auth('record_add')) ) {
@@ -49,7 +50,6 @@ function ws_editor($window_name, $form='') {
         }
     }
 
-
     // Load a domain record if we got passed a domain_id
     if ($form['domain_id']) {
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $form['domain_id']));
@@ -57,9 +57,11 @@ function ws_editor($window_name, $form='') {
     }
 
     // Set up the types of records we can edit with this form
-    $record_types = array('A','CNAME','TXT','NS','MX','AAAA','SRV');
+    //$record_types = array('A','CNAME','TXT','NS','MX','AAAA','SRV');
+    // FIXME: MP cool idea here-- support the loc record and have a google map popup to search for the location then have it populate the coords from that.
+    $record_types = array('A','CNAME');
     foreach (array_keys((array)$record_types) as $id) {
-        //$device_types[$id] = htmlentities($device_types[$id]);
+        $record_types[$id] = htmlentities($record_types[$id]);
         $selected = '';
         if ($record_types[$id] == $dns_record['type']) { $selected = 'SELECTED'; }
         $record_type_list .= "<option value=\"{$record_types[$id]}\" {$selected}>{$record_types[$id]}</option>\n";
@@ -71,15 +73,32 @@ function ws_editor($window_name, $form='') {
     foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
 
 
+    // If its a CNAME, get the dns name for the A record it points to
+    if ($dns_record['type'] == 'CNAME') {
+        list($status, $rows, $cnamedata) = ona_get_dns_record(array('id' => $dns_record['dns_id']));
+        $dns_record['cnamedata'] = $cnamedata['name'].'.'.$cnamedata['fqdn'];
+    }
+
+    // If its an A record,check to se if it has a PTR associated with it
+    $ptr_readonly = '';
+    if ($dns_record['type'] == 'A') {
+        list($status, $rows, $hasptr) = ona_get_dns_record(array('dns_id' => $dns_record['id'],'type' => 'PTR'));
+        if ($rows) { 
+            $hasptr_msg = '<- Already has PTR record';
+            $ptr_readonly = 'disabled="1"';
+        }
+    }
+
     // Set the window title:
     $window['title'] = "Add DNS Record";
     if ($dns_record['id']) {
         $window['title'] = "Edit DNS Record";
-       // $editdisplay = "display:none";
+        $editdisplay = "display:none";
+        $window['js'] .= "updatednsinfo('{$window_name}');el('record_type_select').onchange('fake event');";
     }
 
     // Javascript to run after the window is built
-    $window['js'] = <<<EOL
+    $window['js'] .= <<<EOL
         /* Put a minimize icon in the title bar */
         el('{$window_name}_title_r').innerHTML =
             '&nbsp;<a onClick="toggle_window(\'{$window_name}\');" title="Minimize window" style="cursor: pointer;"><img src="{$images}/icon_minimize.gif" border="0" /></a>' +
@@ -91,6 +110,7 @@ function ws_editor($window_name, $form='') {
             el('{$window_name}_title_r').innerHTML;
 
         suggest_setup('set_domain_{$window_name}',    'suggest_set_domain_{$window_name}');
+        suggest_setup('set_a_record_{$window_name}',  'suggest_set_a_record_{$window_name}');
 EOL;
 
     // Define the window's inner html
@@ -128,13 +148,12 @@ EOL;
                         name="set_type"
                         alt="Record type"
                         class="edit"
-                        onChange="var selectBox = el('record_type_select');
-                                el('a_container').style.display      = (selectBox.value == 'A') ? '' : 'none';
-                                el('nosup_container').style.display  = (selectBox.value == 'TXT') ? '' : 'none';
-                                el('cname_container').style.display  = (selectBox.value == 'CNAME') ? '' : 'none';
-                                el('nosup_container').style.display  = (selectBox.value == 'NS') ? '' : 'none';
-                                el('nosup_container').style.display  = (selectBox.value == 'MX') ? '' : 'none';
-                                el('nosup_container').style.display  = (selectBox.value == 'SRV') ? '' : 'none';"
+                        onchange="var selectBox = el('record_type_select');
+                                el('info_{$window_name}').innerHTML = '';
+                                el('ptr_info_{$window_name}').innerHTML = '';
+                                el('a_container').style.display     = (selectBox.value == 'A') ? '' : 'none';
+                                el('autoptr_container').style.display   = (selectBox.value == 'A') ? '' : 'none';
+                                el('cname_container').style.display = (selectBox.value == 'CNAME') ? '' : 'none';"
                     >{$record_type_list}</select>
                 </td>
             </tr>
@@ -142,24 +161,24 @@ EOL;
         </table>
     </div>
 
-    <!-- A RECORD CONTAINER -->
-    <div id="a_container">
+    <!-- COMMON CONTAINER -->
+    <div id="common_container">
         <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
             <tr>
                 <td align="right" nowrap="true">
-                    DNS Name
+                    Host Name
                 </td>
                 <td class="padding" align="left" width="100%">
                     <input
-                        id="set_hostname"
-                        name="set_host"
+                        id="set_hostname_{$window_name}"
+                        name="set_hostname"
                         alt="Hostname"
                         value="{$dns_record['name']}"
                         class="edit"
                         type="text"
                         size="25" maxlength="64"
-                        onkeyup="el('a_info_{$window_name}').innerHTML = el('set_hostname').value + '.' + el('set_domain_{$window_name}').value +' IN ' + el('record_type_select').value + ' ' + el('set_ttl').value + ' ' + el('set_ip_{$window_name}').value;"
-                    >
+                        onblur="updatednsinfo('{$window_name}');"
+                    />
                 </td>
             </tr>
 
@@ -176,37 +195,9 @@ EOL;
                         class="edit"
                         type="text"
                         size="25" maxlength="64"
-                        onchange="el('a_info_{$window_name}').innerHTML = el('set_hostname').value + '.' + el('set_domain_{$window_name}').value +' IN ' + el('record_type_select').value + ' ' + el('set_ttl').value + ' ' + el('set_ip_{$window_name}').value;"
-                    >
+                        onblur="updatednsinfo('{$window_name}');"
+                    />
                     <div id="suggest_set_domain_{$window_name}" class="suggest"></div>
-                </td>
-            </tr>
-<!--
-            <tr>
-                <td align="right" nowrap="true">
-                    Subnet
-                </td>
-                <td class="padding" align="left" width="100%" nowrap="true">
-                    <span id="associated_subnet_{$window_name}"
-                    >{$subnet['name']}</span>
-                </td>
-            </tr>-->
-
-            <tr>
-                <td align="right" nowrap="true">
-                    IP Address
-                </td>
-                <td class="padding" align="left" width="100%" nowrap="true">
-                    <input
-                        id="set_ip_{$window_name}"
-                        name="set_ip"
-                        alt="IP Address"
-                        value="{$interface['ip_addr']}"
-                        class="edit"
-                        type="text"
-                        size="25" maxlength="64"
-                        onkeyup="el('a_info_{$window_name}').innerHTML = el('set_hostname').value + '.' + el('set_domain_{$window_name}').value +' IN ' + el('record_type_select').value + ' ' + el('set_ttl').value + ' ' + el('set_ip_{$window_name}').value;"
-                    >
                 </td>
             </tr>
 
@@ -223,55 +214,103 @@ EOL;
                         class="edit"
                         type="text"
                         size="20" maxlength="20"
-                        onkeyup="el('a_info_{$window_name}').innerHTML = el('set_hostname').value + '.' + el('set_domain_{$window_name}').value +' IN ' + el('record_type_select').value + ' ' + el('set_ttl').value + ' ' + el('set_ip_{$window_name}').value;"
-                   >
+                        onblur="updatednsinfo('{$window_name}');"
+                        onfocus="updatednsinfo('{$window_name}');"
+                    />
                 </td>
             </tr>
-            <tr>
-                <td colspan="2" class="padding" align="center" width="100%" nowrap="true">
-                <span id="a_info_{$window_name}" style="color: green;"></span>
+
+            <!-- A RECORD CONTAINER -->
+            <tr id="a_container">
+                <td align="right" nowrap="true">
+                    IP Address
+                </td>
+                <td class="padding" align="left" width="100%" nowrap="true">
+                    <input
+                        id="set_ip_{$window_name}"
+                        name="set_ip"
+                        alt="IP Address"
+                        value="{$interface['ip_addr']}"
+                        class="edit"
+                        type="text"
+                        size="25" maxlength="64"
+                        onblur="updatednsinfo('{$window_name}');"
+                    />
                 </td>
             </tr>
-        </table>
-    </div>
 
+            <tr id="autoptr_container">
+                <td align="right" nowrap="true">
+                    Auto create PTR
+                </td>
+                <td class="padding" align="left" width="100%" nowrap>
+                    <input
+                        id="set_auto_ptr"
+                        name="set_auto_ptr"
+                        alt="Automaticaly create PTR record"
+                        type="checkbox"
+                        checked="1"
+                        {$ptr_readonly}
+                        onchange="updatednsinfo('{$window_name}');"
+                    />{$hasptr_msg}
+                </td>
+            </tr>
 
-    <!-- CNAME CONTAINER -->
-    <div id="cname_container" style="display:none;">
-        <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
-            <tr>
+            <!-- CNAME CONTAINER -->
+            <tr id="cname_container" style="display:none;">
                 <td align="right" nowrap="true">
                     Existing A record
                 </td>
                 <td class="padding" align="left" width="100%">
                     <input
-                        id="set_pointsto_{$window_name}"
-                        name="set_pointsto"
+                        id="set_a_record_{$window_name}"
+                        name="set_a_record"
                         alt="Points to existing A record"
-                        value="{$dns_record['dns_id']}"
+                        value="{$dns_record['cnamedata']}"
                         class="edit"
                         type="text"
                         size="25" maxlength="64"
-                    >
-                    <div id="suggest_set_pointsto_{$window_name}" class="suggest"></div>
+                        onblur="updatednsinfo('{$window_name}');"
+                    />
+                    <div id="suggest_set_a_record_{$window_name}" class="suggest"></div>
                 </td>
             </tr>
+
+            <!-- NOTES CONTAINER -->
+            <tr id="notes_container">
+                <td align="right" nowrap="true">
+                    Notes
+                </td>
+                <td class="padding" align="left" width="100%">
+                    <input
+                        id="set_notes_{$window_name}"
+                        name="set_notes"
+                        alt="Notes"
+                        value="{$dns_record['notes']}"
+                        class="edit"
+                        type="text"
+                        size="25" maxlength="64"
+                    />
+                </td>
+            </tr>
+
+            <!-- RECORD INFO -->
+            <tr>
+                <td colspan="2" class="padding" align="center" width="100%" nowrap="true">
+                <span id="info_{$window_name}" style="color: green;font-family: monospace;"></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="padding" align="center" width="100%" nowrap="true">
+                <span id="ptr_info_{$window_name}" style="color: green;font-family: monospace;"></span>
+                </td>
+            </tr>
+
         </table>
     </div>
 
-    <!-- NO SUPPORT CONTAINER -->
-    <div id="nosup_container" style="display:none;">
-        <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
-            <tr>
-                <td align="right" nowrap="true">
-                    &nbsp;
-                </td>
-                <td class="padding" align="left" width="100%">
-                    <pre>Sorry, this record type not yet supported</pre>
-                </td>
-            </tr>
-        </table>
-    </div>
+
+
 
     <table cellspacing="0" border="0" cellpadding="0" width="100%" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
 
@@ -289,6 +328,7 @@ EOL;
                     name="keepadding"
                     alt="Keep adding more DNS records"
                     type="checkbox"
+                    onfocus="updatednsinfo('{$window_name}');"
                 > Keep adding more DNS records
             </td>
         </tr>
@@ -392,7 +432,6 @@ function ws_save($window_name, $form='') {
 
     // FIXME: If we're editing, validate the $form['host'] is valid
     // FIXME: If we're editing, validate the $form['interface'] is valid
-    // FIXME: Verify that the device "type" ID is valid (not a big risk since they select from a drop-down)
 
 
 

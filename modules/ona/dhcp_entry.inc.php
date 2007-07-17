@@ -414,7 +414,7 @@ EOL;
 //         error.  All errors messages are stored in $self['error'].
 //      2. A textual message for display on the console or web interface.
 //
-//  Example: list($status, $result) = dhcp_entry_modify('host=test&host=q1234.albertsons.com');
+//  Example: list($status, $result) = dhcp_entry_modify('set_value=something');
 ///////////////////////////////////////////////////////////////////////
 function dhcp_entry_modify($options="") {
 
@@ -653,7 +653,7 @@ Displays an dhcp_entry record from the database
     server=NAME[.DOMAIN] or id    hostname or id of the server to display
 
   Notes:
-    * DOMAIN will default to .albertsons.com if not specified
+    * DOMAIN will default to {$conf['dns']['defaultdomain']} if not specified
 \n
 EOM
 

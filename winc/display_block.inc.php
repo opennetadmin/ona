@@ -246,12 +246,13 @@ EOL;
                     <input name="ip_subnet" value="{$record['ip_addr_start']}" type="hidden">
                     <input name="ip_subnet_thru" value="{$record['ip_addr_end']}" type="hidden">
                     <div id="{$form_id}_filter_overlay"
+                         title="Filter"
                          style="position: relative;
                                 display: inline;
                                 color: #CACACA;
                                 cursor: text;"
                          onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                    >Filter</div>
+                    >Name</div>
                     <input
                         id="{$form_id}_filter"
                         name="filter"

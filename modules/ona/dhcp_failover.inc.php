@@ -392,7 +392,7 @@ EOL;
 //         error.  All errors messages are stored in $self['error'].
 //      2. A textual message for display on the console or web interface.
 //
-//  Example: list($status, $result) = dhcp_failover_group_modify('alias=test&host=q1234.albertsons.com');
+//  Example: list($status, $result) = dhcp_failover_group_modify('set_mclt=1111&id=host.something.com');
 ///////////////////////////////////////////////////////////////////////
 function dhcp_failover_group_modify($options="") {
     global $conf, $self, $onadb;

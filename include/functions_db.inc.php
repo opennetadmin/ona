@@ -1119,6 +1119,9 @@ function ona_get_dns_record($array='', $order='') {
     if ($record['type'] == 'A') {
         $record['fqdn'] = ona_build_domain_name($record['domain_id']);
     }
+    if ($record['type'] == 'PTR') {
+        $record['fqdn'] = ona_build_domain_name($record['domain_id']);
+    }
     return(array($status, $rows, $record));
 }
 

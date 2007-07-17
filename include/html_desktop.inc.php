@@ -16,8 +16,8 @@ list ($status, $host_count, $records)       = db_get_records($onadb, 'hosts', $w
 list ($status, $dns_count, $records)        = db_get_records($onadb, 'dns', $where, "", 0);
 list ($status, $interface_count, $records)  = db_get_records($onadb, 'interfaces', $where, "", 0);
 list ($status, $domain_count, $records)     = db_get_records($onadb, 'domains', $where, "", 0);
-//   list ($status, $host_count, $records) = db_get_records($onadb, 'hosts', $where, "", 0);
-//   list ($status, $host_count, $records) = db_get_records($onadb, 'hosts', $where, "", 0);
+list ($status, $subnet_count, $records)     = db_get_records($onadb, 'subnets', $where, "", 0);
+list ($status, $pool_count, $records)       = db_get_records($onadb, 'dhcp_pools', $where, "", 0);
 //   list ($status, $host_count, $records) = db_get_records($onadb, 'hosts', $where, "", 0);
 
 
@@ -208,24 +208,34 @@ print <<<EOL
         <table cellspacing="0" border="0" cellpadding="0"><tr>
 
             <!-- START OF FIRST COLUMN OF SMALL BOXES -->
-            <td nowrap="true" valign="top" style="padding-right: 15px;">
+            <td nowrap="true" valign="top" style="padding: 15px;">
 
                 <b>Record Counts</b>
-                <table>
+                <table border=1 style="border-collapse: collapse;border-color: #999999;">
+                    <tr><td>Subnets</td><td>{$subnet_count}</td>
                     <tr><td>Hosts</td><td>{$host_count}</td>
-                    <tr><td>interfaces</td><td>{$interface_count}</td>
+                    <tr><td>Interfaces</td><td>{$interface_count}</td>
                     <tr><td>DNS Records</td><td>{$dns_count}</td>
                     <tr><td>DNS Domains</td><td>{$domain_count}</td>
+                    <tr><td>DHCP Pools</td><td>{$pool_count}</td>
                 </table>
 
             <!-- END OF FIRST COLUMN OF SMALL BOXES -->
             </td>
 
             <!-- START OF SECOND COLUMN OF SMALL BOXES -->
-            <td valign="top" style="padding-right: 15px;">
+            <td valign="top" style="padding: 15px; border-right: 1px solid #777777; border-left: 1px solid #777777;">
 
                 If you are wondering where to start,<br>
                 try one of these tasks:<br>
+                <a title="Advanced search" class="act"
+                       onClick="toggle_window('app_advanced_search');"
+                    ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0" /></a>&nbsp;
+                <a title="Advanced search"
+                class="act"
+                onClick="toggle_window('app_advanced_search');"
+                >Perform a search</a>&nbsp;
+                <br>
                 <a title="Add subnet"
                 class="act"
                 onClick="xajax_window_submit('edit_subnet', ' ', 'editor');"
@@ -247,14 +257,16 @@ print <<<EOL
             </td>
 
             <!-- START OF THIRD COLUMN OF SMALL BOXES -->
-            <td valign="top" style="padding-right: 15px;">
+            <td valign="top" style="padding: 15px;">
                 {$versit}
                 <br>
-                If you need further assistance, look for the <img src='{$images}/silk/help.png'> icon<br>
-                in the title bar of windows.<br>
-                You can also try the main help index located <a href='{$_ENV['help_url']}'>here</a><br>
+                <ul>
+                <li>If you need further assistance, look for the <img src='{$images}/silk/help.png'> icon<br>
+                in the title bar of windows.<br></li>
+                <li>You can also try the main help index located <a href='{$_ENV['help_url']}'>here</a><br></li>
 
                 Here is a "tip" ??????<br><br><br>
+                </ul>
             </td>
             <!-- END OF THIRD COLUMN OF SMALL BOXES -->
         </tr></table>

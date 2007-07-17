@@ -112,11 +112,6 @@ EOL;
                     <td class="padding" align="left">{$record['name']}&nbsp;</td>
                 </tr>
 
-                <tr>
-                    <td align="right" nowrap="true" valign="top"><b>VMPS Config File Preamble</b>&nbsp;</td>
-                    <td class="padding" align="left"><pre>{$record['vmps_config_file_preamble']}&nbsp;</pre></td>
-                </tr>
-
             </table>
 EOL;
     // END VLAN INFORMATION
@@ -182,12 +177,13 @@ EOL;
                     <input name="form_id" value="{$form_id}" type="hidden">
                     <input name="vlan_campus_id" value="{$record['id']}" type="hidden">
                     <div id="{$form_id}_filter_overlay"
+                         title="Filter"
                          style="position: relative;
                                 display: inline;
                                 color: #CACACA;
                                 cursor: text;"
                          onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                    >Filter</div>
+                    >Vlan Name</div>
                     <input
                         id="{$form_id}_filter"
                         name="filter"

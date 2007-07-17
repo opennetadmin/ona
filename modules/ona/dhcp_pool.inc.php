@@ -187,7 +187,7 @@ EOM
 
 
 
-    // *** Check to see if the new pool overlaps any existing IPDB pools *** //
+    // *** Check to see if the new pool overlaps any existing pools *** //
     // Look for overlaps like this (where new pool address starts inside an existing pool):
     //            [ -- new pool -- ]
     //    [ -- old pool --]
@@ -685,7 +685,7 @@ EOM
 
 
 
-    // *** Check to see if the new pool overlaps any existing IPDB pools *** //
+    // *** Check to see if the new pool overlaps any existing pools *** //
     // Look for overlaps like this (where new pool address starts inside an existing pool):
     //            [ -- new pool -- ]
     //    [ -- old pool --]

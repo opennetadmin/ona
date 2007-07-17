@@ -239,19 +239,7 @@ EOL;
 
         <!-- START OF SECOND COLUMN OF SMALL BOXES -->
         <td valign="top" style="padding-right: 15px;">
-EOL;
 
-
-    // LOCATION INFO BOX
-//    require_once('winc/tooltips.inc.php');
-//    list ($locationhtml, $locationjs) = get_location_html($record['location_id']);
-//    $html .= $locationhtml;
-//    $js .= $locationjs;
-    // END UNIT INFO BOX
-
-
-
-    $html .= <<<EOL
         <!-- END OF SECOND COLUMN OF SMALL BOXES -->
         </td>
 
@@ -282,11 +270,30 @@ EOL;
 
 EOL;
     // Get a list of servers
-    list($status, $rows, $dhcpservers) = db_get_records($onadb, 'dhcp_server_subnets', array('subnet_id' => $record['id']));
-    if ($rows) {
-        foreach ($dhcpservers as $dhcpserver) {
+    list($status, $rows, $dhcpservers) = db_get_records($onadb,
+                                                        'hosts',
+                                                        'id IN (SELECT host_id
+                                                                    FROM   dhcp_server_subnets
+                                                                    WHERE  subnet_id = '.$record['id'].'
+                                                                    UNION
+                                                                    SELECT primary_server_id
+                                                                    FROM  dhcp_failover_groups
+                                                                    WHERE id IN (SELECT dhcp_failover_group_id
+                                                                                                    FROM dhcp_pools
+                                                                                                    WHERE subnet_id = '.$record['id'].')
+                                                                    UNION
+                                                                    SELECT secondary_server_id
+                                                                    FROM  dhcp_failover_groups
+                                                                    WHERE id IN (SELECT dhcp_failover_group_id
+                                                                                                    FROM dhcp_pools
+                                                                                                    WHERE subnet_id = '.$record['id'].'))'
+                                                            );
 
-            list($status, $rows, $host) = ona_find_host($dhcpserver['host_id']);
+    if ($rows) {
+        foreach ($dhcpservers as $dhcphost) {
+
+            list($status, $rows, $host) = ona_find_host($dhcphost['id']);
+            list($dhcpsubnetstatus, $dhcpsubnetrows, $dhcpserver) = ona_get_dhcp_server_subnet_record(array('subnet_id' => $record['id'],'host_id' => $host['id']));
             $host['fqdn'] = htmlentities($host['fqdn'], ENT_QUOTES);
             $html .= <<<EOL
                 <tr onMouseOver="this.className='row-highlight';"
@@ -298,21 +305,27 @@ EOL;
                         >{$host['fqdn']}</a>&nbsp;
                     </td>
                      <td align="right" nowrap="true">
+EOL;
+
+            if (auth('advanced',$debug_val) && $dhcpsubnetrows == 1) {
+                $html .= <<<EOL
                         <form id="form_dhcp_serv_{$dhcpserver['id']}"
                                 ><input type="hidden" name="server" value="{$host['fqdn']}"
                                 ><input type="hidden" name="subnet" value="{$dhcpserver['subnet_id']}"
                                 ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
-EOL;
 
-            if (auth('advanced',$debug_val)) {
-                $html .= <<<EOL
                         <a title="Remove server assignment"
                            class="act"
                            onClick="var doit=confirm('Are you sure you want to remove this subnet from this DHCP server?');
                            if (doit == true)
                                 xajax_window_submit('edit_dhcp_server', xajax.getFormValues('form_dhcp_serv_{$dhcpserver['id']}'), 'delete');"
                         ><img src="{$images}/silk/page_delete.png" border="0"></a>
+EOL;
+            }
+            else {
+                $html .= <<<EOL
+                        <span title="You must change the failover group assignment on the pool to remove this entry."><img src="{$images}/silk/comment.png" border="0"></span>
 EOL;
             }
             $html .= <<<EOL
@@ -351,7 +364,7 @@ EOL;
     // END DHCP SERVER LIST
 
 
-
+    // FIXME: MP could do a test to see if there are "servers" for dhcp but no gateway.  force a popup to add the gateway.?????
     // DHCP ENTRIES LIST
     $html .= <<<EOL
         <!-- DHCP INFORMATION -->
@@ -467,11 +480,11 @@ EOL;
                 $html .= <<<EOL
                         <a title="View DHCP server (Primary failover) - {$server_host1['fqdn']}"
                            class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server1['host_id']}\', \'display\')');"
+                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server_host1['id']}\', \'display\')');"
                         >{$server_host1['name']}</a>&#047;
                         <a title="View DHCP server (Secondary failover) - {$server_host2['fqdn']}"
                            class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server2['host_id']}\', \'display\')');"
+                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server_host2['id']}\', \'display\')');"
                         >{$server_host2['name']}</a>
 EOL;
 
@@ -600,12 +613,13 @@ EOL;
                     <input name="form_id" value="{$form_id}" type="hidden">
                     <input name="subnet_id" value="{$record['id']}" type="hidden">
                     <div id="{$form_id}_filter_overlay"
+                         title="Filter"
                          style="position: relative;
                                 display: inline;
                                 color: #CACACA;
                                 cursor: text;"
                          onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                    >Filter</div>
+                    >Name</div>
                     <input
                         id="{$form_id}_filter"
                         name="filter"

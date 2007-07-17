@@ -141,6 +141,39 @@ function get_host_suggestions($q, $max_results=10) {
     return($results);
 }
 
+function get_a_record_suggestions($q, $max_results=10) {
+    global $self, $conf, $onadb;
+    $results = array();
+
+    // wildcard the query before searching
+    $q = $q . '%';
+
+    $table = 'dns';
+    $field = 'name';
+    $where  = "type LIKE 'A' and {$field} LIKE " . $onadb->qstr($q);
+    $order  = "{$field} ASC";
+
+    // Search the db for results
+    list ($status, $rows, $records) = db_get_records(
+                                        $onadb,
+                                        $table,
+                                        $where,
+                                        $order,
+                                        $max_results
+                                      );
+
+    // If the query didn't work return the error message
+    if ($status) { $results[] = "Internal Error: {$self['error']}"; }
+
+    foreach ($records as $record) {
+        list($status, $rows, $domain) = db_get_record($onadb, 'domains', array('id' => $record['domain_id']));
+        $results[] = $record[$field].".".$domain['name'];
+    }
+
+    // Return the records
+    return($results);
+}
+
 
 function get_host_notes_suggestions($q, $max_results=10) {
     return(get_text_suggestions($q . '%', 'hosts', 'notes', $max_results));
@@ -335,8 +368,41 @@ function suggest_qsearch($q, $el_input, $el_suggest) {
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_a_record($q, $el_input, $el_suggest) {
+    global $conf;
 
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
 
+    // Search the DB
+    $results = get_a_record_suggestions($q);
+    $results = array_merge($results, get_a_record_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+function suggest_set_a_record_edit_record($q, $el_input, $el_suggest) {
+    return(suggest_a_record($q, $el_input, $el_suggest));
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -489,7 +555,6 @@ function suggest_domain_server_edit($q, $el_input, $el_suggest) {
 function suggest_set_domain_edit_record($q, $el_input, $el_suggest) {
     return(suggest_domain($q, $el_input, $el_suggest));
 }
-
 
 
 

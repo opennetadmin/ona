@@ -192,12 +192,13 @@ EOL;
                     <input name="form_id" value="{$form_id}" type="hidden">
                     <input name="vlan_id" value="{$record['id']}" type="hidden">
                     <div id="{$form_id}_filter_overlay"
+                         title="Filter"
                          style="position: relative;
                                 display: inline;
                                 color: #CACACA;
                                 cursor: text;"
                          onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                    >Filter</div>
+                    >Name</div>
                     <input
                         id="{$form_id}_filter"
                         name="filter"

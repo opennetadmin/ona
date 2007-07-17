@@ -30,7 +30,7 @@ $window['html'] = <<<EOL
         <td align="left" class="padding">
             <br>
             <div style="border: solid 2px #000000; background-color: #FFFFFF; width: 650px; height: 350px; overflow: auto;">
-                <pre style="padding: 4px;">{$output}</pre>
+                <pre style="padding: 4px;font-family: monospace;">{$output}</pre>
             </div>
         </td>
     </tr>

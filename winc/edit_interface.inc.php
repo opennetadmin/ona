@@ -264,20 +264,6 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
-                Create reverse DNS (PTR) record
-            </td>
-            <td class="padding" align="left" width="100%">
-                <input
-                    name="set_create_ptr"
-                    alt="Create PTR record"
-                    type="checkbox"
-                    {$interface['CREATE_REVERSE_DNS_ENTRY']}
-                >
-            </td>
-        </tr>
-
-        <tr>
             <td align="right" valign="top" nowrap="true">
                 &nbsp;
             </td>

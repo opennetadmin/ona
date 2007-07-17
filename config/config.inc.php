@@ -98,7 +98,7 @@ if ($_SERVER['SERVER_PORT'] == 443) { $self['secure'] = 1; }
 $color['bg']                   = '#FFFFFF';
 $color['content_bg']           = '#FFFFFF';
 $color['bar_bg']               = '#D3DBFF';
-$color['border']               = '#1A1A1A';
+$color['border']               = '#555555'; //#1A1A1A
 $color['form_bg']              = '#FFEFB6';
 
 $color['font_default']         = '#000000';
@@ -201,6 +201,7 @@ $conf['dns']['retry']   = '3600';
 $conf['dns']['expire']  = '3600';
 $conf['dns']['minimum'] = '3600';
 $conf['dns']['parent']  = '';
+$conf['dns']['defaultdomain']  = 'yourdomain.com';
 
 // This section defines host actions. If you leave the url blank it will not show the option in the list
 // You can use %fqdn and %ip as substitutions in the url for the host being displayed
@@ -208,8 +209,8 @@ $conf['dns']['parent']  = '';
 // These will be listed in the order specified here.
 $conf['hostaction']['Telnet']['url'] = "telnet:%fqdn";
 $conf['hostaction']['Telnet']['title'] = "Telnet to the host";
-//$conf['hostaction']['Splunk']['url'] = "https://splunk.company.com:8001/?events/?eventspage=1&num=10&q=%fqdn";
-//$conf['hostaction']['Cacti Graph']['url'] = "https://cacti.company.com/cacti/graph_view.php?action=tree&name=%ip";
+$conf['hostaction']['Splunk']['url'] = "https://splunk.keynetics.com:8001/?events/?eventspage=1&num=10&q=%fqdn";
+$conf['hostaction']['Cacti Graph']['url'] = "https://cacti.keynetics.com/cacti/graph_view.php?action=tree&name=%fqdn";
 
 // Set session inactivity threshold
 ini_set("session.gc_maxlifetime", $conf['cookie_life']);
