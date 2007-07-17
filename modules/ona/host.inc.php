@@ -410,7 +410,7 @@ EOM
             $self['error'] = "ERROR => The device type specified, {$options['set_type']}, does not exist!";
             return(array(6, $self['error'] . "\n"));
         }
-        printmsg("DEBUG => Device type selected: {$device_type['model_description']} Device ID: {$device_type['id']}", 3);
+        printmsg("DEBUG => Device type ID: {$device_type['id']}", 3);
 
         // Everything looks ok, add it to $SET if it changed...
         if ($device['device_type_id'] != $device_type['id'])

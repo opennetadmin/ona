@@ -504,7 +504,7 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
 
     // How many rows were affected?
     $rows = $dbh->Affected_Rows();
-    if ($rows === false) { $rows = 0; }
+    if ($rows === false) { $rows = 0; $self['error'] = 'Update OK, no rows effected'; }
     $rs->Close();
 
     // Return Success

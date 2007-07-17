@@ -317,7 +317,11 @@ EOL;
             list($status, $rows, $pointsto) = ona_get_dns_record(array('id' => $record['dns_id']), '');
             $record['name'] = ip_mangle($record['ip_addr'],'flip').'.IN-ADDR.ARPA';
             $data = <<<EOL
-                    {$pointsto['name']}.<a title="View domain. ID: {$record['domain_id']}"
+                    <a title="Edit DNS A record"
+                       class="act"
+                       onClick="xajax_window_submit('edit_record', 'record_id=>{$record['dns_id']}', 'editor');"
+                    >{$pointsto['name']}</a>
+                    .<a title="View domain. ID: {$record['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
                     >{$pointsto['fqdn']}</a>&nbsp;
@@ -328,7 +332,10 @@ EOL;
         if ($record['type'] == 'CNAME') {
             list($status, $rows, $cname) = ona_get_dns_record(array('id' => $record['dns_id']), '');
             $data = <<<EOL
-                    {$cname['name']}.<a title="View domain. ID: {$record['domain_id']}"
+                    <a title="Edit DNS A record"
+                       class="act"
+                       onClick="xajax_window_submit('edit_record', 'record_id=>{$record['dns_id']}', 'editor');"
+                    >{$cname['name']}.<a title="View domain. ID: {$record['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
                     >{$cname['fqdn']}</a>&nbsp;
@@ -399,6 +406,15 @@ EOL;
 EOL;
 
         if (auth('record_modify')) {
+            // If it is a PTR, adjust the comment to say you can only delete, not modify.
+            if ($record['type'] == 'PTR') {
+            $html .= <<<EOL
+
+                    <a title="You can not edit a PTR record directly, you must edit the A record."
+                       class="act"
+                    ><img src="{$images}/silk/comment.png" border="0"></a>&nbsp;
+EOL;
+            } else {
             $html .= <<<EOL
 
                     <a title="Edit DNS record"
@@ -406,6 +422,7 @@ EOL;
                        onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}_list_record_{$record['id']}'), 'editor');"
                     ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 EOL;
+            }
         }
 
         if (auth('record_del')) {

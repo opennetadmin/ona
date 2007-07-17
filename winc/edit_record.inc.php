@@ -80,6 +80,7 @@ function ws_editor($window_name, $form='') {
     }
 
     // If its an A record,check to se if it has a PTR associated with it
+    //FIXME: MP dont forget that if you change the ip of an A record that you must also update any PTR records reference to that interface
     $ptr_readonly = '';
     if ($dns_record['type'] == 'A') {
         list($status, $rows, $hasptr) = ona_get_dns_record(array('dns_id' => $dns_record['id'],'type' => 'PTR'));
@@ -89,12 +90,19 @@ function ws_editor($window_name, $form='') {
         }
     }
 
+    $ttl_style = '';
+
     // Set the window title:
     $window['title'] = "Add DNS Record";
     if ($dns_record['id']) {
         $window['title'] = "Edit DNS Record";
         $editdisplay = "display:none";
-        $window['js'] .= "updatednsinfo('{$window_name}');el('record_type_select').onchange('fake event');";
+        $window['js'] .= "el('record_type_select').onchange('fake event');updatednsinfo('{$window_name}');";
+        // If you are editing and there is no ttl set, use the one from the domain.
+        if (!$dns_record['ttl']) {
+            $dns_record['ttl'] = $domain['minimum'];
+            $ttl_style = 'style="font-style: italic;" title="Using TTL from domain"';
+        }
     }
 
     // Javascript to run after the window is built
@@ -200,13 +208,33 @@ EOL;
                     <div id="suggest_set_domain_{$window_name}" class="suggest"></div>
                 </td>
             </tr>
+EOL;
 
-            <tr>
+    // If there is a ttl in the record then display it instead of the domain setting message
+    $ttlrow_style = '';
+    if ($dns_record['ttl'] == 0) {
+        $ttlrow_style = 'style="display:none;"';
+        $window['html'] .= <<<EOL
+
+            <tr id="ttlrowdesc">
+                <td align="right" nowrap="true">
+                    TTL
+                </td>
+                <td class="padding" align="left" width="100%" nowrap="true">
+                    &nbsp;Defaults to domain setting,<br>
+                    <a onclick="el('ttlrowdesc').style.display = 'none';el('ttlrow').style.display = '';">click here to override</a>
+                </td>
+            </tr>
+EOL;
+    }
+
+    $window['html'] .= <<<EOL
+            <tr id="ttlrow" {$ttlrow_style}>
                 <td align="right" nowrap="true">
                     TTL
                 </td>
                 <td class="padding" align="left" width="100%">
-                    <input
+                    <input {$ttl_style}
                         id="set_ttl"
                         name="set_ttl"
                         alt="TTL"
