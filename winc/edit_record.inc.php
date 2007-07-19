@@ -83,7 +83,7 @@ function ws_editor($window_name, $form='') {
     //FIXME: MP dont forget that if you change the ip of an A record that you must also update any PTR records reference to that interface
     $ptr_readonly = '';
     if ($dns_record['type'] == 'A') {
-        list($status, $rows, $hasptr) = ona_get_dns_record(array('dns_id' => $dns_record['id'],'type' => 'PTR'));
+        list($status, $rows, $hasptr) = ona_get_dns_record(array('interface_id' => $dns_record['interface_id'],'type' => 'PTR'));
         if ($rows) { 
             $hasptr_msg = '<- Already has PTR record';
             $ptr_readonly = 'disabled="1"';

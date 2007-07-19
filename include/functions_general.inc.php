@@ -607,7 +607,7 @@ function sanitize_security_level($string="", $default=-1) {
 //  Returns FALSE on any error and stores a message in $self['error']
 //
 //  Example:
-//      $hostname = sanitize_hostname('hp34');
+//      $hostname = sanitize_hostname('hostname');
 //      if ($hostname) { do($something); }
 ///////////////////////////////////////////////////////////////////////
 function sanitize_hostname($string="") {
@@ -1371,6 +1371,10 @@ function format_array($array=array()) {
         else if ($key == 'domain_id' or $key == 'primary_dns_domain_id') {
             list($status, $rows, $domain) = ona_get_domain_record(array('id' => $array[$key]));
             $array[$key] = str_pad($array[$key], 20) . strtolower("({$domain['fqdn']})");
+        }
+        else if ($key == 'interface_id') {
+            list($status, $rows, $interface) = ona_get_interface_record(array('id' => $array[$key]));
+            $array[$key] = ip_mangle($interface['ip_addr'], 'dotted');
         }
 
         // Align columns

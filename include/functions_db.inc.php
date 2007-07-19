@@ -1457,7 +1457,7 @@ function ona_build_domain_name($search='') {
 //        a "fake" host record is returned with only the "name" and
 //        "fqdn" keys populated.
 //      * In the event that a valid, existing, domain can not be found in
-//        the FQDN, the domain "something.com" will be returned.
+//        the FQDN, the default domain "something.com" will be returned.
 //        I.E. A valid domain record will always be returned.
 //
 //  Example:  list($status, $rows, $host) = ona_find_host('myhost.domain.com');
@@ -1560,9 +1560,8 @@ function ona_find_domain($fqdn="") {
     }
 
     // If we don't have a domain yet, lets assume $fqdn is a basic hostname, and return the default domain
-    // TODO: set this up to use a configuration variable of what the default domain should be
     if (!array_key_exists('id', $domain)) {
-        list($status, $rows, $record) = ona_get_domain_record(array('name' => 'opennetadmin.com'));
+        list($status, $rows, $record) = ona_get_domain_record(array('name' => $conf['dns']['defaultdomain']));
         if($rows)
             $domain = $record;
     }

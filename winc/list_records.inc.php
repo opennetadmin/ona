@@ -144,7 +144,7 @@ function ws_display_list($window_name, $form='') {
     // 2. get CNAMES that point to dns records that are using an interface_id associated with the host
     if ($form['host_id']) {
         // Get the host record so we know what the primary interface is
-        list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']), '');
+        //list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']), '');
 
         list ($status, $rows, $results) =
         db_get_records(
@@ -163,14 +163,13 @@ function ws_display_list($window_name, $form='') {
         }
 
 
-        //FIXME: MP not sure how I'm going to do this.. ..............
         // If there were more than $conf['search_results_per_page'] find out how many records there really are
         else if ($rows >= $conf['search_results_per_page']) {
             list ($status, $rows, $records) =
                 db_get_records(
                     $onadb,
                     'dns',
-                    $where . $filter,
+                    'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .') ' . $filter,
                     "",
                     0
                 );
@@ -260,16 +259,6 @@ EOL;
             // Check for interface records (and find out how many there are)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('id' => $record['interface_id']), '');
 
-            // Get the domain name
-            $ttl_style = 'title="Time-to-Live"';
-            list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
-            $record['domain'] = $domain['fqdn'];
-            // if the ttl is blank, use the one in the domain (minimum)
-            if (!$record['ttl']) {
-                $record['ttl'] = $domain['minimum'];
-                $ttl_style = 'style="font-style: italic;" title="Using TTL from domain"';
-            }
-
             if($interfaces) {
                 $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
 
@@ -315,6 +304,9 @@ EOL;
         // Process PTR record
         if ($record['type'] == 'PTR') {
             list($status, $rows, $pointsto) = ona_get_dns_record(array('id' => $record['dns_id']), '');
+            // get the domain_id from the parent A record
+            $record['domain_id'] = $pointsto['domain_id'];
+            // Flip the IP address 
             $record['name'] = ip_mangle($record['ip_addr'],'flip').'.IN-ADDR.ARPA';
             $data = <<<EOL
                     <a title="Edit DNS A record"
@@ -324,7 +316,7 @@ EOL;
                     .<a title="View domain. ID: {$record['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
-                    >{$pointsto['fqdn']}</a>&nbsp;
+                    >{$pointsto['fqdn']}</a>.&nbsp;
 EOL;
         }
 
@@ -338,10 +330,19 @@ EOL;
                     >{$cname['name']}.<a title="View domain. ID: {$record['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
-                    >{$cname['fqdn']}</a>&nbsp;
+                    >{$cname['fqdn']}</a>.&nbsp;
 EOL;
         }
 
+        // Get the domain name
+        $ttl_style = 'title="Time-to-Live"';
+        list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
+        if ($record['type'] != 'PTR') { $record['domain'] = $domain['fqdn']; }
+        // if the ttl is blank, use the one in the domain (minimum)
+        if ($record['ttl'] == 0) {
+            $record['ttl'] = $domain['minimum'];
+            $ttl_style = 'style="font-style: italic;" title="Using TTL from domain"';
+        }
 
         // Escape data for display in html
         foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
