@@ -1374,7 +1374,7 @@ function format_array($array=array()) {
         }
         else if ($key == 'interface_id') {
             list($status, $rows, $interface) = ona_get_interface_record(array('id' => $array[$key]));
-            $array[$key] = ip_mangle($interface['ip_addr'], 'dotted');
+            $array[$key] = str_pad($array[$key], 20) . '(' .ip_mangle($interface['ip_addr'], 'dotted') . ')';
         }
 
         // Align columns

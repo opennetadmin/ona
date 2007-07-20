@@ -317,7 +317,7 @@ function host_modify($options="") {
 <<<EOM
 
 host_modify-v{$version}
-Modify an interface record
+Modify a host record
 
   Synopsis: host_modify [KEY=VALUE] ...
 
@@ -669,10 +669,30 @@ EOM
 
 
 
-        // Delete interface(s)
+        // Delete interface(s) and dns records
         // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'interfaces', array('host_id' => $host['id']));
+        list($status, $rows, $interfaces) = db_get_records($onadb, 'interfaces', array('host_id' => $host['id']));
+
+
+        // FIXME: MP this needs some work.. deleting DNS records is much more complicated than this.!
+        // Delete DNS record
+        list($status, $rows, $records) = db_get_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
         // do the delete
+        list($status, $rows) = db_delete_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
+        if ($status) {
+            $self['error'] = "ERROR => host_del() DNS record delete SQL Query failed: {$self['error']}";
+            printmsg($self['error'],0);
+            return(array(5, $add_to_error . $self['error'] . "\n"));
+        }
+        // log deletions
+        foreach ($records as $record) {
+            printmsg("INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}",0);
+            $add_to_error .= "INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}\n";
+        }
+
+
+
+        // do the interface delete
         list($status, $rows) = db_delete_records($onadb, 'interfaces', array('host_id' => $host['id']));
         if ($status) {
             $self['error'] = "ERROR => host_del() interface delete SQL Query failed: {$self['error']}";
@@ -680,7 +700,7 @@ EOM
             return(array(5, $self['error'] . "\n"));
         }
         // log deletions
-        foreach ($records as $record) {
+        foreach ($interfaces as $record) {
             printmsg("INFO => Interface DELETED: " . ip_mangle($record['ip_addr'], 'dotted') . " from {$host['fqdn']}",0);
             $add_to_error .= "INFO => Interface DELETED: " . ip_mangle($record['ip_addr'], 'dotted') . " from {$host['fqdn']}\n";
         }
@@ -703,20 +723,7 @@ EOM
             }
         }
 
-        // Delete DNS record
-        list($status, $rows, $records) = db_get_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
-        // do the delete
-        list($status, $rows) = db_delete_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
-        if ($status) {
-            $self['error'] = "ERROR => host_del() DNS record delete SQL Query failed: {$self['error']}";
-            printmsg($self['error'],0);
-            return(array(5, $add_to_error . $self['error'] . "\n"));
-        }
-        // log deletions
-        foreach ($records as $record) {
-            printmsg("INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}",0);
-            $add_to_error .= "INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}\n";
-        }
+
 
         // Delete infobit entries
         // get list for logging
@@ -832,20 +839,24 @@ EOM
     if ($rows) $text .= "\nASSOCIATED MESSAGE RECORDS ({$rows}):\n";
 
     // Display associated interface(s)
-    list($status, $rows, $records) = db_get_records($onadb, 'interfaces', array('host_id' => $host['id']));
-    if ($rows) $text .= "\nASSOCIATED INTERFACE RECORDS ({$rows}):\n";
-    foreach ($records as $record) {
+    list($status, $int_rows, $interfaces) = db_get_records($onadb, 'interfaces', array('host_id' => $host['id']));
+    // show the dns records associated
+    foreach ($interfaces as $record) {
+        list($status, $rows, $dnsrec) = db_get_records($onadb, 'dns', array('interface_id' => $record['id']));
+        if ($rows) {
+            $text .= "\nASSOCIATED DNS RECORDS ({$rows}) ON INTERFACE (" . ip_mangle($record['ip_addr'], 'dotted') . "):\n";
+            foreach ($dnsrec as $rec) {
+                $text .= "  TYPE: {$rec['type']}, {$rec['name']} -> " . ip_mangle($record['ip_addr'], 'dotted') . "\n";
+            }
+        }
+    }
+
+    if ($int_rows) $text .= "\nASSOCIATED INTERFACE RECORDS ({$rows}):\n";
+    foreach ($interfaces as $record) {
         $text .= "  " . ip_mangle($record['ip_addr'], 'dotted') . "\n";
     }
 
-    // Display associated infobits
-// FIXME: MP clean this up for custom attributes
-//     list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
-//     if ($rows) $text .= "\nASSOCIATED HOST INFOBIT RECORDS ({$rows}):\n";
-//     foreach ($records as $record) {
-//         list($status, $rows, $infobit) = ona_get_host_infobit_record(array('ID' => $record['ID']));
-//         $text .= "  {$infobit['NAME']} ({$infobit['VALUE']})\n";
-//     }
+
 
     // Display associated DHCP entries
     list($status, $rows, $records) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => $host['id']));

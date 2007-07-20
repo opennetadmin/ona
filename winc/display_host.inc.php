@@ -720,7 +720,7 @@ EOL;
             <a title="Add DNS record"
                class="act"
                onClick="xajax_window_submit('edit_record', xajax.getFormValues('form_record_{$record['id']}'), 'editor');"
-            ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
+            ><img src="{$images}/silk/font_add.png" border="0"></a>&nbsp;
 
             <a title="Add DNS record"
                class="act"

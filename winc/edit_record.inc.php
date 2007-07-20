@@ -10,9 +10,9 @@
 //
 // Input:
 //     $window_name the name of the "window" to use.
-//     $form  A string-based-array or an array or a host ID.
+//     $form  A string-based-array or an array or a dns record ID.
 //            The string-based-array would usually look something like this:
-//              host_id=>123,js=>some('javascript');
+//              dns_record_id=>123,js=>some('javascript');
 //            If $form is a valid record ID, it is used to display and edit
 //            that record.  Otherwise the form will let you add a new record.
 //            The "Save" button calls the ws_save() function in this file.
@@ -36,11 +36,11 @@ function ws_editor($window_name, $form='') {
     // If an array in a string was provided, build the array and store it in $form
     $form = parse_options_string($form);
 
-    // Load an existing DNS record (and associated info) if $form is a host_id
+    // Load an existing DNS record (and associated info) if $form is a dns_record_id
     $host = array('fqdn' => '.');
     $interface = array();
-    if (is_numeric($form['record_id'])) {
-        list($status, $rows, $dns_record) = ona_get_dns_record(array('id' => $form['record_id']));
+    if (is_numeric($form['dns_record_id'])) {
+        list($status, $rows, $dns_record) = ona_get_dns_record(array('id' => $form['dns_record_id']));
         if ($rows) {
             // Load associated INTERFACE record(s)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('id' => $dns_record['interface_id']));
@@ -54,6 +54,14 @@ function ws_editor($window_name, $form='') {
     if ($form['domain_id']) {
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $form['domain_id']));
         $dns_record['domain_fqdn'] = $domain['fqdn'];
+    }
+
+    // Load a interface record if we got passed a interface_id
+    if ($form['interface_id']) {
+        list($status, $rows, $int) = ona_get_interface_record(array('id' => $form['interface_id']));
+        $int['ip_addr_text'] = ip_mangle($int['ip_addr'], 'dotted');
+        $window['js'] .= "el('set_ip_{$window_name}').value = '{$int['ip_addr_text']}'";
+        $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$int['host_id']}\', \'display\')');";
     }
 
     // Set up the types of records we can edit with this form
@@ -126,8 +134,7 @@ EOL;
 
     <!-- DNS Record Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
-    <input type="hidden" name="host" value="{$host['fqdn']}">
-    <input type="hidden" name="interface" value="{$interface['id']}">
+    <input type="hidden" name="name" value="{$host['fqdn']}">
     <input type="hidden" name="js" value="{$form['js']}">
 
 
@@ -179,7 +186,7 @@ EOL;
                 <td class="padding" align="left" width="100%">
                     <input
                         id="set_hostname_{$window_name}"
-                        name="set_hostname"
+                        name="set_name"
                         alt="Hostname"
                         value="{$dns_record['name']}"
                         class="edit"
@@ -274,7 +281,7 @@ EOL;
                 <td class="padding" align="left" width="100%" nowrap>
                     <input
                         id="set_auto_ptr"
-                        name="set_auto_ptr"
+                        name="set_addptr"
                         alt="Automaticaly create PTR record"
                         type="checkbox"
                         checked="1"
@@ -292,7 +299,7 @@ EOL;
                 <td class="padding" align="left" width="100%">
                     <input
                         id="set_a_record_{$window_name}"
-                        name="set_a_record"
+                        name="set_pointsto"
                         alt="Points to existing A record"
                         value="{$dns_record['cnamedata']}"
                         class="edit"
@@ -406,7 +413,7 @@ EOL;
 //     Save Form
 //
 // Description:
-//     Creates/updates a host record.
+//     Creates/updates a dns record.
 //////////////////////////////////////////////////////////////////////////////
 function ws_save($window_name, $form='') {
     global $include, $conf, $self, $onadb;
@@ -423,23 +430,20 @@ function ws_save($window_name, $form='') {
     $js = '';
 
     // Validate input
-    if ($form['set_host'] == '' or
+    if ($form['set_name'] == '' or
         $form['set_domain'] == '' or
-        $form['set_type'] == '' or
-        /* Interface input: required only if adding a host */
-        ($form['host'] == '.' and $form['set_ip'] == '')
+        $form['set_type'] == '' 
        ) {
         $response->addScript("alert('Please complete all fields to continue!');");
         return($response->getXML());
     }
 
-    // Since we're adding two records (host and an interface)
     // we need to do a little validation here to make sure things
     // have a good chance of working!
 
-    // Validate the "set_host" name is valid
-    $form['set_host'] = sanitize_hostname($form['set_host']);
-    if (!$form['set_host']) {
+    // Validate the "set_name" name is valid
+    $form['set_name'] = sanitize_hostname($form['set_name']);
+    if (!$form['set_name']) {
         $response->addScript("alert('Invalid hostname!');");
         return($response->getXML());
     }
@@ -450,7 +454,7 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
     // Make sure the IP address specified is valid
-    if ($form['host'] != '.' and $form['set_ip']) {
+    if ($form['name'] != '.' and $form['set_ip']) {
         $form['set_ip'] = ip_mangle($form['set_ip'], 'dotted');
         if ($form['set_ip'] == -1) {
             $response->addScript("alert('{$self['error']}');");
@@ -458,60 +462,45 @@ function ws_save($window_name, $form='') {
         }
     }
 
-    // FIXME: If we're editing, validate the $form['host'] is valid
-    // FIXME: If we're editing, validate the $form['interface'] is valid
-
 
 
     // Decide if we're editing or adding
     $module = 'modify';
     // If we're adding, re-map some the array names to match what the "add" module wants
-    if ($form['host'] == '.') {
+    if ($form['name'] == '.') {
         $module = 'add';
 
-        // Host options
-        $form['host'] = $form['set_host'] . '.' . $form['set_domain'];
+        // options
+        $form['name'] = $form['set_name'] . '.' . $form['set_domain'];
         $form['type'] = $form['set_type'];
-        $form['unit'] = $form['set_unit'];
-        $form['security_level'] = $form['set_security_level'];
         $form['notes'] = $form['set_notes'];
-
-        // Interface options
         $form['ip'] = $form['set_ip'];
-        $form['mac'] = $form['set_mac'];
-        $form['name'] = $form['set_name'];
+        $form['ttl'] = $form['set_ttl'];
+        $form['pointsto'] = $form['set_pointsto'];
+        $form['addptr'] = $form['set_addptr'];
 
-        // If there's no "refresh" javascript, add a command to view the new host
-        if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['host']}\', \'display\')');";
+        // If there's no "refresh" javascript, add a command to view the new dns record
+        if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['name']}\', \'display\')');";
     }
     else {
-        $form['set_host'] .= '.' . $form['set_domain'];
+        $form['set_name'] .= '.' . $form['set_domain'];
     }
 
-    // Run the module to ADD the HOST AND INTERFACE, or MODIFY THE HOST.
-    list($status, $output) = run_module('host_'.$module, $form);
+    // Run the module to ADD the DNS record, or MODIFY THE DNS record.
+    list($status, $output) = run_module('dns_record_'.$module, $form);
 
     // If the module returned an error code display a popup warning
     if ($status)
         $js .= "alert('Save failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
     else {
-        // Run the module to MODIFY THE INTERFACE if we need to
-        if ($module == 'modify' and $form['set_ip']) {
-            list($status, $output) = run_module('interface_'.$module, $form);
-        }
-        // If the module returned an error code display a popup warning
-        if ($status and $module == 'modify' and $form['set_ip'])
-            $js .= "alert('Interface update failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
+        // if they have checked the keep adding records box then dont remove the window
+        if (!$form['keepadding'])
+            $js .= "removeElement('{$window_name}');";
         else {
-            // if they have checked the keep adding hosts box then dont remove the window
-            if (!$form['keepadding'])
-                $js .= "removeElement('{$window_name}');";
-            else {
-                $js .= "el('statusinfo_{$window_name}').innerHTML = 'Previously added:<br>{$form['host']} => {$form['ip']}';";
-            }
-
-            if ($form['js']) $js .= $form['js'];
+            $js .= "el('statusinfo_{$window_name}').innerHTML = 'Previously added:<br>{$form['name']} Type: {$form['type']}';";
         }
+
+        if ($form['js']) $js .= $form['js'];
     }
 
     // Insert the new table into the window
@@ -530,7 +519,7 @@ function ws_save($window_name, $form='') {
 //     Delete Form
 //
 // Description:
-//     Deletes a host record.  $form should be an array with a 'host_id'
+//     Deletes a dns record.  $form should be an array with a 'dns_record_id'
 //     key defined and optionally a 'js' key with javascript to have the
 //     browser run after a successful delete.
 //////////////////////////////////////////////////////////////////////////////
@@ -552,7 +541,7 @@ function ws_delete($window_name, $form='') {
     $js = '';
 
     // Run the module
-    list($status, $output) = run_module('host_del', array('host' => $form['host_id'], 'commit' => $form['commit']));
+    list($status, $output) = run_module('dns_record_del', array('name' => $form['dns_record_id'], 'commit' => $form['commit']));
 
     // If commit was N, display the confirmation dialog box
     if (!$form['commit']) {
@@ -573,6 +562,53 @@ function ws_delete($window_name, $form='') {
     return($response->getXML());
 }
 
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function:
+//     Make primary dns function
+//
+// Description:
+//     makes a dns record primary for the given host.  $form should be an array with a 'dns_record_id'
+//     key defined and optionally a 'js' key with javascript to have the
+//     browser run after a successful update.
+//////////////////////////////////////////////////////////////////////////////
+function ws_makeprimary($window_name, $form='') {
+    global $include, $conf, $self, $onadb, $onadb;
+
+    // Check permissions
+    if (!auth('host_modify')) {
+        $response = new xajaxResponse();
+        $response->addScript("alert('Permission denied!');");
+        return($response->getXML());
+    }
+
+    // If an array in a string was provided, build the array and store it in $form
+    $form = parse_options_string($form);
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    $js = '';
+
+    $SET = array();
+    $SET['primary_dns_id'] = $form['dns_record_id'];
+
+    // Do the actual update
+    list($status, $rows) = db_update_record($onadb, 'hosts', array('id' => $form['host_id']), $SET);
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => makeprimary() SQL Query failed to update host: " . $self['error'];
+        printmsg($self['error'], 0);
+        $js .= "alert('Makeprimary failed. " . preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
+    } else if ($form['js']) {
+        // Hardcoding so that it always refreshes the display host page.
+        $js .= "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\',\'host_id=>{$form['host_id']}\', \'display\')');";
+    }
+
+    // Return an XML response
+    $response->addScript($js);
+    return($response->getXML());
+}
 
 
 ?>

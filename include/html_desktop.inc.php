@@ -26,7 +26,9 @@ list ($status, $pool_count, $records)       = db_get_records($onadb, 'dhcp_pools
 @ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']);
 $onachkserver = @gethostbynamel('opennetadmin.com');
 if ($onachkserver[0]) {
+    $old = @ini_set('default_socket_timeout', 2);
     $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
+    @ini_set('default_socket_timeout', $old);
 }
 $onaver = "Unable to determine";
 if ($file) {

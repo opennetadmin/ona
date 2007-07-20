@@ -96,7 +96,7 @@ function ws_display_list($window_name, $form='') {
             <!-- Table Header -->
             <tr>
                 <td class="list-header" align="center" style="{$style['borderR']};">Interface</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Network</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">MAC</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Description</td>
@@ -174,6 +174,16 @@ EOL;
                         ><input type="hidden" name="js" value="{$refresh}"
                     ></form>&nbsp;
 EOL;
+
+        if (auth('interface_modify')) {
+            $html .= <<<EOL
+
+                    <a title="Add DNS record to this interface"
+                       class="act"
+                       onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}_list_interface_{$record['id']}'), 'editor');"
+                    ><img src="{$images}/silk/font_add.png" border="0"></a>&nbsp;
+EOL;
+        }
 
         if (auth('interface_modify')) {
             $html .= <<<EOL

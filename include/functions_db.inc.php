@@ -1103,6 +1103,9 @@ function ona_get_location_record($array='', $order='') {
 
 function ona_get_interface_record($array='', $order='') {
     return(ona_get_record($array, 'interfaces', $order));
+    if ($rows)
+        $record['ip_addr_text'] = ip_mangle($record['ip_addr'], 'dotted');
+    return(array($status, $rows, $record));
 }
 
 // Returns an additional "fqdn" field

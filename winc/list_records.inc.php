@@ -144,14 +144,14 @@ function ws_display_list($window_name, $form='') {
     // 2. get CNAMES that point to dns records that are using an interface_id associated with the host
     if ($form['host_id']) {
         // Get the host record so we know what the primary interface is
-        //list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']), '');
+        list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']), '');
 
         list ($status, $rows, $results) =
         db_get_records(
             $onadb,
             'dns',
             'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .')',
-            "interface_id",
+            "type",
             $conf['search_results_per_page'],
             $offset
         );
@@ -215,8 +215,8 @@ function ws_display_list($window_name, $form='') {
     // *** BUILD HTML LIST ***
     //
     $html .= <<<EOL
-        <!-- Host Results -->
-        <table id="{$form['form_id']}_host_list" class="list-box" cellspacing="0" border="0" cellpadding="0">
+        <!-- dns record Results -->
+        <table id="{$form['form_id']}_dns_record_list" class="list-box" cellspacing="0" border="0" cellpadding="0">
 
             <!-- Table Header -->
             <tr>
@@ -311,9 +311,8 @@ EOL;
             $data = <<<EOL
                     <a title="Edit DNS A record"
                        class="act"
-                       onClick="xajax_window_submit('edit_record', 'record_id=>{$record['dns_id']}', 'editor');"
-                    >{$pointsto['name']}</a>
-                    .<a title="View domain. ID: {$record['domain_id']}"
+                       onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
+                    >{$pointsto['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
                     >{$pointsto['fqdn']}</a>.&nbsp;
@@ -326,8 +325,8 @@ EOL;
             $data = <<<EOL
                     <a title="Edit DNS A record"
                        class="act"
-                       onClick="xajax_window_submit('edit_record', 'record_id=>{$record['dns_id']}', 'editor');"
-                    >{$cname['name']}.<a title="View domain. ID: {$record['domain_id']}"
+                       onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
+                    >{$cname['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
                     >{$cname['fqdn']}</a>.&nbsp;
@@ -401,12 +400,27 @@ EOL;
                 <!-- ACTION ICONS -->
                 <td class="list-row" align="right">
                     <form id="{$form['form_id']}_list_record_{$record['id']}"
-                        ><input type="hidden" name="record_id" value="{$record['id']}"
+                        ><input type="hidden" name="dns_record_id" value="{$record['id']}"
+                        ><input type="hidden" name="host_id" value="{$host['id']}"
                         ><input type="hidden" name="js" value="{$refresh}"
                     ></form>&nbsp;
 EOL;
+        if (auth('dns_record_modify')) {
+            // If it is an A record but not the primary, display an option to make it primary.
+            if ($record['type'] == 'A' and $host['primary_dns_id'] != $record['id']) {
+                $html .= <<<EOL
 
-        if (auth('record_modify')) {
+                    <a title="Make this the primary DNS record"
+                       class="act"
+                       onClick="var doit=confirm('Are you sure you want to make this the primary DNS record for this host?');
+                                if (doit == true)
+                                    xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}_list_record_{$record['id']}'), 'makeprimary');"
+                    ><img src="{$images}/silk/font_go.png" border="0"></a>
+EOL;
+            }
+        }
+
+        if (auth('dns_record_modify')) {
             // If it is a PTR, adjust the comment to say you can only delete, not modify.
             if ($record['type'] == 'PTR') {
             $html .= <<<EOL
@@ -426,7 +440,7 @@ EOL;
             }
         }
 
-        if (auth('record_del')) {
+        if (auth('dns_record_del')) {
             $html .= <<<EOL
 
                     <a title="Delete DNS record"
@@ -459,7 +473,7 @@ EOL;
 
     $js .= <<<EOL
             /* Make sure this table is 100% wide */
-            el('{$form['form_id']}_host_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
+            el('{$form['form_id']}_dns_record_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
 EOL;
 
 

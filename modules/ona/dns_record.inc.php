@@ -190,7 +190,8 @@ FIXME: do some validation of the different options, pointsto only with cname typ
         }
 
 
-        $add_name = $hostname;
+        // PTR records dont need a name set.
+        $add_name = '';
         // PTR records should not have domain_ids
         $add_domainid = '';
         $add_interfaceid = $interface['id'];
@@ -365,7 +366,7 @@ complex DNS messes for themselves.
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: host_modify (string $options='')
+//  Function: dns_record_modify (string $options='')
 //
 //  Input Options:
 //    $options = key=value pairs of options for this function.
@@ -378,26 +379,25 @@ complex DNS messes for themselves.
 //         error.  All errors messages are stored in $self['error'].
 //      2. A textual message for display on the console or web interface.
 //
-//  Example: list($status, $result) = host_modify('FIXME: blah blah blah');
+//  Example: list($status, $result) = dns_record_modify('FIXME: blah blah blah');
 ///////////////////////////////////////////////////////////////////////
-function host_modify($options="") {
+function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.00';
 
-    printmsg("DEBUG => host_modify({$options}) called", 3);
+    printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
     // Parse incoming options string to an array
     $options = parse_options($options);
 
     // Return the usage summary if we need to
     if ($options['help'] or
-       (!$options['interface'] and !$options['host']) or
-       (!$options['set_host'] and
-        !$options['set_type'] and
-        !$options['set_unit'] and
-        !$options['set_security_level'] and
+       (!$options['set_name'] and
+        !$options['set_ip'] and
+        !$options['set_ttl'] and
+        !$options['set_pointsto'] and
         !$options['set_notes']
        ) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
@@ -405,57 +405,52 @@ function host_modify($options="") {
         return(array(1,
 <<<EOM
 
-host_modify-v{$version}
-Modify an interface record
+dns_record_modify-v{$version}
+Modify a DNS record
 
-  Synopsis: host_modify [KEY=VALUE] ...
+  Synopsis: dns_record_modify [KEY=VALUE] ...
 
   Where:
-    host=NAME[.DOMAIN] or ID  select host by hostname or ID
-      or
-    interface=[ID|IP|MAC]     select host by IP or MAC
+    name=NAME[.DOMAIN] or ID  select dns record by name or ID
 
   Update:
-    set_host=NAME[.DOMAIN]    change hostname and/or domain
-    set_type=TYPE or ID       change device/model type or ID
-    set_unit=NAME or ID       change location/unit ID
-    set_security_level=LEVEL  change numeric security level ({$conf['ona_lvl']})
-    set_notes=NOTES           change the textual notes
+    set_name=NAME[.DOMAIN]      change name and/or domain
+    set_ip=ADDRESS              change IP the record points to
+    set_ttl=NUMBER              change the TTL value, 0 = use domains TTL value
+    set_pointsto=NAME[.DOMAIN]  change where a CNAME points
+    set_notes=NOTES             change the textual notes
+
+  Note:
+    * You are not allowed to change the type of the DNS record, to do that
+      you must delete and re-add the record with the new type.
 \n
 EOM
         ));
     }
 
     //
-    // Find the host record we're modifying
+    // Find the dns record we're modifying
     //
 
-    // If they provided a hostname / ID let's look it up
-    if ($options['host'])
-        list($status, $rows, $host) = ona_find_host($options['host']);
 
-    // If they provided a interface ID, IP address, interface name, or MAC address
-    else if ($options['interface']) {
-        // Find an interface record by something in that interface's record
-        list($status, $rows, $interface) = ona_find_interface($options['interface']);
-        if ($status or !$rows) {
-            printmsg("DEBUG => Interface not found ({$options['interface']})!",3);
-            $self['error'] = "ERROR => Interface not found ({$options['interface']})!";
-            return(array(4, $self['error'] . "\n"));
-        }
-        // Load the associated host record
-        list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
+    // FIXME: MP Fix this to use a find_dns_record function  ID only for now
+    // Find the DNS record from $options['name']
+    list($status, $rows, $dns) = ona_get_dns_record(array('id' => $options['name']), '');
+    printmsg("DEBUG => dns_record_modify() DNS record: {$dns['name']}", 3);
+    if (!$dns['id']) {
+        printmsg("DEBUG => Unknown DNS record: {$options['name']}",3);
+        $self['error'] = "ERROR => Unknown DNS record: {$options['name']}";
+        return(array(2, $self['error'] . "\n"));
     }
 
+
     // If we didn't get a record then exit
-    if (!$host['id']) {
-        printmsg("DEBUG => Host not found ({$options['host']})!",3);
-        $self['error'] = "ERROR => Host not found ({$options['host']})!";
+    if (!$dns['id']) {
+        printmsg("DEBUG => DNS record not found ({$options['name']})!",3);
+        $self['error'] = "ERROR => DNS record not found ({$options['name']})!";
         return(array(4, $self['error'] . "\n"));
     }
 
-    // Get related Device record info
-    list($status, $rows, $device) = ona_get_device_record(array('id' => $host['device_id']));
 
 
     //
@@ -464,19 +459,18 @@ EOM
 
     // This variable will contain the updated info we'll insert into the DB
     $SET = array();
-    $SET_DNS = array();
 
-    // Set options['set_host']?
+    // Set options['set_name']?
     // Validate that the DNS name has only valid characters in it
-    if ($options['set_host']) {
-        $options['set_host'] = sanitize_hostname($options['set_host']);
-        if (!$options['set_host']) {
-            printmsg("DEBUG => Invalid host name ({$options['set_host']})!", 3);
-            $self['error'] = "ERROR => Invalid host name ({$options['set_host']})!";
+    if ($options['set_name']) {
+        $options['set_name'] = sanitize_hostname($options['set_name']);
+        if (!$options['set_name']) {
+            printmsg("DEBUG => Invalid host name ({$options['set_name']})!", 3);
+            $self['error'] = "ERROR => Invalid host name ({$options['set_name']})!";
             return(array(5, $self['error'] . "\n"));
         }
         // Get the host & domain part
-        list($status, $rows, $tmp_host) = ona_find_host($options['set_host']);
+        list($status, $rows, $tmp_host) = ona_find_host($options['set_name']);
         // If the function above returned a host, and it's not the one we're editing, stop!
         if ($tmp_host['id'] and $tmp_host['id'] != $host['id']) {
             printmsg("DEBUG => Another host named {$tmp_host['fqdn']} already exists!",3);
@@ -490,48 +484,6 @@ EOM
     }
 
 
-    // Set options['set_type']?
-    if ($options['set_type']) {
-        // Find the Device Type ID (i.e. Type) to use
-        list($status, $rows, $device_type) = ona_find_device_type($options['set_type']);
-        if ($status or $rows != 1 or !$device_type['id']) {
-            printmsg("DEBUG => The device type specified, {$options['set_type']}, does not exist!",3);
-            $self['error'] = "ERROR => The device type specified, {$options['set_type']}, does not exist!";
-            return(array(6, $self['error'] . "\n"));
-        }
-        printmsg("DEBUG => Device type ID: {$device_type['id']}", 3);
-
-        // Everything looks ok, add it to $SET if it changed...
-        if ($device['device_type_id'] != $device_type['id'])
-            $SET_DEV_TYPE['device_type_id'] = $device_type['id'];
-    }
-
-
-/*PK    // Set options['set_unit']?
-    if ($options['set_unit']) {
-        // Find the Unit ID to use
-        list($status, $rows, $unit) = ona_find_unit($options['set_unit']);
-        if ($status or $rows != 1 or !$unit['UNIT_ID']) {
-            printmsg("DEBUG => The unit specified, {$options['set_unit']}, does not exist!",3);
-            $self['error'] = "ERROR => The unit specified, {$options['set_unit']}, does not exist!";
-            return(array(7, $self['error'] . "\n"));
-        }
-        printmsg("DEBUG => Unit selected: {$unit['UNIT_NAME']} Unit number: {$unit['UNIT_NUMBER']}", 3);
-        $SET['UNIT_ID'] = $unit['UNIT_ID'];
-    }*/
-
-/* PK
-    // Set options['set_security_level']
-    if ($options['set_security_level']) {
-        // Sanitize "security_level" option
-        $options['set_security_level'] = sanitize_security_level($options['set_security_level']);
-        if ($options['set_security_level'] == -1) {
-            printmsg("DEBUG => Sanitize security level failed either ({$options['set_security_level']}) is invalid or is higher than user's level!", 3);
-            return(array(3, $self['error'] . "\n"));
-        }
-        $SET['LVL'] = $options['set_security_level'];
-    }
-*/
 
     // Set options['set_notes'] (it can be a null string!)
     if (array_key_exists('set_notes', $options)) {
@@ -539,59 +491,41 @@ EOM
         $options['set_notes'] = str_replace('\\=','=',$options['set_notes']);
         $options['set_notes'] = str_replace('\\&','&',$options['set_notes']);
         // If it changed...
-        if ($host['notes'] != $options['set_notes'])
+        if ($dns['notes'] != $options['set_notes'])
             $SET['notes'] = $options['set_notes'];
     }
 
     // Check permissions
-    if (!auth('host_modify') or !authlvl($host['LVL'])) {
+    if (!auth('host_modify')) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(10, $self['error'] . "\n"));
     }
 
-    // Get the host record before updating (logging)
-    $original_host = $host;
+    // Get the dns record before updating (logging)
+    $original_record = $dns;
 
     // Update the host record if necessary
     if(count($SET) > 0) {
-        list($status, $rows) = db_update_record($onadb, 'hosts', array('id' => $host['id']), $SET);
+        list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $dns['id']), $SET);
         if ($status or !$rows) {
-            $self['error'] = "ERROR => host_modify() SQL Query failed for host: " . $self['error'];
-            printmsg($self['error'], 0);
-            return(array(8, $self['error'] . "\n"));
-        }
-    }
-    // Update DNS table if necessary
-    if(count($SET_DNS) > 0) {
-        list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $host['primary_dns_id']), $SET_DNS);
-        if ($status or !$rows) {
-            $self['error'] = "ERROR => host_modify() SQL Query failed for dns record: " . $self['error'];
-            printmsg($self['error'], 0);
-            return(array(8, $self['error'] . "\n"));
-        }
-    }
-    // Update device table if necessary
-    if(count($SET_DEV_TYPE) > 0) {
-        list($status, $rows) = db_update_record($onadb, 'devices', array('id' => $host['device_id']), $SET_DEV_TYPE);
-        if ($status or !$rows) {
-            $self['error'] = "ERROR => host_modify() SQL Query failed for device type: " . $self['error'];
+            $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record: " . $self['error'];
             printmsg($self['error'], 0);
             return(array(8, $self['error'] . "\n"));
         }
     }
 
     // Get the host record after updating (logging)
-    list($status, $rows, $new_host) = ona_get_host_record(array('id' => $host['id']));
+    list($status, $rows, $new_record) = ona_get_dns_record(array('id' => $dns['id']));
 
     // Return the success notice
-    $self['error'] = "INFO => Host UPDATED:{$host['id']}: {$new_host['fqdn']}";
+    $self['error'] = "INFO => DNS record UPDATED:{$dns['id']}: {$new_dns['fqdn']}";
 
-    $log_msg = "INFO => Host UPDATED:{$host['id']}: ";
+    $log_msg = "INFO => DNS record UPDATED:{$dns['id']}: ";
     $more="";
-    foreach(array_keys($host) as $key) {
-        if($host[$key] != $new_host[$key]) {
-            $log_msg .= "{$more}{$key}: {$host[$key]} => {$new_host[$key]}";
+    foreach(array_keys($dns) as $key) {
+        if($dns[$key] != $new_record[$key]) {
+            $log_msg .= "{$more}{$key}: {$dns[$key]} => {$new_record[$key]}";
             $more= "; ";
         }
     }
@@ -673,6 +607,7 @@ thoughts on the flow of things:
 A records:
     remove any CNAMES using this A record
     remove any PTR records using this A record
+    test that it is not a primary_dns_id, if it is, it must be reassigned
 
 
 should make a find_dns_record(s) function.  a find by host option would be good.
@@ -777,7 +712,11 @@ need to do a better delete of DNS records when deleting a host.. currently its a
     $text = "Record(s) NOT DELETED (see \"commit\" option)\n" .
             "Displaying record(s) that would have been deleted:\n";
 
-
+    // Test if it is used as a primary_dns_id
+    list($status, $rows, $srecord) = db_get_record($onadb, 'hosts', array('primary_dns_id' => $dns['id']));
+    if ($rows) {
+        $text .= "\nWARNING!  This host is a DHCP server for {$rows} subnet(s)\n";
+    }
     // Display the complete dns record
     list($status, $tmp) = dns_record_display("name={$dns['id']}&verbose=N");
     $text .= "\n" . $tmp;
