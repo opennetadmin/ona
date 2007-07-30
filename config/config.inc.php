@@ -208,12 +208,12 @@ $conf['dns']['defaultdomain']   = 'yourdomain.com';
 // These will be listed in the order specified here.
 $conf['hostaction']['Telnet']['url'] = "telnet:%fqdn";
 $conf['hostaction']['Telnet']['title'] = "Telnet to the host";
-$conf['hostaction']['Splunk']['url'] = "https://splunk.keynetics.com:8001/?events/?eventspage=1&num=10&q=%fqdn";
-$conf['hostaction']['Cacti Graph']['url'] = "https://cacti.keynetics.com/cacti/graph_view.php?action=tree&name=%fqdn";
 
 // Set session inactivity threshold
 ini_set("session.gc_maxlifetime", $conf['cookie_life']);
 
+// Include the local configuration settings
+include("{$base}/config/config_local.inc.php");
 
 // DON'T put whitespace at the beginning or end of included files!!!
 ?>
