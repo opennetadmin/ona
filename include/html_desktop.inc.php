@@ -115,6 +115,7 @@ print <<<EOL
                 <form id="qsearch_form" onSubmit="xajax_window_submit('search_results', xajax.getFormValues('qsearch_form')); return false;">
                     <input type="hidden" name="search_form_id" value="qsearch_form">
                     <input id="qsearch"
+                           accesskey="q"
                            class="edit"
                            style="width: 150px;"
                            type="text"
@@ -124,14 +125,14 @@ print <<<EOL
                            onFocus="el('qsearch_input_overlay').style.display = 'none';"
                            onMouseOver="wwTT(this, event, 'content', 'Quick Search...', 'lifetime', '3000');"
                     >
-                    <div id="suggest_qsearch" class="suggest"></div>
                     <div id="qsearch_input_overlay"
-                         style="position: absolute;
+                         style="position: fixed;
                                 color: #CACACA;
                                 cursor: text;
                                 display: inline;"
                          onClick="this.style.display = 'none'; el('qsearch').focus();"
                     >Quick search...</div>
+                    <div id="suggest_qsearch" class="suggest"></div>
                     <input type="image"
                            src="{$images}/silk/bullet_go.png"
                            title="Search"
@@ -155,9 +156,10 @@ print <<<EOL
         <!-- Right Side -->
         <div class="bar-right">
             <span class="topmenu-item"
+                  title="Display system messages"
                   id="sys_alert"
                   style="visibility: hidden;padding: 0px;"
-                  onMouseOver="wwTT(this, event,
+                  onClick="wwTT(this, event,
                                             'id', 'tt_sys_alert',
                                             'type', 'static',
                                             'delay', 0,

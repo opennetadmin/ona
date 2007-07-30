@@ -163,8 +163,7 @@ $db_context = array (
 
     // Note:  I set the login up as ona-sys so that we could have
     // a more "functional" user to do connections with that is not root or
-    // some sort of full admin.  I do have an ona-admin that has full "root"
-    // like privs
+    // some sort of full admin.
     //
     // Type:
     'mysql' => array(
@@ -193,15 +192,15 @@ $db_context = array (
     ),
 );
 
-$conf['dns']['admin']   = 'admin@opennetadmin.com';
-$conf['dns']['ptr']     = 'N'; // Is this a pointer domain? in-addr.arpa
-$conf['dns']['origin']  = ''; // this is NOT used currently as origin, it is primary master
-$conf['dns']['refresh'] = '3600';
-$conf['dns']['retry']   = '3600';
-$conf['dns']['expire']  = '3600';
-$conf['dns']['minimum'] = '3600';
-$conf['dns']['parent']  = '';
-$conf['dns']['defaultdomain']  = 'yourdomain.com';
+$conf['dns']['admin_email']     = 'hostmaster'; // per RFC 2412, defaults to hostmaster within the domain origin
+$conf['dns']['primary_master']  = '';           // This should be the fqdn of your default primary master server
+$conf['dns']['default_ttl']     = '86400';      // this is the value of $TTL for the zone, used as the default value
+$conf['dns']['refresh']         = '86400';
+$conf['dns']['retry']           = '3600';
+$conf['dns']['expiry']          = '3600';
+$conf['dns']['minimum']         = '3600';       // used as the negative caching value per RFC 2308
+$conf['dns']['parent']          = '';
+$conf['dns']['defaultdomain']   = 'yourdomain.com';
 
 // This section defines host actions. If you leave the url blank it will not show the option in the list
 // You can use %fqdn and %ip as substitutions in the url for the host being displayed

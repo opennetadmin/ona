@@ -240,18 +240,18 @@ EOL;
         <!-- ADD DNS RECORD LINK -->
         <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}">
             <form id="form_record_{$record['id']}"
-                ><input type="hidden" name="host_id" value="{$record['id']}"
+                ><input type="hidden" name="interface_id" value="{$record['id']}"
                 ><input type="hidden" name="js" value="{$refresh}"
             ></form>
 
             <a title="Add record"
                class="act"
-               onClick="xajax_window_submit('edit_dns_record', xajax.getFormValues('form_record_{$record['id']}'), 'editor');"
+               onClick="xajax_window_submit('edit_record', xajax.getFormValues('form_record_{$record['id']}'), 'editor');"
             ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
 
             <a title="Add record"
                class="act"
-               onClick="xajax_window_submit('edit_dns_record', xajax.getFormValues('form_record_{$record['id']}'), 'editor');"
+               onClick="xajax_window_submit('edit_record', xajax.getFormValues('form_record_{$record['id']}'), 'editor');"
             >Add record</a>&nbsp;
         </div>
 EOL;

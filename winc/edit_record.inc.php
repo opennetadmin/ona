@@ -92,7 +92,7 @@ function ws_editor($window_name, $form='') {
     $ptr_readonly = '';
     if ($dns_record['type'] == 'A') {
         list($status, $rows, $hasptr) = ona_get_dns_record(array('interface_id' => $dns_record['interface_id'],'type' => 'PTR'));
-        if ($rows) { 
+        if ($rows) {
             $hasptr_msg = '<- Already has PTR record';
             $ptr_readonly = 'disabled="1"';
         }
@@ -134,6 +134,7 @@ EOL;
 
     <!-- DNS Record Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <input type="hidden" name="dns_id" value="{$dns_record['id']}">
     <input type="hidden" name="name" value="{$host['fqdn']}">
     <input type="hidden" name="js" value="{$form['js']}">
 
@@ -432,7 +433,7 @@ function ws_save($window_name, $form='') {
     // Validate input
     if ($form['set_name'] == '' or
         $form['set_domain'] == '' or
-        $form['set_type'] == '' 
+        $form['set_type'] == ''
        ) {
         $response->addScript("alert('Please complete all fields to continue!');");
         return($response->getXML());
@@ -454,7 +455,7 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
     // Make sure the IP address specified is valid
-    if ($form['name'] != '.' and $form['set_ip']) {
+    if ($form['set_name'] != '.' and $form['set_ip']) {
         $form['set_ip'] = ip_mangle($form['set_ip'], 'dotted');
         if ($form['set_ip'] == -1) {
             $response->addScript("alert('{$self['error']}');");
@@ -467,7 +468,7 @@ function ws_save($window_name, $form='') {
     // Decide if we're editing or adding
     $module = 'modify';
     // If we're adding, re-map some the array names to match what the "add" module wants
-    if ($form['name'] == '.') {
+    if (!$form['dns_id']) {
         $module = 'add';
 
         // options
@@ -476,14 +477,21 @@ function ws_save($window_name, $form='') {
         $form['notes'] = $form['set_notes'];
         $form['ip'] = $form['set_ip'];
         $form['ttl'] = $form['set_ttl'];
-        $form['pointsto'] = $form['set_pointsto'];
         $form['addptr'] = $form['set_addptr'];
+
+        // if this is a cname. yhen set the pointsto option
+        if ($form['set_type'] == 'CNAME') $form['pointsto'] = $form['set_pointsto'];
 
         // If there's no "refresh" javascript, add a command to view the new dns record
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['name']}\', \'display\')');";
     }
     else {
         $form['set_name'] .= '.' . $form['set_domain'];
+        //FIXME: MP temporary kludge to get around not having a proper find_dns_record module.. ID is the only way to find a record now and it is done via the name field
+        $form['name'] = $form['dns_id'];
+
+        // if this is a cname. yhen set the pointsto option
+        if ($form['set_type'] != 'CNAME') $form['set_pointsto'] == '';
     }
 
     // Run the module to ADD the DNS record, or MODIFY THE DNS record.

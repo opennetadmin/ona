@@ -80,7 +80,7 @@ function ws_editor($window_name, $form='') {
     //    $models = array(); $models[1] = "DEFAULT default_device (A bogus record)"; // FIXME: (PK) temp code!
 
     asort($device_types);
-    $device_model_list = '<option value="">&nbsp;</option>\n';
+    //$device_model_list = '<option value="">&nbsp;</option>\n';
     list($status, $rows, $device) = ona_get_device_record(array('id' => $host['device_id']));
     foreach (array_keys((array)$device_types) as $id) {
         $device_types[$id] = htmlentities($device_types[$id]);
@@ -159,6 +159,12 @@ EOL;
                 &nbsp;
             </td>
         </tr>
+EOL;
+
+    // If we are modifying do not allow them to edit/change dns names.  this should only be done when creating a new host
+    if (!$host['id']) {
+
+        $window['html'] .= <<<EOL
 
         <tr>
             <td align="right" nowrap="true">
@@ -193,6 +199,10 @@ EOL;
                 <div id="suggest_set_domain_{$window_name}" class="suggest"></div>
             </td>
         </tr>
+EOL;
+    }
+
+    $window['html'] .= <<<EOL
 
         <tr>
             <td align="right" nowrap="true">
@@ -428,11 +438,11 @@ function ws_save($window_name, $form='') {
     $js = '';
 
     // Validate input
-    if ($form['set_host'] == '' or
+    if ($form['set_name'] == '' or
         $form['set_domain'] == '' or
         $form['set_type'] == '' or
         /* Interface input: required only if adding a host */
-        ($form['host'] == '.' and $form['set_ip'] == '')
+        ($form['name'] == '.' and $form['set_ip'] == '')
        ) {
         $response->addScript("alert('Please complete all fields to continue!');");
         return($response->getXML());
@@ -443,8 +453,8 @@ function ws_save($window_name, $form='') {
     // have a good chance of working!
 
     // Validate the "set_host" name is valid
-    $form['set_host'] = sanitize_hostname($form['set_host']);
-    if (!$form['set_host']) {
+    $form['set_name'] = sanitize_hostname($form['set_name']);
+    if (!$form['set_name']) {
         $response->addScript("alert('Invalid hostname!');");
         return($response->getXML());
     }
@@ -455,7 +465,7 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
     // Make sure the IP address specified is valid
-    if ($form['host'] != '.' and $form['set_ip']) {
+    if ($form['name'] != '.' and $form['set_ip']) {
         $form['set_ip'] = ip_mangle($form['set_ip'], 'dotted');
         if ($form['set_ip'] == -1) {
             $response->addScript("alert('{$self['error']}');");
@@ -472,43 +482,29 @@ function ws_save($window_name, $form='') {
     // Decide if we're editing or adding
     $module = 'modify';
     // If we're adding, re-map some the array names to match what the "add" module wants
-    if ($form['host'] == '.') {
+    if ($form['name'] == '.') {
         $module = 'add';
 
-        // Host options
-        $form['host'] = $form['set_host'] . '.' . $form['set_domain'];
+        // options
+        $form['name'] = $form['set_name'] . '.' . $form['set_domain'];
         $form['type'] = $form['set_type'];
-        $form['unit'] = $form['set_unit'];
-        $form['security_level'] = $form['set_security_level'];
         $form['notes'] = $form['set_notes'];
-
-        // Interface options
         $form['ip'] = $form['set_ip'];
-        $form['mac'] = $form['set_mac'];
-        $form['name'] = $form['set_name'];
 
         // If there's no "refresh" javascript, add a command to view the new host
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['host']}\', \'display\')');";
     }
     else {
-        $form['set_host'] .= '.' . $form['set_domain'];
+        $form['set_name'] .= '.' . $form['set_domain'];
     }
 
-    // Run the module to ADD the HOST AND INTERFACE, or MODIFY THE HOST.
-    list($status, $output) = run_module('host_'.$module, $form);
+    // Run the module to ADD the dns record
+    list($status, $output) = run_module('dns_record_'.$module, $form);
 
     // If the module returned an error code display a popup warning
     if ($status)
         $js .= "alert('Save failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
     else {
-        // Run the module to MODIFY THE INTERFACE if we need to
-        if ($module == 'modify' and $form['set_ip']) {
-            list($status, $output) = run_module('interface_'.$module, $form);
-        }
-        // If the module returned an error code display a popup warning
-        if ($status and $module == 'modify' and $form['set_ip'])
-            $js .= "alert('Interface update failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
-        else {
             // if they have checked the keep adding hosts box then dont remove the window
             if (!$form['keepadding'])
                 $js .= "removeElement('{$window_name}');";
@@ -517,7 +513,6 @@ function ws_save($window_name, $form='') {
             }
 
             if ($form['js']) $js .= $form['js'];
-        }
     }
 
     // Insert the new table into the window

@@ -4,7 +4,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // Function: ws_display()
-// 
+//
 // Description:
 //   Displays a host record and all associated info in the work_space div.
 //////////////////////////////////////////////////////////////////////////////
@@ -14,20 +14,20 @@ function ws_display($window_name, $form='') {
     $html = '';
     $js = '';
     //$debug_val = 3;  // used in the auth() calls to suppress logging
-    
+
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
-    
+
     // Load the domain record
     list($status, $rows, $record) = ona_get_domain_record(array('id' => $form['domain_id']));
     if ($status or !$rows) {
         array_pop($_SESSION['ona']['work_space']['history']);
-        $html .= "<br><center><font color=\"red\"><b>Domain doesn't exist!</b></font></center>"; 
+        $html .= "<br><center><font color=\"red\"><b>Domain doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
         return($response->getXML());
     }
-    
+
     // Update History Title
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
@@ -35,46 +35,46 @@ function ws_display($window_name, $form='') {
         $history['title'] = $record['name']; //FIXME: does fqdn exist, or should we use name?
         array_push($_SESSION['ona']['work_space']['history'], $history);
     }
-    
+
     // Create some javascript to refresh the current page
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
-    
+
     // Get associated info
     if ($record['parent_id']) {
         list($status, $rows, $parent_domain) = ona_get_domain_record(array('id' => $record['parent_id']));
-    } else { 
+    } else {
         $parent_domain = "";
     }
-    
+
     $style['content_box'] = <<<EOL
-        margin: 10px 20px; 
-        padding: 2px 4px; 
+        margin: 10px 20px;
+        padding: 2px 4px;
         background-color: #FFFFFF;
 EOL;
-    
+
     $style['label_box'] = <<<EOL
         font-weight: bold;
-        padding: 2px 4px; 
-        border: solid 1px {$color['border']}; 
+        padding: 2px 4px;
+        border: solid 1px {$color['border']};
         background-color: {$color['window_content_bg']};
 EOL;
 
     // Escape data for display in html
     foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
     foreach(array_keys((array)$parent_domain) as $key) { $parent_domain[$key] = htmlentities($parent_domain[$key], ENT_QUOTES); }
-    
-    
+
+
     $html .= <<<EOL
     <!-- FORMATTING TABLE -->
     <div style="{$style['content_box']}">
     <table cellspacing="0" border="0" cellpadding="0"><tr>
-        
+
         <!-- START OF FIRST COLUMN OF SMALL BOXES -->
         <td nowrap="true" valign="top" style="padding-right: 15px;">
 EOL;
-    
-    
+
+
     // DOMAIN INFORMATION BOX
     $html .= <<<EOL
         <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
@@ -84,12 +84,12 @@ EOL;
                     <form id="form_domain_{$record['id']}"
                         ><input type="hidden" name="id" value="{$record['id']}"
                         ><input type="hidden" name="js" value="{$refresh}"
-                    ></form>                
+                    ></form>
                     <div style="{$style['label_box']}">
                     <table cellspacing="0" border="0" cellpadding="0">
                         <tr><td nowrap="true">
 EOL;
-   
+
     if (auth('advanced',$debug_val)) {
         $html .= <<<EOL
                             <a title="Edit domain. ID: {$record['id']}"
@@ -105,7 +105,7 @@ EOL;
                         </td>
 EOL;
     }
-                            
+
         $html .= <<<EOL
                         <td nowrap="true">
                             <b>{$record['name']}</b>&nbsp;
@@ -130,61 +130,67 @@ EOL;
             <tr><td colspan="2" align="left" nowrap="true">&nbsp;</td></tr>
 EOL;
     }
-    
+
     $html .= <<<EOL
             <tr>
                 <td colspan="2" align="left" nowrap="true"><b><u>Domain SOA Parameters</u></b>&nbsp;</td>
             </tr>
-            
+
             <tr>
                 <td align="right" nowrap="true"><b>Serial Number</b>&nbsp;</td>
                 <td class="padding" align="left">
-                    {$record['SERIAL_NUMBER']}&nbsp;
+                    {$record['serial']}&nbsp;
                 </td>
             </tr>
-            
+
             <tr>
                 <td align="right" nowrap="true"><b>Refresh</b>&nbsp;</td>
                 <td class="padding" align="left">
                     {$record['refresh']}&nbsp;
                 </td>
             </tr>
-            
+
             <tr>
                 <td align="right" nowrap="true"><b>Retry</b>&nbsp;</td>
                 <td class="padding" align="left">
                     {$record['retry']}&nbsp;
                 </td>
             </tr>
-            
+
             <tr>
                 <td align="right" nowrap="true"><b>Expire</b>&nbsp;</td>
                 <td class="padding" align="left">
-                    {$record['expire']}&nbsp;
+                    {$record['expiry']}&nbsp;
                 </td>
             </tr>
-            
+
             <tr>
                 <td align="right" nowrap="true"><b>Minimum</b>&nbsp;</td>
                 <td class="padding" align="left">
                     {$record['minimum']}&nbsp;
                 </td>
             </tr>
-            
+
+            <tr>
+                <td align="right" nowrap="true"><b>Default TTL</b>&nbsp;</td>
+                <td class="padding" align="left">
+                    {$record['default_ttl']}&nbsp;
+                </td>
+            </tr>
         </table>
 EOL;
     // END DOMAIN INFORMATION BOX
-        
-        
+
+
     $html .= <<<EOL
         <!-- END OF FIRST COLUMN OF SMALL BOXES -->
         </td>
-        
+
         <!-- START OF SECOND COLUMN OF SMALL BOXES -->
         <td valign="top" style="padding-right: 15px;">
 EOL;
-    
-    
+
+
     // DNS SERVERS BOX
     $html .= <<<EOL
         <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
@@ -203,7 +209,7 @@ EOL;
                 $domainserver['AUTHORITATIVE_FLAG'] = "Master";
             else
                 $domainserver['AUTHORITATIVE_FLAG'] = "Slave";
-             
+
             list($host, $domain) = ona_find_host($domainserver['SERVER_ID']);
             $host['FQDN'] = htmlentities($host['FQDN'], ENT_QUOTES);
             $html .= <<<EOL
@@ -216,8 +222,8 @@ EOL;
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dns_server\', \'host_id=>{$host['ID']}\', \'display\')');"
                         >{$host['FQDN']}</a>&nbsp;
                      </td>
-                     <td align="left" nowrap="true">   
-                            {$domainserver['AUTHORITATIVE_FLAG']}                        
+                     <td align="left" nowrap="true">
+                            {$domainserver['AUTHORITATIVE_FLAG']}
                     </td>
                      <td align="right" nowrap="true">
                         <form id="{$form['form_id']}_domain_serv_{$domainserver['DOMAIN_SERVERS_ID']}"
@@ -226,10 +232,10 @@ EOL;
                                 ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
 EOL;
-   
+
             if (auth('advanced',$debug_val)) {
                 $html .= <<<EOL
-                        
+
                         <a title="Remove domain assignment"
                            class="act"
                            onClick="var doit=confirm('Are you sure you want to remove this domain from this DNS server?');
@@ -238,31 +244,31 @@ EOL;
                         ><img src="{$images}/silk/page_delete.png" border="0"></a>
 EOL;
             }
-                            
+
             $html .= <<<EOL
                         &nbsp;
                    </td>
-                   
+
                 </tr>
 EOL;
         }
     }
-    
+
     if (auth('advanced',$debug_val)) {
         $html .= <<<EOL
-                    
+
                 <tr>
                     <td colspan="3" align="left" valign="middle" nowrap="true" class="act-box">
                         <form id="form_domain_server_{$record['id']}"
                             ><input type="hidden" name="domain" value="{$record['name']}"
                             ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
-                        
+
                         <a title="Assign server"
                            class="act"
                            onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('form_domain_server_{$record['id']}'), 'editor');"
                         ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-                        
+
                         <a title="Assign server"
                            class="act"
                            onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('form_domain_server_{$record['id']}'), 'editor');"
@@ -271,21 +277,21 @@ EOL;
                 </tr>
 EOL;
     }
-    
+
     $html .= "          </table>";
-    
+
     // END DNS SERVERS BOX
-    
-    
+
+
     $html .= <<<EOL
         <!-- END OF SECOND COLUMN OF SMALL BOXES -->
         </td>
-        
+
         <!-- START OF THIRD COLUMN OF SMALL BOXES -->
         <td valign="top" style="padding-right: 15px;">
 EOL;
-    
-    
+
+
     $html .= <<<EOL
         </td>
         <!-- END OF THIRD COLUMN OF SMALL BOXES -->
@@ -306,14 +312,14 @@ EOL;
     $html .= <<<EOL
     <!-- HOST LIST -->
     <div style="border: 1px solid {$color['border']}; margin: 10px 20px;">
-        
+
         <!-- Tab & Quick Filter -->
         <table id="{$form_id}_table" cellspacing="0" border="0" cellpadding="0">
             <tr>
                 <td id="{$form_id}_{$tab}_tab" class="table-tab-active">
                     Associated {$tab} <span id="{$form_id}_{$tab}_count"></span>
                 </td>
-          
+
                 <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
 EOL;
         $html .= <<<EOL
@@ -328,13 +334,13 @@ EOL;
 EOL;
     } else {
         // list IPs within the PTR domain
-        $end_ip = ip_complete($record['name'],255);        
+        $end_ip = ip_complete($record['name'],255);
         $html .= <<<EOL
                     <input name="ip" value="{$record['name']}" type="hidden">
                     <input name="ip_thru" value="{$end_ip}" type="hidden">
 EOL;
-    
-    }                   
+
+    }
     $html .= <<<EOL
                     <div id="{$form_id}_filter_overlay"
                          style="position: relative;
@@ -343,14 +349,14 @@ EOL;
                                 cursor: text;"
                          onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
                     >Filter</div>
-                    <input 
+                    <input
                         id="{$form_id}_filter"
-                        name="filter" 
-                        class="filter" 
-                        type="text" 
+                        name="filter"
+                        class="filter"
+                        type="text"
                         value=""
-                        size="10" 
-                        maxlength="20" 
+                        size="10"
+                        maxlength="20"
                         alt="Quick Filter"
                         onFocus="el('{$form_id}_filter_overlay').style.display = 'none';"
                         onBlur="if (this.value == '') el('{$form_id}_filter_overlay').style.display = 'inline';"
@@ -359,39 +365,39 @@ EOL;
                             code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
                                    '    {$form_id}_last_search = el(\'{$form_id}_filter\').value;' +
                                    '    document.getElementById(\'{$form_id}_page\').value = 1;' +
-                                   '    xajax_window_submit(\'{$submit_window}\', xajax.getFormValues(\'{$form_id}\'), \'display_list\');' + 
+                                   '    xajax_window_submit(\'{$submit_window}\', xajax.getFormValues(\'{$form_id}\'), \'display_list\');' +
                                    '}';
                             timer = setTimeout(code, 700);"
                     >
                     </form>
                 </td>
-                
+
             </tr>
         </table>
-        
+
         <div id='{$content_id}'>
             {$conf['loading_icon']}
         </div>
 EOL;
- 
+
     if($record['POINTER_DOMAIN'] == 'Y') {
         $html .= <<<EOL
- 
+
         <!-- List by IP Address LINK -->
         <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}">
         <a title="List Hosts by IP"
                class="act"
                onClick="xajax_window_submit('app_full_list',  xajax.getFormValues('{$form_id}'), 'display');"
             ><img src="{$images}/silk/page_white_go.png" border="0"></a>&nbsp;
-            
+
             <a title="List Hosts by IP"
                class="act"
                onClick="xajax_window_submit('app_full_list',  xajax.getFormValues('{$form_id}'), 'display');"
             >List Hosts by IP</a>&nbsp;
-        </div>        
+        </div>
 EOL;
-    } 
-    
+    }
+
     $html .= <<<EOL
     </div>
 EOL;
@@ -400,12 +406,12 @@ EOL;
         /* Setup the quick filter */
         el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
         {$form_id}_last_search = '';
-        
+
         /* Tell the browser to load/display the list */
         xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display_list');
 EOL;
-    
-        
+
+
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();

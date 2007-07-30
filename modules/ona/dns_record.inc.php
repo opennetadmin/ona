@@ -233,10 +233,10 @@ complex DNS messes for themselves.
         // Find the domain name piece of $search
         list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
         printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$domain['fqdn']} for pointsto.", 3);
-    
+
         // Now find what the host part of $search is
-        $phostname = str_replace(".{$domain['fqdn']}", '', $options['pointsto']);
-    
+        $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
+
         // Validate that the DNS name has only valid characters in it
         $phostname = sanitize_hostname($phostname);
         if (!$phostname) {
@@ -478,9 +478,74 @@ EOM
             return(array(5, $self['error'] . "\n"));
         }
         if($host['name'] != $tmp_host['name'])
-            $SET_DNS['name']      = $tmp_host['name'];
+            $SET['name']      = $tmp_host['name'];
         if($host['domain_id'] != $tmp_host['domain_id'])
-            $SET_DNS['domain_id'] = $tmp_host['domain_id'];
+            $SET['domain_id'] = $tmp_host['domain_id'];
+    }
+
+
+    if ($options['set_ip']) {
+        // find the IP interface record, to ensure it is valid
+        list($status, $rows, $interface) = ona_find_interface($options['set_ip']);
+        if (!$rows) {
+            printmsg("ERROR => dns_record_modify() Unable to find IP interface: {$options['set_ip']}",3);
+            $self['error'] = "ERROR => dns_record_modify() Unable to find IP interface: {$options['set_ip']}\n";
+            return(array(4, $self['error']));
+        }
+
+        // If they actually changed the ip address
+        if ($interface['id'] != $dns['interface_id']) $SET['interface_id'] = $interface['id'];
+    }
+
+    // If we are modifying a CNAME
+    if (array_key_exists('set_pointsto', $options) and $options['set_type'] == 'CNAME') {
+        // Determine the host and domain name portions of the pointsto option
+        // Find the domain name piece of $search
+        list($status, $rows, $pdomain) = ona_find_domain($options['set_pointsto']);
+        printmsg("DEBUG => ona_find_domain({$options['set_pointsto']}) returned: {$domain['fqdn']} for pointsto.", 3);
+
+        // Now find what the host part of $search is
+        $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['set_pointsto']);
+
+        // Validate that the DNS name has only valid characters in it
+        $phostname = sanitize_hostname($phostname);
+        if (!$phostname) {
+            printmsg("DEBUG => Invalid pointsto host name ({$options['set_pointsto']})!", 3);
+            $self['error'] = "ERROR => Invalid pointsto host name ({$options['set_pointsto']})!";
+            return(array(4, $self['error'] . "\n"));
+        }
+        // Debugging
+        printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
+
+        // Validate that the CNAME I'm adding doesnt match an existing A record.
+        list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'A'));
+        if ($d_status or $d_rows) {
+            printmsg("ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} already exists!",3);
+            $self['error'] = "ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} already exists!";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+
+        // Validate that there are no CNAMES already with this fqdn
+        list($c_status, $c_rows, $c_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'CNAME'));
+        if ($c_rows or $c_status) {
+            printmsg("ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!",3);
+            $self['error'] = "ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+        // Find the dns record that it will point to
+        list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A'));
+        if ($status or !$rows) {
+            printmsg("ERROR => Unable to find DNS A record to point CNAME entry to!",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point CNAME entry to!";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+        $SET['dns_id'] = $pointsto_record['id'];
+        $SET['interface_id'] = $pointsto_record['interface_id'];
+
+
     }
 
 
@@ -494,6 +559,24 @@ EOM
         if ($dns['notes'] != $options['set_notes'])
             $SET['notes'] = $options['set_notes'];
     }
+
+    // Add the remaining items to the $SET variable
+    // if there is a ttl setting and it is not the same as the existing record
+    if (array_key_exists('set_ttl', $options) and $options['set_ttl'] != $dns['ttl']) $SET['ttl'] = $options['set_ttl'];
+
+    //FIXME: MP For now, update the effective begin timestamp when a record is changed.  in the future, we can allow future dating on ebegin values.
+    $SET['ebegin'] = date('Y-m-j G:i:s');
+
+    // If it is an A record and they have specified to auto add the PTR record for it.
+    if ($options['set_addptr'] and $options['set_type'] == 'A') {
+        printmsg("DEBUG => Auto adding a PTR record for {$options['set_name']}.", 0);
+        // Run dns_record_add as a PTR type
+        list($status, $output) = run_module('dns_record_add', array('name' => $options['set_name'],'ip' => $options['set_ip'], 'type' => 'PTR'));
+        if ($status)
+            return(array($status, $output));
+        $text .= $output;
+    }
+
 
     // Check permissions
     if (!auth('host_modify')) {
@@ -644,7 +727,13 @@ need to do a better delete of DNS records when deleting a host.. currently its a
         //   Display any associated CNAMEs for an A record
 
 
-
+        // Test if it is used as a primary_dns_id
+        list($status, $rows, $srecord) = db_get_record($onadb, 'hosts', array('primary_dns_id' => $dns['id']));
+        if ($rows) {
+            $self['error'] = "ERROR => dns_record_del() This DNS record is a primary A record for a host! You can not delete it until you associate a new primary record.";
+            printmsg($self['error'],0);
+            return(array(5, $self['error'] . "\n"));
+        }
 
 
 
@@ -715,7 +804,7 @@ need to do a better delete of DNS records when deleting a host.. currently its a
     // Test if it is used as a primary_dns_id
     list($status, $rows, $srecord) = db_get_record($onadb, 'hosts', array('primary_dns_id' => $dns['id']));
     if ($rows) {
-        $text .= "\nWARNING!  This host is a DHCP server for {$rows} subnet(s)\n";
+        $text .= "\nWARNING!  This DNS record is a primary A record for a host\n";
     }
     // Display the complete dns record
     list($status, $tmp) = dns_record_display("name={$dns['id']}&verbose=N");

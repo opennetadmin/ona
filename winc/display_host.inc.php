@@ -323,7 +323,7 @@ EOL;
 EOL;
     // END SERVICE CONFIGURATION BOX
 
-
+/* FIXME: MP this needs to be changed to custom attributes
     // INFOBIT LIST (CLASSIFICATIONS)
     $html .= <<<EOL
             <!-- INFOBIT LIST -->
@@ -403,7 +403,7 @@ EOL;
     $html .= "            </table>";
 
     // END INFOBIT LIST (CLASSIFICATIONS)
-
+*/
 
 
     $html .= <<<EOL

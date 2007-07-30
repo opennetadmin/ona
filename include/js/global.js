@@ -1,7 +1,13 @@
-// 
+//
 // These javascript functions get loaded for all web pages.
 // Add and modify functions with care!
 //
+
+
+// Catch the back button(and window close) and stop the user.  only works in IE and Firefox for now.
+window.onbeforeunload = function() {
+    return("FYI, There is no need to use the back button, simply select from the trace bar.");
+}
 
 
 // Add a "trim" function to Javascript's string object type
@@ -104,9 +110,9 @@ function el(id) {
 function getcookie(cookiename) {
     var cookiestring=""+document.cookie;
     var index1=cookiestring.indexOf(cookiename);
-    if (index1==-1 || cookiename=="") return ""; 
+    if (index1==-1 || cookiename=="") return "";
     var index2=cookiestring.indexOf(';',index1);
-    if (index2==-1) index2=cookiestring.length; 
+    if (index2==-1) index2=cookiestring.length;
     return unescape(cookiestring.substring(index1+cookiename.length+1,index2));
 }
 
