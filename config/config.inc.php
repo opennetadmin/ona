@@ -41,7 +41,7 @@ $conf = array (
 
 
     /* Used in header.php */
-    "title"                  => 'Open Network Admin :: ',
+    "title"                  => 'Open Net Admin :: ',
     "meta_description"       => '',
     "meta_keywords"          => '',
     "html_headers"           => '',

@@ -436,13 +436,12 @@ function ws_save($window_name, $form='') {
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     $js = '';
-
     // Validate input
-    if ($form['set_name'] == '' or
+    if ($form['set_host'] == '' or
         $form['set_domain'] == '' or
         $form['set_type'] == '' or
         /* Interface input: required only if adding a host */
-        ($form['name'] == '.' and $form['set_ip'] == '')
+        ($form['host'] == '.' and $form['set_ip'] == '')
        ) {
         $response->addScript("alert('Please complete all fields to continue!');");
         return($response->getXML());
@@ -453,8 +452,8 @@ function ws_save($window_name, $form='') {
     // have a good chance of working!
 
     // Validate the "set_host" name is valid
-    $form['set_name'] = sanitize_hostname($form['set_name']);
-    if (!$form['set_name']) {
+    $form['set_host'] = sanitize_hostname($form['set_host']);
+    if (!$form['set_host']) {
         $response->addScript("alert('Invalid hostname!');");
         return($response->getXML());
     }
@@ -465,7 +464,7 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
     // Make sure the IP address specified is valid
-    if ($form['name'] != '.' and $form['set_ip']) {
+    if ($form['host'] != '.' and $form['set_ip']) {
         $form['set_ip'] = ip_mangle($form['set_ip'], 'dotted');
         if ($form['set_ip'] == -1) {
             $response->addScript("alert('{$self['error']}');");
@@ -482,29 +481,41 @@ function ws_save($window_name, $form='') {
     // Decide if we're editing or adding
     $module = 'modify';
     // If we're adding, re-map some the array names to match what the "add" module wants
-    if ($form['name'] == '.') {
+    if ($form['host'] == '.') {
         $module = 'add';
 
-        // options
-        $form['name'] = $form['set_name'] . '.' . $form['set_domain'];
+        // Host options
+        $form['host'] = $form['set_host'] . '.' . $form['set_domain'];
         $form['type'] = $form['set_type'];
         $form['notes'] = $form['set_notes'];
+
+        // Interface options
         $form['ip'] = $form['set_ip'];
+        $form['mac'] = $form['set_mac'];
+        $form['name'] = $form['set_name'];
 
         // If there's no "refresh" javascript, add a command to view the new host
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['host']}\', \'display\')');";
     }
     else {
-        $form['set_name'] .= '.' . $form['set_domain'];
+        $form['set_host'] .= '.' . $form['set_domain'];
     }
 
-    // Run the module to ADD the dns record
-    list($status, $output) = run_module('dns_record_'.$module, $form);
+    // Run the module to ADD the HOST AND INTERFACE, or MODIFY THE HOST.
+    list($status, $output) = run_module('host_'.$module, $form);
 
     // If the module returned an error code display a popup warning
     if ($status)
         $js .= "alert('Save failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
     else {
+        // Run the module to MODIFY THE INTERFACE if we need to
+        if ($module == 'modify' and $form['set_ip']) {
+            list($status, $output) = run_module('interface_'.$module, $form);
+        }
+        // If the module returned an error code display a popup warning
+        if ($status and $module == 'modify' and $form['set_ip'])
+            $js .= "alert('Interface update failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
+        else {
             // if they have checked the keep adding hosts box then dont remove the window
             if (!$form['keepadding'])
                 $js .= "removeElement('{$window_name}');";
@@ -513,6 +524,7 @@ function ws_save($window_name, $form='') {
             }
 
             if ($form['js']) $js .= $form['js'];
+        }
     }
 
     // Insert the new table into the window

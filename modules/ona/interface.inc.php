@@ -83,7 +83,7 @@ EOM
         $self['error'] = "ERROR => The host specified, {$options['host']}, does not exist!";
         return(array(2, $self['error'] . "\n"));
     }
-    printmsg("DEBUG => Host selected: {$host['fqdn']}", 3);
+    printmsg("DEBUG => Host selected: {$options['host']}", 3);
 
     // Translate IPv4 address to a number
     $orig_ip= $options['ip'];
@@ -207,7 +207,6 @@ EOM
                 'subnet_id'                => $subnet['id'],
                 'ip_addr'                  => $options['ip'],
                 'mac_addr'                 => $options['mac'],
-/* FIXME:       'CREATE_REVERSE_DNS_ENTRY' => $options['create_ptr'], */
                 'name'                     => $options['name'],
                 'description'              => $options['description']
             )
@@ -219,7 +218,7 @@ EOM
     }
 
     // Return the success notice
-    $self['error'] = "INFO => Interface ADDED: " . ip_mangle($options['ip'], 'dotted') . " on  {$host['fqdn']}";
+    $self['error'] = "INFO => Interface ADDED: " . ip_mangle($options['ip'], 'dotted');
     printmsg($self['error'], 0);
     return(array(0, $self['error'] . "\n"));
 }

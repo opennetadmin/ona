@@ -152,14 +152,14 @@ EOM
     }
     printmsg("DEBUG => ID for new host record: $id", 3);
 
-    // Get the next ID for the new dns record
-    $host['primary_dns_id'] = ona_get_next_id('dns');
-    if (!$id) {
-        $self['error'] = "ERROR => The ona_get_next_id('dns') call failed!";
-        printmsg($self['error'], 0);
-        return(array(7, $self['error'] . "\n"));
-    }
-    printmsg("DEBUG => ID for new dns record: $id", 3);
+//     // Get the next ID for the new dns record
+//     $host['primary_dns_id'] = ona_get_next_id('dns');
+//     if (!$id) {
+//         $self['error'] = "ERROR => The ona_get_next_id('dns') call failed!";
+//         printmsg($self['error'], 0);
+//         return(array(7, $self['error'] . "\n"));
+//     }
+//     printmsg("DEBUG => ID for new dns record: $id", 3);
 
     // Get the next ID for the new device record
     $host['device_id'] = ona_get_next_id('devices');
@@ -201,11 +201,9 @@ EOM
         'hosts',
         array(
             'id'                   => $id,
-            'primary_dns_id'       => $host['primary_dns_id'],
+            'primary_dns_id'       => '',  // Unknown at this point.. needs to be added afterwards
             'device_id'            => $host['device_id'],
-//            'LVL'                  => $options['security_level'],
             'notes'                => $options['notes']
-//            'location_id'          => $unit['UNIT_ID']
         )
     );
     if ($status or !$rows) {
@@ -214,32 +212,36 @@ EOM
         return(array(6, $self['error'] . "\n"));
     }
 
-// FIXME: MP this should use the run_module('dns_record_add')!!!
-    // Add the dns record
-    list($status, $rows) = db_insert_record(
-        $onadb,
-        'dns',
-        array(
-            'id'                   => $host['primary_dns_id'],
-            'type'                 => 'A',
-            'ttl'                  => '3600', // FIXME: (PK) pull this from the parent domain? (MP) also allow it to be passed on commandline
-            'name'                 => $host['name'],
-            'domain_id'            => $host['domain_id']
-        )
-    );
-    if ($status or !$rows) {
-        $self['error'] = "ERROR => host_add() SQL Query failed adding dns record: " . $self['error'];
-        printmsg($self['error'], 0);
-        return(array(6, $self['error'] . "\n"));
-    }
+// // FIXME: MP this should use the run_module('dns_record_add')!!!
+//     // Add the dns record
+//     list($status, $rows) = db_insert_record(
+//         $onadb,
+//         'dns',
+//         array(
+//             'id'                   => $host['primary_dns_id'],
+//             'type'                 => 'A',
+//             'ttl'                  => '3600', // FIXME: (PK) pull this from the parent domain? (MP) also allow it to be passed on commandline
+//             'name'                 => $host['name'],
+//             'domain_id'            => $host['domain_id']
+//         )
+//     );
+//     if ($status or !$rows) {
+//         $self['error'] = "ERROR => host_add() SQL Query failed adding dns record: " . $self['error'];
+//         printmsg($self['error'], 0);
+//         return(array(6, $self['error'] . "\n"));
+//     }
 
     // Else start an output message
     $text = "INFO => Host ADDED: {$host['name']}.{$host['domain_fqdn']}";
     printmsg($text,0);
     $text .= "\n";
 
+    // FIXME: MP, it seems to me that when adding a host you always need an IP so that the A record is added to it.
     // If we are going to add an interface, call that module now:
     if ($options['ip']) {
+        // since we have no name yet, we need to use the ID of the new host as the host option for the following module calls
+        $options['host'] = $id;
+
         printmsg("DEBUG => host_add() ({$host['name']}.{$host['domain_fqdn']}) calling interface_add() ({$options['ip']})", 3);
         list($status, $output) = run_module('interface_add', $options);
         if ($status)
@@ -249,12 +251,30 @@ EOM
         // Find the interface_id for the interface we just added
         list($status, $rows, $int) = ona_find_interface($options['ip']);
 
-        // Add the interface_id info into the DNS table
-        list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $host['primary_dns_id']), array('interface_id' => $int['id']));
+        // make the dns record type A
+        $options['type'] = 'A';
+        // FIXME: MP I had to force the name value here.  name is comming in as the interface name.  this is nasty!
+        $options['name'] = "{$host['name']}.{$host['domain_fqdn']}";
+        // And we will go ahead and auto add the ptr.  the user can remove it later if they dont want it.  FIXME: maybe create a checkbox on the host edit
+        $options['addptr'] = '1';
+
+        // Add the DNS entry with the IP address etc
+        printmsg("DEBUG => host_add() ({$host['name']}.{$host['domain_fqdn']}) calling dns_record_add() ({$options['ip']})", 3);
+        list($status, $output) = run_module('dns_record_add', $options);
+        if ($status)
+            return(array($status, $output));
+        $text .= $output;
+
+        // FIXME: MP this is a temp fix until ona_find_dns_record is written
+        list($status, $rows, $dnsrecord) = ona_get_dns_record(array('name' => $host['name'], 'domain_id' => $host['domain_id'], 'interface_id' => $int['id'], 'type' => 'A'));
+
+
+        // Set the primary_dns_id to the dns record that was just added
+        list($status, $rows) = db_update_record($onadb, 'hosts', array('id' => $id), array('primary_dns_id' => $dnsrecord['id']));
         if ($status or !$rows) {
-            $self['error'] = "ERROR => host_add() dns update SQL Query failed: " . $self['error'];
+            $self['error'] = "ERROR => host_add() SQL Query failed to update primary_dns_id for host: " . $self['error'];
             printmsg($self['error'], 0);
-            return(array(14, $self['error'] . "\n"));
+            return(array(8, $self['error'] . "\n"));
         }
 
         return(array(0, $text));

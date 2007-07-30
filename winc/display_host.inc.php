@@ -161,11 +161,6 @@ EOL;
                 </tr>
 
                 <tr>
-                    <td align="right" nowrap="true"><b>Lvl</b>&nbsp;</td>
-                    <td class="padding" align="left">{$record['LVL']}&nbsp;</td>
-                </tr>
-
-                <tr>
                     <td align="right" {$notes_valign} nowrap="true"><b>Notes</b>&nbsp;</td>
                     <td class="padding" align="left" {$notes_width}>{$record['notes']}&nbsp;</td>
                 </tr>
@@ -276,8 +271,8 @@ EOL;
     }
     else {
         $serverinfo .= <<<EOL
-            <form id="form_dns_serv_{$record['ID']}"
-                ><input type="hidden" name="server" value="{$record['ID']}"
+            <form id="form_dns_serv_{$record['id']}"
+                ><input type="hidden" name="server" value="{$record['id']}"
                 ><input type="hidden" name="js" value="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dns_server\', \'host_id=>{$record['ID']}\', \'display\')');"
             ></form>
 
@@ -289,7 +284,7 @@ EOL;
         if (auth('advanced',$debug_val)) {
             $serverinfo .= <<<EOL
                 style="cursor: pointer;"
-                onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('form_dns_serv_{$record['ID']}'), 'editor');"
+                onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('form_dns_serv_{$record['id']}'), 'editor');"
 EOL;
         }
 

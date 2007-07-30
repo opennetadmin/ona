@@ -99,16 +99,17 @@ function ws_editor($window_name, $form='') {
     }
 
     $ttl_style = '';
+    $editdisplay = '';
 
     // Set the window title:
     $window['title'] = "Add DNS Record";
     if ($dns_record['id']) {
         $window['title'] = "Edit DNS Record";
-        $editdisplay = "display:none";
+        $editdisplay = "disabled='1'";
         $window['js'] .= "el('record_type_select').onchange('fake event');updatednsinfo('{$window_name}');";
         // If you are editing and there is no ttl set, use the one from the domain.
         if (!$dns_record['ttl']) {
-            $dns_record['ttl'] = $domain['minimum'];
+            $dns_record['ttl'] = $domain['default_ttl'];
             $ttl_style = 'style="font-style: italic;" title="Using TTL from domain"';
         }
     }
@@ -152,7 +153,7 @@ EOL;
     </table>
 
     <!-- RECORD TYPE CONTAINER -->
-    <div id="type_container" style="{$editdisplay};">
+    <div id="type_container">
         <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']};padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
             <tr>
                 <td align="right" nowrap="true">
@@ -164,6 +165,7 @@ EOL;
                         name="set_type"
                         alt="Record type"
                         class="edit"
+                        {$editdisplay}
                         onchange="var selectBox = el('record_type_select');
                                 el('info_{$window_name}').innerHTML = '';
                                 el('ptr_info_{$window_name}').innerHTML = '';
