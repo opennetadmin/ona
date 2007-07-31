@@ -39,6 +39,9 @@ function updatednsinfo(window_name) {
     if (el('record_type_select').value=='CNAME') {
         el('info_'+window_name).innerHTML = el('set_hostname_'+window_name).value + '.' + el('set_domain_'+window_name).value + ' ' + el('set_ttl').value + ' IN ' + el('record_type_select').value + ' ' + el('set_a_record_'+window_name).value;
     }
+    if (el('record_type_select').value=='NS') {
+        el('info_'+window_name).innerHTML = el('set_domain_'+window_name).value + ' ' + el('set_ttl').value + ' IN ' + el('record_type_select').value + ' ' + el('set_a_record_'+window_name).value;
+    }
 }
 
 

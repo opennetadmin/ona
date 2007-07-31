@@ -286,6 +286,8 @@ EOL;
 
 
         $record['notes_short'] = truncate($record['notes'], 30);
+        // Add a dot to the end of record name for display purposes
+        $record['name'] = $record['name'].'.';
 
         // Process PTR record
         if ($record['type'] == 'PTR') {
@@ -322,16 +324,16 @@ EOL;
         // Process NS record
         if ($record['type'] == 'NS') {
             // clear out the $record['domain'] value so it shows properly in the list
-            $record['domain'] = '';
-            list($status, $rows, $cname) = ona_get_dns_record(array('id' => $record['dns_id']), '');
+            $record['name'] = '';
+            list($status, $rows, $ns) = ona_get_dns_record(array('id' => $record['dns_id']), '');
             $data = <<<EOL
                     <a title="Edit DNS A record"
                        class="act"
                        onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
-                    >{$cname['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
+                    >{$ns['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
-                    >{$cname['fqdn']}</a>.&nbsp;
+                    >{$ns['fqdn']}</a>.&nbsp;
 EOL;
         }
 
@@ -340,8 +342,8 @@ EOL;
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
         // Make record['domain'] have the right name in it
         if ($record['type'] != 'PTR') { $record['domain'] = $domain['fqdn']; }
-        // clear out the $record['domain'] value so it shows properly in the list if it is an NS record
-        if ($record['type'] == 'NS') {$record['domain'] = ''; }
+        // clear out the $record['domain'] value so it shows properly in the list for NS records
+        if ($record['type'] == 'NS')  { $record['domain'] = $domain['name'].'.'; }
         // if the ttl is blank, use the one in the domain (minimum)
         if ($record['ttl'] == 0) {
             $record['ttl'] = $domain['minimum'];
@@ -362,7 +364,7 @@ EOL;
                     <span title="Record. ID: {$record['id']}"
                        onClick=""
                     >{$record['name']}</span
-                    >.<a title="View domain. ID: {$domain['id']}"
+                    ><a title="View domain. ID: {$domain['id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$domain['id']}\', \'display\')');"
                     >{$record['domain']}</a>
@@ -426,7 +428,17 @@ EOL;
                        class="act"
                     ><img src="{$images}/silk/comment.png" border="0"></a>&nbsp;
 EOL;
-            } else {
+            } 
+            // If it is a NS, adjust the comment to say you can only delete, not modify.
+            else if ($record['type'] == 'NS') {
+            $html .= <<<EOL
+
+                    <a title="You can not edit an NS record directly, you must edit the domain/server association."
+                       class="act"
+                    ><img src="{$images}/silk/comment.png" border="0"></a>&nbsp;
+EOL;
+            }
+            else {
             $html .= <<<EOL
 
                     <a title="Edit DNS record"

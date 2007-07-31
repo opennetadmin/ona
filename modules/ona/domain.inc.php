@@ -215,6 +215,10 @@ EOM
     // will that be too much of an increment for it to properly zone xfer?  i.e.  1209230515 = 12/09 23:05:15 in time format
     $serial_number = date('njHis');
 
+    // FIXME: MP there is a problem currently with parent.. it creates a loop for find_domain, I'm blanking it out for now.
+    $parent_domain['id'] = '';
+
+
     // Add the record
     list($status, $rows) =
         db_insert_record(

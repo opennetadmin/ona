@@ -131,14 +131,14 @@ EOL;
   
                 <td class="list-row" align="left">
                     <a title="View domain. ID: {$record['id']}"
-                       class="zone"
+                       class="domain"
                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['id']}\', \'display\')');"
                     >{$record['name']}</a>
                 </td>
                 
                 <td class="list-row" align="left">
                     <a title="View domain. ID: {$record['PARENT_DNS_ZONE_ID']}"
-                       class="zone"
+                       class="domain"
                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['PARENT_DNS_ZONE_ID']}\', \'display\')');"
                     >{$record['PARENT_DNS_ZONE']}</a>&nbsp;
                 </td>

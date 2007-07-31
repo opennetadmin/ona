@@ -293,7 +293,9 @@ complex DNS messes for themselves.
     // NS is a domain_id that points to another dns_id A record
     // this will give you "mydomain.com    IN   NS   server.somedomain.com"
     else if ($options['type'] == 'NS') {
-        // If $domain['id'] is empty then we must have a bad domain.
+        // ona_find_domain does not work if you pass it a domain and expect to get the same domain back
+        // We will request a new one here
+        list($status, $rows, $domain) = ona_get_domain_record(array('name' => $options['name']));
         if (!$domain['id']) {
             printmsg("ERROR => Invalid domain name ({$options['name']})!", 3);
             $self['error'] = "ERROR => Invalid domain name ({$options['name']})!";
@@ -302,7 +304,7 @@ complex DNS messes for themselves.
         // Determine the host and domain name portions of the pointsto option
         // Find the domain name piece of $search
         list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
-        printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$domain['fqdn']} for pointsto.", 3);
+        printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$pdomain['fqdn']} for pointsto.", 3);
 
         // Now find what the host part of $search is
         $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
@@ -714,7 +716,7 @@ EOM
 ///////////////////////////////////////////////////////////////////////
 function dns_record_del($options="") {
     global $conf, $self, $onadb;
-    printmsg("DEBUG => host_del({$options}) called", 3);
+    printmsg("DEBUG => dns_record_del({$options}) called", 3);
 
     // Version - UPDATE on every edit!
     $version = '1.00';
@@ -735,7 +737,7 @@ function dns_record_del($options="") {
 dns_record_del-v{$version}
 Deletes a DNS record from the database
 
-  Synopsis: host_del [KEY=VALUE] ...
+  Synopsis: dns_record_del [KEY=VALUE] ...
 
   Required:
     name=NAME[.DOMAIN] or ID      hostname or ID of the record to delete
@@ -840,7 +842,7 @@ need to do a better delete of DNS records when deleting a host.. currently its a
         // Delete the DNS record
         list($status, $rows) = db_delete_records($onadb, 'dns', array('id' => $dns['id']));
         if ($status) {
-            $self['error'] = "ERROR => host_del() DNS record delete SQL Query failed: {$self['error']}";
+            $self['error'] = "ERROR => dns_record_del() DNS record delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0);
             return(array(5, $add_to_error . $self['error'] . "\n"));
         }
