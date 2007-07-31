@@ -118,7 +118,18 @@ EOL;
             </td>
         </tr>
 
-
+        <tr>
+            <td align="right" nowrap="true" style="font-weight: bold;">
+                Authoritative
+            </td>
+            <td class="padding" align="left" width="100%">
+                <input
+                    name="auth"
+                    alt="Authoritative"
+                    type="checkbox"
+                > Is the server a master or a slave
+            </td>
+        </tr>
 
         <tr>
             <td align="right" valign="top" nowrap="true">
@@ -190,10 +201,10 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
 
-    // Validate subnet is valid
-    list($status, $rows, $subnet)  = ona_get_subnet_record(array('name'  => $form['subnet']));
+    // Validate domain is valid
+    list($status, $rows, $subnet)  = ona_get_domain_record(array('name'  => $form['domain']));
     if ($status or !$rows) {
-        $response->addScript("alert('Invalid subnet!');");
+        $response->addScript("alert('Invalid domain!');");
         return($response->getXML());
     }
 
