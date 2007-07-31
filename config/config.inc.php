@@ -213,7 +213,7 @@ $conf['hostaction']['Telnet']['title'] = "Telnet to the host";
 ini_set("session.gc_maxlifetime", $conf['cookie_life']);
 
 // Include the local configuration settings
-include("{$base}/config/config_local.inc.php");
+@include("{$base}/config/config_local.inc.php");
 
 // DON'T put whitespace at the beginning or end of included files!!!
 ?>

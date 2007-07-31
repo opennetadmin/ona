@@ -97,7 +97,7 @@ EOL;
                     value="{$record['name']}"
                     class="edit"
                     type="text"
-                    size="20" maxlength="20"
+                    size="30" maxlength="30"
                 >
             </td>
         </tr>

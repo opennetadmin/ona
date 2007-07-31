@@ -179,7 +179,7 @@ EOL;
 
     // Loop through and display the users
     foreach ($records as $record) {
-printmsg($record[''], 0);
+
         list($status, $rows, $model) = ona_get_model_record(array('id' => $record['model_id']));
         $record['model_name'] = $model['name'];
 
