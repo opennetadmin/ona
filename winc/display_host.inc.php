@@ -188,7 +188,7 @@ EOL;
     // Determine if this is actaually a server by counting server "uses"
  //   if ($record['SERVER_ID']) {
         // Is this a DNS server?
-        list($status, $domain_rows, $domain_server) = db_get_records($onadb, 'DOMAIN_SERVERS_B', 'SERVER_ID = '. $onadb->qstr($record['SERVER_ID']));
+        list($status, $domain_rows, $domain_server) = db_get_records($onadb, 'dns_server_domains', 'host_id = '. $onadb->qstr($record['id']));
         if ($domain_rows >= 1) { $is_dns_server = 1; }
 
         // Is this a DHCP server?
@@ -259,7 +259,7 @@ EOL;
                 style="cursor: pointer;"
                 onMouseOver="this.className='row-highlight'"
                 onMouseOut="this.className='row-normal'"
-                onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dns_server\', \'host_id=>{$record['ID']}\', \'display\')');"
+                onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain_server\', \'host_id=>{$record['id']}\', \'display\')');"
             >
                 <td>DNS</td>
                 <td>Y</td>
@@ -273,7 +273,7 @@ EOL;
         $serverinfo .= <<<EOL
             <form id="form_dns_serv_{$record['id']}"
                 ><input type="hidden" name="server" value="{$record['id']}"
-                ><input type="hidden" name="js" value="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dns_server\', \'host_id=>{$record['ID']}\', \'display\')');"
+                ><input type="hidden" name="js" value="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain_server\', \'host_id=>{$record['id']}\', \'display\')');"
             ></form>
 
             <tr title="Add DNS service"
@@ -498,19 +498,6 @@ EOL;
     // END DHCP ENTRIES LIST
 
 
-    $html .= <<<EOL
-        <!-- END OF SECOND COLUMN OF SMALL BOXES -->
-        </td>
-
-
-        <!-- START OF THIRD COLUMN OF SMALL BOXES -->
-        <td valign="top">
-EOL;
-
-
-
-
-
     // CONFIG ARCHIVE LIST
     // List config archives if they have permission to see them
    // if (auth('host_config_admin',$debug_val) and authlvl($record['lvl'])) {
@@ -552,6 +539,20 @@ EOL;
         }
     //}
     // END CONFIG ARCHIVE LIST
+
+
+
+    $html .= <<<EOL
+        <!-- END OF SECOND COLUMN OF SMALL BOXES -->
+        </td>
+
+
+        <!-- START OF THIRD COLUMN OF SMALL BOXES -->
+        <td valign="top">
+EOL;
+
+
+
 
 
     // HOST ACTION LIST

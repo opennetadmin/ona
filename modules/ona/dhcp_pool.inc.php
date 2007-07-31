@@ -315,7 +315,7 @@ EOM
             array(
                 'id'                            => $id,
                 'subnet_id'                     => $subnet['id'],
-                'id'                            => $failovergroupid,
+                'dhcp_failover_group_id'        => $failovergroupid,
                 'ip_addr_start'                 => $start_dec,
                 'ip_addr_end'                   => $end_dec,
                 'lease_length'                  => $llength,

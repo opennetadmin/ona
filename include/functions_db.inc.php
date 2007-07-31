@@ -1266,6 +1266,9 @@ function ona_get_dhcp_server_subnet_record($array) {
     return(ona_get_record($array, 'dhcp_server_subnets'));
 }
 
+function ona_get_dns_server_domain_record($array) {
+    return(ona_get_record($array, 'dns_server_domains'));
+}
 
 
 

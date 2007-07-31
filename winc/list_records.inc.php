@@ -224,7 +224,6 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Time to Live</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
-                <!-- <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td> -->
                 <td class="list-header" align="center" style="{$style['borderR']};">Data</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
                 <td class="list-header" align="center">&nbsp;</td>
@@ -240,66 +239,53 @@ EOL;
 
 
 
-        // Check if we've seen this record before.
+        $record = $results[$i-1];
 
-//FIXME: MP remove this, I believe we sould always get back unique info.  Dont see a need for this anymore
-//         if ($record['name'] == $last_record['name'] &&
-//             $record['domain_id'] == $last_record['domain_id']) {
-//             $last_record_count++;
-//             continue;
-//         } else {
-            $record = $results[$i-1];
+        // if the interface is the primary_dns_id for the host then mark it
+        $primary_record = '&nbsp;';
+        if ($host['primary_dns_id'] == $record['id']) {
+            $primary_record = '<img title="Primary DNS record" src="'.$images.'/silk/font_go.png" border="0">';
+        }
 
-            // if the interface is the primary_dns_id for the host then mark it
-            $primary_record = '&nbsp;';
-            if ($host['primary_dns_id'] == $record['id']) {
-                $primary_record = '<img title="Primary DNS record" src="'.$images.'/silk/font_go.png" border="0">';
-            }
+        // Check for interface records (and find out how many there are)
+        list($status, $interfaces, $interface) = ona_get_interface_record(array('id' => $record['interface_id']), '');
 
-            // Check for interface records (and find out how many there are)
-            list($status, $interfaces, $interface) = ona_get_interface_record(array('id' => $record['interface_id']), '');
+        if($interfaces) {
+            $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
 
-            if($interfaces) {
-                $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
+            // Subnet description
+            list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
+            $record['subnet'] = $subnet['name'];
+            $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
+            $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
 
-                // Subnet description
-                list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
-                $record['subnet'] = $subnet['name'];
-                $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
-                $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
+            // Create string to be embedded in HTML for display
+            $data = <<<EOL
+                        {$record['ip_addr']}&nbsp;
 
-                // Create string to be embedded in HTML for display
+EOL;
+        } else {
+            // Get other DNS records which name this record as parent
+            list($status, $rows, $dns_other) = ona_get_host_record(array('id' => $record['dns_id']));
+
+            // Create string to be embedded in HTML for display
+            if($rows) {
                 $data = <<<EOL
-                            {$record['ip_addr']}&nbsp;
-
+                <a title="View host. ID: {$dns_other['id']}"
+                    class="nav"
+                    onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$dns_other['id']}\', \'display\')');"
+                >{$dns_other['name']}</a
+                >.<a title="View domain. ID: {$dns_other['domain_id']}"
+                        class="domain"
+                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$dns_other['domain_id']}\', \'display\')');"
+                >{$dns_other['domain_fqdn']}</a>&nbsp;
 EOL;
-            } else {
-                // Get other DNS records which name this record as parent
-                list($status, $rows, $dns_other) = ona_get_host_record(array('id' => $record['dns_id']));
-
-                // Create string to be embedded in HTML for display
-                if($rows) {
-                    $data = <<<EOL
-                    <a title="View host. ID: {$dns_other['id']}"
-                       class="nav"
-                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$dns_other['id']}\', \'display\')');"
-                    >{$dns_other['name']}</a
-                    >.<a title="View domain. ID: {$dns_other['domain_id']}"
-                         class="domain"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$dns_other['domain_id']}\', \'display\')');"
-                    >{$dns_other['domain_fqdn']}</a>&nbsp;
-EOL;
-                }
             }
-//         }
+        }
+
 
 
         $record['notes_short'] = truncate($record['notes'], 30);
-
-//         if ($record['type'] == 'A') {
-//             list($status, $rows, $interface) = ona_get_interface_record(array('id' => $record['interface_id']));
-//             list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
-//         }
 
         // Process PTR record
         if ($record['type'] == 'PTR') {
@@ -333,10 +319,29 @@ EOL;
 EOL;
         }
 
+        // Process NS record
+        if ($record['type'] == 'NS') {
+            // clear out the $record['domain'] value so it shows properly in the list
+            $record['domain'] = '';
+            list($status, $rows, $cname) = ona_get_dns_record(array('id' => $record['dns_id']), '');
+            $data = <<<EOL
+                    <a title="Edit DNS A record"
+                       class="act"
+                       onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
+                    >{$cname['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
+                    >{$cname['fqdn']}</a>.&nbsp;
+EOL;
+        }
+
         // Get the domain name
         $ttl_style = 'title="Time-to-Live"';
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
+        // Make record['domain'] have the right name in it
         if ($record['type'] != 'PTR') { $record['domain'] = $domain['fqdn']; }
+        // clear out the $record['domain'] value so it shows properly in the list if it is an NS record
+        if ($record['type'] == 'NS') {$record['domain'] = ''; }
         // if the ttl is blank, use the one in the domain (minimum)
         if ($record['ttl'] == 0) {
             $record['ttl'] = $domain['minimum'];
@@ -376,14 +381,6 @@ EOL;
                     >{$record['type']}</span>&nbsp;
                 </td>
 
-
-<!--                <td class="list-row"> -->
-<!--                    <a title="View subnet"
-                         class="nav"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['id']}\', \'display\')');"
-                    >{$record['subnet']}</a>&nbsp; -->
-<!--                </td> -->
-
                 <td class="list-row" align="left">
 EOL;
 
@@ -406,8 +403,8 @@ EOL;
                     ></form>&nbsp;
 EOL;
         if (auth('dns_record_modify')) {
-            // If it is an A record but not the primary, display an option to make it primary.
-            if ($record['type'] == 'A' and $host['primary_dns_id'] != $record['id']) {
+            // If it is an A record but not the primary, display an option to make it primary. and only if we are dealing with a specific host
+            if ($record['type'] == 'A' and $host['primary_dns_id'] != $record['id'] and $form['host_id']) {
                 $html .= <<<EOL
 
                     <a title="Make this the primary DNS record"

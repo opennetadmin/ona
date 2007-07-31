@@ -122,7 +122,7 @@ EOL;
             <td align="right" nowrap="true" style="font-weight: bold;">
                 Authoritative
             </td>
-            <td class="padding" align="left" width="100%">
+            <td class="padding" align="left" width="100%" nowrap="true">
                 <input
                     name="auth"
                     alt="Authoritative"
@@ -261,7 +261,7 @@ function ws_delete($window_name, $form='') {
     $js = '';
 
     // Run the module
-    list($status, $output) = run_module('domain_server_del', array('server' => $form['server_id'], 'domain' => $form['domain_id'], 'commit' => 'Y'));
+    list($status, $output) = run_module('domain_server_del', array('server' => $form['server'], 'domain' => $form['domain'], 'commit' => 'Y'));
 
     // If the module returned an error code display a popup warning
     if ($status) { $js .= "alert('Delete failed. " . preg_replace('/[\s\']+/', ' ', $self['error']) . "');"; }

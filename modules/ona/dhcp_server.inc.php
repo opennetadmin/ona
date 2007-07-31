@@ -90,10 +90,6 @@ EOM
         return(array(2, $self['error'] . "\n"));
     }
 
-    // set auth information and sanitize it
-    if ($options['auth']) {$auth = sanitize_YN($options['auth'], 'N');}
-    else {$auth = sanitize_YN($conf['dhcp']['auth'], 'N');}
-
     // Check permissions
     if (!auth('advanced') or !authlvl($host['LVL']) or !authlvl($subnet['LVL'])) {
         $self['error'] = "Permission denied!";
@@ -377,7 +373,7 @@ EOM
         }
 
 
-        // delete record from dhcp_server_subnets_b
+        // delete record from dhcp_server_subnets
         list($status, $rows) = db_delete_records($onadb, 'dhcp_server_subnets', array('id' => $dhcpserver['id']));
         if ($status) {
             $self['error'] = "ERROR => dhcp_server_del() SQL Query failed:" . $self['error'];

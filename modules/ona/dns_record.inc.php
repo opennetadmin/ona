@@ -53,10 +53,14 @@ Add a new DNS record
     notes=NOTES               textual notes
     ip=ADDRESS                ip address (numeric or dotted)
     ttl=NUMBER                time in seconds, defaults to ttl from domain
-    pointsto=NAME[.DOMAIN]    hostname that a CNAME points to
+    pointsto=NAME[.DOMAIN]    hostname that a CNAME or NS points to
     addptr                    auto add a PTR record when adding A records
 
-\n
+  Examples:
+    dns_record_add name=newhost.something.com type=A ip=10.1.1.2 addptr
+    dns_record_add name=somedomain.com type=NS pointsto=ns.somedomain.com
+    dns_record_add name=cname.domain.com type=CNAME pointsto=host.domain.com
+
 EOM
         ));
     }
@@ -104,7 +108,7 @@ FIXME: do some validation of the different options, pointsto only with cname typ
     // Validate that the DNS name has only valid characters in it
     $hostname = sanitize_hostname($hostname);
     if (!$hostname) {
-        printmsg("DEBUG => Invalid host name ({$options['name']})!", 3);
+        printmsg("ERROR => Invalid host name ({$options['name']})!", 3);
         $self['error'] = "ERROR => Invalid host name ({$options['name']})!";
         return(array(4, $self['error'] . "\n"));
     }
@@ -163,7 +167,7 @@ FIXME: do some validation of the different options, pointsto only with cname typ
     }
 
     // Process PTR record types
-    if ($options['type'] == 'PTR') {
+    else if ($options['type'] == 'PTR') {
         // find the IP interface record,
         list($status, $rows, $interface) = ona_find_interface($options['ip']);
         if (!$rows) {
@@ -228,7 +232,7 @@ complex DNS messes for themselves.
 
 
     // Process CNAME record types
-    if ($options['type'] == 'CNAME') {
+    else if ($options['type'] == 'CNAME') {
         // Determine the host and domain name portions of the pointsto option
         // Find the domain name piece of $search
         list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
@@ -240,7 +244,7 @@ complex DNS messes for themselves.
         // Validate that the DNS name has only valid characters in it
         $phostname = sanitize_hostname($phostname);
         if (!$phostname) {
-            printmsg("DEBUG => Invalid pointsto host name ({$options['pointsto']})!", 3);
+            printmsg("ERROR => Invalid pointsto host name ({$options['pointsto']})!", 3);
             $self['error'] = "ERROR => Invalid pointsto host name ({$options['pointsto']})!";
             return(array(4, $self['error'] . "\n"));
         }
@@ -283,6 +287,67 @@ complex DNS messes for themselves.
 
     }
 
+
+
+    // Process NS record types
+    // NS is a domain_id that points to another dns_id A record
+    // this will give you "mydomain.com    IN   NS   server.somedomain.com"
+    else if ($options['type'] == 'NS') {
+        // If $domain['id'] is empty then we must have a bad domain.
+        if (!$domain['id']) {
+            printmsg("ERROR => Invalid domain name ({$options['name']})!", 3);
+            $self['error'] = "ERROR => Invalid domain name ({$options['name']})!";
+            return(array(4, $self['error'] . "\n"));
+        }
+        // Determine the host and domain name portions of the pointsto option
+        // Find the domain name piece of $search
+        list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
+        printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$domain['fqdn']} for pointsto.", 3);
+
+        // Now find what the host part of $search is
+        $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
+
+        // Validate that the DNS name has only valid characters in it
+        $phostname = sanitize_hostname($phostname);
+        if (!$phostname) {
+            printmsg("ERROR => Invalid pointsto host name ({$options['pointsto']})!", 3);
+            $self['error'] = "ERROR => Invalid pointsto host name ({$options['pointsto']})!";
+            return(array(4, $self['error'] . "\n"));
+        }
+        // Debugging
+        printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
+
+        // Find the dns record that it will point to
+        list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A'));
+        if ($status or !$rows) {
+            printmsg("ERROR => Unable to find DNS A record to point NS entry to!",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+        // Validate that there are no NS already with this domain and host
+        list($status, $rows, $record) = ona_get_dns_record(array('dns_id' => $pointsto_record['id'], 'domain_id' => $domain['id'],'type' => 'NS'));
+        if ($rows or $status) {
+            printmsg("ERROR => Another DNS NS record for {$domain['fqdn']} pointing to {$options['pointsto']} already exists!",3);
+            $self['error'] = "ERROR => Another DNS NS record for {$domain['fqdn']} pointing to {$options['pointsto']} already exists!";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+
+        $add_name = $hostname;
+        $add_domainid = $domain['id'];
+        $add_interfaceid = $pointsto_record['interface_id'];
+        $add_dnsid = $pointsto_record['id'];
+
+        $info_msg = "{$hostname}.{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+
+    }
+    // If it is not a recognized record type, bail out!
+    else {
+            printmsg("ERROR => Invalid DNS record type: {$options['type']}!",3);
+            $self['error'] = "ERROR => Invalid DNS record type: {$options['type']}!";
+            return(array(5, $self['error'] . "\n"));
+    }
 
 
 

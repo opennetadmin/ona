@@ -9,7 +9,7 @@
 //   Displays a host record and all associated info in the work_space div.
 //////////////////////////////////////////////////////////////////////////////
 function ws_display($window_name, $form='') {
-    global $conf, $self, $oracle;
+    global $conf, $self, $onadb;
     global $images, $color, $style;
     $html = '';
     $js = '';
@@ -201,34 +201,34 @@ EOL;
 EOL;
 
     // Get a list of servers, and loop through them
-    list($status, $rows, $domainservers) = db_get_records($ona, 'DOMAIN_SERVERS_B', array('DNS_DOMAINS_ID' => $record['ID']),'AUTHORITATIVE_FLAG DESC');
+    list($status, $rows, $domainservers) = db_get_records($onadb, 'dns_server_domains', array('domain_id' => $record['id']),'authoritative DESC');
     if ($rows) {
         foreach ($domainservers as $domainserver) {
             // Adjust the text for the authoritative flag to mean something
-            if ($domainserver['AUTHORITATIVE_FLAG'] == "Y")
-                $domainserver['AUTHORITATIVE_FLAG'] = "Master";
+            if ($domainserver['authoritative'] == "1")
+                $domainserver['authoritative'] = "Master";
             else
-                $domainserver['AUTHORITATIVE_FLAG'] = "Slave";
+                $domainserver['authoritative'] = "Slave";
 
-            list($host, $domain) = ona_find_host($domainserver['SERVER_ID']);
-            $host['FQDN'] = htmlentities($host['FQDN'], ENT_QUOTES);
+            list($status, $rows, $host) = ona_find_host($domainserver['host_id']);
+            $host['fqdn'] = htmlentities($host['fqdn'], ENT_QUOTES);
             $html .= <<<EOL
                 <tr onMouseOver="this.className='row-highlight';"
                     onMouseOut="this.className='row-normal';">
 
                     <td align="left" nowrap="true">
-                        <a title="View server. ID: {$host['ID']}"
+                        <a title="View server. ID: {$host['id']}"
                            class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dns_server\', \'host_id=>{$host['ID']}\', \'display\')');"
-                        >{$host['FQDN']}</a>&nbsp;
+                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain_server\', \'host_id=>{$host['id']}\', \'display\')');"
+                        >{$host['fqdn']}</a>&nbsp;
                      </td>
                      <td align="left" nowrap="true">
-                            {$domainserver['AUTHORITATIVE_FLAG']}
+                            {$domainserver['authoritative']}
                     </td>
                      <td align="right" nowrap="true">
-                        <form id="{$form['form_id']}_domain_serv_{$domainserver['DOMAIN_SERVERS_ID']}"
-                                ><input type="hidden" name="server" value="{$domainserver['SERVER_ID']}"
-                                ><input type="hidden" name="domain" value="{$domainserver['DNS_DOMAINS_ID']}"
+                        <form id="{$form['form_id']}_domain_serv_{$domainserver['id']}"
+                                ><input type="hidden" name="server" value="{$domainserver['host_id']}"
+                                ><input type="hidden" name="domain" value="{$domainserver['domain_id']}"
                                 ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
 EOL;
@@ -240,7 +240,7 @@ EOL;
                            class="act"
                            onClick="var doit=confirm('Are you sure you want to remove this domain from this DNS server?');
                            if (doit == true)
-                                xajax_window_submit('edit_domain_server', xajax.getFormValues('{$form['form_id']}_domain_serv_{$domainserver['DOMAIN_SERVERS_ID']}'), 'delete');"
+                                xajax_window_submit('edit_domain_server', xajax.getFormValues('{$form['form_id']}_domain_serv_{$domainserver['id']}'), 'delete');"
                         ><img src="{$images}/silk/page_delete.png" border="0"></a>
 EOL;
             }

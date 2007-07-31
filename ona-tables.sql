@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: ona
 -- ------------------------------------------------------
--- Server version	5.0.41-Dotdeb_1.dotdeb.2-log
+-- Server version	5.0.45-Dotdeb_0.dotdeb.1-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -166,7 +166,7 @@ CREATE TABLE `dhcp_options` (
 
 DROP TABLE IF EXISTS `dhcp_pools`;
 CREATE TABLE `dhcp_pools` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL,
   `subnet_id` int(10) unsigned NOT NULL,
   `dhcp_failover_group_id` int(10) unsigned NOT NULL,
   `ip_addr_start` int(10) unsigned NOT NULL,
@@ -185,7 +185,7 @@ CREATE TABLE `dhcp_pools` (
 
 DROP TABLE IF EXISTS `dhcp_server_subnets`;
 CREATE TABLE `dhcp_server_subnets` (
-  `id` tinyint(10) unsigned NOT NULL auto_increment,
+  `id` tinyint(10) unsigned NOT NULL,
   `host_id` tinyint(10) unsigned NOT NULL,
   `subnet_id` tinyint(10) unsigned NOT NULL,
   PRIMARY KEY  (`id`)
@@ -208,6 +208,19 @@ CREATE TABLE `dns` (
   `notes` varchar(128) NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='IP addr comes from interface_id';
+
+--
+-- Table structure for table `dns_server_domains`
+--
+
+DROP TABLE IF EXISTS `dns_server_domains`;
+CREATE TABLE `dns_server_domains` (
+  `id` tinyint(10) unsigned NOT NULL,
+  `host_id` tinyint(10) unsigned NOT NULL,
+  `domain_id` tinyint(10) unsigned NOT NULL,
+  `authoritative` tinyint(1) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores domain to DNS server relationships';
 
 --
 -- Table structure for table `domains`
@@ -315,7 +328,7 @@ CREATE TABLE `messages` (
   `expiration` timestamp NOT NULL default '0000-00-00 00:00:00',
   `message_text` text NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores general messages for ONA "display" pages';
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1 COMMENT='Stores general messages for ONA "display" pages';
 
 --
 -- Table structure for table `models`
@@ -427,4 +440,4 @@ CREATE TABLE `vlans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2007-07-31  4:17:27
+-- Dump completed on 2007-07-31 19:01:52
