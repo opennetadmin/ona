@@ -302,7 +302,7 @@ function ws_delete($window_name, $form='') {
     }
     else {
         // Delete the record
-        list($status, $rows) = db_delete_record($onadb, 'device_types', array('id' => $device_type['id']));
+        list($status, $rows) = db_delete_records($onadb, 'device_types', array('id' => $device_type['id']));
         if ($status or !$rows) {
             // If the module returned an error code display a popup warning
             $js .= "alert('Delete failed: " . trim($self['error']) . "');";

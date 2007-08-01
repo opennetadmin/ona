@@ -140,6 +140,10 @@ function ws_editor($window_name, $form='') {
 
 EOL;
 
+    // If we are modifying do not allow them to edit/change dns names.  this should only be done when creating a new host
+    $hideit='';
+    if ($host['id']) $hideit='style="display: none;"';
+
     // Define the window's inner html
     $window['html'] = <<<EOL
 
@@ -159,14 +163,8 @@ EOL;
                 &nbsp;
             </td>
         </tr>
-EOL;
 
-    // If we are modifying do not allow them to edit/change dns names.  this should only be done when creating a new host
-    if (!$host['id']) {
-
-        $window['html'] .= <<<EOL
-
-        <tr>
+        <tr {$hideit}>
             <td align="right" nowrap="true">
                 DNS Name
             </td>
@@ -182,7 +180,7 @@ EOL;
             </td>
         </tr>
 
-        <tr>
+        <tr {$hideit}>
             <td align="right" nowrap="true">
                 Domain
             </td>
@@ -199,10 +197,6 @@ EOL;
                 <div id="suggest_set_domain_{$window_name}" class="suggest"></div>
             </td>
         </tr>
-EOL;
-    }
-
-    $window['html'] .= <<<EOL
 
         <tr>
             <td align="right" nowrap="true">
@@ -437,9 +431,7 @@ function ws_save($window_name, $form='') {
     $response = new xajaxResponse();
     $js = '';
     // Validate input
-    if ($form['set_host'] == '' or
-        $form['set_domain'] == '' or
-        $form['set_type'] == '' or
+    if ($form['set_type'] == '' or
         /* Interface input: required only if adding a host */
         ($form['host'] == '.' and $form['set_ip'] == '')
        ) {

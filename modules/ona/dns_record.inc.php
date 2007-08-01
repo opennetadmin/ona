@@ -495,6 +495,21 @@ EOM
         ));
     }
 
+
+/* Modify logic
+
+
+1. find the dns record we are editing
+2. If it is an A, check that the name we are changing to does not already match an existing A/ip or CNAME
+3. if its a CNAME, check that it is not the same as any other records.
+
+
+
+*/
+
+
+
+
     //
     // Find the dns record we're modifying
     //

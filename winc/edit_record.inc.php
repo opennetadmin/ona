@@ -105,7 +105,6 @@ function ws_editor($window_name, $form='') {
     $window['title'] = "Add DNS Record";
     if ($dns_record['id']) {
         $window['title'] = "Edit DNS Record";
-        $editdisplay = "disabled='1'";
         $window['js'] .= "el('record_type_select').onchange('fake event');updatednsinfo('{$window_name}');";
         // If you are editing and there is no ttl set, use the one from the domain.
         if (!$dns_record['ttl']) {
@@ -165,7 +164,6 @@ EOL;
                         name="set_type"
                         alt="Record type"
                         class="edit"
-                        {$editdisplay}
                         onchange="var selectBox = el('record_type_select');
                                 el('info_{$window_name}').innerHTML = '';
                                 el('ptr_info_{$window_name}').innerHTML = '';

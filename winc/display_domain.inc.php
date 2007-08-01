@@ -158,7 +158,7 @@ EOL;
             </tr>
 
             <tr>
-                <td align="right" nowrap="true"><b>Expire</b>&nbsp;</td>
+                <td align="right" nowrap="true"><b>Expiry</b>&nbsp;</td>
                 <td class="padding" align="left">
                     {$record['expiry']}&nbsp;
                 </td>

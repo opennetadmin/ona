@@ -299,7 +299,7 @@ function ws_delete($window_name, $form='') {
     }
     else {
         // Delete the record
-        list($status, $rows) = db_delete_record($onadb, 'models', array('id' => $device_model['id']));
+        list($status, $rows) = db_delete_records($onadb, 'models', array('id' => $device_model['id']));
 
         if ($status or !$rows) {
             // If the module returned an error code display a popup warning
