@@ -145,7 +145,7 @@ EOM
         db_get_record(
             $onadb,
             'dns',
-            "domain_id = {$domain['id']} AND interface_id in (select id from interfaces where host_id = {$host['id']})"
+            "domain_id = {$domain['id']} AND type = 'NS' AND interface_id in (select id from interfaces where host_id = {$host['id']})"
         );
 
     // Auto add the NS record if there were none found already. the user can remove any NS records they dont want afterwards
@@ -275,7 +275,7 @@ EOM
         db_get_record(
             $onadb,
             'dns',
-            "domain_id = {$domain['id']} AND interface_id in (select id from interfaces where host_id = {$host['id']})"
+            "domain_id = {$domain['id']} AND type = 'NS' AND interface_id in (select id from interfaces where host_id = {$host['id']})"
         );
 
     // If "commit" is yes, delete the record
