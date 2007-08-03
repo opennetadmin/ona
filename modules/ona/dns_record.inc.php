@@ -498,12 +498,9 @@ EOM
 
 /* Modify logic
 
-
 1. find the dns record we are editing
 2. If it is an A, check that the name we are changing to does not already match an existing A/ip or CNAME
 3. if its a CNAME, check that it is not the same as any other records.
-
-
 
 */
 
@@ -517,11 +514,11 @@ EOM
 
     // FIXME: MP Fix this to use a find_dns_record function  ID only for now
     // Find the DNS record from $options['name']
-    list($status, $rows, $dns) = ona_get_dns_record(array('id' => $options['name']), '');
-    printmsg("DEBUG => dns_record_modify() DNS record: {$dns['name']}", 3);
-    if (!$dns['id']) {
-        printmsg("DEBUG => Unknown DNS record: {$options['name']}",3);
-        $self['error'] = "ERROR => Unknown DNS record: {$options['name']}";
+    list($status, $rows, $dns) = ona_find_dns_record($options['name']);
+    printmsg("DEBUG => dns_record_modify() DNS record: {$dns['fqdn']}", 3);
+    if ($rows > 1) {
+        printmsg("DEBUG => Found more than one DNS record for: {$options['name']}",3);
+        $self['error'] = "ERROR => Found more than one DNS record for: {$options['name']}";
         return(array(2, $self['error'] . "\n"));
     }
 
@@ -552,17 +549,17 @@ EOM
             return(array(5, $self['error'] . "\n"));
         }
         // Get the host & domain part
-        list($status, $rows, $tmp_host) = ona_find_host($options['set_name']);
+        list($status, $rows, $tmp_dns) = ona_find_dns_record($options['set_name']);
         // If the function above returned a host, and it's not the one we're editing, stop!
-        if ($tmp_host['id'] and $tmp_host['id'] != $host['id']) {
-            printmsg("DEBUG => Another host named {$tmp_host['fqdn']} already exists!",3);
-            $self['error'] = "ERROR => Another host named {$tmp_host['fqdn']} already exists!";
+        if ($tmp_dns['id'] and $tmp_dns['id'] != $dns['id']) {
+            printmsg("DEBUG => Another DNS record named {$tmp_dns['fqdn']} already exists!",3);
+            $self['error'] = "ERROR => Another DNS record named {$tmp_dns['fqdn']} already exists!";
             return(array(5, $self['error'] . "\n"));
         }
-        if($host['name'] != $tmp_host['name'])
-            $SET['name']      = $tmp_host['name'];
-        if($host['domain_id'] != $tmp_host['domain_id'])
-            $SET['domain_id'] = $tmp_host['domain_id'];
+        if($dns['name']      != $tmp_dns['name'])
+            $SET['name']      = $tmp_dns['name'];
+        if($dns['domain_id'] != $tmp_dns['domain_id'])
+            $SET['domain_id'] = $tmp_dns['domain_id'];
     }
 
 
@@ -600,19 +597,19 @@ EOM
         printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
 
         // Validate that the CNAME I'm adding doesnt match an existing A record.
-        list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'A'));
+        list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'],'type' => 'A'));
         if ($d_status or $d_rows) {
-            printmsg("ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} already exists!",3);
-            $self['error'] = "ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} already exists!";
+            printmsg("ERROR => Another DNS A record named {$phostname}.{$pdomain['fqdn']} already exists!",3);
+            $self['error'] = "ERROR => Another DNS A record named {$phostname}.{$pdomain['fqdn']} already exists!";
             return(array(5, $self['error'] . "\n"));
         }
 
 
         // Validate that there are no CNAMES already with this fqdn
-        list($c_status, $c_rows, $c_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'CNAME'));
+        list($c_status, $c_rows, $c_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'],'type' => 'CNAME'));
         if ($c_rows or $c_status) {
-            printmsg("ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!",3);
-            $self['error'] = "ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!";
+            printmsg("ERROR => Another DNS CNAME record named {$phostname}.{$pdomain['fqdn']} already exists!",3);
+            $self['error'] = "ERROR => Another DNS CNAME record named {$phostname}.{$pdomain['fqdn']} already exists!";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -684,13 +681,13 @@ EOM
     list($status, $rows, $new_record) = ona_get_dns_record(array('id' => $dns['id']));
 
     // Return the success notice
-    $self['error'] = "INFO => DNS record UPDATED:{$dns['id']}: {$new_dns['fqdn']}";
+    $self['error'] = "INFO => DNS record UPDATED:{$dns['id']}: {$new_record['fqdn']}";
 
     $log_msg = "INFO => DNS record UPDATED:{$dns['id']}: ";
-    $more="";
+    $more='';
     foreach(array_keys($dns) as $key) {
-        if($dns[$key] != $new_record[$key]) {
-            $log_msg .= "{$more}{$key}: {$dns[$key]} => {$new_record[$key]}";
+        if($dns['$key'] != $new_record['$key']) {
+            $log_msg .= "{$more}{$key}: {$dns['$key']} => {$new_record['$key']}";
             $more= "; ";
         }
     }

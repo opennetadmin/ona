@@ -1087,9 +1087,9 @@ function ona_get_host_record($array='', $order='') {
     list($status, $rows, $record) = ona_get_record($array, 'hosts', $order);
     list($status_dns, $rows_dns, $dns) = ona_get_dns_record(array('id' => $record['primary_dns_id']));
     $record['name'] = $dns['name'];
-    $record['fqdn'] = $record['name'] . '.' . $dns['fqdn'];
+    $record['fqdn'] = $dns['fqdn'];
     $record['domain_id'] = $dns['domain_id'];
-    $record['domain_fqdn'] = $dns['fqdn'];
+    $record['domain_fqdn'] = $dns['domain_fqdn'];
     return(array($status + $status_dns, $rows, $record));
 }
 
@@ -1120,10 +1120,12 @@ function ona_get_domain_record($array='', $order='') {
 function ona_get_dns_record($array='', $order='') {
     list($status, $rows, $record) = ona_get_record($array, 'dns', $order);
     if ($record['type'] == 'A') {
-        $record['fqdn'] = ona_build_domain_name($record['domain_id']);
+        $record['fqdn'] = $record['name'].'.'.ona_build_domain_name($record['domain_id']);
+        $record['domain_fqdn'] = ona_build_domain_name($record['domain_id']);
     }
-    if ($record['type'] == 'PTR') {
-        $record['fqdn'] = ona_build_domain_name($record['domain_id']);
+    if ($record['type'] == 'CNAME') {
+        $record['fqdn'] = $record['name'].'.'.ona_build_domain_name($record['domain_id']);
+        $record['domain_fqdn'] = ona_build_domain_name($record['domain_id']);
     }
     return(array($status, $rows, $record));
 }
@@ -1574,6 +1576,93 @@ function ona_find_domain($fqdn="") {
 
     return(array(0, 1, $domain));
 }
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: ona_find_dns_record (string $search, string $type)
+//
+//  $search = The hostname[.domain], or ID you want to find the domain record
+//          for.
+//  $type = The type of dns record you are looking for, A, CNAME, PTR, etc
+//  $int_id = The interface_id to use when searching for A records. helps limit to one record
+//
+//  Looks at $search, finds the best-matching dns record for it, and returns
+//  it.  If $search does not include a valid domain of any sort, we
+//  assume $search is a bare hostname, and return the dns record with
+//  the user's default domain.
+//
+//  Example: list($status, $rows, $dns) = ona_find_dns_record('myhost.mydomain.com');
+///////////////////////////////////////////////////////////////////////
+function ona_find_dns_record($search="",$type='',$int_id=0) {
+    global $conf, $self, $onadb;
+    printmsg("DEBUG => ona_find_dns_record({$search}) called", 3);
+    $type   = strtoupper($type);
+    $search = strtolower($search);
+
+    // By record ID?
+    if (is_numeric($search)) {
+        list($status, $rows, $dns) = ona_get_dns_record(array('id' => $search));
+        if ($rows) {
+            printmsg("DEBUG => ona_find_dns_record({$search}) called, found: {$dns['fqdn']}({$dns['type']})", 3);
+            return(array($status, $rows, $dns));
+        }
+    }
+
+
+    //
+    // It's an FQDN, do a bunch of stuff!
+    //
+
+    // Find the domain name piece of $search
+    list($status, $rows, $domain) = ona_find_domain($search);
+    printmsg("DEBUG => ona_find_domain({$search}) returned: {$domain['fqdn']}", 3);
+
+    // Now find what the host part of $search is
+    $hostname = str_replace(".{$domain['fqdn']}", '', $search);
+
+    // Setup the search array
+    $searcharray = array('domain_id' => $domain['id'], 'name' => $hostname);
+
+    // If an interface_id was passed, add it to the array
+    if ($int_id > 0) { $searcharray['interface_id'] = $int_id; }
+    // If a type was passed, add it to the array
+    if ($type) { $searcharray['type'] = $type; }
+
+    // Let's see if that hostname is valid or not in $domain['id']
+    list($status, $rows, $dns) = ona_get_dns_record($searcharray);
+
+    if ($rows) {
+        // Return good status, one row, and $dns array
+        printmsg("DEBUG => ona_find_dns_record({$search}) called, found: {$dns['fqdn']}({$dns['type']})", 3);
+        return(array(0, 1, $dns));
+    }
+
+    // Otherwise, build a fake dns record with only a few entries in it and return that
+    $dns = array(
+        'id'          => 0,
+        'name'        => $hostname,
+        'fqdn'        => "{$hostname}.{$domain['fqdn']}",
+        'domain_id'   => $domain['id'],
+        'domain_fqdn' => $domain['fqdn'],
+        'type'        => '',
+        'dns_id'      => 0
+    );
+
+    printmsg("DEBUG => ona_find_dns_record({$search}) called, Nothing found, returning fake entry: {$dns['fqdn']}({$dns['type']})", 3);
+    return(array(0, 1, $dns));
+}
+
+
+
 
 
 

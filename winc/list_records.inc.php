@@ -303,7 +303,7 @@ EOL;
                     >{$pointsto['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
-                    >{$pointsto['fqdn']}</a>.&nbsp;
+                    >{$pointsto['domain_fqdn']}</a>.&nbsp;
 EOL;
         }
 
@@ -317,7 +317,7 @@ EOL;
                     >{$cname['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
-                    >{$cname['fqdn']}</a>.&nbsp;
+                    >{$cname['domain_fqdn']}</a>.&nbsp;
 EOL;
         }
 
@@ -333,7 +333,7 @@ EOL;
                     >{$ns['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
-                    >{$ns['fqdn']}</a>.&nbsp;
+                    >{$ns['domain_fqdn']}</a>.&nbsp;
 EOL;
         }
 
