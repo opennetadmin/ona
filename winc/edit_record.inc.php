@@ -67,7 +67,8 @@ function ws_editor($window_name, $form='') {
     // Set up the types of records we can edit with this form
     //$record_types = array('A','CNAME','TXT','NS','MX','AAAA','SRV');
     // FIXME: MP cool idea here-- support the loc record and have a google map popup to search for the location then have it populate the coords from that.
-    $record_types = array('A','CNAME');
+    // FIXME: MP it would probably be much better to use ajax to pull back the right form content than all this other javascript crap.
+    $record_types = array('A','CNAME','MX','TXT');
     foreach (array_keys((array)$record_types) as $id) {
         $record_types[$id] = htmlentities($record_types[$id]);
         $selected = '';
@@ -84,7 +85,7 @@ function ws_editor($window_name, $form='') {
     // If its a CNAME, get the dns name for the A record it points to
     if ($dns_record['type'] == 'CNAME') {
         list($status, $rows, $cnamedata) = ona_get_dns_record(array('id' => $dns_record['dns_id']));
-        $dns_record['cnamedata'] = $cnamedata['name'].'.'.$cnamedata['fqdn'];
+        $dns_record['cnamedata'] = $cnamedata['fqdn'];
     }
 
     // If its an A record,check to se if it has a PTR associated with it
@@ -108,7 +109,6 @@ function ws_editor($window_name, $form='') {
         $window['js'] .= "el('record_type_select').onchange('fake event');updatednsinfo('{$window_name}');";
         // If you are editing and there is no ttl set, use the one from the domain.
         if (!$dns_record['ttl']) {
-            $dns_record['ttl'] = $domain['default_ttl'];
             $ttl_style = 'style="font-style: italic;" title="Using TTL from domain"';
         }
     }
@@ -169,7 +169,9 @@ EOL;
                                 el('ptr_info_{$window_name}').innerHTML = '';
                                 el('a_container').style.display     = (selectBox.value == 'A') ? '' : 'none';
                                 el('autoptr_container').style.display   = (selectBox.value == 'A') ? '' : 'none';
-                                el('cname_container').style.display = (selectBox.value == 'CNAME') ? '' : 'none';"
+                                el('mx_container').style.display   = (selectBox.value == 'MX') ? '' : 'none';
+                                el('txt_container').style.display   = (selectBox.value == 'TXT') ? '' : 'none';
+                                el('cname_container').style.display = (selectBox.value == 'MX' || selectBox.value == 'CNAME') ? '' : 'none';"
                     >{$record_type_list}</select>
                 </td>
             </tr>
@@ -289,6 +291,44 @@ EOL;
                         {$ptr_readonly}
                         onchange="updatednsinfo('{$window_name}');"
                     />{$hasptr_msg}
+                </td>
+            </tr>
+
+            <!-- TXT CONTAINER -->
+            <tr id="txt_container" style="display:none;">
+                <td align="right" nowrap="true">
+                    TXT value
+                </td>
+                <td class="padding" align="left" width="100%">
+                    <input
+                        id="set_txt_{$window_name}"
+                        name="set_txt"
+                        alt="TXT value"
+                        value="{$dns_record['txt']}"
+                        class="edit"
+                        type="text"
+                        size="25" maxlength="55"
+                        onblur="updatednsinfo('{$window_name}');"
+                    />
+                </td>
+            </tr>
+
+            <!-- MX CONTAINER -->
+            <tr id="mx_container" style="display:none;">
+                <td align="right" nowrap="true">
+                    MX Preference
+                </td>
+                <td class="padding" align="left" width="100%">
+                    <input
+                        id="set_mx_preference_{$window_name}"
+                        name="set_mx_preference"
+                        alt="MX preference"
+                        value="{$dns_record['mx_preference']}"
+                        class="edit"
+                        type="text"
+                        size="5" maxlength="5"
+                        onblur="updatednsinfo('{$window_name}');"
+                    />
                 </td>
             </tr>
 
@@ -480,7 +520,9 @@ function ws_save($window_name, $form='') {
         $form['addptr'] = $form['set_addptr'];
 
         // if this is a cname. yhen set the pointsto option
-        if ($form['set_type'] == 'CNAME') $form['pointsto'] = $form['set_pointsto'];
+        if ($form['set_type'] == 'CNAME' or $form['set_type'] == 'MX') $form['pointsto'] = $form['set_pointsto'];
+        if ($form['set_type'] == 'MX') $form['mx_preference'] = $form['set_mx_preference'];
+        if ($form['set_type'] == 'TXT') $form['txt'] = $form['set_txt'];
 
         // If there's no "refresh" javascript, add a command to view the new dns record
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['name']}\', \'display\')');";

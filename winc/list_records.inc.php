@@ -294,7 +294,7 @@ EOL;
             list($status, $rows, $pointsto) = ona_get_dns_record(array('id' => $record['dns_id']), '');
             // get the domain_id from the parent A record
             $record['domain_id'] = $pointsto['domain_id'];
-            // Flip the IP address 
+            // Flip the IP address
             $record['name'] = ip_mangle($record['ip_addr'],'flip').'.IN-ADDR.ARPA';
             $data = <<<EOL
                     <a title="Edit DNS A record"
@@ -337,7 +337,28 @@ EOL;
 EOL;
         }
 
-        // Get the domain name
+        // Process MX record
+        if ($record['type'] == 'MX') {
+            // show the preference value next to the type
+            $record['type'] = "{$record['type']} ({$record['mx_preference']})";
+            list($status, $rows, $ns) = ona_get_dns_record(array('id' => $record['dns_id']), '');
+            $data = <<<EOL
+                    <a title="Edit DNS A record"
+                       class="act"
+                       onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
+                    >{$ns['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
+                    >{$ns['domain_fqdn']}</a>.&nbsp;
+EOL;
+        }
+
+        // Process TXT record
+        if ($record['type'] == 'TXT') {
+            $data = $record['txt'];
+        }
+
+        // Get the domain name and domain ttl
         $ttl_style = 'title="Time-to-Live"';
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
         // Make record['domain'] have the right name in it
@@ -346,7 +367,7 @@ EOL;
         if ($record['type'] == 'NS')  { $record['domain'] = $domain['name'].'.'; }
         // if the ttl is blank, use the one in the domain (minimum)
         if ($record['ttl'] == 0) {
-            $record['ttl'] = $domain['minimum'];
+            $record['ttl'] = $domain['default_ttl'];
             $ttl_style = 'style="font-style: italic;" title="Using TTL from domain"';
         }
 
@@ -385,8 +406,9 @@ EOL;
 
                 <td class="list-row" align="left">
 EOL;
-
+        // Put the data in!
         $html .= $data;
+
         $html .= <<<EOL
                 </td>
 
@@ -428,7 +450,7 @@ EOL;
                        class="act"
                     ><img src="{$images}/silk/comment.png" border="0"></a>&nbsp;
 EOL;
-            } 
+            }
             // If it is a NS, adjust the comment to say you can only delete, not modify.
             else if ($record['type'] == 'NS') {
             $html .= <<<EOL
@@ -449,14 +471,12 @@ EOL;
             }
         }
 
-        if (auth('dns_record_del')) {
+        if (auth('dns_record_del') and $record['type'] != 'NS') {
             $html .= <<<EOL
 
                     <a title="Delete DNS record"
                        class="act"
-                       onClick="var doit=confirm('Are you sure you want to delete this DNS record?');
-                                if (doit == true)
-                                    xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}_list_record_{$record['id']}'), 'delete');"
+                       onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}_list_record_{$record['id']}'), 'delete');"
                     ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
         }
