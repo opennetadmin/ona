@@ -223,7 +223,7 @@ EOL;
 EOL;
 
     // Display an interface edit section if it's a new host or there were exactly one interface.
-    if (!$interfaces or $interfaces == 1) {
+    if (!$interfaces) {
         $window['js'] .= <<<EOL
 
         /* Setup the Quick Find for available IPs */

@@ -156,7 +156,7 @@ EOL;
                 </td></tr>
 
                 <tr>
-                    <td align="right" nowrap="true"><b>Device Model</b>&nbsp;</td>
+                    <td align="right" nowrap="true" title="Device type ID: {$device_type['id']}"><b>Device Type</b>&nbsp;</td>
                     <td class="padding" align="left" title="{$record['devicefull']}">{$record['device']}&nbsp;</td>
                 </tr>
 

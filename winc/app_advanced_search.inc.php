@@ -39,54 +39,10 @@ $window['js'] = <<<EOL
     suggest_setup('notes',    'suggest_notes');
     suggest_setup('ip_subnet', 'suggest_ip_subnet');
     suggest_setup('ip_subnet_thru',  'suggest_ip_subnet_thru');
- /*   suggest_setup('unit_number', 'suggest_unit_number');
-    suggest_setup('unit_number_subnet', 'suggest_unit_number_subnet');*/
     suggest_setup('subnet', 'suggest_subnet');
     el('host_search_form').onsubmit = function() { return false; };
     el('subnet_search_form').onsubmit = function() { return false; };
-    
-    /* Setup the Quick Find Unit icon */
-    var _button = el('qf_unit_{$window_name}');
-    _button.style.cursor = 'pointer';
-    _button.onclick = 
-        function(ev) {
-            if (!ev) ev = event;
-            /* Create the popup div */
-            wwTT(this, ev, 
-                 'id', 'tt_qf_unit_{$window_name}', 
-                 'type', 'static',
-                 'direction', 'south',
-                 'delay', 0,
-                 'styleClass', 'wwTT_qf',
-                 'javascript', 
-                 "xajax_window_submit('tooltips', '" + 
-                     "tooltip=>qf_unit," + 
-                     "id=>tt_qf_unit_{$window_name}," +
-                     "input_id=>unit_number');"
-            );
-        };
-/*
-    /* Setup the Quick Find Unit icon */
-    var _button = el('qf_unit_subnet_{$window_name}');
-    _button.style.cursor = 'pointer';
-    _button.onclick = 
-        function(ev) {
-            if (!ev) ev = event;
-            /* Create the popup div */
-            wwTT(this, ev, 
-                 'id', 'tt_qf_unit_{$window_name}', 
-                 'type', 'static',
-                 'direction', 'south',
-                 'delay', 0,
-                 'styleClass', 'wwTT_qf',
-                 'javascript', 
-                 "xajax_window_submit('tooltips', '" + 
-                     "tooltip=>qf_unit," + 
-                     "id=>tt_qf_unit_{$window_name}," +
-                     "input_id=>unit_number_subnet');"
-            );
-        };
-*/
+
 EOL;
 
 // Define the window's inner html
@@ -258,18 +214,7 @@ $window['html'] = <<<EOL
             <div id="suggest_ip_subnet_thru" class="suggest"></div>
         </td>
     </tr>
-    <!--
-    <tr>
-        <td align="right" class="asearch-line">
-            <u>U</u>nit number
-        </td>
-        <td align="left" class="asearch-line">
-            <input id="unit_number_subnet" class="edit" type="text" name="unit" size="8" accesskey="u" />
-            <span id="qf_unit_subnet_{$window_name}"><img src="{$images}/silk/find.png" border="0"/></span>
-            <div id="suggest_unit_number_subnet" class="suggest"></div>
-        </td>
-    </tr>
-    -->
+
     <tr>
         <td align="right" class="asearch-line">
             &nbsp;
@@ -281,7 +226,7 @@ $window['html'] = <<<EOL
     </tr>
 
     </table>
-    </form> 
+    </form>
 
 EOL;
 
@@ -301,7 +246,7 @@ function ws_more_host_options($window_name, $form='') {
     $js = '';
     
     // Build custom attribute list
-    // TODO: MP fix this crap for custom_attributes
+    // TODO: MP fix this for custom_attributes
     list($status, $rows, $records) = db_get_records($onadb, 'custom_attributes', 'id >= 1', 'custom_attribute_type_id');
     $classification_list = '<option value="">&nbsp;</option>\n';
     foreach ($records as $record) {

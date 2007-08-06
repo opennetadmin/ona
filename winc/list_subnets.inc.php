@@ -44,8 +44,6 @@ function ws_display_list($window_name, $form='') {
     $count = 0;
 
 
-     //   $js .= "alert('Where: " . str_replace("'", '"', $form['subnet_id']) . "');";
-
 
     //
     // *** ADVANCED SUBNET SEARCH ***
@@ -60,7 +58,6 @@ function ws_display_list($window_name, $form='') {
     if ($form['subnet_id']) {
         $where .= $and . "id = " . $form['subnet_id'];
         $and = " AND ";
-    //$js .= "alert('Where: " . str_replace("'", '"', $where) . "');";
     }
 
     // VLAN ID
@@ -88,8 +85,6 @@ function ws_display_list($window_name, $form='') {
         //$where .= $and . "name LIKE " . $form['subnetname'];
         $where .= $and . "name LIKE " . $onadb->qstr('%'.$form['subnetname'].'%');
         $and = " AND ";
-        $js .= "alert('Where: " . str_replace("'", '"', $where) . "');";
-
     }
 
     // IP ADDRESS
@@ -117,16 +112,6 @@ function ws_display_list($window_name, $form='') {
             }
        }
     }
-
-//     // UNIT NUMBER
-//     if ($form['unit']) {
-//         // Look up the Unit ID from the unit number
-//         list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_NUMBER' => $form['unit']));
-//         if ($rows) {
-//             $where .= $and . "UNIT_ID = " . $onadb->qstr($unit['UNIT_ID']);
-//             $and = " AND ";
-//         }
-//     }
 
 
     // Wild card .. if $where is still empty, add a 'ID > 0' to it so you see everything.
@@ -172,9 +157,6 @@ function ws_display_list($window_name, $form='') {
             );
     }
     $count = $rows;
-
- //   $js .= "alert('Where: " . str_replace("'", '"', $where) . "');";
- //   $js .= "alert('Where: " . $form['vlan'] . "');";
 
 
 
