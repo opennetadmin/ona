@@ -333,7 +333,7 @@ EOL;
                     value="{$interface['name']}"
                     class="edit"
                     type="text"
-                    size="17" maxlength="17"
+                    size="17" maxlength="255"
                 >
             </td>
         </tr>

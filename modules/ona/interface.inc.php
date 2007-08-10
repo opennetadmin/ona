@@ -382,13 +382,13 @@ EOM
             // Search for any existing interfaces on the same subnet
             list($status, $rows, $record) = ona_get_interface_record(array('subnet_id' => $subnet['id'],
                                                                             'host_id'    => $interface['host_id']));
-            if (($rows and $record['id'] != $interface['id']) or $rows > 1) {
-                printmsg("DEBUG => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").",3);
-                $self['error'] = "ERROR => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").";
-                return(array(10, $self['error'] . "\n" .
-                                  "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n" .
-                                  "INFO => Conflicting interface record ID: {$record['id']}\n"));
-            }
+//             if (($rows and $record['id'] != $interface['id']) or $rows > 1) {
+//                 printmsg("DEBUG => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").",3);
+//                 $self['error'] = "ERROR => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").";
+//                 return(array(10, $self['error'] . "\n" .
+//                                   "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n" .
+//                                   "INFO => Conflicting interface record ID: {$record['id']}\n"));
+//             }
 
             // Check to be sure we don't exceed maximum lengths
             if(strlen($options['name']) > 255) {

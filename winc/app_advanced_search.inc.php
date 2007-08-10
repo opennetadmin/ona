@@ -78,7 +78,7 @@ $window['html'] = <<<EOL
             <u>H</u>ostname
         </td>
         <td align="left" class="asearch-line">
-            <input id="hostname" name="hostname" type="text" class="edit" size="17" accesskey="h" />
+            <input id="hostname" name="hostname" type="text" class="edit" size="35" accesskey="h" />
             <div id="suggest_hostname" class="suggest"></div>
         </td>
     </tr>
@@ -88,7 +88,7 @@ $window['html'] = <<<EOL
             Subdomain (<u>z</u>one)
         </td>
         <td align="left" class="asearch-line">
-            <input id="domain" name="domain" type="text" class="edit" size="17" accesskey="z" />
+            <input id="domain" name="domain" type="text" class="edit" size="35" accesskey="z" />
             <div id="suggest_domain" class="suggest"></div>
         </td>
     </tr>
