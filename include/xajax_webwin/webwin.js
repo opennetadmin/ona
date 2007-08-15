@@ -126,10 +126,6 @@ function initialize_window(el_name) {
     _el.className        = 'window';
     _el.style.zIndex     = window_default_zindex;
     
-    // FIXME: This should be removed someday (year) when Firefox/Mozilla no longer have this bug
-    // Bug workaround: "position fixed" below is a workaround for this bug: https://bugzilla.mozilla.org/show_bug.cgi?id=167801
-    if (navigator.userAgent.indexOf('Gecko/') != -1)
-        _el.style.position = 'fixed';
     
     // The "window" will have some position defined.. either by drag.js
     // or initialize_window(), so we now position the box where it belongs.

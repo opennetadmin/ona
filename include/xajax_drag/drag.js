@@ -215,10 +215,6 @@ function dragGo(event) {
 
 function dragStop(event) {
     
-    // Bug workaround: "position fixed" below is a workaround for this bug: https://bugzilla.mozilla.org/show_bug.cgi?id=167801
-    if (browser.isNS)
-        if (dragObj.elNode.className == 'window')
-            dragObj.elNode.style.position = 'fixed';
     
     // Update element's z-index
     dragObj.elNode.style.zIndex = dragObj.zIndex;
@@ -272,7 +268,7 @@ function dragStop(event) {
         document.removeEventListener("mouseup",   dragStop, true);
     }
     
-    // Brandon: Modification for IPDB: We want to save the window's position in the PHP session
+    // Brandon: We want to save the window's position in the PHP session
     // after it's been moved, so here we do an xajax call if it's available.
     if (dragObj.options.savePosition == 1)
         xajax_window_save_position(dragObj.elNode.id, window_position[dragObj.elNode.id + '_x'], window_position[dragObj.elNode.id + '_y']);
