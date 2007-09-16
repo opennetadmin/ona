@@ -561,6 +561,8 @@ Modify a DNS record
     set_ttl=NUMBER              change the TTL value, 0 = use domains TTL value
     set_pointsto=NAME[.DOMAIN]  change where a CNAME points
     set_notes=NOTES             change the textual notes
+    set_mx_preference=NUMBER    change the MX record preference value
+    set_txt=STRING              change the value of the TXT record
 
   Note:
     * You are not allowed to change the type of the DNS record, to do that
@@ -759,6 +761,8 @@ EOM
     $SET['ebegin'] = date('Y-m-j G:i:s');
 
     if (array_key_exists('set_mx_preference', $options)) $SET['mx_preference'] = $options['set_mx_preference'];
+
+    if (array_key_exists('set_txt', $options)) $SET['txt'] = $options['set_txt'];
 
     // If it is an A record and they have specified to auto add the PTR record for it.
     if ($options['set_addptr'] and $options['set_type'] == 'A') {

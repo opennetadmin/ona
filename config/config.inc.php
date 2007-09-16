@@ -11,7 +11,8 @@ $base;
 $include;
 
 // Used in URL links
-$baseURL=str_replace('/index.php', '',$_SERVER['REQUEST_URI']); $baseURL = rtrim($baseURL, '/');
+//$baseURL=preg_replace('/index\.php.*/', '',$_SERVER['REQUEST_URI']); $baseURL=preg_replace('/\?.*/', '',$_SERVER['REQUEST_URI']); $baseURL = rtrim($baseURL, '/');
+$baseURL=dirname($_SERVER['SCRIPT_NAME']);
 $images = "{$baseURL}/images";
 
 // help URL location

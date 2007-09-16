@@ -335,7 +335,7 @@ Deletes a DNS domain from the database
   Synopsis: domain_del [KEY=VALUE] ...
 
   Required:
-    domain=NAME or ID            name or ID of the domain to delete
+    domain=NAME or ID       name or ID of the domain to delete
 
   Optional:
     commit=[Y|N]            commit db transaction (no)
@@ -411,14 +411,13 @@ EOM
 //        }
 
         // Delete actual domain
-        list($status, $rows) = db_delete_record($onadb, 'domains', array('id' => $entry['id']));
+        list($status, $rows) = db_delete_records($onadb, 'domains', array('id' => $entry['id']));
         if ($status) {
             $self['error'] = "ERROR => domain_del() SQL Query failed: {$self['error']}";
             printmsg($self['error'],0);
             return(array(9, $self['error'] . "\n"));
         }
 
-    // FIXME: if its the last entry on that server, remove the server_b record
 
 
 

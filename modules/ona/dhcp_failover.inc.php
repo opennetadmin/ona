@@ -298,7 +298,7 @@ EOM
     printmsg("DEBUG => DHCP failover group selected: {$entry['id']}", 3);
 
 
-    // Display an error if hosts are using this zone
+    // Display an error if pools are using this zone
     list($status, $rows, $pool) = db_get_record($onadb, 'dhcp_pools', array('id' => $entry['id']));
     if ($rows) {
         printmsg("DEBUG => DHCP failover group ({$entry['id']}) can't be deleted, it is in use on 1 or more pools!",3);
@@ -306,8 +306,8 @@ EOM
         return(array(5, $self['error'] . "\n"));
     }
 
-    list($pri_host, $tmp) = ona_find_host($entry['primary_server_id']);
-    list($sec_host, $tmp) = ona_find_host($entry['secondary_server_id']);
+    list($status, $rows, $pri_host) = ona_find_host($entry['primary_server_id']);
+    list($status, $rows, $sec_host) = ona_find_host($entry['secondary_server_id']);
 
 
 
@@ -323,15 +323,12 @@ EOM
 
 
         // Delete actual zone
-        list($status, $rows) = db_delete_record($onadb, 'dhcp_failover_groups', array('id' => $entry['id']));
+        list($status, $rows) = db_delete_records($onadb, 'dhcp_failover_groups', array('id' => $entry['id']));
         if ($status) {
             $self['error'] = "ERROR => dhcp_failover_group_del() SQL Query failed: {$self['error']}";
             printmsg($self['error'],0);
             return(array(9, $self['error'] . "\n"));
         }
-
-    // FIXME: if its the last entry on that server, remove the server_b record
-
 
 
         // Return the success notice

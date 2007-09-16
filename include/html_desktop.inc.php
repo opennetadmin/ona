@@ -18,7 +18,7 @@ list ($status, $interface_count, $records)  = db_get_records($onadb, 'interfaces
 list ($status, $domain_count, $records)     = db_get_records($onadb, 'domains', $where, "", 0);
 list ($status, $subnet_count, $records)     = db_get_records($onadb, 'subnets', $where, "", 0);
 list ($status, $pool_count, $records)       = db_get_records($onadb, 'dhcp_pools', $where, "", 0);
-//   list ($status, $host_count, $records) = db_get_records($onadb, 'hosts', $where, "", 0);
+list ($status, $block_count, $records)      = db_get_records($onadb, 'blocks', $where, "", 0);
 
 
 // The following checks with the opennetadmin server to see what the most current version is.
@@ -119,19 +119,12 @@ print <<<EOL
                            class="edit"
                            style="width: 150px;"
                            type="text"
-                           value=""
+                           value="Quick Search..."
                            name="q"
                            maxlength="100"
-                           onFocus="el('qsearch_input_overlay').style.display = 'none';"
+                           onFocus="this.select();"
                            onMouseOver="wwTT(this, event, 'content', 'Quick Search...', 'lifetime', '3000');"
                     >
-                    <div id="qsearch_input_overlay"
-                         style="position: fixed;
-                                color: #CACACA;
-                                cursor: text;
-                                display: inline;"
-                         onClick="this.style.display = 'none'; el('qsearch').focus();"
-                    >Quick search...</div>
                     <div id="suggest_qsearch" class="suggest"></div>
                     <input type="image"
                            src="{$images}/silk/bullet_go.png"
@@ -222,6 +215,7 @@ print <<<EOL
                     <tr><td>DNS Records</td><td>{$dns_count}</td>
                     <tr><td>DNS Domains</td><td>{$domain_count}</td>
                     <tr><td>DHCP Pools</td><td>{$pool_count}</td>
+                    <tr><td>Blocks</td><td>{$block_count}</td>
                 </table>
 
             <!-- END OF FIRST COLUMN OF SMALL BOXES -->
@@ -232,13 +226,14 @@ print <<<EOL
 
                 If you are wondering where to start,<br>
                 try one of these tasks:<br>
-                <a title="Advanced search" class="act"
-                       onClick="toggle_window('app_advanced_search');"
-                    ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0" /></a>&nbsp;
-                <a title="Advanced search"
+                <a title="Add DNS domain"
                 class="act"
-                onClick="toggle_window('app_advanced_search');"
-                >Perform a search</a>&nbsp;
+                onClick="xajax_window_submit('edit_domain', ' ', 'editor');"
+                ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
+                <a title="Add DNS domain"
+                class="act"
+                onClick="xajax_window_submit('edit_domain', ' ', 'editor');"
+                >Add a DNS domain</a>&nbsp;
                 <br>
                 <a title="Add subnet"
                 class="act"
@@ -257,6 +252,15 @@ print <<<EOL
                 class="act"
                 onClick="xajax_window_submit('edit_host', ' ', 'editor');"
                 >Add a new host</a>&nbsp;
+                <br>
+                <a title="Advanced search" class="act"
+                       onClick="toggle_window('app_advanced_search');"
+                    ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0" /></a>&nbsp;
+                <a title="Advanced search"
+                class="act"
+                onClick="toggle_window('app_advanced_search');"
+                >Perform a search</a>&nbsp;
+
             <!-- END OF SECOND COLUMN OF SMALL BOXES -->
             </td>
 
@@ -268,8 +272,6 @@ print <<<EOL
                 <li>If you need further assistance, look for the <img src='{$images}/silk/help.png'> icon<br>
                 in the title bar of windows.<br></li>
                 <li>You can also try the main help index located <a href='{$_ENV['help_url']}'>here</a><br></li>
-
-                Here is a "tip" ??????<br><br><br>
                 </ul>
             </td>
             <!-- END OF THIRD COLUMN OF SMALL BOXES -->
@@ -377,4 +379,15 @@ print <<<EOL
 </body>
 </html>
 EOL;
+
+// Process any search that was passed
+if ($search) {
+    print <<<EOL
+<script type="text/javascript"><!--
+    el('qsearch').value = '{$search}';
+    xajax_window_submit('search_results', xajax.getFormValues('qsearch_form'));
+--></script>
+EOL;
+}
+
 ?>
