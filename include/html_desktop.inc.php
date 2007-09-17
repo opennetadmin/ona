@@ -291,12 +291,6 @@ print <<<EOL
     /* Setup the quick search */
     suggest_setup('qsearch', 'suggest_qsearch');
 
-    /* Position the quick serach overlay */
-    var my_top  = calcOffset(el('qsearch'), 'offsetTop');
-    var my_left  = calcOffset(el('qsearch'), 'offsetLeft');
-    el('qsearch_input_overlay').style.top    = my_top  + 3 + 'px';
-    el('qsearch_input_overlay').style.left   = my_left + 6 + 'px';
-
     /* Code to auto-populate the "Task Bar" once a second */
     function update_task_bar(_parent, _bar) {
         var nodes, html, icon_active, icon_inactive, update;
