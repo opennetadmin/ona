@@ -106,6 +106,13 @@ a:hover      { cursor: pointer; text-decoration: underline; }
     font-family: {$style['font-family']};
 }
 
+// color for the background of the version check box
+.version_check_fail {
+    background-color: #FFDDEE;
+}
+.version_check_unknown {
+    background-color: #FFFFCC;
+}
 
 /* ---------------- forms ------------------------ */
 

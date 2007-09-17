@@ -113,7 +113,7 @@ EOL;
     // start with a "history" bar at the top.
     $window['html'] .= <<<EOL
 
-    <div id="{$window_name}_history" style="font-size: smaller; background-color: #EDEEFF;">
+    <div id="{$window_name}_history" style="font-size: smaller; background-color: #EDEEFF;white-space: nowrap;">
 
 EOL;
     $window['html'] .= ws_rewrite_history($window_name, ' ', 1);

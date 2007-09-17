@@ -793,6 +793,18 @@ EOM
             printmsg($self['error'], 0);
             return(array(8, $self['error'] . "\n"));
         }
+
+        // If the interface id has changed, make sure any child records are updated
+        if ($SET['interface_id']) {
+            list($status, $rows) = db_update_record($onadb, 'dns', array('dns_id' => $dns['id']), array('interface_id' => $SET['interface_id']));
+            if ($status or !$rows) {
+                $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record: " . $self['error'];
+                printmsg($self['error'], 0);
+                return(array(8, $self['error'] . "\n"));
+            }
+        }
+
+
     }
 
     // Get the host record after updating (logging)

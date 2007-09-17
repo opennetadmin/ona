@@ -5,9 +5,6 @@ header("Cache-control: private");
 
 $year = date('Y');
 
-
-
-
 // Set up a generic where clause
 $where = 'id > 0';
 
@@ -42,7 +39,9 @@ if ($conf['version'] == $onaver) {
     $versit = "<img src='{$images}/silk/accept.png'> You are on the most current version! ({$onaver})";
 }
 else {
-    $versit = "<div style='background-color: #ffddee;'><img src='{$images}/silk/exclamation.png'> You are NOT on the most current version<br>Your version = {$conf['version']}<br>Latest version = {$onaver}</div>";
+    $sty='fail';
+    if ($onaver == "Unable to determine") $sty='_unknown';
+    $versit = "<div class='version_check{$sty}'><img src='{$images}/silk/exclamation.png'> You are NOT on the most current version<br>Your version = {$conf['version']}<br>Latest version = {$onaver}</div>";
 }
 
 
@@ -119,11 +118,11 @@ print <<<EOL
                            class="edit"
                            style="width: 150px;"
                            type="text"
+                           title="Quick Search for IP, MAC, DNS"
                            value="Quick Search..."
                            name="q"
                            maxlength="100"
                            onFocus="this.select();"
-                           onMouseOver="wwTT(this, event, 'content', 'Quick Search...', 'lifetime', '3000');"
                     >
                     <div id="suggest_qsearch" class="suggest"></div>
                     <input type="image"
