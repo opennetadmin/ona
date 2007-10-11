@@ -19,6 +19,92 @@
 
 
 
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Used in display_ pages to load a workspace plugin module and wrap it
+// in a common looking div.
+//
+// Returns a three part list:
+//    list()
+//////////////////////////////////////////////////////////////////////////////
+function workspace_plugin_loader($modulename, $record=array()) {
+    global $conf, $self, $base, $images, $color, $style;
+    $modhtml = '';
+    $ws_plugin_dir = "{$base}/workspace_plugins";
+
+    //Default the module title
+    $conf[$modulename]['Title'] = $modulename;
+
+    // Load the modules contents from the modules directory.
+    // Check for an installed module first. if not then use a builtin one
+    if (is_dir("{$ws_plugin_dir}/{$modulename}")) {
+        $mod_main="{$ws_plugin_dir}/{$modulename}/main.inc.php";
+        $mod_conf="{$ws_plugin_dir}/{$modulename}/config.inc.php";
+        if (file_exists($mod_conf)) { require_once($mod_conf); }
+    }
+    else if (is_dir("{$ws_plugin_dir}/builtin/{$modulename}")) {
+        $mod_main="{$ws_plugin_dir}/builtin/{$modulename}/main.inc.php";
+        $mod_conf="{$ws_plugin_dir}/builtin/{$modulename}/config.inc.php";
+        if (file_exists($mod_conf)) { require_once($mod_conf); }
+    }
+    else {
+        $mod_main="{$base}/include/unknown_module_msg.inc.php";
+    }
+
+
+    // Create a standard div container for the module
+    $modhtml .= <<<EOL
+            <!-- {$modulename} start -->
+            <div style="margin-bottom: 8px;">
+                <div nowrap="true" style="{$style['label_box']}">
+                    <span id="{$modulename}_title">{$conf[$modulename]['Title']}</span>
+                    <img src="{$images}/silk/bullet_arrow_down.png" border="0"
+                            style="margin-left: -6px; margin-right: -4px;"
+                            title="Min/Max"
+                            onclick="if (el('{$modulename}_content').style.display=='none') { el('{$modulename}_content').style.display=''; }
+                                    else { el('{$modulename}_content').style.display='none'; }"
+                    />
+                </div>
+                <div id="{$modulename}_content">
+EOL;
+
+    // FIXME: MP put some sort of loading icon here.
+
+    // Dislay the modules contents from the modules directory.
+    include_once($mod_main);
+
+    // Close out the modules div container
+    $modhtml .= <<<EOL
+                </div>
+            </div>
+{$titlehtml}
+            <!-- {$modulename} end -->
+EOL;
+
+    $modjs="el('{$modulename}_title').innerHTML='asdfasdfadsf';";
+
+    return(array($modhtml,$modjs));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 // Calculates the percentage of a subnet that is in "use".
 // Returns a three part list:

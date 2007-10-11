@@ -102,7 +102,7 @@ $window['js'] .= <<<EOL
     /* Make the content peice scroll */
     _el = el('{$window_name}_content');
     _el.style.width  = my_width  + 'px';
-    _el.style.height = (my_height - el('{$window_name}_title').offsetHeight - el('{$window_name}_history').offsetHeight) + 'px';
+    _el.style.height = (my_height - el('{$window_name}_title').offsetHeight - 1 ) + 'px';
     _el.style.overflow = 'auto';
 
     {$javascript}
@@ -111,12 +111,12 @@ EOL;
 
     // Define the window's inner html -
     // start with a "history" bar at the top.
-    $window['html'] .= <<<EOL
+//    $window['html'] .= <<<EOL
 
-    <div id="{$window_name}_history" style="font-size: smaller; background-color: #EDEEFF;white-space: nowrap;">
+//    <div id="{$window_name}_history" style="font-size: smaller; background-color: #EDEEFF;white-space: nowrap;">
 
-EOL;
-    $window['html'] .= ws_rewrite_history($window_name, ' ', 1);
+//EOL;
+//    $window['html'] .= ws_rewrite_history($window_name, ' ', 1);
     $window['html'] .= <<<EOL
 
     </div>
@@ -158,7 +158,7 @@ function ws_rewrite_history($window_name, $null='', $return_html=0) {
 
     $html = $js = '';
 
-    $html .= "Trace: ";
+    $html .= "&nbsp;Trace: ";
     $and = '';
     foreach($_SESSION['ona'][$window_name]['history'] as $history) {
         $history['title'] = htmlentities($history['title'], ENT_QUOTES);
@@ -185,7 +185,7 @@ EOL;
     $response = new xajaxResponse();
     $response->addAssign("work_space_title_help", "innerHTML", $helplink);
     $response->addAssign("work_space_title", "innerHTML", $new_title);
-    $response->addAssign("work_space_history", "innerHTML", $html);
+    $response->addAssign("trace_history", "innerHTML", $html);
     return($response->getXML());
 }
 

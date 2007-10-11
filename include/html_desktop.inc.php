@@ -122,7 +122,7 @@ print <<<EOL
                            value="Quick Search..."
                            name="q"
                            maxlength="100"
-                           onFocus="this.select();"
+                           onFocus="this.value='';"
                     >
                     <div id="suggest_qsearch" class="suggest"></div>
                     <input type="image"
@@ -193,8 +193,10 @@ print <<<EOL
         </div>
     </div>
 
+    <div id="trace_history" style="font-size: smaller; border-style: solid; border-width: 0px 1px 1px 1px; background-color: #EDEEFF;white-space: nowrap;">&nbsp;Trace:</div>
+
     <!-- Workspace div -->
-    <div id="content_table" style="height: 92%;" class="theWholeBananna">
+    <div id="content_table" style="height: 90%;" class="theWholeBananna">
 
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>&nbsp;

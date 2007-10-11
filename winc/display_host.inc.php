@@ -9,7 +9,7 @@
 //   Displays a host record and all associated info in the work_space div.
 //////////////////////////////////////////////////////////////////////////////
 function ws_display($window_name, $form='') {
-    global $conf, $self, $onadb;
+    global $conf, $self, $onadb, $base;
     global $images, $color, $style, $msgtype;
     $html = '';
     $js = '';
@@ -552,50 +552,13 @@ EOL;
 EOL;
 
 
-
-
-
-    // HOST ACTION LIST
-    $html .= <<<EOL
-            <!-- HOST ACTIONS LIST -->
-            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-                <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">
-                    Host actions
-                </td></tr>
-EOL;
-    // Build hostaction list from the $conf['hostaction'] array
-    foreach ($conf['hostaction'] as $hostaction=>$hval) {
-        // Use the title if there is one, otherwise just use the arrayname
-        $hval['title']= ($hval['title']) ? $hval['title'] : $hostaction;
-        // Substitute %fqdn and %ip
-        $hval['url'] = str_replace('%fqdn', $record['fqdn'], $hval['url']);
-        $hval['url'] = str_replace('%ip', $record['ip_address'], $hval['url']);
-
-        // If the URL has data in it, print.
-        // TODO: MDP, maybe offer an $hval['icon'] option to use a different icon specified in the $conf['hostaction']['Name']['icon'] variable
-        if ($hval['url']) {
-        $html .= <<<EOL
-            <tr>
-                <td align="left" nowrap="true">
-                    <a title="{$hval['title']}"
-                        class="act"
-                        href="{$hval['url']}"
-                    ><img src="{$images}/silk/lightning_go.png" border="0">{$hostaction}</a>&nbsp;
-                </td>
-            </tr>
-
-EOL;
-        }
-    }
-
-
-    $html .= <<<EOL
-            </table>
-EOL;
-    // END HOST ACTION LIST
-
-
-
+    // Display the host_action workspace_plugin
+    list($modhtml,$modjs) = workspace_plugin_loader('host_actions');
+    $html .= $modhtml; 
+$js .= $modjs;
+    list($modhtml,$modjs) = workspace_plugin_loader('host_detail',$record);
+    $html .= $modhtml; 
+$js .= $modjs;
 
     // START MESSAGES BOX
     // $tablename is a reference directly to the table that contains the item
