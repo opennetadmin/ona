@@ -13,7 +13,7 @@ foreach ($conf[$modulename] as $hostaction=>$hval) {
     // If the URL has data in it, print.
     // TODO: MDP, maybe offer an $hval['icon'] option to use a different icon specified in the $conf['hostaction']['Name']['icon'] variable
     if ($hval['url']) {
-    $modhtml .= <<<EOL
+    $modbodyhtml .= <<<EOL
             <span>
                 <a title="{$hval['title']}"
                     class="act"

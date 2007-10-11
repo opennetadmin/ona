@@ -33,25 +33,29 @@
 function workspace_plugin_loader($modulename, $record=array()) {
     global $conf, $self, $base, $images, $color, $style;
     $modhtml = '';
+    $modbodyhtml = '';
     $ws_plugin_dir = "{$base}/workspace_plugins";
 
     //Default the module title
-    $conf[$modulename]['Title'] = $modulename;
+    $titlehtml = $modulename;
 
     // Load the modules contents from the modules directory.
     // Check for an installed module first. if not then use a builtin one
     if (is_dir("{$ws_plugin_dir}/{$modulename}")) {
-        $mod_main="{$ws_plugin_dir}/{$modulename}/main.inc.php";
         $mod_conf="{$ws_plugin_dir}/{$modulename}/config.inc.php";
         if (file_exists($mod_conf)) { require_once($mod_conf); }
+        $mod_main="{$ws_plugin_dir}/{$modulename}/main.inc.php";
+        if (file_exists($mod_main)) { require_once($mod_main); }
     }
     else if (is_dir("{$ws_plugin_dir}/builtin/{$modulename}")) {
-        $mod_main="{$ws_plugin_dir}/builtin/{$modulename}/main.inc.php";
         $mod_conf="{$ws_plugin_dir}/builtin/{$modulename}/config.inc.php";
         if (file_exists($mod_conf)) { require_once($mod_conf); }
+        $mod_main="{$ws_plugin_dir}/builtin/{$modulename}/main.inc.php";
+        if (file_exists($mod_main)) { require_once($mod_main); }
     }
     else {
         $mod_main="{$base}/include/unknown_module_msg.inc.php";
+        if (file_exists($mod_main)) { require_once($mod_main); }
     }
 
 
@@ -60,7 +64,7 @@ function workspace_plugin_loader($modulename, $record=array()) {
             <!-- {$modulename} start -->
             <div style="margin-bottom: 8px;">
                 <div nowrap="true" style="{$style['label_box']}">
-                    <span id="{$modulename}_title">{$conf[$modulename]['Title']}</span>
+                    <span id="{$modulename}_title">{$titlehtml}</span>
                     <img src="{$images}/silk/bullet_arrow_down.png" border="0"
                             style="margin-left: -6px; margin-right: -4px;"
                             title="Min/Max"
@@ -74,19 +78,17 @@ EOL;
     // FIXME: MP put some sort of loading icon here.
 
     // Dislay the modules contents from the modules directory.
-    include_once($mod_main);
+    $modhtml .= $modbodyhtml;
 
     // Close out the modules div container
     $modhtml .= <<<EOL
                 </div>
             </div>
-{$titlehtml}
+
             <!-- {$modulename} end -->
 EOL;
 
-    $modjs="el('{$modulename}_title').innerHTML='asdfasdfadsf';";
-
-    return(array($modhtml,$modjs));
+    return($modhtml);
 }
 
 

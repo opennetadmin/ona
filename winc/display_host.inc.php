@@ -553,12 +553,12 @@ EOL;
 
 
     // Display the host_action workspace_plugin
-    list($modhtml,$modjs) = workspace_plugin_loader('host_actions');
-    $html .= $modhtml; 
-$js .= $modjs;
-    list($modhtml,$modjs) = workspace_plugin_loader('host_detail',$record);
-    $html .= $modhtml; 
-$js .= $modjs;
+    $html .= workspace_plugin_loader('host_actions');
+    //$html .= workspace_plugin_loader('blah',$record);
+    $html .= workspace_plugin_loader('host_detail',$record);
+    $html .= workspace_plugin_loader('blah',$record);
+    //$html .= workspace_plugin_loader('host_detail',$record);
+
 
     // START MESSAGES BOX
     // $tablename is a reference directly to the table that contains the item

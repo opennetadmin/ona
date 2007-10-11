@@ -30,9 +30,9 @@ EOL;
 
 
 
+$modbodyhtml = '';
 
-
-$modhtml .= <<<EOL
+$modbodyhtml .= <<<EOL
                     <form id="form_host_{$record['id']}"
                         ><input type="hidden" name="host_id" value="{$record['id']}"
                         ><input type="hidden" name="js" value="{$refresh}"
