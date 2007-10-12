@@ -1,9 +1,11 @@
 <?
 
+$titlehtml = 'Host Actions';
+
 // Build hostaction list from the $conf['hostaction'] array
 foreach ($conf[$modulename] as $hostaction=>$hval) {
     // Skip the module title entry
-    if ( $hval == 'Host Actions' ) { continue; }
+    //if ( $hval == 'Host Actions' ) { continue; }
     // Use the title if there is one, otherwise just use the arrayname
     $hval['title'] = ($hval['title']) ? $hval['title'] : $hostaction;
     // Substitute %fqdn and %ip

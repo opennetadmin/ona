@@ -20,6 +20,7 @@ if (auth('host_del',$debug_val)) {
                 ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
 }
+
 $titlehtml .= <<<EOL
                 &nbsp;{$record['name']}.<a title="View domain. ID: {$record['domain_id']}"
                                                 class="domain"
@@ -33,32 +34,27 @@ EOL;
 $modbodyhtml = '';
 
 $modbodyhtml .= <<<EOL
-                    <form id="form_host_{$record['id']}"
-                        ><input type="hidden" name="host_id" value="{$record['id']}"
-                        ><input type="hidden" name="js" value="{$refresh}"
-                    ></form>
+            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
+                <tr>
+                    <td align="right" nowrap="true" title="Device type ID: {$device_type['id']}"><b>Device Type</b>&nbsp;</td>
+                    <td nowrap="true" class="padding" align="left" title="{$record['devicefull']}">{$record['device']}</td>
+                </tr>
 
+                <tr>
+                    <td align="right" {$notes_valign} nowrap="true"><b>Notes</b>&nbsp;</td>
+                    <td nowrap="true" class="padding" align="left" {$notes_width}>{$record['notes']}</td>
+                </tr>
 
-                <div>
-                    <span align="right" nowrap="true" title="Device type ID: {$device_type['id']}"><b>Device Type</b>&nbsp;</span>
-                    <span class="padding" align="left" title="{$record['devicefull']}">{$record['device']}</span><br>
-                </div>
+                <tr>
+                    <td align="right" nowrap="true"><b>Serial Number</b>&nbsp;</td>
+                    <td nowrap="true" class="padding" align="left">{$record['serial_number']}</td>
+                </tr>
 
-                <div>
-                    <span align="right" {$notes_valign} nowrap="true"><b>Notes</b>&nbsp;</span>
-                    <span class="padding" align="left" {$notes_width}>{$record['notes']}</span><br>
-                </div>
-
-                <div>
-                    <span align="right" nowrap="true"><b>Serial Number</b>&nbsp;</span>
-                    <span class="padding" align="left">{$record['serial_number']}</span><br>
-                </div>
-
-                <div>
-                    <span align="right" nowrap="true"><b>Asset Tag</b>&nbsp;</td>
-                    <span class="padding" align="left">{$record['asset_tag']}</span><br>
-                </div>
-
+                <tr>
+                    <td align="right" nowrap="true"><b>Asset Tag</b>&nbsp;</td>
+                    <td nowrap="true" class="padding" align="left">{$record['asset_tag']}</td>
+                </tr>
+            </table>
 EOL;
 
 ?>

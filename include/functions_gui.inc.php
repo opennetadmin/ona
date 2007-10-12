@@ -64,13 +64,14 @@ function workspace_plugin_loader($modulename, $record=array()) {
             <!-- {$modulename} start -->
             <div style="margin-bottom: 8px;">
                 <div nowrap="true" style="{$style['label_box']}">
-                    <span id="{$modulename}_title">{$titlehtml}</span>
-                    <img src="{$images}/silk/bullet_arrow_down.png" border="0"
-                            style="margin-left: -6px; margin-right: -4px;"
-                            title="Min/Max"
-                            onclick="if (el('{$modulename}_content').style.display=='none') { el('{$modulename}_content').style.display=''; }
-                                    else { el('{$modulename}_content').style.display='none'; }"
-                    />
+                    <div style="float: clear;" id="{$modulename}_title">{$titlehtml}</div>
+                     <div style="float: right; style="border: 1px solid; text-align: right;"
+                          id="{$modulename}_dropdown"
+                          title="Min/Max"
+                          onclick="if (el('{$modulename}_content').style.display=='none') { el('{$modulename}_content').style.display=''; el('{$modulename}_dropdown').innerHTML='-'; }
+                                   else { el('{$modulename}_content').style.display='none'; el('{$modulename}_dropdown').innerHTML='+';}"
+
+                    >-</div>
                 </div>
                 <div id="{$modulename}_content">
 EOL;
