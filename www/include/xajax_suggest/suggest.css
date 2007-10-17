@@ -1,0 +1,22 @@
+
+
+.suggest {
+    display: none;
+    position: absolute;
+    z-index: 4;
+    background-color: #fff;
+    border: 1px solid #9ac;
+}
+
+.suggest div {
+    display: block;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 0 2px;
+}
+
+.suggest div.hovered {
+    color: #fff;
+    background-color: #9ac;
+}
