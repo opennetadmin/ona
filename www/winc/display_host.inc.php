@@ -113,6 +113,11 @@ EOL;
         <!-- START OF FIRST COLUMN OF SMALL BOXES -->
         <td nowrap="true" valign="top" style="padding-right: 15px;">
 
+            <form id="form_host_{$record['id']}"
+                ><input type="hidden" name="host_id" value="{$record['id']}"
+                ><input type="hidden" name="js" value="{$refresh}"
+            ></form>
+
 EOL;
 
     $html .= workspace_plugin_loader('host_detail',$record);
