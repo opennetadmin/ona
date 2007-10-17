@@ -48,7 +48,7 @@ function ws_display_list($window_name, $form='') {
 
     // HOST ID
     if ($form['host_id']) {
-        $where .= $and . "host_id = " . $onadb->qstr($form['host_id']);
+        $where .= $and . "host_id = " . $onadb->qstr($form['host_id']). "OR id in (select interface_id from interface_clusters where host_id = ".$onadb->qstr($form['host_id']).")";
         $and = " AND ";
     }
 
@@ -95,7 +95,8 @@ function ws_display_list($window_name, $form='') {
 
             <!-- Table Header -->
             <tr>
-                <td class="list-header" align="center" style="{$style['borderR']};">Interface</td>
+                
+                <td colspan="2" class="list-header" align="center" style="{$style['borderR']};">Interface</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">MAC</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
@@ -106,7 +107,9 @@ EOL;
 
         // Loop and display each record
         foreach($results as $record) {
-            // Get additional info about eash host record //
+            // Get additional info about each host record //
+
+            list ($status, $intclusterrows, $intcluster) = db_get_records($onadb, 'interface_clusters', "interface_id = {$record['id']}");
 
             // Grab some info from the associated subnet record
             list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $record['subnet_id']));
@@ -129,10 +132,38 @@ EOL;
             $html .= <<<EOL
             <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
 
+                <td nowrap="true" class="list-row" style="padding: 0px;" width="16px">
+EOL;
+
+            // Display cluster related information
+            $clusterhtml='&nbsp;';
+            $clusterstyle='';
+
+            if ($intclusterrows>0) {
+                $clusterstyle='font-weight: bold';
+                $clusterscript= "onMouseOver=\"wwTT(this, event,
+                        'id', 'tt_interface_cluster_list_{$record['id']}',
+                        'type', 'velcro',
+                        'styleClass', 'wwTT_niceTitle',
+                        'direction', 'south',
+                        'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>interface_cluster_list,id=>tt_interface_cluster_list_{$record['id']},interface_id=>{$record['id']}\');'
+                        );\"";
+                $clusterhtml .= <<<EOL
+                    <img src="{$images}/silk/sitemap.png" {$clusterscript} />
+EOL;
+            }
+            $html .= $clusterhtml;
+
+
+
+            $html .= <<<EOL
+                </td>
                 <td class="list-row">
 EOL;
 
-            if (auth('interface_del')) {
+            // MP: Disabling the display_interface link. I dont think this will be needed
+            //if (auth('interface_del')) {
+            if (1<0) {
                 $html .= <<<EOL
                     <a title="View interface. ID: {$record['id']}"
                        class="nav"
@@ -143,10 +174,10 @@ EOL;
             }
             else {
 
-                $html .= "                        {$record['ip_addr']}";
+                $html .= "<span style='{$clusterstyle}' {$clusterscript}>{$record['ip_addr']}</span";
             }
             $html .= <<<EOL
-                    <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>
+                    <span style="{$clusterstyle}" title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>
                 </td>
 
                 <td class="list-row" align="left">
@@ -174,6 +205,40 @@ EOL;
                         ><input type="hidden" name="js" value="{$refresh}"
                     ></form>&nbsp;
 EOL;
+
+        if (auth('interface_modify')) {
+            $html .= <<<EOL
+
+                    <a title="Move IP to another host"
+                       class="act"
+                       onClick="wwTT(this, event,
+                                            'id', 'tt_quick_interface_move_{$record['id']}',
+                                            'type', 'static',
+                                            'delay', 0,
+                                            'styleClass', 'wwTT_qf',
+                                            'direction', 'southwest',
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_move,id=>tt_quick_interface_move_{$record['id']},interface_id=>{$record['id']},ip_addr=>{$record['ip_addr']}\');'
+                                           );"
+                    ><img src="{$images}/silk/lorry_flatbed.png" border="0"></a>&nbsp;
+EOL;
+        }
+
+        if (auth('interface_modify')) {
+            $html .= <<<EOL
+
+                    <a title="Share IP with another host (hsrp,carp,vrrp)"
+                       class="act"
+                       onClick="wwTT(this, event,
+                                            'id', 'tt_quick_interface_share_{$record['id']}',
+                                            'type', 'static',
+                                            'delay', 0,
+                                            'styleClass', 'wwTT_qf',
+                                            'direction', 'southwest',
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_share,id=>tt_quick_interface_share_{$record['id']},interface_id=>{$record['id']},ip_addr=>{$record['ip_addr']}\');'
+                                           );"
+                    ><img src="{$images}/silk/sitemap.png" border="0"></a>&nbsp;
+EOL;
+        }
 
         if (auth('interface_modify')) {
             $html .= <<<EOL
@@ -216,6 +281,10 @@ EOL;
         $js .= <<<EOL
             /* Make sure this table is 100% wide */
             el('{$form['form_id']}_interface_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
+
+            /* Hack to Make sure the other tables are 100% wide */
+            if (el('list_records_filter_form_dns_record_list'))
+                el('list_records_filter_form_dns_record_list').style.width = el('list_records_filter_form_table').offsetWidth + 'px';
 EOL;
 
     $html .= <<<EOL
@@ -223,7 +292,6 @@ EOL;
 EOL;
     // Build page links if there are any
     $html .= get_page_links($page, $conf['search_results_per_page'], $count, $window_name, $form['form_id']);
-
 
 
     // Insert the new html into the content div specified

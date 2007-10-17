@@ -6,9 +6,7 @@ $titlehtml = 'Host Actions';
 
 $confightml = '';
 $confightml .= <<<EOL
-                <span title="Edit plugin configuration"
-                onClick="xajax_window_submit('edit_host', xajax.getFormValues('form_host_{$record['id']}'), 'editor');"
-                ><img src="{$images}/silk/cog_edit.png" border="0"></span>
+                <img title="Edit plugin configuration" onClick="" src="{$images}/silk/cog_edit.png" border="0">
 EOL;
 
 
@@ -18,7 +16,6 @@ EOL;
 // Build hostaction list from the $conf['hostaction'] array
 foreach ($conf[$modulename] as $hostaction=>$hval) {
     // Skip the module title entry
-    //if ( $hval == 'Host Actions' ) { continue; }
     // Use the title if there is one, otherwise just use the arrayname
     $hval['title'] = ($hval['title']) ? $hval['title'] : $hostaction;
     // Substitute %fqdn and %ip

@@ -282,6 +282,23 @@ EOL;
         $record['DEVICE'] = str_replace('Unknown', '?', $record['DEVICE']);
         
         $record['NOTES_SHORT'] = truncate($host['notes'], 40);
+
+
+        // get interface cluster info
+        $clusterhtml = '';
+        list ($status, $intclusterrows, $intcluster) = db_get_records($onadb, 'interface_clusters', "interface_id = {$interface['id']}");
+        if ($intclusterrows>0) {
+            $clusterscript= "onMouseOver=\"wwTT(this, event,
+                    'id', 'tt_interface_cluster_list_{$record['id']}',
+                    'type', 'velcro',
+                    'styleClass', 'wwTT_niceTitle',
+                    'direction', 'south',
+                    'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>interface_cluster_list,id=>tt_interface_cluster_list_{$record['id']},interface_id=>{$interface['id']}\');'
+                    );\"";
+            $clusterhtml .= <<<EOL
+                <img src="{$images}/silk/sitemap.png" {$clusterscript} />
+EOL;
+        }
         
         // Get unit_number from the unit_id
 //FIXME: PK        list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $host['UNIT_ID']));
@@ -330,7 +347,8 @@ EOL;
 }                    
         $html .= <<<EOL
                     >{$record['ip_addr']}</span>&nbsp;
-                    <span title="{$record['ip_mask']}">/{$record['IP_SUBNET_MASK_CIDR']}</span>&nbsp;
+                    <span title="{$record['ip_mask']}">/{$record['IP_SUBNET_MASK_CIDR']}</span>
+                    <span>{$clusterhtml}</span>
                 </td>
                 
                 <td class="list-row">{$record['DEVICE']}&nbsp;</td>

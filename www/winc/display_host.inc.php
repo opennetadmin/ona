@@ -222,8 +222,13 @@ EOL;
     // END LOCATION INFO BOX
 
     $html .= workspace_plugin_loader('dhcp_entries',$record,$extravars);
-    $html .= workspace_plugin_loader('config_archives',$record);
 
+    // Check if there are configs.. if so. load the config archive plugin
+    // FIXME: MP: have the module check if it should be displayed or not and hide the workspace_plugin div
+    list($status, $total_configs, $tmp) = db_get_records($onadb, 'configurations', array('host_id' => $record['id']), '', 0);
+    if($total_configs>0) {
+        $html .= workspace_plugin_loader('config_archives',$record);
+    }
 
 
     $html .= <<<EOL
@@ -238,9 +243,7 @@ EOL;
 
 
     // Display the host_action workspace_plugin
-    $html .= workspace_plugin_loader('host_actions');
-
-    $html .= workspace_plugin_loader('blah',$record);
+    $html .= workspace_plugin_loader('host_actions',$record);
 
     // START MESSAGES BOX
     // $tablename is a reference directly to the table that contains the item

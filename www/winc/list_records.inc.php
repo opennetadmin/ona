@@ -150,7 +150,7 @@ function ws_display_list($window_name, $form='') {
         db_get_records(
             $onadb,
             'dns',
-            'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .')',
+            'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .') OR interface_id in (select interface_id from interface_clusters where host_id = '. $onadb->qstr($form['host_id']) .')',
             "type",
             $conf['search_results_per_page'],
             $offset
@@ -169,7 +169,7 @@ function ws_display_list($window_name, $form='') {
                 db_get_records(
                     $onadb,
                     'dns',
-                    'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .') ' . $filter,
+                    'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .') OR interface_id in (select interface_id from interface_clusters where host_id = '. $onadb->qstr($form['host_id']) .')' . $filter,
                     "",
                     0
                 );
@@ -220,8 +220,8 @@ function ws_display_list($window_name, $form='') {
 
             <!-- Table Header -->
             <tr>
-                <td class="list-header" align="center" style="{$style['border']}; width: 16px;">&nbsp;</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
+                
+                <td colspan="2" class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Time to Live</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Data</td>
@@ -374,10 +374,10 @@ EOL;
         // Escape data for display in html
         foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
 
-        $primary_object_js = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$record['id']}\', \'display\')');";
+        //$primary_object_js = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$record['id']}\', \'display\')');";
         $html .= <<<EOL
             <tr onMouseOver="this.className='row-highlight';" onMouseOut="this.className='row-normal';">
-                <td class="list-row">
+                <td class="list-row" style="padding-right: 2px; padding-left: 4px;" width="16px">
                 {$primary_record}
                 </td>
 
@@ -503,6 +503,10 @@ EOL;
     $js .= <<<EOL
             /* Make sure this table is 100% wide */
             el('{$form['form_id']}_dns_record_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
+
+            /* Hack to Make sure the other tables are 100% wide */
+            if (el('list_interfaces_filter_form_interface_list'))
+                el('list_interfaces_filter_form_interface_list').style.width = el('list_interfaces_filter_form_table').offsetWidth + 'px';
 EOL;
 
 

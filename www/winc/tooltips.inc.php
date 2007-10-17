@@ -61,8 +61,20 @@ function ws_tooltips_submit($window_name, $form='') {
            list ($html, $js) = quick_pool_server_search($form);
            break;
 
+        case 'quick_interface_move':
+           list ($html, $js) = quick_interface_move($form);
+           break;
+
+        case 'quick_interface_share':
+           list ($html, $js) = quick_interface_share($form);
+           break;
+
         case 'host_interface_list':
            list ($html, $js) = get_host_interface_list_html($form);
+           break;
+
+        case 'interface_cluster_list':
+           list ($html, $js) = get_interface_cluster_list_html($form);
            break;
 
         case 'switchport_template_select':
@@ -1297,10 +1309,10 @@ EOL;
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Function: get_location_html($location_id)
+// Function: get_host_interface_list_html($location_id)
 //
 // Description:
-//     Builds HTML for displaying info about a location
+//     Builds HTML for displaying info about multiple host interfaces
 //     Returns a two part array ($html, $js)
 //////////////////////////////////////////////////////////////////////////////
 function get_host_interface_list_html($form) {
@@ -1341,7 +1353,7 @@ EOL;
     $i = 0;
 
     foreach($interfaces as $interface) {
-        list($status, $rows, $subnet) = ona_get_subnet_record(array('ID'=>$interface['subnet_id']));
+        list($status, $rows, $subnet) = ona_get_subnet_record(array('id'=>$interface['subnet_id']));
         foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
         foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
         $ip = ip_mangle($interface['ip_addr'],'dotted');
@@ -1384,6 +1396,305 @@ EOL;
 
     return(array($html, $js));
 }
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: get_interface_cluster_list_html($location_id)
+//
+// Description:
+//     Builds HTML for displaying info about interface cluster hosts
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function get_interface_cluster_list_html($form) {
+    global $conf, $self, $onadb;
+    global $font_family, $color, $style, $images;
+
+    $html = $js = '';
+
+    // Interface Record
+    list($status, $introws, $interfaces) = db_get_records($onadb, 'interface_clusters', "interface_id = {$form['interface_id']}");
+    if ($introws == 0 or $status) return(array('', ''));
+
+    // Get primary host info
+    list($status, $rows, $priint) = ona_get_interface_record(array('id'=>$form['interface_id']));
+    list($status, $rows, $prihost) = ona_get_host_record(array('id'=>$priint['host_id']));
+
+    $priip = ip_mangle($priint['ip_addr'], dotted);
+
+    // add one for primary host
+    $introws=$introws+1;
+
+    $style['content_box'] = <<<EOL
+        margin: 10px 20px;
+        padding: 2px 4px;
+        background-color: #FFFFFF;
+        vertical-align: top;
+EOL;
+
+    $style['label_box'] = <<<EOL
+        font-weight: bold;
+        padding: 2px 4px;
+        text-align: center;
+        border: solid 1px {$color['border']};
+        background-color: {$color['window_content_bg']};
+EOL;
+
+    $html .= <<<EOL
+        <!-- INTERFACE CLUSTER INFORMATION -->
+        <table cellspacing="0" border="0" cellpadding="0">
+
+            <!-- LABEL -->
+            <tr>
+                <td colspan=2 style="{$style['label_box']}">{$introws} hosts share IP:<br>{$priip}</td>
+            </tr>
+            <tr>
+                <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">
+                    <a title="View host. ID: {$prihost['id']}"
+                         style="color: #6CB3FF;"
+                         class="nav"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$prihost['id']}\', \'display\')'); removeElement('{$form['id']}');"
+                    >{$prihost['fqdn']}</a>&nbsp;</td>
+                <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">{$priint['name']}</td>
+            </tr>
+EOL;
+
+    $i = 0;
+
+    foreach($interfaces as $interface) {
+        list($status, $rows, $host) = ona_get_host_record(array('id'=>$interface['host_id']));
+        foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
+        foreach(array_keys((array)$host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
+
+        $html .= <<<EOL
+            <tr>
+                <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">
+                    <a title="View host. ID: {$host['id']}"
+                         style="color: #6CB3FF;"
+                         class="nav"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')'); removeElement('{$form['id']}');"
+                    >{$host['fqdn']}</a>&nbsp;</td>
+                <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">{$interface['name']}</td>
+            </tr>
+
+EOL;
+
+        // increment counter
+        $i++;
+
+        if ($i == 15) {
+            $html .= <<<EOL
+            <tr>
+                <td align="center" class="padding" style="color: #FFFFFF;" nowrap="true" colspan=2>
+                    Only displaying first 15 hosts in cluster.&nbsp;&nbsp;
+                    <a title="View host. ID: {$interface['host_id']}"
+                         style="color: #6CB3FF;"
+                         class="nav"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$interface['host_id']}\', \'display\')'); removeElement('{$form['id']}');"
+                    >View Primary Host</a>&nbsp;</td>
+            </tr>
+EOL;
+        break;
+        }
+
+    }
+    $html .= <<<EOL
+        </table>
+EOL;
+
+    return(array($html, $js));
+}
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: quick_interface_share($form)
+//
+// Description:
+//     Builds HTML for displaying a quick search popup.
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function quick_interface_share($form) {
+    global $conf, $self, $onadb;
+    global $font_family, $color, $style, $images;
+    $html = $js = '';
+    $font_color = '#FFFFFF';
+
+    $style['content_box'] = <<<EOL
+        padding: 2px 4px;
+        vertical-align: top;
+EOL;
+
+    // WARNING: this one's different than most of them!
+    $style['label_box'] = <<<EOL
+        font-weight: bold;
+        cursor: move;
+        color: #FFFFFF;
+EOL;
+
+    $html .= <<<EOL
+
+    <!-- QUICK INTERFACE SHARE -->
+    <form id="quick_interface_share_form" onSubmit="return(false);">
+    <input type="hidden" name="id" value="{$form['id']}">
+    <input type="hidden" name="js" value="{$form['js']}">
+    <input type="hidden" name="interface_id" value="{$form['interface_id']}">
+    <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
+
+    <tr><td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
+        Quick interface share
+    </td></tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            Share IP
+        </td>
+        <td align="left" class="qf-search-line">
+            {$form['ip_addr']}
+        </td>
+    </tr>
+
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            to <u>H</u>ost
+        </td>
+        <td align="left" class="qf-search-line">
+            <input id="share_hostname" name="host" type="text" class="edit" size="24" accesskey="h" />
+            <div id="suggest_share_hostname" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            &nbsp;
+        </td>
+        <td align="right" class="qf-search-line">
+            <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
+            <input class="button" type="button" name="share" value="Share" accesskey="m" onClick="xajax_window_submit('search_results_qf', xajax.getFormValues('quick_interface_share_form'), 'vlan');">
+        </td>
+    </tr>
+
+    </table>
+    </form>
+EOL;
+
+    // Javascript to run after the window is built
+    $js .= <<<EOL
+        suggest_setup('share_hostname', 'suggest_share_hostname');
+EOL;
+
+    return(array($html, $js));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: quick_interface_move($form)
+//
+// Description:
+//     Builds HTML for displaying a quick search popup.
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function quick_interface_move($form) {
+    global $conf, $self, $onadb;
+    global $font_family, $color, $style, $images;
+    $html = $js = '';
+    $font_color = '#FFFFFF';
+
+    $style['content_box'] = <<<EOL
+        padding: 2px 4px;
+        vertical-align: top;
+EOL;
+
+    // WARNING: this one's different than most of them!
+    $style['label_box'] = <<<EOL
+        font-weight: bold;
+        cursor: move;
+        color: #FFFFFF;
+EOL;
+
+    $html .= <<<EOL
+
+    <!-- QUICK INTERFACE MOVE -->
+    <form id="quick_interface_move_form" onSubmit="return(false);">
+    <input type="hidden" name="id" value="{$form['id']}">
+    <input type="hidden" name="js" value="{$form['js']}">
+    <input type="hidden" name="interface_id" value="{$form['interface_id']}">
+    <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
+
+    <tr><td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
+        Quick interface move
+    </td></tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            Move IP
+        </td>
+        <td align="left" class="qf-search-line">
+            {$form['ip_addr']}
+        </td>
+    </tr>
+
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            to <u>H</u>ost
+        </td>
+        <td align="left" class="qf-search-line">
+            <input id="move_hostname" name="host" type="text" class="edit" size="24" accesskey="h" />
+            <div id="suggest_move_hostname" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            &nbsp;
+        </td>
+        <td align="right" class="qf-search-line">
+            <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
+            <input class="button" type="button" name="move" value="Move" accesskey="m" onClick="xajax_window_submit('search_results_qf', xajax.getFormValues('quick_interface_move_form'), 'vlan');">
+        </td>
+    </tr>
+
+    </table>
+    </form>
+EOL;
+
+    // Javascript to run after the window is built
+    $js .= <<<EOL
+        suggest_setup('move_hostname', 'suggest_move_hostname');
+EOL;
+
+    return(array($html, $js));
+}
+
+
+
+
+
 
 
 

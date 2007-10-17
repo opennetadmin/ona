@@ -341,7 +341,7 @@ function acl_add($user_id, $perm_name) {
 //
 //  Example: list($status, $rows) = db_insert_record(
 //                                      $mysql,
-//                                      "HOSTS_B",
+//                                      "hosts",
 //                                      array('ID' => '12354',
 //                                            'NAME' => 'test',
 //                                            'CREATE_PTR' => 1,
@@ -442,7 +442,7 @@ function db_insert_record($dbh=0, $table="", $insert="") {
 //         the exit status will still be 0 unless the SQL query fails.
 //
 //  Example: list($status, $rows) = db_update_record(
-//                                      'HOSTS_B',
+//                                      'hosts',
 //                                      array('ID' => '12354'),
 //                                      array('IP_ADDR' => '34252522533'),
 //                                  );
@@ -550,7 +550,7 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
 //         SQL query fails.
 //
 //  Example: list($status, $rows) = db_delete_records(
-//                                      'HOSTS_B',
+//                                      'hosts',
 //                                      array('ID' => '12354'),
 //                                  );
 //
@@ -1170,10 +1170,10 @@ function ona_get_custom_attribute_record($array) {
 
 // (PK) FIXME: need to get rid of all mentions of 'infobit'!
 function ona_get_host_infobit_record($array) {
-    list($status, $rows, $record) = ona_get_record($array, 'HOST_INFOBITS_B');
+    list($status, $rows, $record) = ona_get_record($array, 'custom_attributes');
 
     // Lets be nice and return a little associated info
-    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_custom_attribute_record(array('id' => $record['INFOBIT_ID']));
+    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_custom_attribute_record(array('id' => $record['custom_attributes']));
     $status += $status_tmp;
     $record['VALUE'] = $record_tmp['VALUE'];
     $record['NAME']  = $record_tmp['name'];
@@ -1299,8 +1299,8 @@ function ona_get_dns_server_domain_record($array) {
 //     if (preg_match('/^\d+$/', $search)) {
 //         // Select the type name
 //         $q = 'SELECT *
-//               FROM IP.CONFIG_TYPE_B
-//               WHERE IP.CONFIG_TYPE_B.CONFIG_TYPE_ID=' . $onadb->qstr($search);
+//               FROM IP.CONFIG_TYPE
+//               WHERE IP.CONFIG_TYPE.CONFIG_TYPE_ID=' . $onadb->qstr($search);
 //         $rs = $onadb->Execute($q);
 //         if ($rs === false) {
 //             printmsg('ERROR => SQL query failed: ' . $onadb->ErrorMsg(), 3);
@@ -1316,8 +1316,8 @@ function ona_get_dns_server_domain_record($array) {
 //     else {
 //         // Select the type name
 //         $q = 'SELECT *
-//               FROM IP.CONFIG_TYPE_B
-//               WHERE IP.CONFIG_TYPE_B.CONFIG_TYPE_NAME=' . $onadb->qstr($search);
+//               FROM IP.CONFIG_TYPE
+//               WHERE IP.CONFIG_TYPE.CONFIG_TYPE_NAME=' . $onadb->qstr($search);
 //         $rs = $onadb->Execute($q);
 //         if ($rs === false) {
 //             printmsg('ERROR => SQL query failed: ' . $onadb->ErrorMsg(), 3);
@@ -1772,10 +1772,10 @@ function ona_find_location($search="") {
 //      1. The exit status of the function (0 on success, non-zero on error)
 //      2. The number of rows that were found - 0 or 1 (0 is returned if
 //         a unique match couldn't be found)
-//      3. An associative array of a record from the HOST_NETWORKS_B table
+//      3. An associative array of a record from the interfaces table
 //         where $search matchs.
 //
-//  Example: list($status, $rows, $location_record) = ona_find_interface('10.44.10.123');
+//  Example: list($status, $rows, $interface) = ona_find_interface('10.44.10.123');
 //
 //  Exit codes:
 //    0  :: No error
@@ -1875,7 +1875,7 @@ function ona_find_interface($search="") {
 //         of the error will be stored in the global variable $self['error']
 //      2. The number of rows that were found - 0 or 1 (0 is returned if
 //         a unique match couldn't be found)
-//      3. An array of a record from the NETWORKS_B table where $search matchs.
+//      3. An array of a record from the subnets table where $search matchs.
 //
 //  Example: list($status, $rows, $subnet) = ona_find_subnet('10.44.10.123');
 ///////////////////////////////////////////////////////////////////////
@@ -2048,7 +2048,7 @@ function ona_find_device($search="") {
 //         of the error will be stored in the global variable $self['error']
 //      2. The number of rows that were found - 0 or 1 (0 is returned if
 //         a unique match couldn't be found)
-//      3. An array of a record from the DEVICE_MODELS_B table where
+//      3. An array of a record from the devices table where
 //         $search matchs.
 //
 //  Example: list($status, $rows, $subnet) = ona_find_device('10.44.10.123');
@@ -2181,7 +2181,7 @@ function ona_find_subnet_type($search="") {
 //
 //  Input:
 //    $search = A string or ID that can uniquly identify an infobit
-//              from the INFOBITS_B table in the database.
+//              from the custom_attributes table in the database.
 //
 //  Output:
 //    Returns a three part list:
@@ -2190,7 +2190,7 @@ function ona_find_subnet_type($search="") {
 //         of the error will be stored in the global variable $self['error']
 //      2. The number of rows that were found - 0 or 1 (0 is returned if
 //         a unique match couldn't be found)
-//      3. An array of a record from the INFOBITS_B table where
+//      3. An array of a record from the custom_attributes table where
 //         $search matchs.
 //
 //  Example: list($status, $rows, $net_type) = ona_find_infobit('Status (Testing)');
@@ -2253,7 +2253,7 @@ function ona_find_infobit($search="") {
 //
 //  Input:
 //    $search = A string or ID that can uniquly identify a dhcp parm type
-//              from the dhcp_parameter_type_B table in the database.
+//              from the dhcp_parameter_types table in the database.
 //
 //  Output:
 //    Returns a three part list:
@@ -2262,10 +2262,10 @@ function ona_find_infobit($search="") {
 //         of the error will be stored in the global variable $self['error']
 //      2. The number of rows that were found - 0 or 1 (0 is returned if
 //         a unique match couldn't be found)
-//      3. An array of a record from the DHCP_PARAMETER_TYPE_B table where
+//      3. An array of a record from the dhcp_options table where
 //         $search matchs.
 //
-//  Example: list($status, $rows, $dhcp_type) = ona_find_dhcp_parameter_type('Default gateway(s)');
+//  Example: list($status, $rows, $dhcp_type) = ona_find_dhcp_option('Default gateway(s)');
 ///////////////////////////////////////////////////////////////////////
 function ona_find_dhcp_option($search="") {
     global $self;
@@ -2318,12 +2318,12 @@ function ona_find_dhcp_option($search="") {
 //  Input:
 //    $vlan_search =
 //        A string or ID that can uniqely identify a vlan record from
-//        the VLAN_B table in the database.  Often times a vlan
+//        the vlans table in the database.  Often times a vlan
 //        description is 'DEFAULT', in which case you can help narrow
 //        down the search by also providing $campus_search.. see below.
 //    $campus_search =
 //        A string or ID that can uniqely identify a vlan campus record
-//        from the VLAN_CAMPUS_B table.  Often times a vlan itself can't
+//        from the vlan_campuses table.  Often times a vlan itself can't
 //        be identified by name without a campus name too.
 //
 //  Output:
@@ -2333,7 +2333,7 @@ function ona_find_dhcp_option($search="") {
 //         of the error will be stored in the global variable $self['error']
 //      2. The number of rows that were found - 0 or 1 (0 is returned if
 //         a unique match couldn't be found)
-//      3. An array of a record from the VLAN_B table where $search matchs.
+//      3. An array of a record from the vlans table where $search matchs.
 //
 //  Example: list($status, $rows, $vlan) = ona_find_vlan('VLAN (802.1Q or ISL)');
 ///////////////////////////////////////////////////////////////////////

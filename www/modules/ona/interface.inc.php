@@ -831,7 +831,7 @@ EOM
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: interface_move (string $options='')
+//  Function: interface_move_subnet (string $options='')
 //
 //  Input Options:
 //    $options = key=value pairs of options for this function.
@@ -844,11 +844,11 @@ EOM
 //         error.  All errors messages are stored in $self['error'].
 //      2. A textual message for display on the console or web interface.
 //
-//  Example: list($status, $result) = interface_move('');
+//  Example: list($status, $result) = interface_move_subnet('');
 ///////////////////////////////////////////////////////////////////////
-function interface_move($options="") {
+function interface_move_subnet($options="") {
     global $conf, $self, $onadb;
-    printmsg("DEBUG => interface_move({$options}) called", 3);
+    printmsg("DEBUG => interface_move_subnet({$options}) called", 3);
 
     // Version - UPDATE on every edit!
     $version = '1.03';
@@ -866,12 +866,11 @@ function interface_move($options="") {
         return(array(1,
 <<<EOM
 
-interface_move-v{$version}
+interface_move_subnet-v{$version}
   Move interfaces to a new subnet
-  Replacement for the ona_renumber utility.
   Moves all interface addresses from one subnet to another.
 
-  Synopsis: interface_move [KEY=VALUE] ...
+  Synopsis: interface_move_subnet [KEY=VALUE] ...
 
   IP block to move: (source)
     start=IP                      first IP to move
@@ -1115,7 +1114,104 @@ EOM
 
 
 
+///////////////////////////////////////////////////////////////////////
+//  Function: interface_move_host (string $options='')
+//
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function.  0 on success, non-zero on
+//         error.  All errors messages are stored in $self['error'].
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = interface_move_host('');
+///////////////////////////////////////////////////////////////////////
+function interface_move_host($options="") {
+    global $conf, $self, $onadb;
+    printmsg("DEBUG => interface_move_host({$options}) called", 3);
 
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Return the usage summary if we need to
+    if ($options['help'] or !($options['host'] and $options['ip']) ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+interface_move_subnet-v{$version}
+  Move an interface to a new host
+
+  Synopsis: interface_move_host [KEY=VALUE] ...
+
+  Required:
+    ip=[address|ID]       the IP address or ID of the interface
+    host=[fqdn|ID]        the fqdn or ID of the host
+
+\n
+EOM
+        ));
+    }
+
+
+    // Find the Host they are looking for
+    list($status, $rows, $host) = ona_find_host($options['host']);
+    if (!$host['id']) {
+        printmsg("DEBUG => The host specified, {$options['host']}, does not exist!",3);
+        $self['error'] = "ERROR => The host specified, {$options['host']}, does not exist!";
+        return(array(2, $self['error'] . "\n"));
+    }
+    printmsg("DEBUG => Host selected: {$options['host']}", 3);
+
+
+    // Find the interface that is moving
+    list($status, $rows, $interface) = ona_find_interface($options['ip']);
+    if (!$host['id']) {
+        printmsg("DEBUG => The interface specified, {$options['id']}, does not exist!",3);
+        $self['error'] = "ERROR => The interface specified, {$options['id']}, does not exist!";
+        return(array(3, $self['error'] . "\n"));
+    }
+    printmsg("DEBUG => Interface selected: {$options['host']}", 3);
+
+    // Check that this interface is not associated with this host via an interface_cluster
+    list($status, $rows, $int_cluster) = db_get_records($onadb, 'interface_clusters', array('host_id' => $host['id'],'interface_id' => $interface['id']), '', 0);
+    printmsg("DEBUG => New host is clustered with that IP", 3);
+    if ($rows == 1) {
+        printmsg("DEBUG => You cannot delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).",3);
+        $self['error'] = "ERROR => You can not delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).";
+        return(array(13, $self['error'] . "\n"));
+
+        // Delete the interface_cluster if there is one
+        list($status, $rows) = db_delete_records($onadb, 'interfaces', array('id' => $interface['id']));
+        if ($status or !$rows) {
+            $self['error'] = "ERROR => interface_move_host() SQL Query failed: " . $self['error'];
+            printmsg($self['error'], 0);
+            return(array(14, $self['error'] . "\n"));
+        }
+    }
+
+    // Update the interface record
+    list($status, $rows) = db_update_record($onadb, 'interfaces', array('id' => $interface['id']), array('host_id' => $host['id']));
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => interface_move_host() SQL Query failed: " . $self['error'];
+        printmsg($self['error'], 0);
+        return(array(14, $self['error'] . "\n"));
+    }
+
+    $text = "INFO => Interface " . ip_mangle($interface['ip_addr'], 'dotted') . " moved to {$host['fqdn']}";
+    printmsg($text, 0);
+
+    // Return the success notice
+    return(array(0, $text. "\n"));
+}
 
 
 

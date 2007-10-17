@@ -63,24 +63,42 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     }
 
 
-    // FIXME: used the supid margin-top to move the icon up to the right spot.. not sure why divs not working.. figure it out someday
-    // Create a standard div container for the module
-    $modhtml .= <<<EOL
-            <!-- {$modulename} start -->
-            <div style="margin-bottom: 8px;">
-                <div nowrap="true" style="{$style['label_box']}">
-                    {$titlehtml}
-                    {$confightml}&nbsp;&nbsp;&nbsp;&nbsp;
-                    <img style="float: right; margin-top: -20px;"
-                          src="{$min_img}"
+/*  one way to do the div containter.. 
+                    <span id="mod_title_{$modulename}" style="float: left;">{$titlehtml}</span>
+                    <span id="mod_buttons_{$modulename}" style="float: right;">
+                    {$confightml}
+                    <img  src="{$min_img}"
                           id="{$modulename}_dropdown"
                           title="Min/Max"
                           onclick="if (el('{$modulename}_content').style.display=='none') { el('{$modulename}_content').style.display=''; el('{$modulename}_dropdown').src='{$min_img}'; }
                                    else { el('{$modulename}_content').style.display='none'; el('{$modulename}_dropdown').src='{$max_img}';}"
 
-                    />
-                </div>
-                <div id="{$modulename}_content">
+                    /></span>&nbsp;
+*/
+
+
+
+
+
+    // FIXME: used the supid margin-top to move the icon up to the right spot.. not sure why divs not working.. figure it out someday
+    // Create a standard div container for the module
+    $modhtml .= <<<EOL
+            <!-- {$modulename} start -->
+            <div style="margin-bottom: 8px;">
+                <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
+                <tr>
+                    <td style="{$style['label_box']} border-right: 0px;">{$titlehtml}</td>
+                    <td style="{$style['label_box']} border-left: 0px;" align="right">
+                    {$confightml}
+                    <img  src="{$min_img}"
+                          id="{$modulename}_dropdown"
+                          title="Min/Max"
+                          onclick="if (el('{$modulename}_content').style.display=='none') { el('{$modulename}_content').style.display=''; el('{$modulename}_dropdown').src='{$min_img}'; }
+                                   else { el('{$modulename}_content').style.display='none'; el('{$modulename}_dropdown').src='{$max_img}';}"
+
+                    /></td>
+                </tr>
+                <tr><td colspan="99" id="{$modulename}_content">
 EOL;
 
     // FIXME: MP put some sort of loading icon here.
@@ -90,8 +108,8 @@ EOL;
 
     // Close out the modules div container
     $modhtml .= <<<EOL
-                </div>
-            </div>
+                </td></tr>
+            </table>
 
             <!-- {$modulename} end -->
 EOL;
@@ -532,6 +550,12 @@ function suggest_hostname($q, $el_input, $el_suggest) {
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
     $response->addScript($js);
     return($response->getXML());
+}
+function suggest_move_hostname($q, $el_input, $el_suggest) {
+    return(suggest_hostname($q, $el_input, $el_suggest));
+}
+function suggest_share_hostname($q, $el_input, $el_suggest) {
+    return(suggest_hostname($q, $el_input, $el_suggest));
 }
 
 
