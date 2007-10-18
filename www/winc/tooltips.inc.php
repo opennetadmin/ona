@@ -1584,7 +1584,7 @@ EOL;
         </td>
         <td align="right" class="qf-search-line">
             <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
-            <input class="button" type="button" name="share" value="Share" accesskey="m" onClick="xajax_window_submit('search_results_qf', xajax.getFormValues('quick_interface_share_form'), 'vlan');">
+            <input class="button" type="button" name="share" value="Share" accesskey="m" onClick="xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_share_form'), 'interface_move_save');">
         </td>
     </tr>
 
@@ -1611,6 +1611,10 @@ EOL;
 
 
 
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 // Function: quick_interface_move($form)
 //
@@ -1623,6 +1627,12 @@ function quick_interface_move($form) {
     global $font_family, $color, $style, $images;
     $html = $js = '';
     $font_color = '#FFFFFF';
+
+
+    // Get the current history element to use as a refresh after the update
+    $history = array_pop($_SESSION['ona']['work_space']['history']);
+    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
+    $refresh = "xajax_window_submit('work_space', '{$refresh}');";
 
     $style['content_box'] = <<<EOL
         padding: 2px 4px;
@@ -1642,7 +1652,7 @@ EOL;
     <form id="quick_interface_move_form" onSubmit="return(false);">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
-    <input type="hidden" name="interface_id" value="{$form['interface_id']}">
+    <input type="hidden" name="ip" value="{$form['interface_id']}">
     <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
 
     <tr><td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
@@ -1675,7 +1685,7 @@ EOL;
         </td>
         <td align="right" class="qf-search-line">
             <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
-            <input class="button" type="button" name="move" value="Move" accesskey="m" onClick="xajax_window_submit('search_results_qf', xajax.getFormValues('quick_interface_move_form'), 'vlan');">
+            <input class="button" type="button" name="move" value="Move" accesskey="m" onClick="xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_move_form'), 'interface_move_save');{$refresh};removeElement('{$form['id']}');">
         </td>
     </tr>
 
@@ -1693,6 +1703,53 @@ EOL;
 
 
 
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function:
+//     Save Form
+//
+// Description:
+//     Creates/updates a block record.
+//////////////////////////////////////////////////////////////////////////////
+function ws_interface_move_save($window_name, $form='') {
+    global $base, $include, $conf, $self, $onadb;
+
+    // Check permissions
+    if (! (auth('advanced')) ) {
+        $response = new xajaxResponse();
+        $response->addScript("alert('Permission denied!');");
+        return($response->getXML());
+    }
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    $js = '';
+
+    // Validate input
+    if (!$form['host'] and !$form['ip']) {
+        $response->addScript("alert('Please complete all fields to continue!');");
+        return($response->getXML());
+    }
+
+    // Decide if we're editing or adding
+    $module = 'interface_move_host';
+
+    // Run the module
+    list($status, $output) = run_module($module, $form);
+
+    // If the module returned an error code display a popup warning
+    if ($status)
+        $js .= "alert('Save failed. ". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
+    else {
+        $js .= "removeElement('{$window_name}');";
+        if ($form['js']) $js .= $form['js'];
+    }
+
+    // Insert the new table into the window
+    $response->addScript($js);
+    return($response->getXML());
+}
 
 
 

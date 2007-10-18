@@ -95,7 +95,7 @@ function ws_display_list($window_name, $form='') {
 
             <!-- Table Header -->
             <tr>
-                
+
                 <td colspan="2" class="list-header" align="center" style="{$style['borderR']};">Interface</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">MAC</td>

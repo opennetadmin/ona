@@ -1198,6 +1198,8 @@ EOM
         }
     }
 
+    //FIXME: MP: make sure you check if this is the last interface on the host and do some sort of warning popup etc.
+
     // Update the interface record
     list($status, $rows) = db_update_record($onadb, 'interfaces', array('id' => $interface['id']), array('host_id' => $host['id']));
     if ($status or !$rows) {
