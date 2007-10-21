@@ -196,7 +196,6 @@ EOM
     printmsg("DEBUG => ID for new interface: $id", 3);
 
     // Add the interface
-    // Skip the BOOTP_TYPE and LAST_PING_RESPONSE empty
     list($status, $rows) =
         db_insert_record(
             $onadb,
@@ -581,6 +580,13 @@ EOM
     // Sanitize "options[commit]" (no is the default)
     $options['commit'] = sanitize_YN($options['commit'], 'N');
 
+    // Check permissions
+    if (!auth('interface_del') or !authlvl($host['LVL']) or !authlvl($subnet['LVL'])) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(13, $self['error'] . "\n"));
+    }
+
     // They provided a interface ID, IP address, interface name, or MAC address
     if ($options['interface']) {
         // Find an interface record by something in that interface's record
@@ -614,36 +620,39 @@ EOM
     list($status, $rows, $host) = ona_find_host($interface['host_id']);
     list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
 
-    // Check what DNS records are associated with the host.
-    // FIXME: MP for now I'm bailing on the delete.  I wanted to make sure this check was here and have not put a
-    // lot of thought into it yet.  I assume we can display something nice to allow them to remove the dns records too
-    list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']), '', 0);
-    printmsg("DEBUG => total DNS records => {$total_dns}", 3);
-    if ($total_dns > 0) {
-        printmsg("DEBUG => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.",3);
-        $self['error'] = "ERROR => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.";
-        return(array(11, $self['error'] . "\n"));
-    }
-
-    // Check if this is the last interface on a host
-    list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $interface['host_id']), '', 0);
-    printmsg("DEBUG => total interfaces => {$total_interfaces}", 3);
-    if ($total_interfaces == 1) {
-        printmsg("DEBUG => You cannot delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).",3);
-        $self['error'] = "ERROR => You can not delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).";
-        return(array(13, $self['error'] . "\n"));
-    }
-
-
-    // Check permissions
-    if (!auth('interface_del') or !authlvl($host['LVL']) or !authlvl($subnet['LVL'])) {
-        $self['error'] = "Permission denied!";
-        printmsg($self['error'], 0);
-        return(array(13, $self['error'] . "\n"));
-    }
 
     // If "commit" is yes, delete the interface
     if ($options['commit'] == 'Y') {
+
+        // Check what DNS records are associated with the host.
+        // FIXME: MP for now I'm bailing on the delete.  I wanted to make sure this check was here and have not put a
+        // lot of thought into it yet.  I assume we can display something nice to allow them to remove the dns records too
+        list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']), '', 0);
+        printmsg("DEBUG => total DNS records => {$total_dns}", 3);
+        if ($total_dns > 0) {
+            printmsg("DEBUG => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.",3);
+            $self['error'] = "ERROR => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.";
+            return(array(11, $self['error'] . "\n"));
+        }
+
+        // Check for shared interfaces
+        list($status, $clust_rows, $clust) = db_get_records($onadb, 'interface_clusters', array('interface_id' => $interface['id']), '', 0);
+        printmsg("DEBUG => total shared host records => {$clust_rows}", 3);
+        if ($clust_rows > 0) {
+            printmsg("DEBUG => There are {$clust_rows} hosts sharing this interface, remove the shares first.",3);
+            $self['error'] = "ERROR => There are {$clust_rows} hosts sharing this interface, remove the shares first.";
+            return(array(10, $self['error'] . "\n"));
+        }
+
+        // Check if this is the last interface on a host
+        list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $interface['host_id']), '', 0);
+        printmsg("DEBUG => total interfaces => {$total_interfaces}", 3);
+        if ($total_interfaces == 1) {
+            printmsg("DEBUG => You cannot delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).",3);
+            $self['error'] = "ERROR => You can not delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).";
+            return(array(13, $self['error'] . "\n"));
+        }
+
         printmsg("DEBUG => Deleting interface: ID {$interface['id']}", 3);
 
         // Drop the record
@@ -672,10 +681,45 @@ EOM
     }
 
     // Otherwise, just display the interface that we will be deleting
-    list($status, $text) = interface_display("interface={$interface['id']}&verbose=N");
+    list($status, $displaytext) = interface_display("interface={$interface['id']}&verbose=N");
     $text = "Record(s) NOT DELETED (see \"commit\" option)\n" .
-            "Displaying record(s) that would have been deleted:\n\n" .
-            $text;
+            "Displaying record(s) that would have been deleted:\n";
+
+    // Display warning if there are DNS records still
+    list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']));
+    if ($total_dns) {
+        $text .= "\nWARNING!  This interface has {$total_dns} DNS record(s) still associated with it.\n";
+        $text .= "          Please remove all associated DNS records first.\n";
+    }
+
+    // Display records if this is a shared interface
+    list($status, $clust_rows, $clust) = db_get_records($onadb, 'interface_clusters', array('interface_id' => $interface['id']));
+    if ($clust_rows) {
+        $text .= "\nWARNING!  This interface is shared with {$clust_rows} other host(s).\n";
+        $text .= "          Please remove all associated hosts first.\n";
+    }
+
+    // Display records if this is the last interface
+    list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $interface['host_id']), '', 0);
+    if ($total_interfaces == 1) {
+        $text .= "\nWARNING!  You cannot delete the last interface on a host,\n";
+        $text .= "          you must delete the host itself ({$host['fqdn']})\n";
+        $text .= "          Or move the interface to another host and delete {$host['fqdn']}.\n";
+    }
+    $text .= "\n" . $displaytext;
+    if ($clust_rows) $text .= "\nASSOCIATED SHARED INTERFACE RECORDS ({$clust_rows}):\n";
+    foreach ($clust as $record) {
+        list($status, $rows, $clusthost) = ona_get_host_record(array('id' => $record['host_id']));
+        $text .= "  {$clusthost['fqdn']}\n";
+    }
+
+
+
+    if ($total_dns) $text .= "\nASSOCIATED DNS RECORDS ({$total_dns}):\n";
+    foreach ($dns as $rec) {
+        $text .= "  TYPE: {$rec['type']}, {$rec['name']} -> {$interface['ip_addr_text']}\n";
+    }
+
     return(array(6, $text));
 
 }
@@ -1147,7 +1191,7 @@ function interface_move_host($options="") {
         return(array(1,
 <<<EOM
 
-interface_move_subnet-v{$version}
+interface_move_host-v{$version}
   Move an interface to a new host
 
   Synopsis: interface_move_host [KEY=VALUE] ...
@@ -1214,6 +1258,234 @@ EOM
     // Return the success notice
     return(array(0, $text. "\n"));
 }
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: interface_share (string $options='')
+//
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function.  0 on success, non-zero on
+//         error.  All errors messages are stored in $self['error'].
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = interface_share('');
+///////////////////////////////////////////////////////////////////////
+function interface_share($options="") {
+    global $conf, $self, $onadb;
+    printmsg("DEBUG => interface_share({$options}) called", 3);
+
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Return the usage summary if we need to
+    if ($options['help'] or !($options['host'] and $options['ip']) ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+interface_share-v{$version}
+  Share an interface with another host.
+  An IP address only exists once in the database.  This allows
+  you to share that IP with several other hosts which are configured
+  to use technologies such as HSRP, CARP, VRRP etc.
+
+  Synopsis: interface_share [KEY=VALUE] ...
+
+  Required:
+    ip=[address|ID]       the IP address or ID of the interface
+    host=[fqdn|ID]        the fqdn or ID of the host
+
+  Optional:
+    name=TEXT             interface name used on host, if different
+
+\n
+EOM
+        ));
+    }
+
+
+    // Find the Host they are looking for
+    list($status, $rows, $host) = ona_find_host($options['host']);
+    if (!$host['id']) {
+        printmsg("DEBUG => The host specified, {$options['host']}, does not exist!",3);
+        $self['error'] = "ERROR => The host specified, {$options['host']}, does not exist!";
+        return(array(2, $self['error'] . "\n"));
+    }
+    printmsg("DEBUG => Host selected: {$options['host']}", 3);
+
+
+    // Find the interface
+    list($status, $rows, $interface) = ona_find_interface($options['ip']);
+    if (!$host['id']) {
+        printmsg("DEBUG => The interface specified, {$options['id']}, does not exist!",3);
+        $self['error'] = "ERROR => The interface specified, {$options['id']}, does not exist!";
+        return(array(3, $self['error'] . "\n"));
+    }
+    printmsg("DEBUG => Interface selected: {$options['host']}", 3);
+
+    // Check that this interface is not associated with this host via an interface_cluster already
+    list($status, $rows, $int_cluster) = db_get_records($onadb, 'interface_clusters', array('host_id' => $host['id'],'interface_id' => $interface['id']), '', 0);
+    if ($rows == 1) {
+        printmsg("DEBUG => This host is already clustered with that IP ({$host['fqdn']}-{$interface['ip_addr']}).", 3);
+        $self['error'] = "ERROR => This host is already clustered with that IP ({$host['fqdn']}-{$interface['ip_addr']}).";
+        return(array(13, $self['error'] . "\n"));
+    }
+
+
+    // Add the interface_cluster entry
+    list($status, $rows) =
+        db_insert_record(
+            $onadb,
+            'interface_clusters',
+            array(
+                'host_id'                  => $host['id'],
+                'interface_id'             => $interface['id'],
+                'name'                     => $options['name']
+            )
+        );
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => interface_share() SQL Query failed: " . $self['error'];
+        printmsg($self['error'], 0);
+        return(array(14, $self['error'] . "\n"));
+    }
+
+    // Return the success notice
+    $self['error'] = "INFO => Interface Shared: " . ip_mangle($interface['ip_addr'], 'dotted') . " to {$host['fqdn']}.";
+    printmsg($self['error'], 0);
+    return(array(0, $self['error'] . "\n"));
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: interface_share_del (string $options='')
+//
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function.  0 on success, non-zero on
+//         error.  All errors messages are stored in $self['error'].
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = interface_share_del('');
+///////////////////////////////////////////////////////////////////////
+function interface_share_del($options="") {
+    global $conf, $self, $onadb;
+    printmsg("DEBUG => interface_share_del({$options['ip']}) called", 3);
+
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Return the usage summary if we need to
+    if ($options['help'] or !($options['host'] and $options['ip']) ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+interface_share_del-v{$version}
+  Delete a shareed interface from another host.
+  An IP address only exists once in the database.  This allows
+  you to share that IP with several other hosts which are configured
+  to use technologies such as HSRP, CARP, VRRP etc.
+
+  Synopsis: interface_share_del [KEY=VALUE] ...
+
+  Required:
+    ip=[address|ID]       the IP address or ID of the interface
+    host=[fqdn|ID]        the fqdn or ID of the host
+
+\n
+EOM
+        ));
+    }
+
+
+    // Find the Host they are looking for
+    list($status, $rows, $host) = ona_find_host($options['host']);
+    if (!$host['id']) {
+        printmsg("DEBUG => The host specified, {$options['host']}, does not exist!",3);
+        $self['error'] = "ERROR => The host specified, {$options['host']}, does not exist!";
+        return(array(2, $self['error'] . "\n"));
+    }
+    printmsg("DEBUG => Host selected: {$options['host']}", 3);
+
+
+    // Find the interface
+    list($status, $rows, $interface) = ona_find_interface($options['ip']);
+    if (!$host['id']) {
+        printmsg("DEBUG => The interface specified, {$options['id']}, does not exist!",3);
+        $self['error'] = "ERROR => The interface specified, {$options['id']}, does not exist!";
+        return(array(3, $self['error'] . "\n"));
+    }
+    printmsg("DEBUG => Interface selected: {$options['host']}", 3);
+
+    // Check that this interface is not associated with this host via an interface_cluster already
+    list($status, $rows, $int_cluster) = db_get_records($onadb, 'interface_clusters', array('host_id' => $host['id'],'interface_id' => $interface['id']), '', 0);
+    if ($rows == 0) {
+        printmsg("DEBUG => Unable to find share ({$host['fqdn']}-{$interface['ip_addr_text']}).", 3);
+        $self['error'] = "ERROR => Unable to find share ({$host['fqdn']}-{$interface['ip_addr_text']}).";
+        return(array(13, $self['error'] . "\n"));
+    }
+
+    // Drop the record
+    list($status, $rows) = db_delete_records($onadb, 'interface_clusters', array('host_id' => $host['id'],'interface_id' => $interface['id']));
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => interface_share_del() SQL Query failed: " . $self['error'];
+        printmsg($self['error'], 0);
+        return(array(5, $self['error']));
+    }
+
+
+    // Return the success notice
+    $self['error'] = "INFO => Interface Share deleted: {$interface['ip_addr_text']} from {$host['fqdn']}.";
+    printmsg($self['error'], 0);
+    return(array(0, $self['error'] . "\n"));
+
+
+
+
+}
+
+
+
+
 
 
 

@@ -1452,7 +1452,7 @@ EOL;
 
             <!-- LABEL -->
             <tr>
-                <td colspan=2 style="{$style['label_box']}">{$introws} hosts share IP:<br>{$priip}</td>
+                <td colspan=3 style="{$style['label_box']}">{$introws} hosts share IP:<br>{$priip}</td>
             </tr>
             <tr>
                 <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">
@@ -1472,15 +1472,30 @@ EOL;
         foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
         foreach(array_keys((array)$host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
 
+        // If there is no cluster name then use the name from the primary interface
+        if (!$interface['name'])
+            $interface['name'] = $priint['name'];
+
         $html .= <<<EOL
             <tr>
                 <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">
+                    <form id="quick_interface_share_del_form" onSubmit="return(false);">
+                    <input type="hidden" name="ip" value="{$interface['interface_id']}">
+                    <input type="hidden" name="host" value="{$host['id']}">
+                    </form>
                     <a title="View host. ID: {$host['id']}"
                          style="color: #6CB3FF;"
                          class="nav"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')'); removeElement('{$form['id']}');"
                     >{$host['fqdn']}</a>&nbsp;</td>
                 <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">{$interface['name']}</td>
+                <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">
+                    <img src="/ona/images/silk/delete.png"
+                         title="Remove interface share with {$host['fqdn']}"
+                         border="0"
+                         onClick="xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_share_del_form'), 'interface_share_del');removeElement('{$form['id']}');"
+                    />
+                </td>
             </tr>
 
 EOL;
@@ -1551,7 +1566,7 @@ EOL;
     <form id="quick_interface_share_form" onSubmit="return(false);">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
-    <input type="hidden" name="interface_id" value="{$form['interface_id']}">
+    <input type="hidden" name="ip" value="{$form['interface_id']}">
     <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
 
     <tr><td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
@@ -1580,11 +1595,20 @@ EOL;
 
     <tr>
         <td align="right" class="qf-search-line">
+            <u>N</u>ame
+        </td>
+        <td align="left" class="qf-search-line">
+            <input name="name" type="text" class="edit" size="24" accesskey="n" />
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
             &nbsp;
         </td>
         <td align="right" class="qf-search-line">
             <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
-            <input class="button" type="button" name="share" value="Share" accesskey="m" onClick="xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_share_form'), 'interface_move_save');">
+            <input class="button" type="button" name="share" value="Share" accesskey="s" onClick="xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_share_form'), 'interface_share_save');{$refresh};removeElement('{$form['id']}');">
         </td>
     </tr>
 
@@ -1604,8 +1628,102 @@ EOL;
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+// Function:
+//     Save Form
+//
+// Description:
+//     Creates/updates a interface cluster record.
+//////////////////////////////////////////////////////////////////////////////
+function ws_interface_share_save($window_name, $form='') {
+    global $base, $include, $conf, $self, $onadb;
+
+    // Check permissions
+    if (! (auth('advanced')) ) {
+        $response = new xajaxResponse();
+        $response->addScript("alert('Permission denied!');");
+        return($response->getXML());
+    }
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    $js = '';
+
+    // Validate input
+    if (!$form['host'] and !$form['ip']) {
+        $response->addScript("alert('Please complete all fields to continue!');");
+        return($response->getXML());
+    }
+
+    // Decide if we're editing or adding
+    $module = 'interface_share';
+
+    // Run the module
+    list($status, $output) = run_module($module, $form);
+
+    // If the module returned an error code display a popup warning
+    if ($status)
+        $js .= "alert('Save failed. ". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
+    else {
+        $js .= "removeElement('{$window_name}');";
+        if ($form['js']) $js .= $form['js'];
+    }
+
+    // Insert the new table into the window
+    $response->addScript($js);
+    return($response->getXML());
+}
 
 
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function:
+//     Save Form
+//
+// Description:
+//     Deletes a interface cluster record.
+//////////////////////////////////////////////////////////////////////////////
+function ws_interface_share_del($window_name, $form='') {
+    global $base, $include, $conf, $self, $onadb;
+
+    // Check permissions
+    if (! (auth('advanced')) ) {
+        $response = new xajaxResponse();
+        $response->addScript("alert('Permission denied!');");
+        return($response->getXML());
+    }
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    $js = '';
+
+    // Validate input
+    if (!$form['host'] and !$form['ip']) {
+        $response->addScript("alert('Please complete all fields to continue!');");
+        return($response->getXML());
+    }
+
+    // Decide if we're editing or adding
+    $module = 'interface_share_del';
+
+    // Run the module
+    list($status, $output) = run_module($module, $form);
+
+    // If the module returned an error code display a popup warning
+    if ($status)
+        $js .= "alert('Delete failed. ". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
+    else {
+        $js .= "removeElement('{$window_name}');";
+        if ($form['js']) $js .= $form['js'];
+    }
+
+    // Insert the new table into the window
+    $response->addScript($js);
+    return($response->getXML());
+}
 
 
 
@@ -1710,7 +1828,7 @@ EOL;
 //     Save Form
 //
 // Description:
-//     Creates/updates a block record.
+//     Creates/updates an interface record.
 //////////////////////////////////////////////////////////////////////////////
 function ws_interface_move_save($window_name, $form='') {
     global $base, $include, $conf, $self, $onadb;

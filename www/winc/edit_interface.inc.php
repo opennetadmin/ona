@@ -387,7 +387,15 @@ function ws_delete($window_name, $form='') {
     $js = '';
 
     // Run the module
-    list($status, $output) = run_module('interface_del', array('interface' => $form['interface_id'], 'commit' => 'Y'));
+    list($status, $output) = run_module('interface_del', array('interface' => $form['interface_id'], 'commit' => $form['commit']));
+
+    // If commit was N, display the confirmation dialog box
+    if (!$form['commit']) {
+        $build_commit_html = 1;
+        $commit_function = 'delete';
+        include(window_find_include('module_results'));
+        return(window_open("{$window_name}_results", $window));
+    }
 
     // If the module returned an error code display a popup warning
     if ($status)

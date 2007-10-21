@@ -109,6 +109,7 @@ EOM
     //
     list($status, $rows, $host) = ona_find_host($options['host']);
 
+    // FIXME: MP: there is an issue here.. it fails to say an existing DNS entry was found.  It gets invalide host name first.
 
     // Validate that the DNS name has only valid characters in it
     $host['name'] = sanitize_hostname($host['name']);
@@ -627,6 +628,7 @@ EOM
         //   Don't allow a delete if it is performing server duties
         //   Don't allow a delete if config text entries exist
         //   Delete Interfaces
+        //   Delete interface cluster entries
         //   Delete dns records
         //   Delete Infobits
         //   Delete DHCP entries
@@ -654,16 +656,16 @@ EOM
         }
 
 
-// FIXME: MP do checks for dns server stuff.
-            $serverrow = 0;
-            list($status, $rows, $srecord) = db_get_record($onadb, 'DOMAIN_SERVERS_B', array('SERVER_ID' => $server['ID']));
-            if ($rows) $serverrow++;
+        // Check if host is a dns server
+        $serverrow = 0;
+        list($status, $rows, $srecord) = db_get_record($onadb, 'dns_server_domains', array('host_id' => $host['id']));
+        if ($rows) $serverrow++;
 
-            if ($serverrow > 0) {
-                printmsg("DEBUG => Host ({$host['fqdn']}) cannot be deleted, it is performing duties as a DNS server!",3);
-                $self['error'] = "ERROR => Host ({$host['fqdn']}) cannot be deleted, it is performing duties as a DNS server!";
-                return(array(5, $self['error'] . "\n"));
-            }
+        if ($serverrow > 0) {
+            printmsg("DEBUG => Host ({$host['fqdn']}) cannot be deleted, it is performing duties as a DNS server!",3);
+            $self['error'] = "ERROR => Host ({$host['fqdn']}) cannot be deleted, it is performing duties as a DNS server!";
+            return(array(5, $self['error'] . "\n"));
+        }
 
         // Display an error if it has any entries in configurations
         list($status, $rows, $server) = db_get_record($onadb, 'configurations', array('host_id' => $host['id']));
@@ -672,6 +674,40 @@ EOM
             $self['error'] = "ERROR => Host ({$host['fqdn']}) cannot be deleted, it has config archives!";
             return(array(5, $self['error'] . "\n"));
         }
+
+
+        // Delete interface(s)
+        // get list for logging
+        $clustcount = 0;
+        $dnscount = 0;
+        list($status, $rows, $interfaces) = db_get_records($onadb, 'interfaces', array('host_id' => $host['id']));
+
+
+        // FIXME: MP: For now I'm bailing on doing auto delete of DNS records.. needs more thought and time
+        foreach ($interfaces as $int) {
+             list($status, $rows, $records) = db_get_records($onadb, 'dns', array('interface_id' => $int['id']));
+            $dnscount = $dnscount + $rows;
+        }
+
+        if ($dnscount) {
+            $self['error'] = "ERROR => host_del() SORRY, LAZY WAY OUT!! There are DNS records on this host, remove them first.";
+            printmsg($self['error'],0);
+            return(array(5, $self['error'] . "\n"));
+        }
+
+        // FIXME: MP: Cant delete if one of the interfaces is primary for a cluster
+        foreach ($interfaces as $int) {
+             list($status, $rows, $records) = db_get_records($onadb, 'interface_clusters', array('interface_id' => $int['id']));
+            $clustcount = $clustcount + $rows;
+        }
+
+        if ($clustcount) {
+            $self['error'] = "ERROR => host_del() An interface on this host is primary for some interface shares, delete the share or move the interface first.";
+            printmsg($self['error'],0);
+            return(array(5, $self['error'] . "\n"));
+        }
+
+
 
         // Delete messages
         // get list for logging
@@ -689,29 +725,24 @@ EOM
 
 
 
-        // Delete interface(s) and dns records
-        // get list for logging
-        list($status, $rows, $interfaces) = db_get_records($onadb, 'interfaces', array('host_id' => $host['id']));
-
-
         // FIXME: MP this needs some work.. deleting DNS records is much more complicated than this.!
         // Delete DNS record
-        list($status, $rows, $records) = db_get_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
-        // do the delete
-        list($status, $rows) = db_delete_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
-        if ($status) {
-            $self['error'] = "ERROR => host_del() DNS record delete SQL Query failed: {$self['error']}";
-            printmsg($self['error'],0);
-            return(array(5, $add_to_error . $self['error'] . "\n"));
-        }
-        // log deletions
-        foreach ($records as $record) {
-            printmsg("INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}",0);
-            $add_to_error .= "INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}\n";
-        }
+//         list($status, $rows, $records) = db_get_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
+//         // do the delete
+//         list($status, $rows) = db_delete_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
+//         if ($status) {
+//             $self['error'] = "ERROR => host_del() DNS record delete SQL Query failed: {$self['error']}";
+//             printmsg($self['error'],0);
+//             return(array(5, $add_to_error . $self['error'] . "\n"));
+//         }
+//         // log deletions
+//         foreach ($records as $record) {
+//             printmsg("INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}",0);
+//             $add_to_error .= "INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}\n";
+//         }
 
-
-
+/////////////////////////FIX THIS SOON//////////////////////////////////////////////////////
+        // FIXME: MP: why is this not using interface delete??  this will cause problems if not done correctly
         // do the interface delete
         list($status, $rows) = db_delete_records($onadb, 'interfaces', array('host_id' => $host['id']));
         if ($status) {
@@ -724,6 +755,18 @@ EOM
             printmsg("INFO => Interface DELETED: " . ip_mangle($record['ip_addr'], 'dotted') . " from {$host['fqdn']}",0);
             $add_to_error .= "INFO => Interface DELETED: " . ip_mangle($record['ip_addr'], 'dotted') . " from {$host['fqdn']}\n";
         }
+/////////////////////////////////////////////////////////////////////
+
+        // do the interface_cluster delete
+        list($status, $rows) = db_delete_records($onadb, 'interface_clusters', array('host_id' => $host['id']));
+        if ($status) {
+            $self['error'] = "ERROR => host_del() interface_cluster delete SQL Query failed: {$self['error']}";
+            printmsg($self['error'],0);
+            return(array(5, $self['error'] . "\n"));
+        }
+        // log deletions
+        printmsg("INFO => {$rows} Shared interface(s) DELETED from {$host['fqdn']}",0);
+        $add_to_error .= "INFO => {$rows} Shared interface(s) DELETED from {$host['fqdn']}\n";
 
         // Delete device record
         // Count how many hosts use this same device
@@ -871,11 +914,19 @@ EOM
         }
     }
 
-    if ($int_rows) $text .= "\nASSOCIATED INTERFACE RECORDS ({$rows}):\n";
+    if ($int_rows) $text .= "\nASSOCIATED INTERFACE RECORDS ({$int_rows}):\n";
     foreach ($interfaces as $record) {
         $text .= "  " . ip_mangle($record['ip_addr'], 'dotted') . "\n";
     }
 
+    // Display associated interface_clusters(s)
+    list($status, $clust_rows, $interfaceclusters) = db_get_records($onadb, 'interface_clusters', array('host_id' => $host['id']));
+
+    if ($clust_rows) $text .= "\nASSOCIATED SHARED INTERFACE RECORDS ({$clust_rows}):\n";
+    foreach ($interfaceclusters as $record) {
+        list($status, $rows, $int) = ona_get_interface_record(array('id' => $record['interface_id']));
+        $text .= "  {$int['ip_addr_text']}\n";
+    }
 
 
     // Display associated DHCP entries
