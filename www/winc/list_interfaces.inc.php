@@ -217,7 +217,7 @@ EOL;
                                             'delay', 0,
                                             'styleClass', 'wwTT_qf',
                                             'direction', 'southwest',
-                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_move,id=>tt_quick_interface_move_{$record['id']},interface_id=>{$record['id']},ip_addr=>{$record['ip_addr']}\');'
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_move,id=>tt_quick_interface_move_{$record['id']},interface_id=>{$record['id']},ip_addr=>{$record['ip_addr']},orig_host=>{$record['host_id']}\');'
                                            );"
                     ><img src="{$images}/silk/lorry_flatbed.png" border="0"></a>&nbsp;
 EOL;

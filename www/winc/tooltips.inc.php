@@ -1771,6 +1771,7 @@ EOL;
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <input type="hidden" name="ip" value="{$form['interface_id']}">
+    <input type="hidden" name="orig_host" value="{$form['orig_host']}">
     <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
 
     <tr><td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
@@ -1850,6 +1851,14 @@ function ws_interface_move_save($window_name, $form='') {
         return($response->getXML());
     }
 
+
+    list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $form['orig_host']), '', 0);
+
+    // FIXME: MP: put some sort of popup that we are going to delete the host if its the last interface.
+    //if ($total_interfaces == 1) {
+        $response->addScript("var doit=confirm('This is the last interface on this host, the host will also be deleted once the interface is moved?'); if (doit == true)");
+    //}
+
     // Decide if we're editing or adding
     $module = 'interface_move_host';
 
@@ -1860,9 +1869,26 @@ function ws_interface_move_save($window_name, $form='') {
     if ($status)
         $js .= "alert('Save failed. ". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
     else {
-        $js .= "removeElement('{$window_name}');";
-        if ($form['js']) $js .= $form['js'];
+        // Check if this is the last interface, if it is, delete the host too.
+        if ($total_interfaces == 0) {
+            // Run the host del module
+            list($status, $output) = run_module('host_del', array('host' => $form['orig_host'], 'commit' => 'y'));
+            if ($status) {
+                // If the host del failed, move the interface back to the original host to clean things up
+                list($status, $output) = run_module('interface_move_host', array('host' => $form['orig_host'], 'ip' => $form['ip']));
+                $js .= "alert('Host delete failed. ". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
+            }
+            else {
+                $js .= "removeElement('{$window_name}');";
+                if ($form['js']) $js .= $form['js'];
+            }
+        }
+        else {
+            $js .= "removeElement('{$window_name}');";
+            if ($form['js']) $js .= $form['js'];
+        }
     }
+
 
     // Insert the new table into the window
     $response->addScript($js);
