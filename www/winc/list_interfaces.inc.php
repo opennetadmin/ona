@@ -287,6 +287,13 @@ EOL;
                 el('list_records_filter_form_dns_record_list').style.width = el('list_records_filter_form_table').offsetWidth + 'px';
 EOL;
 
+
+    if ($count == 0 and $form['host_id'] and !$form['filter']) {
+        $html .= <<<EOL
+     <tr><td colspan="99" align="center" style="color: red;">Please add an interface to this host, or delete the host</td></tr>
+EOL;
+    }
+
     $html .= <<<EOL
     </table>
 EOL;

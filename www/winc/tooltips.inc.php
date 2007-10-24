@@ -1560,6 +1560,8 @@ EOL;
         color: #FFFFFF;
 EOL;
 
+    $refresh = "xajax_window_submit('list_interfaces', xajax.getFormValues('list_interfaces_filter_form'), 'display_list');";
+
     $html .= <<<EOL
 
     <!-- QUICK INTERFACE SHARE -->
@@ -1608,7 +1610,7 @@ EOL;
         </td>
         <td align="right" class="qf-search-line">
             <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
-            <input class="button" type="button" name="share" value="Share" accesskey="s" onClick="xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_share_form'), 'interface_share_save');{$refresh};removeElement('{$form['id']}');">
+            <input class="button" type="button" name="share" value="Share" accesskey="s" onClick="xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_share_form'), 'interface_share_save');removeElement('{$form['id']}');{$refresh};">
         </td>
     </tr>
 
@@ -1639,7 +1641,7 @@ function ws_interface_share_save($window_name, $form='') {
     global $base, $include, $conf, $self, $onadb;
 
     // Check permissions
-    if (! (auth('advanced')) ) {
+    if (! (auth('interface_del')) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
@@ -1746,12 +1748,6 @@ function quick_interface_move($form) {
     $html = $js = '';
     $font_color = '#FFFFFF';
 
-
-    // Get the current history element to use as a refresh after the update
-    $history = array_pop($_SESSION['ona']['work_space']['history']);
-    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
-    $refresh = "xajax_window_submit('work_space', '{$refresh}');";
-
     $style['content_box'] = <<<EOL
         padding: 2px 4px;
         vertical-align: top;
@@ -1763,6 +1759,15 @@ EOL;
         cursor: move;
         color: #FFFFFF;
 EOL;
+
+
+    // If this is the last interface, inform the user that the host is to be deleted
+    list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $form['orig_host']), '', 0);
+    $lastint_js = '';
+    if ($total_interfaces == 1) {
+        $lastint_js = "var doit=confirm('This is the last interface on this host, the host will also be deleted once the interface is moved?'); if (doit == true) ";
+    }
+
 
     $html .= <<<EOL
 
@@ -1804,7 +1809,7 @@ EOL;
         </td>
         <td align="right" class="qf-search-line">
             <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
-            <input class="button" type="button" name="move" value="Move" accesskey="m" onClick="xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_move_form'), 'interface_move_save');{$refresh};removeElement('{$form['id']}');">
+            <input class="button" type="button" name="move" value="Move" accesskey="m" onClick="{$lastint_js} xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_move_form'), 'interface_move_save');removeElement('{$form['id']}');">
         </td>
     </tr>
 
@@ -1845,19 +1850,15 @@ function ws_interface_move_save($window_name, $form='') {
     $response = new xajaxResponse();
     $js = '';
 
+    $refresh = "xajax_window_submit('list_interfaces', xajax.getFormValues('list_interfaces_filter_form'), 'display_list');";
+
     // Validate input
     if (!$form['host'] and !$form['ip']) {
         $response->addScript("alert('Please complete all fields to continue!');");
         return($response->getXML());
     }
 
-
     list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $form['orig_host']), '', 0);
-
-    // FIXME: MP: put some sort of popup that we are going to delete the host if its the last interface.
-    //if ($total_interfaces == 1) {
-        $response->addScript("var doit=confirm('This is the last interface on this host, the host will also be deleted once the interface is moved?'); if (doit == true)");
-    //}
 
     // Decide if we're editing or adding
     $module = 'interface_move_host';
@@ -1879,12 +1880,12 @@ function ws_interface_move_save($window_name, $form='') {
                 $js .= "alert('Host delete failed. ". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
             }
             else {
-                $js .= "removeElement('{$window_name}');";
+                $js .= "removeElement('{$window_name}');{$refresh}";
                 if ($form['js']) $js .= $form['js'];
             }
         }
         else {
-            $js .= "removeElement('{$window_name}');";
+            $js .= "removeElement('{$window_name}');{$refresh}";
             if ($form['js']) $js .= $form['js'];
         }
     }

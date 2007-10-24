@@ -363,6 +363,10 @@ print <<<EOL
             );
         };
 
+    // Populate the trace_history with anything that might already be in the session
+    el('trace_history').innerHTML=xajax_window_submit('work_space', 'return_html=>1', 'rewrite_history');
+
+
 --></script>
 
 <!-- Set some preferences FIXME: This shouldn't be here! -->

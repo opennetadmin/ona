@@ -3,11 +3,11 @@
 // Add and modify functions with care!
 //
 
-
+// MP: I"ve turned this off as it is of course, annoying. one of these days I'll find a better solution
 // Catch the back button(and window close) and stop the user.  only works in IE and Firefox for now.
-window.onbeforeunload = function() {
-    return("FYI, There is no need to use the back button, simply select from the trace bar.");
-}
+//window.onbeforeunload = function() {
+//    return("FYI, There is no need to use the back button, simply select from the trace bar.");
+//}
 
 
 // Add a "trim" function to Javascript's string object type
