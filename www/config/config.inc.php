@@ -12,7 +12,7 @@ $include;
 
 // Used in URL links
 //$baseURL=preg_replace('/index\.php.*/', '',$_SERVER['REQUEST_URI']); $baseURL=preg_replace('/\?.*/', '',$_SERVER['REQUEST_URI']); $baseURL = rtrim($baseURL, '/');
-$baseURL=dirname($_SERVER['SCRIPT_NAME']);
+$baseURL=dirname($_SERVER['SCRIPT_NAME']); $baseURL = rtrim($baseURL, '/');
 $images = "{$baseURL}/images";
 
 // help URL location

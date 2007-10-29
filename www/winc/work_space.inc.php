@@ -160,7 +160,7 @@ function ws_rewrite_history($window_name, $null='', $return_html=0) {
 
     $html .= "&nbsp;Trace: ";
     $and = '';
-    foreach($_SESSION['ona'][$window_name]['history'] as $history) {
+    foreach((array)$_SESSION['ona'][$window_name]['history'] as $history) {
         $history['title'] = htmlentities($history['title'], ENT_QUOTES);
         $history['type'] = htmlentities($history['type'], ENT_QUOTES);
         $history['url'] = str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']);
@@ -174,7 +174,7 @@ EOL;
     if ($return_html) return($html);
 
     // Update the work_space window's title
-    $history = end($_SESSION['ona'][$window_name]['history']);
+    if($_SESSION['ona'][$window_name]['history']) { $history = end($_SESSION['ona'][$window_name]['history']); }
     $new_title = "Work Space: {$history['type']}: {$history['title']}";
     $helplink = <<<EOL
     <a style="cursor: pointer;" title="Open online help for: {$history['type']}" onClick="document.location = '{$_ENV['help_url']}{$history['type']}';"><img src="{$images}/silk/help.png" border="0" /></a>

@@ -144,7 +144,7 @@ function ws_save($window_name, $form='') {
     if ($form['vlan_campus_id']) {
         $module = 'vlan_campus_modify';
         $form['set_name'] = $form['name'];
-        $form['campus'] = $form['vlan_campus_id'];
+        $form['name'] = $form['vlan_campus_id'];
     }
 
     // If there's no "refresh" javascript, add a command to view the new host
@@ -205,7 +205,7 @@ function ws_delete($window_name, $form='') {
     $js = '';
 
     // Run the module
-    list($status, $output) = run_module('vlan_campus_del', array('campus' => $form['vlan_campus_id'], 'commit' => 'Y'));
+    list($status, $output) = run_module('vlan_campus_del', array('name' => $form['vlan_campus_id'], 'commit' => 'Y'));
 
     // If the module returned an error code display a popup warning
     if ($status) { $js .= "alert('Delete failed. " . preg_replace('/[\s\']+/', ' ', $self['error']) . "');"; }
