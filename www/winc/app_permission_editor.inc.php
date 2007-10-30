@@ -178,7 +178,7 @@ function ws_save($window_name, $form='') {
         // Otherwise, make sure she doesn't have that permission
         else {
             if ($status == 0 and $rows == 1) {
-                list($status, $rows) = db_delete_record($onadb, 'permission_assignments', array($form['type'] => $form['id'], 'perm_id' => $permission['id']));
+                list($status, $rows) = db_delete_records($onadb, 'permission_assignments', array($form['type'] => $form['id'], 'perm_id' => $permission['id']));
                 $exit_status += $status;
             }
         }

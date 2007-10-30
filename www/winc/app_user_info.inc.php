@@ -19,10 +19,10 @@ global $conf;
 
 $output['ona_username']    = $_SESSION['ona']['auth']['user']['username'];
 $output['ona_user_level']  = $_SESSION['ona']['auth']['user']['level'];
-//$groups = array_keys($_SESSION['ona']['auth']['groups']); sort($groups);
-//$output['ona_groups']      = implode("\n", $groups);
-//$permissions = array_keys($_SESSION['ona']['auth']['perms']); sort($permissions);
-//$output['ona_permissions'] = implode("\n", $permissions);
+$groups = array_keys($_SESSION['ona']['auth']['groups']); sort($groups);
+$output['ona_groups']      = implode("\n", $groups);
+$permissions = array_keys($_SESSION['ona']['auth']['perms']); sort($permissions);
+$output['ona_permissions'] = implode("\n", $permissions);
 
 
 // Escape data for display in html
@@ -50,7 +50,7 @@ $window['html'] .= <<<EOL
     
     <tr>
         <td colspan="2" align="center" class="padding" style="font-weight: bold;">
-            <u>ONA Info</u>
+            <u>ONA User Auth Info</u>
         </td>
     </td>
     
@@ -60,7 +60,7 @@ $window['html'] .= <<<EOL
         </td>
         <td align="left" class="padding">
             <div title="Detailed info about network managment" style="float: right;"><a target="null" href="http://www.homestarrunner.com/sbemail152.html"><img src="{$images}/strongbad.gif" hspace="0" vspace="0" align="left" border="0"></a></div>
-            {$output['ona_username']} (Level: {$output['ona_user_level']})&nbsp;
+            {$output['ona_username']}
         </td>
     </td>
     
@@ -89,7 +89,8 @@ $window['html'] .= <<<EOL
             &nbsp;
         </td>
     </td>
-    
+
+    <!--  commented out for now till LDAP stuff is usefull
     <tr>
         <td colspan="2" align="center" class="padding" style="font-weight: bold;">
             <u>Domain Info</u>
@@ -122,7 +123,7 @@ $window['html'] .= <<<EOL
             {$output['groups']}
         </td>
     </td>
-    
+    -->
     
     </table>
     

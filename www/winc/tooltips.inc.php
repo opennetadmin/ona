@@ -155,7 +155,7 @@ function get_start_menu_html() {
      onClick="removeElement('start_menu'); xajax_window_submit('edit_block', ' ', 'editor');"
      title="Add a new block"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add block</div>
+ />&nbsp;Add Block</div>
 
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -406,7 +406,7 @@ EOL;
 
     <tr>
         <td align="right" class="qf-search-line">
-            <input class="button" type="button" name="login" value="Login" onClick="el('onausername').value = el('login_userid').value; removeElement('{$form['id']}');">
+            <input class="button" type="button" name="login" value="Login" onClick="el('onausername').value = el('login_userid').value; xajax_window_submit('tooltips', xajax.getFormValues('loginform_form'), 'logingo');removeElement('{$form['id']}');">
         </td>
     </tr>
 
@@ -420,7 +420,26 @@ EOL;
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+// Function: ws_logingo($window_name, $form)
+//
+// Description:
+//      Runs the actual login switch after hitting the login button in the tooltip
+//////////////////////////////////////////////////////////////////////////////
+function ws_logingo($window_name, $form='') {
+    global $conf, $self, $onadb;
+    global $font_family, $color, $style, $images;
 
+    $html = $js = '';
+    $form = parse_options_string($form);
+
+    printmsg("INFO => Attempting login as " . $form['onausername'], 0);
+    get_perms($form['onausername']);
+
+    $response = new xajaxResponse();
+    return($response->getXML());
+
+}
 
 
 
@@ -1620,6 +1639,7 @@ EOL;
 
     // Javascript to run after the window is built
     $js .= <<<EOL
+        el('share_hostname').focus();
         suggest_setup('share_hostname', 'suggest_share_hostname');
 EOL;
 
@@ -1819,6 +1839,7 @@ EOL;
 
     // Javascript to run after the window is built
     $js .= <<<EOL
+        el('move_hostname').focus();
         suggest_setup('move_hostname', 'suggest_move_hostname');
 EOL;
 

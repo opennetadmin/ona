@@ -65,7 +65,7 @@ EOL;
         $checked='';
         if ($user_groups[$group['name']]) {$checked='checked';}
         $group_check_list .= <<<EOL
-            <input type="checkbox" name="{$group['name']}" value="{$group['id']}" {$checked}> {$group['name']}<br>
+            <input type="checkbox" name="groups[{$group['name']}]" value="{$group['id']}" {$checked}> {$group['name']}<br>
 EOL;
     }
 
@@ -177,11 +177,10 @@ function ws_save($window_name, $form='') {
             'users',
             array(
                 'username' => $form['username'],
-                'level'    => $form['level'],
             )
         );
         if ($status or !$rows) {
-            $self['error'] = "ERROR => user_edit add ws_save()  SQL Query failed: " . $self['error'];
+            $self['error'] = "ERROR => user_edit_add ws_save()  SQL Query failed: " . $self['error'];
             printmsg($self['error'], 0);
         }
         else {
@@ -208,7 +207,6 @@ function ws_save($window_name, $form='') {
             ),
             array(
                 'username' => $form['username'],
-                'level'    => $form['level'],
             )
         );
         if ($status ) {
@@ -250,16 +248,6 @@ function ws_save($window_name, $form='') {
     // groups that are checked.
 
 
-    // This isn't the fastest way, but I'm getting tired.. (brandon)
-    foreach ($form['groups'] as $group) {
-        list($status, $rows, $tmp) = db_get_record($onadb, 'groups', array('name' => $group));
-        if ($rows == 0) {
-            $group = urlencode($group);
-            $js .= "alert('Invalid group specified: {$group}');";
-        }
-    }
-
-
     // Get a list of every group
     list($status, $rows, $groups) = db_get_records($onadb, 'groups', 'id > 0');
 
@@ -270,7 +258,7 @@ function ws_save($window_name, $form='') {
         $exit_status += $status;
 
         // If the user is supposed to be assigned to this group, make sure she is.
-        if (in_array($group['name'], $form['groups'])) {
+        if (array_key_exists($group['name'], $form['groups'])) {
             if ($status == 0 and $rows == 0) {
                 list($status, $rows) = db_insert_record($onadb, 'group_assignments', array('user_id' => $user['id'], 'group_id' => $group['id']));
                 $log_msg .= $more . "group_add[" . $group['name'] . "]";
@@ -281,7 +269,7 @@ function ws_save($window_name, $form='') {
         // Otherwise, make sure she doesn't have that permission
         else {
             if ($status == 0 and $rows == 1) {
-                list($status, $rows) = db_delete_record($onadb, 'group_assignments', array('user_id' => $user['id'], 'group_id' => $group['id']));
+                list($status, $rows) = db_delete_records($onadb, 'group_assignments', array('user_id' => $user['id'], 'group_id' => $group['id']));
                 $log_msg .= $more . "group_del[" . $group['name'] . "]";
                 $more= ";";
                 $exit_status += $status;
