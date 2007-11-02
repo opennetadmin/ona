@@ -25,12 +25,10 @@ require_once($conf['inc_functions']);
 parse_str($_SERVER['QUERY_STRING']);
 
 // Start out the session as a guest with level 0 access.  This is for view only mode.
-//$_SESSION['ona']['auth']['user']['username'] = "guest";
-// FIXME: MP it may be best to not set level and allow the admin to define what the initial "guest" access will be via the auth system.
-//$_SESSION['ona']['auth']['user']['level'] = "0";
-
-
-//get_perms('guest');
+if (!$_SESSION['ona']['auth']['user']['username']) {
+    $_SESSION['ona']['auth']['user']['username'] = 'guest';
+    get_perms('guest');
+}
 
 // Include xajax stuff (ajax calls will never make it past this line)
 require_once($conf['inc_xajax_stuff']);

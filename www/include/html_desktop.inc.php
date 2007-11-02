@@ -185,7 +185,7 @@ print <<<EOL
             <span class="topmenu-item" style="cursor: pointer;" title="Open online help" onClick="document.location = '{$_ENV['help_url']}'; /* FIXME: Open help in an iframe in a window */">
                 <img style="vertical-align: middle;" title="Global help index" src="{$images}/silk/help.png" border="0" />
             </span>
-            <span class="topmenu-item" style="cursor: pointer;" title="Logout" onClick="var doit=confirm('Logout?'); if (doit == true) document.location = 'logout.php';">
+            <span class="topmenu-item" style="cursor: pointer;" title="Logout" onClick="var doit=confirm('Are you sure you want to logout?'); if (doit == true) document.location = 'logout.php';">
                 <img style="vertical-align: middle;" title="Logout" src="{$images}/silk/door_out.png" border="0" />
             </span>
 

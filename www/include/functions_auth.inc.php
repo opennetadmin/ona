@@ -1,5 +1,45 @@
 <?php
 
+
+function get_authentication($login_name='guest', $login_password='') {
+    global $conf, $self, $onadb;
+
+
+    // Instantiate the xajaxResponse object
+   // $response = new xajaxResponse();
+    $js = "el('loginmsg').innerHTML = '<span style=\"color: green;\">Success!</span>'; setTimeout('removeElement(\'tt_loginform\')',1000);";
+    $exit_status = 0;
+
+    // Validate the userid was passed and is "clean"
+    if (!preg_match('/^[A-Za-z0-9.\-_]+$/', $login_name)) {
+        $js = "el('loginmsg').innerHTML = 'Bad username format';";
+        printmsg("ERROR => Login failure for {$login_name}: Bad username format", 0);
+        return(array(1, $js));
+    }
+
+    list($status, $rows, $user) = db_get_record($onadb, 'users', "username LIKE '{$login_name}'");
+
+    if (!$rows) {
+        $js = "el('loginmsg').innerHTML = 'Unknown user';";
+        printmsg("ERROR => Login failure for {$login_name}: Unknown user", 0);
+        return(array(1, $js));
+    }
+
+
+    if ($user['password'] != $login_password) {
+        $js = "el('loginmsg').innerHTML = 'Password incorrect';";
+        printmsg("ERROR => Login failure for {$login_name}: Password incorrect", 0);
+        return(array(1, $js));
+    }
+
+    // If the password is good.. return success.
+    printmsg("INFO => Authentication Successful for {$login_name}", 0);
+    return(array($exit_status, $js));
+}
+
+
+
+
 function get_perms($login_name='') {
     global $conf, $self, $onadb;
 
@@ -69,7 +109,7 @@ function get_perms($login_name='') {
     $_SESSION['ona']['auth']['perms']  = $permissions;
 
     // Log that the user logged in
-    printmsg("INFO => Successful login as " . $login_name, 0);
+    printmsg("INFO => Authorization successful for " . $login_name, 0);
     return(0);
 
 }

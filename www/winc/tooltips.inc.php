@@ -392,21 +392,39 @@ EOL;
     <!-- LOGIN PROMPT -->
     <form id="loginform_form" onSubmit="return(false);">
     <input id="onausername" type="hidden" name="onausername">
+    <input id="onapassword" type="hidden" name="onapassword">
     <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
 
     <tr><td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
     Password
     </td></tr>
 
-    <tr>
+    <tr colspan="2" align="center">
         <td>
-            <input id="onapassword" name="onapassword" type="text" size="12">
+            <input id="getpass" name="getpass" type="password" size="12">
         </td>
     </tr>
-
+    <tr colspan="2" align="center">
+        <td>
+            <span id="loginmsg" style="color: red;font-size: x-small;"></span>
+        </td>
+    </tr>
     <tr>
         <td align="right" class="qf-search-line">
-            <input class="button" type="button" name="login" value="Login" onClick="el('onausername').value = el('login_userid').value; xajax_window_submit('tooltips', xajax.getFormValues('loginform_form'), 'logingo');removeElement('{$form['id']}');">
+            <input  class="button"
+                    type="button"
+                    name="cancel"
+                    value="Cancel"
+                    onClick="removeElement('{$form['id']}');"
+            >
+            <input  class="button"
+                    type="button"
+                    name="login"
+                    value="Login"
+                    onClick="el('onausername').value = el('login_userid').value;
+                             el('onapassword').value = make_md5(el('getpass').value);
+                             xajax_window_submit('tooltips', xajax.getFormValues('loginform_form'), 'logingo');"
+            >
         </td>
     </tr>
 
@@ -433,10 +451,15 @@ function ws_logingo($window_name, $form='') {
     $html = $js = '';
     $form = parse_options_string($form);
 
-    printmsg("INFO => Attempting login as " . $form['onausername'], 0);
-    get_perms($form['onausername']);
+    printmsg("INFO => Attempting login as " . $form['onausername'] ."/". $form['onapassword'], 0);
+
+    list($status, $js) = get_authentication($form['onausername'],$form['onapassword']);
+
+    if ($status==0)
+        get_perms($form['onausername']);
 
     $response = new xajaxResponse();
+    $response->addScript($js);
     return($response->getXML());
 
 }
