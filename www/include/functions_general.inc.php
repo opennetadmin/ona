@@ -54,8 +54,8 @@ function printmsg($msg="",$debugLevel=0) {
         // Print to syslogd if needed
         if ($conf['syslog']) {
             // Get a username or "anonymous"
-            if (isset($_SESSION['auth']['user']['username']))
-                $username = $_SESSION['auth']['user']['username'];
+            if (isset($_SESSION['ona']['auth']['user']['username']))
+                $username = $_SESSION['ona']['auth']['user']['username'];
             else
                 $username = "anonymous";
 
@@ -123,8 +123,8 @@ function logmsg($message, $logfile="") {
     $uname = posix_uname();
 
     // Get a username or "anonymous"
-    if (isset($_SESSION['auth']['user']['username'])) {
-        $username = $_SESSION['auth']['user']['username'];
+    if (isset($_SESSION['ona']['auth']['user']['username'])) {
+        $username = $_SESSION['ona']['auth']['user']['username'];
     }
     else {
         $username = "anonymous";
@@ -265,6 +265,169 @@ function microtime_float() {
 
 
 
+///////////////////////////////////////////////////////////////////////
+//  Function: ip_mangle($ip, [$format])
+//
+//  $input is the ip address in either numeric or dotted format
+//  $format is the format the ip address will be returned in:
+//    1 or numeric:  170666057
+//    2 or dotted:   10.44.40.73
+//    3 or cidr:     24 (or /24) (for netmasks only)
+//    4 or binary:   1010101010101010101010101010101010101010
+//
+//  Options 5,6,7 are only supported by GMP module
+//    5 or bin128:   1010101010101010101010101010101010101010... (128 bits)
+//    6 or ipv6:     FE80:0000:0000:0000:0202:B3FF:FE1E:8329
+//    7 or ipv6gz:   FE80::202:B3FF:FE1E:8329 or
+//                   ::C000:280 or
+//                   ::ffff:C000:280
+//
+//
+//
+//    8 or flip:     10.1.2.3 changes to 3.2.1.10
+//
+//
+//  Wrapper around the two versions of ip_mangle.  one with GMP one without.
+//  The non GMP version is not ipv6 compatible
+//
+//  Example:
+//      print "IP is: " . ip_mangle(170666057)
+///////////////////////////////////////////////////////////////////////
+function ip_mangle($ip="", $format="default") {
+    global $self;
+
+
+    if (function_exists('gmp_init')) {
+        return(ip_mangle_gmp($ip, $format));
+    }
+    else {
+        printmsg("INFO => Falling back to non GMP enabled ip_mangle function",5);
+        return(ip_mangle_no_gmp($ip, $format));
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: ip_mangle($ip, [$format])
+//
+//  $input is the ip address in either numeric or dotted format
+//  $format is the format the ip address will be returned in:
+//    1 or numeric:  170666057
+//    2 or dotted:   10.44.40.73
+//    3 or cidr:     24 (or /24) (for netmasks only)
+//    4 or binary:   1010101010101010101010101010101010101010
+//    8 or flip:     10.1.2.3 changes to 3.2.1.10
+//
+//  Formats the input IP address into the format specified.  When a
+//  format is not specified dotted format is returned unless you
+//  supply a dotted input, in which case numeric format (1) is returned.
+//  Returns -1 on any error and stores a message in $self['error']
+//
+//  Example:
+//      print "IP is: " . ip_mangle(170666057)
+///////////////////////////////////////////////////////////////////////
+function ip_mangle_no_gmp($ip="", $format="default") {
+    global $self;
+
+    // Is input in dotted format (2)?
+    if (preg_match('/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/', $ip)) {
+        $ip = ip2long($ip);
+        if ($format == "default") { $format = 1; }
+    }
+
+    // Is it in CIDR format (3)?
+    else if (preg_match('/^\/?(\d{1,2})$/', $ip, $matches)) {
+        if (!($matches[1] >= 0 && $matches[1] <= 32)) {
+            $self['error'] = "ERROR => Invalid CIDR mask";
+            return(-1);
+        }
+        // So create a binary string of 1's and 0's and convert it to an int
+        $ip = bindec(str_pad(str_pad("", $matches[1], "1"), 32, "0"));
+        if ($format == "default") { $format = 2; }
+    }
+
+    // Is it in binary format (4)?
+    else if (preg_match('/^[01]{32}$/', $ip)) {
+        $ip = bindec($ip);
+        if ($format == "default") { $format = 2; }
+    }
+
+    // If it has a non-digit character, it's invalid.
+    else if (preg_match('/\D/', $ip)) {
+        $ip = -1;
+    }
+
+    // Then input must be in numeric format (1)
+    else {
+        // We flip it to dotted and back again to make sure it's a valid address
+        $ip = long2ip($ip);
+        $ip = ip2long($ip);
+        if ($format == "default") { $format = 2; }
+    }
+
+
+    // If the address wasn't valid return an error
+    if ($ip == -1) {
+        $self['error'] = "ERROR => Invalid IP address";
+        return(-1);
+    }
+
+
+    // Is output format 1 (numeric)?
+    if ($format == 1 or $format == 'numeric') {
+        return(sprintf("%u", $ip));
+    }
+
+    // Is output format 2 (dotted)?
+    else if ($format == 2 or $format == 'dotted') {
+        return(long2ip($ip));
+    }
+
+    // Is output format 3 (CIDR)?
+    else if ($format == 3 or $format == 'cidr') {
+        // Make sure the address is a valid mask - convert it to 1's and 0's,
+        // then make sure it's all 1's followed by all 0's.
+        $binary = str_pad(decbin($ip), 32, "0", STR_PAD_LEFT);
+        if (!(preg_match('/^1+0*$/', $binary))) {
+            $self['error'] = "ERROR => IP address specified is not a valid netmask";
+            return(-1);
+        }
+        // Return the number of 1's at the beginning of the binary representation of $ip
+        return(strlen(rtrim($binary,"0")));
+    }
+
+    // Is output format 4 (binary string)?
+    else if ($format == 4 or $format == 'binary') {
+        // Convert the integer to it's 32 bit binary representation
+        return(str_pad(decbin($ip), 32, "0", STR_PAD_LEFT));
+    }
+
+    // Is output format 8 (flipped IP string)?
+    else if ($format == 8 or $format == 'flip') {
+        $octet = explode('.',long2ip(sprintf("%s", $ip)));
+        return(sprintf("%s.%s.%s.%s",$octet[3],$octet[2],$octet[1],$octet[0]));
+    }
+
+    else {
+        $self['error'] = "ERROR => ip_mangle() Invalid IP address format specified!";
+        return(-1);
+    }
+
+}
+
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: ip_mangle($ip, [$format])
@@ -294,7 +457,7 @@ function microtime_float() {
 //  Example:
 //      print "IP is: " . ip_mangle(170666057)
 ///////////////////////////////////////////////////////////////////////
-function ip_mangle($ip="", $format="default") {
+function ip_mangle_gmp($ip="", $format="default") {
     // is_ipv4 returns TRUE if $inp can be represented as an IPv4 address
     //                 FALSE if $inp cannot be represented as an IPv4 address (e.g. IPv6)
     // Note: $inp is a 'gmp' resource, created by 'gmp_init()'.
@@ -305,7 +468,7 @@ function ip_mangle($ip="", $format="default") {
             return FALSE;
         }
     }
-    
+
     // Split a string into an array, each element of length $length characters.
     // This function doesn't exist in PHP < 5.0.0.
     if (!function_exists("str_split")) {
@@ -319,23 +482,23 @@ function ip_mangle($ip="", $format="default") {
             return $ret;
         }
     }
-    
+
     // Converts an ipv6 formatted input string to a GMP resource
     if (!function_exists("ip2gmp6")) {
         function ip2gmp6($ip) {
             // Expand '::' to zero stanzas
             if (substr_count($ip, '::'))
-                $ip = str_replace('::', 
+                $ip = str_replace('::',
                     str_repeat(':0000', 8-substr_count($ip, ':')) . ':', $ip);
             $ip = explode(':', $ip) ;
             $r_ip = '';
             // Insert any missing leading zeros in each stanza.
             foreach ($ip as $v)
-                   $r_ip .= str_pad($v, 4, 0, STR_PAD_LEFT) ;  
+                   $r_ip .= str_pad($v, 4, 0, STR_PAD_LEFT) ;
             return (gmp_init($r_ip, 16));
         }
     }
-    
+
     // When given an uncompressed IPv6 address string of the form
     // 0000:1111:2222:3333:4444:5555:6666:7777:8888, this
     // will return a 'compressed' IPv6 address string.  It replaces the
@@ -372,7 +535,7 @@ function ip_mangle($ip="", $format="default") {
                     }
                 }
                 array_pop($e);    // remove the sentinel value
-                
+
                 // Replace that sequence with '::', strip leading zeros, etc
                 $newip=array();
                 foreach($e as $key=>$val) {
@@ -396,7 +559,7 @@ function ip_mangle($ip="", $format="default") {
             return $ip;
         }
     }
-        
+
     global $self;
 
     // Is input in IPv4 dotted format (2)?
@@ -461,7 +624,7 @@ function ip_mangle($ip="", $format="default") {
     // If we get here, then the input must be in numeric format (1)
     else {
         $ip = gmp_init(strval($ip), 10);
-        if ($format == "default") { 
+        if ($format == "default") {
             if(is_ipv4($ip))
                 $format = "dotted";
             else
@@ -528,7 +691,7 @@ function ip_mangle($ip="", $format="default") {
         // Convert the number to 8x 16-bit hexidecimal stanzas.
         return(implode(":", str_split(str_pad(gmp_strval($ip, 16), 32, "0", STR_PAD_LEFT), 4)));
     }
-    
+
     // Is output format 7 (compressed IPv6 string)?
     else if ($format == 7 or $format == 'ipv6gz') {
         return(ipv6gz(implode(":", str_split(str_pad(gmp_strval($ip, 16), 32, "0", STR_PAD_LEFT), 4))));
@@ -909,10 +1072,10 @@ function startSession() {
 
     // Set the name of the cookie (nicer than default name)
     session_name("ONA_SESSION_ID");
-    
+
     // Set cookie to expire at end of session
     session_set_cookie_params(0, '/');
-    
+
     // (Re)start the session
     session_start();
 
@@ -992,18 +1155,18 @@ function loggedIn() {
 // Returns true if the current user has access to the requested resource,
 // false if not.
 //////////////////////////////////////////////////////////////////////////////
-function auth($resource) {
-    
+function auth($resource,$msg_level=0) {
+
     // FIXME: hack until we get auth stuff working:
-    printmsg("DEBUG => FIXME: auth() always returns true for now", 1);
-    return true;
-    
+    //printmsg("DEBUG => FIXME: auth() always returns true for now", 1);
+    //return true;
+
     if (!is_string($resource)) return false;
     if (array_key_exists($resource, $_SESSION['ona']['auth']['perms'])) {
-        printmsg("DEBUG => auth() {$_SESSION['ona']['auth']['user']['username']} has the {$resource} permission",1);
+        printmsg("INFO => auth() User[{$_SESSION['ona']['auth']['user']['username']}] has the {$resource} permission",5);
         return true;
     }
-    printmsg("DEBUG => auth() {$_SESSION['ona']['auth']['user']['username']} does not have the {$resource} permission",1);
+    printmsg("INFO => auth() User[{$_SESSION['ona']['auth']['user']['username']}] does not have the {$resource} permission",$msg_level);
     return false;
 }
 
@@ -1016,11 +1179,11 @@ function auth($resource) {
 // the level passed into the function.  Returns false if not.
 //////////////////////////////////////////////////////////////////////////////
 function authlvl($level) {
-    
+
     // FIXME: hack until we get auth stuff working:
     printmsg("DEBUG => FIXME: authlvl() always returns true for now", 1);
     return true;
-    
+
     if (!is_numeric($level)) return false;
     if ($_SESSION['ona']['auth']['user']['level'] >= $level) {
         printmsg("DEBUG => authlvl() {$_SESSION['ona']['auth']['user']['username']}'s level is >= {$level}",1);
@@ -1141,14 +1304,15 @@ function run_module($module='', $options='', $transaction=1) {
             // Quote any "special" characters in the value.
             // Specifically the '=' and '&' characters need to be escaped.
             $options[$key] = str_replace(array('=', '&'), array('\=', '\&'), $options[$key]);
-            if ($options[$key] != "") {
+            // If the key has no value or it is the javascript key, dont print it.
+            if (($options[$key] != "") and ($key != 'js')) {
                 $options_string .= "{$and}{$key}={$options[$key]}";
                 $and = '&';
             }
         }
     }
 
-    printmsg("INFO => running module: {$module} options: {$options_string}", 0);
+    printmsg("INFO => Running module: {$module} options: {$options_string}", 0);
 
     // Load the module
     if (load_module($module)) { return(array(1, $self['error'] . "\n")); }

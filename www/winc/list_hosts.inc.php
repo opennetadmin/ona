@@ -72,7 +72,7 @@ function ws_display_list($window_name, $form='') {
 
         // Split it up on '.' and put it in an array backwards
         $parts = array_reverse(explode('.', $form['hostname']));
-    
+
         // Find the domain name that best matches
         $name = '';
         $domain = array();
@@ -117,7 +117,7 @@ function ws_display_list($window_name, $form='') {
 
         // Split it up on '.' and put it in an array backwards
         $parts = array_reverse(explode('.', $form['domain']));
-    
+
         // Find the domain name that best matches
         $name = '';
         $domain = array();
@@ -137,7 +137,7 @@ function ws_display_list($window_name, $form='') {
         }
 
         if (array_key_exists('id', $domain)) {
-    
+
             // We do a sub-select to find id's that match
             $where .= $and . "id IN (SELECT host_id ".
                                        "FROM interfaces " .
@@ -275,15 +275,6 @@ function ws_display_list($window_name, $form='') {
     }
 
 
-
-
-
-    // HIJACK!!!
-    // If $form['type'] == aliases, jump to that function
-    if ($form['type'] == 'aliases') {
-        $form['host_where'] = $where;
-        return(ws_display_alias_list($window_name, $form));
-    }
 
 
     // Wild card .. if $while is still empty, add a 'ID > 0' to it so you see everything.

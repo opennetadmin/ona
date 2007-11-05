@@ -98,7 +98,7 @@ print <<<EOL
 
     <!-- Top (Task) Bar -->
     <div class="bar" id="bar_top">
-
+        <div style="position: absolute; font-size: 8px; top: 1px; z-index: 2; right: 5px;">© 2007 OpenNetAdmin - v1.0</div>
         <!-- Left Side -->
         <div class="bar-left">
 
@@ -171,6 +171,7 @@ print <<<EOL
                     value="{$_SESSION['ona']['auth']['user']['username']}"
                     name="login_userid"
                     size="12"
+                    onkeypress="if (event.keyCode == 9 || event.keyCode == 13) { el('getpass').focus(); }"
                     onclick="wwTT(this, event,
                                         'id', 'tt_loginform',
                                         'type', 'static',

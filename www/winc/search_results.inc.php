@@ -26,8 +26,6 @@ function ws_search_results_submit($window_name, $form='') {
         'js'    => "",
     );
 
-// $js .= "alert('Where: " . str_replace("'", '"', $form['subnet_id']) . "');";
-
     // Load some html into $window['html']
     $form_id = "{$window_name}_filter_form";
     $content_id = $_SESSION['ona'][$form_id]['content_id'] = "{$window_name}_list";
@@ -124,7 +122,6 @@ EOL;
            // We (unfortunately) have to do a few sql queries to see what kind of
            // search this is and what "tab" we'll be displaying data on.
            list($tab, $form) = quick_search($form['q']);
-//$window['js'] .= "alert('Where: " . str_replace("'", '"', $form_id) . "');";
            break;
     }
 
@@ -197,7 +194,7 @@ function quick_search($q) {
     //         Look for a subnet name
 
     printmsg("DEBUG => quick_search({$q}) called", 3);
-    
+
 
 
     // See if $q identifies an interface record (by IP, MAC, etc)
@@ -245,7 +242,7 @@ function qsearch_command($q) {
     $response = new xajaxResponse();
 
     // bz: FIXME!! Most of these should be moved to a user preferences application
-    
+
     // Set list row length
     // Note that when you remove this, you must also remove a few lines in the ona_functions include file
     if (strpos($q, 'rows ') === 0) {
@@ -271,10 +268,6 @@ function qsearch_command($q) {
 
     // Normal text flow
     if ($q == 'textltr') $js .= "document.body.style.direction = 'ltr';";
-
-    // Umm...
-    if ($q == 'the cracked eggs')
-        $js .= "alert('You found it!\\nThis site was toiled over by Matt Pascoe and Brandon Zehm\\nduring the year of 2006.');";
 
 
     if ($js) {
@@ -323,7 +316,7 @@ function ws_change_tab($window_name, $form, $display_list=1, $return_text=0) {
     // Save the new tab in the session
     $old_tab = $_SESSION['ona'][$form_id]['tab'];
     $_SESSION['ona'][$form_id]['tab'] = $tab;
-    
+
     // Make the old tab look inactive
     $js .= "_el = el('{$form_id}_{$old_tab}_tab'); if (_el) _el.className = 'table-tab-inactive';";
 

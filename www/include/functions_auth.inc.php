@@ -4,9 +4,6 @@
 function get_authentication($login_name='guest', $login_password='') {
     global $conf, $self, $onadb;
 
-
-    // Instantiate the xajaxResponse object
-   // $response = new xajaxResponse();
     $js = "el('loginmsg').innerHTML = '<span style=\"color: green;\">Success!</span>'; setTimeout('removeElement(\'tt_loginform\')',1000);";
     $exit_status = 0;
 
