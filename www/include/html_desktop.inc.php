@@ -21,7 +21,8 @@ list ($status, $block_count, $records)      = db_get_records($onadb, 'blocks', $
 // The following checks with the opennetadmin server to see what the most current version is.
 // It will do this each time the interface is opened so the traffic should be very minimal.
 @ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']);
-$onachkserver = @gethostbynamel('opennetadmin.com');
+//$onachkserver = @gethostbynamel('opennetadmin.com');
+$onachkserver[0] = 'opennetadmin.com';
 if ($onachkserver[0]) {
     $old = @ini_set('default_socket_timeout', 2);
     $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
@@ -31,12 +32,12 @@ $onaver = "Unable to determine";
 if ($file) {
     while (!feof ($file)) {
         $buffer = trim(fgets ($file, 4096));
-        $onaver .= $buffer;
+        $onaver = $buffer;
     }
     fclose($file);
 }
 if ($conf['version'] == $onaver) {
-    $versit = "<img src='{$images}/silk/accept.png'> You are on the most current version! ({$onaver})";
+    $versit = "<img src='{$images}/silk/accept.png'> You are on the most current version! ({$onaver})<br>";
 }
 else {
     $sty='fail';
