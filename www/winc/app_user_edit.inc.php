@@ -78,6 +78,7 @@ EOL;
     <!-- Simple User Edit Form -->
     <form id="user_edit_form" onSubmit="return false;">
     <input type="hidden" name="user_id" value="{$user['id']}">
+    <input id="password" type="hidden" name="password" value="{$user['password']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
         <tr>
             <td align="right">
@@ -90,6 +91,23 @@ EOL;
                     value="{$user['username']}"
                     class="edit"
                     type="text"
+                    size="20" maxlength="32"
+                >
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right">
+                Password
+            </td>
+            <td class="padding" align="left" width="100%">
+                <input
+                    id="pass"
+                    name="pass"
+                    alt="pass"
+                    value=""
+                    class="edit"
+                    type="password"
                     size="20" maxlength="32"
                 >
             </td>
@@ -114,7 +132,7 @@ EOL;
                 <input class="edit" type="button"
                     name="submit"
                     value="Save"
-                    onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('user_edit_form'), 'save');"
+                    onClick="if (el('pass').value != '') { el('password').value = make_md5(el('pass').value); } xajax_window_submit('{$window_name}', xajax.getFormValues('user_edit_form'), 'save');"
                 >
             </td>
         </tr>
@@ -177,6 +195,7 @@ function ws_save($window_name, $form='') {
             'users',
             array(
                 'username' => $form['username'],
+                'password' => $form['password'],
             )
         );
         if ($status or !$rows) {
@@ -207,6 +226,7 @@ function ws_save($window_name, $form='') {
             ),
             array(
                 'username' => $form['username'],
+                'password' => $form['password'],
             )
         );
         if ($status ) {

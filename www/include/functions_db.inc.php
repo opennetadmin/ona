@@ -203,7 +203,7 @@ EOL;
 
 
 
-
+/* MP: Brandons functions, not currently used here.
 
 
 
@@ -292,7 +292,7 @@ function acl_add($user_id, $perm_name) {
 
 
 
-
+*/
 
 
 

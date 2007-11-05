@@ -57,6 +57,32 @@ CREATE TABLE `configurations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores various types of text configurations';
 
 --
+-- Table structure for table `custom_attribute_types`
+--
+
+DROP TABLE IF EXISTS `custom_attribute_types`;
+CREATE TABLE `custom_attribute_types` (
+  `id` int(10) unsigned NOT NULL,
+  `name` varchar(63) NOT NULL,
+  `notes` varchar(127) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Configuration types';
+
+--
+-- Table structure for table `custom_attributes`
+--
+
+DROP TABLE IF EXISTS `custom_attributes`;
+CREATE TABLE `custom_attributes` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `table_name_ref` varchar(40) NOT NULL COMMENT 'the name of the table conaining the associated record',
+  `table_id_ref` int(10) unsigned NOT NULL default '0' COMMENT 'the id within the table_name_ref table to associate with',
+  `custom_attribute_type_id` int(10) NOT NULL,
+  `attribute` longtext NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores general messages for ONA "display" pages';
+
+--
 -- Table structure for table `dcm_module_list`
 --
 
@@ -83,7 +109,7 @@ CREATE TABLE `defaults` (
   `default_value` text NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `device_types`
@@ -206,6 +232,8 @@ CREATE TABLE `dns` (
   `name` varchar(255) NOT NULL COMMENT 'verify/set length',
   `ebegin` timestamp NOT NULL default CURRENT_TIMESTAMP COMMENT 'effective begin time.  used to  build new records, and disable a record if needed by setting all zeros',
   `notes` varchar(128) NOT NULL,
+  `mx_preference` tinyint(5) unsigned NOT NULL,
+  `txt` varchar(255) NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='IP addr comes from interface_id';
 
@@ -245,6 +273,32 @@ CREATE TABLE `domains` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Domain name definitions';
 
 --
+-- Table structure for table `group_assignments`
+--
+
+DROP TABLE IF EXISTS `group_assignments`;
+CREATE TABLE `group_assignments` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `group_id` int(10) unsigned NOT NULL default '0',
+  `user_id` int(10) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+
+--
+-- Table structure for table `groups`
+--
+
+DROP TABLE IF EXISTS `groups`;
+CREATE TABLE `groups` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `name` varchar(32) NOT NULL default '',
+  `description` varchar(255) NOT NULL default '',
+  `level` tinyint(4) NOT NULL default '0',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
+
+--
 -- Table structure for table `host_roles`
 --
 
@@ -269,6 +323,18 @@ CREATE TABLE `hosts` (
   `notes` varchar(255) NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Host / device definitions';
+
+--
+-- Table structure for table `interface_clusters`
+--
+
+DROP TABLE IF EXISTS `interface_clusters`;
+CREATE TABLE `interface_clusters` (
+  `interface_id` int(10) unsigned NOT NULL,
+  `host_id` int(10) unsigned NOT NULL,
+  `name` varchar(255) NOT NULL COMMENT 'interface name used on this host, ie, could be carp0 on box A and carp1 on box B',
+  PRIMARY KEY  (`interface_id`,`host_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores interface to host cluster relationships';
 
 --
 -- Table structure for table `interfaces`
@@ -320,15 +386,15 @@ CREATE TABLE `manufacturers` (
 DROP TABLE IF EXISTS `messages`;
 CREATE TABLE `messages` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `table_name_ref` varchar(40) NOT NULL default '',
-  `table_id_ref` int(10) unsigned NOT NULL default '0',
+  `table_name_ref` varchar(40) NOT NULL COMMENT 'the name of the table conaining the associated record',
+  `table_id_ref` int(10) unsigned NOT NULL default '0' COMMENT 'the id within the table_name_ref table to associate with',
   `priority` varchar(20) NOT NULL default '',
   `username` varchar(40) NOT NULL default '',
   `mtime` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   `expiration` timestamp NOT NULL default '0000-00-00 00:00:00',
   `message_text` text NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1 COMMENT='Stores general messages for ONA "display" pages';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores general messages for ONA "display" pages';
 
 --
 -- Table structure for table `models`
@@ -342,6 +408,32 @@ CREATE TABLE `models` (
   `snmp_sysobjectid` varchar(255) NOT NULL COMMENT 'This is a device-specific SNMP identification string, provided by the device.',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Table structure for table `permission_assignments`
+--
+
+DROP TABLE IF EXISTS `permission_assignments`;
+CREATE TABLE `permission_assignments` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `perm_id` int(10) unsigned NOT NULL default '0',
+  `user_id` int(10) unsigned NOT NULL default '0',
+  `group_id` int(10) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
+
+--
+-- Table structure for table `permissions`
+--
+
+DROP TABLE IF EXISTS `permissions`;
+CREATE TABLE `permissions` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `name` varchar(32) NOT NULL default '',
+  `description` varchar(255) NOT NULL default '',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `roles`
@@ -408,6 +500,22 @@ CREATE TABLE `subnets` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='IP subnet definitions';
 
 --
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `username` varchar(32) NOT NULL default '',
+  `password` varchar(64) NOT NULL,
+  `level` tinyint(4) NOT NULL default '0',
+  `ctime` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `atime` timestamp NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+
+--
 -- Table structure for table `vlan_campuses`
 --
 
@@ -440,4 +548,4 @@ CREATE TABLE `vlans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2007-07-31 19:01:52
+-- Dump completed on 2007-11-05  3:58:52
