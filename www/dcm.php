@@ -17,6 +17,19 @@ $output = "ERROR => No module specified!\n";
 // $remote_ip = ip_mangle($_SERVER['REMOTE_ADDR'], 'numeric');
 // if (!in_array($remote_ip, $ips)) { print "1\r\nPermission denied!\n"; exit; }
 
+printmsg("DEBUG => DCM_USER: {$_SERVER['PHP_AUTH_USER']}", 4);
+
+// FIXME: for now this hard codes the user.. this needs to pay attention to the user passed in and the password!
+if ($_SERVER['PHP_AUTH_USER'] == '') {
+    $_SESSION['ona']['auth']['user']['username']='dcm.pl';
+    get_perms('dcm.pl');
+}
+else {
+    $_SESSION['ona']['auth']['user']['username']=$_SERVER['PHP_AUTH_USER'];
+    get_perms($_SERVER['PHP_AUTH_USER']);
+}
+
+
 // Display the current debug level if it's above 1
 printmsg("DEBUG => debug level: {$conf['debug']}", 1);
 

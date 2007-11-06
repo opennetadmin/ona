@@ -1162,7 +1162,7 @@ function auth($resource,$msg_level=0) {
     //return true;
 
     if (!is_string($resource)) return false;
-    if (array_key_exists($resource, $_SESSION['ona']['auth']['perms'])) {
+    if (array_key_exists($resource, (array)$_SESSION['ona']['auth']['perms'])) {
         printmsg("INFO => auth() User[{$_SESSION['ona']['auth']['user']['username']}] has the {$resource} permission",5);
         return true;
     }
