@@ -54,6 +54,12 @@ function ws_display_list($window_name, $form='') {
     $where = "";
     $and = "";
 
+    // DISPLAY ALL
+    if ($form['all_flag']) {
+        $where .= $and . "id > 0";
+        $and = " AND ";
+    }
+
     // SUBNET ID
     if ($form['subnet_id']) {
         $where .= $and . "id = " . $form['subnet_id'];

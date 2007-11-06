@@ -56,6 +56,12 @@ function ws_display_list($window_name, $form='') {
     $and = "";
     $orderby = "";
 
+    // DISPLAY ALL
+    if ($form['all_flag']) {
+        $where .= $and . "id > 0";
+        $and = " AND ";
+    }
+
     // HOST ID
     if ($form['host_id']) {
         $where .= $and . "id = " . $onadb->qstr($form['host_id']);
@@ -64,7 +70,6 @@ function ws_display_list($window_name, $form='') {
 
 
     // HOSTNAME
-    $aliases = 0;
     if ($form['hostname']) {
         // Find the domain name piece of the hostname.
         // FIXME: MP this was taken from the ona_find_domain function. make that function have the option
@@ -93,17 +98,36 @@ function ws_display_list($window_name, $form='') {
 
         $withdomain = '';
         $hostname = $form['hostname'];
+        // If you found a domain in the query, add it to the search, and strip the domain from the host portion.
         if (array_key_exists('id', $domain)) {
             $withdomain = "AND domain_id = {$domain['id']}";
             // Now find what the host part of $search is
             $hostname = str_replace(".{$domain['fqdn']}", '', $form['hostname']);
         }
+
+
+        // MP: Doing the many select IN statements was too slow.. I did this kludge:
+        //  1. get a list of all the interfaces
+        //  2. loop through the array and build a list of comma delimited host_ids to use in the final select
+        list($status, $rows, $tmp) = db_get_records($onadb, 'interfaces', "id in (SELECT interface_id FROM dns WHERE name LIKE '%{$hostname}%' {$withdomain})");
+        $commait = '';
+        $hostids = '';
+        foreach ($tmp as $item) {
+            $hostids .= $commait.$item['host_id'];
+            $commait = ',';
+        }
+
+        // MP: this is the old, slow query for reference.
+        //
         // TODO: MP this seems to be kinda slow (gee I wonder why).. look into speeding things up somehow.
         //       This also does not search for CNAME records etc.  only things with interface_id.. how to fix that issue.......?
-        $where .= $and . "id IN (select host_id from interfaces where id in (SELECT interface_id " .
-                                "  FROM dns " .
-                                "  WHERE name LIKE '%{$hostname}%' {$withdomain} ))";
+        //        $where .= $and . "id IN (select host_id from interfaces where id in (SELECT interface_id " .
+        //                                "  FROM dns " .
+        //                                "  WHERE name LIKE '%{$hostname}%' {$withdomain} ))";
+
+        $where .= $and . "id IN ($hostids)";
         $and = " AND ";
+
     }
 
 
@@ -567,7 +591,7 @@ EOL;
 EOL;
 
     // If there was only 1 result, and we're about to display results in the "Search Results" window, display it.
-    if ($count == 1 and $aliases == 0 and $form['content_id'] == 'search_results_list' and $form['filter'] == '')
+    if ($count == 1 and $form['content_id'] == 'search_results_list' and $form['filter'] == '')
         $js .= $primary_object_js;
 
     // Insert the new html into the content div specified
