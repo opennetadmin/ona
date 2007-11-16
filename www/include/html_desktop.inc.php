@@ -373,11 +373,11 @@ print <<<EOL
 --></script>
 
 <!-- Side toolbar -->
-<div nowrap style="position: absolute;top: 85px;right: 1px;z-index: 10;">
+<div nowrap style="position: absolute;top: 85px;right: 1px;z-index: 10;background: #E3E3F0;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;">
     <div style="float:left;padding: 5px 2px;" onclick="toggleBox('ipcalc_content');">
     <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" />
     </div>
-    <div id="ipcalc_content" style="visibility: hidden;display:none;background: #E3E3F0;padding: 5px;">
+    <div id="ipcalc_content" style="visibility: hidden;display:none;background: #E3E3F0;padding: 5px;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;">
         <form id="ipcalc_form" onsubmit="return false;">
             IP: <input type="text" name="ip" />
             Mask: <input type="text" name="mask" />
