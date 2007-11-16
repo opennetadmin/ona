@@ -27,7 +27,7 @@ function ws_editor($window_name, $form='') {
     $window['js'] = '';
 
     // Check permissions
-    if (! (auth('record_modify') and auth('record_add')) ) {
+    if (! (auth('dns_record_modify') and auth('dns_record_add')) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
@@ -460,7 +460,7 @@ function ws_save($window_name, $form='') {
     global $include, $conf, $self, $onadb;
 
     // Check permissions
-    if (! (auth('host_modify') and auth('host_add')) ) {
+    if (! (auth('dns_record_modify') and auth('dns_record_add')) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
@@ -577,7 +577,7 @@ function ws_delete($window_name, $form='') {
     global $include, $conf, $self, $onadb, $onadb;
 
     // Check permissions
-    if (!auth('host_del')) {
+    if (!auth('dns_record_del')) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
@@ -628,7 +628,7 @@ function ws_makeprimary($window_name, $form='') {
     global $include, $conf, $self, $onadb, $onadb;
 
     // Check permissions
-    if (!auth('host_modify')) {
+    if (!auth('dns_record_modify')) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());

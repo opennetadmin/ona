@@ -222,7 +222,7 @@ EOL;
             <td align="right" nowrap="true">
                 &nbsp;
             </td>
-            <td class="padding" align="left" width="100%">
+            <td nowrap class="padding" align="left" width="100%">
                 <input
                     name="force"
                     alt="Allow duplicate MAC addresses"
@@ -262,7 +262,34 @@ EOL;
                 >
             </td>
         </tr>
+EOL;
 
+// Show a "keep adding" checkbox if they are adding records
+if (!isset($interface['id'])) {
+        $window['html'] .= <<<EOL
+        <tr>
+            <td align="right" nowrap="true">
+                &nbsp;
+            </td>
+            <td nowrap class="padding" align="left" width="100%">
+                <input
+                    name="keepadding"
+                    alt="Keep adding more interfaces"
+                    type="checkbox"
+                > Keep adding more interfaces
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2" class="padding" align="center" width="100%">
+            <span id="statusinfo_{$window_name}" style="color: green;" ></span>
+            </td>
+        </tr>
+
+EOL;
+}
+
+    $window['html'] .= <<<EOL
         <tr>
             <td align="right" valign="top" nowrap="true">
                 &nbsp;
@@ -345,7 +372,14 @@ function ws_save($window_name, $form='') {
     if ($status)
         $js .= "alert('Save failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
     else {
-        $js .= "removeElement('{$window_name}');";
+        // Update the status to tell them what they just did if they just *added* a subnet and the "keep adding" box is checked.
+        // Otherwise just close the edit window.
+        if ($form['keepadding'] and $module == 'interface_add')
+            $js .= "el('statusinfo_{$window_name}').innerHTML = 'Previously added: {$form['ip']}';";
+        else
+            $js .= "removeElement('{$window_name}');";
+
+        // If there is "refresh" javascript, send it to the browser to execute
         if ($form['js']) $js .= $form['js'];
     }
 

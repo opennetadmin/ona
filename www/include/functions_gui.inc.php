@@ -945,6 +945,119 @@ function suggest_dhcp_subnet_name($q, $el_input, $el_suggest) {
 }
 
 
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_masks_edit_subnet($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Build the array of dotted masks or cidr masks if there is a /
+    $hasslash = strpos($q,'/');
+    if ($hasslash === FALSE) {
+        $results = array(
+                        '255.255.255.255',
+                        '255.255.255.254',
+                        '255.255.255.252',
+                        '255.255.255.248',
+                        '255.255.255.240',
+                        '255.255.255.224',
+                        '255.255.255.192',
+                        '255.255.255.128',
+                        '255.255.255.0',
+                        '255.255.254.0',
+                        '255.255.252.0',
+                        '255.255.248.0',
+                        '255.255.240.0',
+                        '255.255.224.0',
+                        '255.255.192.0',
+                        '255.255.128.0',
+                        '255.255.0.0',
+                        '255.254.0.0',
+                        '255.252.0.0',
+                        '255.248.0.0',
+                        '255.240.0.0',
+                        '255.224.0.0',
+                        '255.192.0.0',
+                        '255.128.0.0',
+                        '255.0.0.0',
+                        '254.0.0.0',
+                        '252.0.0.0',
+                        '248.0.0.0',
+                        '240.0.0.0',
+                        '224.0.0.0',
+                        '192.0.0.0',
+                        '128.0.0.0',
+                        '0.0.0.0',
+                        );
+    }
+    else {
+        $results = array(
+                        '/32',
+                        '/31',
+                        '/30',
+                        '/29',
+                        '/28',
+                        '/27',
+                        '/26',
+                        '/25',
+                        '/24',
+                        '/23',
+                        '/22',
+                        '/21',
+                        '/20',
+                        '/19',
+                        '/18',
+                        '/17',
+                        '/16',
+                        '/15',
+                        '/14',
+                        '/13',
+                        '/12',
+                        '/11',
+                        '/10',
+                        '/9',
+                        '/8',
+                        '/7',
+                        '/6',
+                        '/5',
+                        '/4',
+                        '/3',
+                        '/2',
+                        '/1',
+                        '/0',
+                        );
+    }
+
+    // grep for the query to slim down the array
+    $results = preg_grep("%{$q}%",$results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 // xajax server
 // This function is called by the suggest() function.

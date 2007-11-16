@@ -106,6 +106,8 @@ function ws_editor($window_name, $form='') {
             );
         };
 
+        suggest_setup('masks_{$window_name}', 'suggest_masks_{$window_name}');
+
 EOL;
 
     // Define the window's inner html
@@ -192,6 +194,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="masks_{$window_name}"
                     name="set_netmask"
                     alt="Netmask (i.e. 255.255.255.0 or /24)"
                     value="{$subnet['ip_mask']}"
@@ -199,6 +202,7 @@ EOL;
                     type="text"
                     size="17" maxlength="17"
                 >
+                <div id="suggest_masks_{$window_name}" class="suggest"></div>
             </td>
         </tr>
 
