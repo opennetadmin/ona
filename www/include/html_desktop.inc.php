@@ -99,7 +99,7 @@ print <<<EOL
 
     <!-- Top (Task) Bar -->
     <div class="bar" id="bar_top">
-        <div style="position: absolute; font-size: 8px; top: 1px; z-index: 2; right: 5px;">© 2007 OpenNetAdmin - v1.0</div>
+        <div style="position: absolute; font-size: 8px; top: 1px; z-index: 2; right: 5px;">&copy; {$year} OpenNetAdmin - {$conf['version']}</div>
         <!-- Left Side -->
         <div class="bar-left">
 
@@ -198,7 +198,7 @@ print <<<EOL
     <div id="trace_history" style="font-size: smaller; border-style: solid; border-width: 0px 1px 1px 1px; background-color: #EDEEFF;white-space: nowrap;">&nbsp;Trace:</div>
 
     <!-- Workspace div -->
-    <div id="content_table" style="height: 90%;" class="theWholeBananna">
+    <div id="content_table" style="height: 93%;" class="theWholeBananna">
 
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>&nbsp;
@@ -283,11 +283,6 @@ print <<<EOL
         <!-- END OF TOP SECTION -->
     </div>
 
-    <!-- Bottom Text -->
-    <div id="bottombox_table" class="bottomBox" style="width: 100%; text-align: center;">
-        &copy;{$year} <a href="http://www.opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}<br>
-        This site was designed, written &amp; tested by <a href="mailto:hornet136@opennetadmin.com">Matt Pascoe</a>, <a href="mailto:deacon@thedeacon.org">Paul Kreiner</a> &amp; <a href="mailto:caspian@dotconf.net">Brandon Zehm</a>.
-    </div>
 
 <!-- Javascript for the Task Bar -->
 <script type="text/javascript"><!--
@@ -376,6 +371,28 @@ print <<<EOL
     if (getcookie('pref_bg_repeat')) el('content_table').style.backgroundRepeat = getcookie('pref_bg_repeat');
     if (getcookie('pref_bg_url')) el('content_table').style.backgroundImage = 'url(\'' + getcookie('pref_bg_url') + '\')';
 --></script>
+
+<!-- Side toolbar -->
+<div nowrap style="position: absolute;top: 85px;right: 1px;z-index: 10;">
+    <div style="float:left;padding: 5px 2px;" onclick="toggleBox('ipcalc_content');">
+    <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" />
+    </div>
+    <div id="ipcalc_content" style="visibility: hidden;display:none;background: #E3E3F0;padding: 5px;">
+        <form id="ipcalc_form" onsubmit="return false;">
+            IP: <input type="text" name="ip" />
+            Mask: <input type="text" name="mask" />
+                <input class="edit" type="button"
+                    name="submit"
+                    value="Go"
+                    onClick="xajax_window_submit('ipcalcgui', xajax.getFormValues('ipcalc_form'));"
+                >
+        </form>
+        <span><pre style="font-family: monospace;font-size: medium;" id="ipcalc_data"></pre></span>
+    </div>
+</div>
+
+
+
 
 </body>
 </html>

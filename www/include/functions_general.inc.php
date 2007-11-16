@@ -721,6 +721,95 @@ function ip_mangle_gmp($ip="", $format="default") {
 
 
 
+///////////////////////////////////////////////////////////////////////
+//  Function: ipcalc_info($ip,$mask)
+//
+//  Gathers various bits of IP info for use in an ipcalc tools/modules
+//  Returns an array of those bits of info.
+//
+//  Example:
+//      $level = ipcalc_info($ip,$mask)
+///////////////////////////////////////////////////////////////////////
+function ipcalc_info($ip='', $mask='') {
+    global $conf, $self;
+
+
+// MP: fix the fact that I"m not testing for the GMP module.. it will fail for ipv6 stuff
+    $retarray = array();
+
+    $retarray['in_ip'] = $ip;
+    $retarray['in_mask'] = $mask;
+    $retarray['mask_cidr'] = ip_mangle($retarray['in_mask'], 'cidr');
+
+    // Process the IP address
+    $retarray['ip_dotted'] = ip_mangle($retarray['in_ip'], dotted);
+    $retarray['ip_numeric'] = ip_mangle($retarray['in_ip'], numeric);
+    $retarray['ip_binary'] = ip_mangle($retarray['in_ip'], binary);
+    $retarray['ip_bin128'] = ip_mangle($retarray['in_ip'], bin128);
+    $retarray['ip_ipv6'] = ip_mangle($retarray['in_ip'], ipv6);
+    $retarray['ip_ipv6gz'] = ip_mangle($retarray['in_ip'], ipv6gz);
+    $retarray['ip_flip'] = ip_mangle($retarray['in_ip'], flip);
+
+    // Process the mask
+    $retarray['mask_dotted'] = ip_mangle($retarray['in_mask'], dotted);
+    $retarray['mask_numeric'] = ip_mangle($retarray['in_mask'], numeric);
+    $retarray['mask_binary'] = ip_mangle($retarray['in_mask'], binary);
+    $retarray['mask_bin128'] = ip_mangle($retarray['in_mask'], bin128);
+    $retarray['mask_ipv6'] = ip_mangle($retarray['in_mask'], ipv6);
+    $retarray['mask_ipv6gz'] = ip_mangle($retarray['in_mask'], ipv6gz);
+    $retarray['mask_flip'] = ip_mangle($retarray['in_mask'], flip);
+
+
+    // Invert the binary mask
+    $inverted = str_replace("0", "x", ip_mangle($retarray['in_mask'], binary));
+    $inverted = str_replace("1", "0", $inverted);
+    $inverted = str_replace("x", "1", $inverted);
+    $retarray['mask_bin_invert'] = $inverted;
+    $retarray['mask_dotted_invert'] = ip_mangle($inverted, dotted);
+
+
+    // Check boundaries
+    // This section checks that the IP address and mask are valid together.
+    // if the IP address does not fall on a proper boundary based on the provided mask
+    // we will return the 'truenet' that it would fall into.
+    $retarray['netboundary'] = 1;
+    $ip1 = $retarray['ip_binary'];
+    $ip2 = str_pad(substr($ip1, 0, $retarray['mask_cidr']), 32, '0');
+    $ip1 = ip_mangle($ip1, 'dotted');
+    $ip2 = ip_mangle($ip2, 'dotted');
+    $retarray['truenet'] = $ip2; // this is the subnet IP that your IP would fall in given the mask provided.
+    if ($ip1 != $ip2)
+        $retarray['netboundary'] = 0;  // this means the IP passed in is NOT on a network boundary
+
+    // Get IP address counts
+    $total = (0xffffffff - ip_mangle($retarray['in_mask'], 'numeric')) + 1;
+    $usable = $total - 2;
+    $lastip = ip_mangle($ip2, numeric) - 1 + $total;
+
+    $retarray['ip_total'] = $total;
+    $retarray['ip_usable'] = $usable;
+    $retarray['ip_last'] = ip_mangle($lastip, dotted);
+
+
+    return($retarray);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: sanitize_security_level($int, $default)
