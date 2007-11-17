@@ -93,9 +93,6 @@ a:hover      { cursor: pointer; text-decoration: underline; }
 .theWholeBananna   {
     background-color: {$color['content_bg']};
     color: {$color['font_default']};
-    border-bottom: 1px solid {$color['border']};
-    border-right: 1px solid {$color['border']};
-    border-left: 1px solid {$color['border']};
 }
 
 /* Text at bottom of the page */

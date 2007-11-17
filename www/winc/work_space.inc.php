@@ -73,8 +73,8 @@ $window['js'] .= <<<EOL
     /* Now calculate where we will sit .. the -4 and -2 are for borders */
     var my_top  = content_top;
     var my_left  = content_left;
-    var my_width  = content_width + (content_left - my_left) - 4;
-    var my_height = content_height + (content_top - my_top) - 2;
+    var my_width  = content_width + (content_left - my_left);
+    var my_height = content_height + (content_top - my_top);
     if (browser.isIE) {
         my_width  += 4;
         my_height += 2;
@@ -106,6 +106,8 @@ $window['js'] .= <<<EOL
     _el.style.overflow = 'auto';
 
     {$javascript}
+
+    el('{$window_name}').style.border='0px';
 EOL;
 
 
