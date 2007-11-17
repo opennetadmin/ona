@@ -174,6 +174,16 @@ EOL;
 EOL;
     }
 
+    $html .= <<<EOL
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="removeElement('start_menu'); toggle_window('app_about');"
+     title="About"
+ ><img style="vertical-align: middle;" src="{$images}/silk/information.png" border="0"
+ />&nbsp;About</div>
+EOL;
+
     return(array($html, $js));
 }
 
