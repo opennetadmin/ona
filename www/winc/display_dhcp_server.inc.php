@@ -339,14 +339,11 @@ EOL;
         xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display_list');
 EOL;
 
-    // MP: this is kinda dumb but its here for now.  could be slow depending on the size of the database.  
+    // MP: This could be slow depending on the size of the database.  I'll leave it for now.. maybe make it a button
     list($status, $output) = run_module('dhcp_build_conf', array('host' => $record['fqdn']));
     // If the module returned an error code display a popup warning
-    if ($status)
-        $js .= "alert('build failed. ". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
-    else {
-        $html .= "<div style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;'><pre>{$output}</pre></div>";
-    }
+    if (!$status)
+        $html .= "<div style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;'><pre style='font-family: monospace;'>{$output}</pre></div>";
 
 
     // Insert the new html into the window

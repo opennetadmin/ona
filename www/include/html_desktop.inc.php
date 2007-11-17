@@ -45,7 +45,11 @@ else {
     $versit = "<div class='version_check{$sty}'><img src='{$images}/silk/exclamation.png'> You are NOT on the most current version<br>Your version = {$conf['version']}<br>Latest version = {$onaver}</div>";
 }
 
-
+$motdfile = $base.'/motd.txt';
+if (file_exists($motdfile)) {
+    printmsg("I tried file: {$base}/motd.txt",0);
+    $MOTD = file_get_contents($motdfile);
+}
 
 // Lets start building the page!
 print <<<EOL
@@ -278,7 +282,11 @@ print <<<EOL
                 </ul>
             </td>
             <!-- END OF THIRD COLUMN OF SMALL BOXES -->
-        </tr></table>
+        </tr>
+        </table>
+
+        <div>{$MOTD}</div>
+
         </div>
         <!-- END OF TOP SECTION -->
     </div>
