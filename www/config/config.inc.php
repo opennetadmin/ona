@@ -159,7 +159,7 @@ $style['borderR'] = "border-right: 1px solid {$color['border']};";
 //   Note: the context used is determined by the value of $conf['mysql_context']
 //         at the time functions_db.php is included.
 //   Note: Available ADODB types:
-//         mysql, oracle, oci8, mssql, postgres, sybase, vfp, access, ibase and many others.
+//         mysql, mysqlt, oracle, oci8, mssql, postgres, sybase, vfp, access, ibase and many others.
 $db_context = array (
 
     // Note:  I set the login up as ona-sys so that we could have
@@ -167,12 +167,12 @@ $db_context = array (
     // some sort of full admin.
     //
     // Type:
-    'mysql' => array(
+    'mysqlt' => array(
         // Name:
         'default' => array(
             'description' => 'Website metadata',
             'primary' => array(
-                'db_type'     => 'mysql',
+                'db_type'     => 'mysqlt',  // using mysqlt for transaction support
                 'db_host'     => 'localhost',
                 'db_login'    => 'ona_sys',
                 'db_passwd'   => 'youshouldchangethis',
@@ -182,7 +182,7 @@ $db_context = array (
             // You can use this to connect to a secondary server that is
             // syncronized on the back end.
             'secondary' => array(
-                'db_type'     => 'mysql',
+                'db_type'     => 'mysqlt',
                 'db_host'     => 'localhost',
                 'db_login'    => 'ona_sys',
                 'db_passwd'   => 'youshouldchangethis',
