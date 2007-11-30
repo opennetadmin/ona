@@ -63,7 +63,7 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     }
 
 
-/*  one way to do the div containter.. 
+/*  one way to do the div containter..
                     <span id="mod_title_{$modulename}" style="float: left;">{$titlehtml}</span>
                     <span id="mod_buttons_{$modulename}" style="float: right;">
                     {$confightml}
@@ -959,11 +959,12 @@ function suggest_masks_edit_subnet($q, $el_input, $el_suggest) {
     if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
     $js = "";
 
+    $q = trim($q);
+
     // Build the array of dotted masks or cidr masks if there is a /
     $hasslash = strpos($q,'/');
     if ($hasslash === FALSE) {
         $results = array(
-                        '255.255.255.255',
                         '255.255.255.254',
                         '255.255.255.252',
                         '255.255.255.248',
@@ -995,12 +996,10 @@ function suggest_masks_edit_subnet($q, $el_input, $el_suggest) {
                         '224.0.0.0',
                         '192.0.0.0',
                         '128.0.0.0',
-                        '0.0.0.0',
                         );
     }
     else {
         $results = array(
-                        '/32',
                         '/31',
                         '/30',
                         '/29',
@@ -1032,7 +1031,6 @@ function suggest_masks_edit_subnet($q, $el_input, $el_suggest) {
                         '/3',
                         '/2',
                         '/1',
-                        '/0',
                         );
     }
 

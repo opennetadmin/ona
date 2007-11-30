@@ -80,6 +80,7 @@ a:hover      { cursor: pointer; text-decoration: underline; }
 
 .bar-left {
     float:left;
+    max-height: 25px;
     vertical-align: middle;
 }
 

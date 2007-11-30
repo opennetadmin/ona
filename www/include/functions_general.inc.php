@@ -25,7 +25,7 @@ startSession();
 
 
 // Include the GUI functions
-require_once('/opt/ona/www/include/functions_auth.inc.php');
+require_once($base.'/include/functions_auth.inc.php');
 
 
 

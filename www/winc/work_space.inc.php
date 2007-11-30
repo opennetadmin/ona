@@ -55,16 +55,17 @@ function ws_work_space_submit($window_name, $javascript='') {
 
 // Define javascript to run after the window is created
 $window['js'] .= <<<EOL
-    /* Hide the "Search Results" box if it's visible */
+
+    /* Hide the 'Search Results' box if it's visible */
     var _el = el('search_results');
-    if (_el && (_el.style.visibility == "visible" || _el.style.display == "block")) {
+    if (_el && (_el.style.visibility == 'visible' || _el.style.display == 'block')) {
         _el.style.visibility = "hidden";
         _el.style.display = "none";
     }
 
     var _el = el('{$window_name}');
 
-    /* Get the size of the box we live "in" */
+    /* Get the size of the box we live 'in' */
     var content_top    = calcOffset(el('content_table'), 'offsetTop');
     var content_left   = calcOffset(el('content_table'), 'offsetLeft');
     var content_width  = el('content_table').offsetWidth;
@@ -88,7 +89,7 @@ $window['js'] .= <<<EOL
     _el.style.zIndex = 1;
     _el.style.overflow = 'hidden';
 
-    /* Now disable the drag library from moving this "window" */
+    /* Now disable the drag library from moving this 'window' */
     el('{$window_name}').onclick = function() { return true; };
     el('{$window_name}_title').onmousedown = function() { return true; };
     el('{$window_name}_title').style.cursor = 'default';
@@ -108,6 +109,7 @@ $window['js'] .= <<<EOL
     {$javascript}
 
     el('{$window_name}').style.border='0px';
+
 EOL;
 
 
@@ -185,9 +187,9 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
+    $response->addAssign("trace_history", "innerHTML", $html);
     $response->addAssign("work_space_title_help", "innerHTML", $helplink);
     $response->addAssign("work_space_title", "innerHTML", $new_title);
-    $response->addAssign("trace_history", "innerHTML", $html);
     return($response->getXML());
 }
 
