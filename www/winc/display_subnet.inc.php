@@ -112,16 +112,14 @@ EOL;
                                 <a title="Edit subnet. ID: {$record['id']}"
                                    class="act"
                                    onClick="xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'editor');"
-                                ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
+                                ><img src="{$images}/silk/page_edit.png" border="0"></a>
 EOL;
     }
     if (auth('subnet_del',$debug_val)) {
         $html .= <<<EOL
                                 <a title="Delete subnet. ID: {$record['id']}"
                                    class="act"
-                                   onClick="var doit=confirm('Are you sure you want to delete this subnet?');
-                                            if (doit == true)
-                                                xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'delete');"
+                                   onClick="xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'delete');"
                                 ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
     }

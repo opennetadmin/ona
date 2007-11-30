@@ -664,7 +664,7 @@ function subnet_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg('DEBUG => subnet_del('.$options.') called', 3);
 
@@ -721,7 +721,7 @@ EOM
         // SUMMARY:
         //   Delete assignments to any DHCP servers
         //   Delete any DHCP pools on the current subnet
-        //   Delete any DHCP parameters associated with this subnet
+        //   Delete any DHCP options associated with this subnet
         //   Delete any interfaces belonging to hosts with more than one interface
         //   Delete any hosts (and all their associated info) that have only one interface
         //   Delete subnet Record
@@ -730,25 +730,25 @@ EOM
         //   FIXME: display a warning if there are no more subnets that a dhcp server is serving dhcp for?
 
         // Delete DHCP server assignments
-//         list($status, $rows) = db_delete_record($onadb, 'DHCP_SERVER_SUBNETS_B', array('subnet_ID' => $subnet['id']));
-//         if ($status) {
-//             $self['error'] = "ERROR => DHCP server assignment delete failed: {$self['error']}";
-//             return(array(5, $self['error'] . "\n"));
-//         }
-//
-//         // Delete DHCP pools
-//         list($status, $rows) = db_delete_record($onadb, 'DHCP_POOL_B', array('SUBNET_ID' => $subnet['id']));
-//         if ($status) {
-//             $self['error'] = "ERROR => DHCP pool delete failed: {$self['error']}";
-//             return(array(5, $self['error'] . "\n"));
-//         }
-//
-//         // Delete DHCP parameters
-//         list($status, $rows) = db_delete_record($onadb, 'DHCP_ENTRY_B', array('SUBNET_ID' => $subnet['id']));
-//         if ($status) {
-//             $self['error'] = "ERROR => DHCP parameter delete failed: {$self['error']}";
-//             return(array(5, $self['error'] . "\n"));
-//         }
+        list($status, $rows) = db_delete_records($onadb, 'dhcp_server_subnets', array('subnet_id' => $subnet['id']));
+        if ($status) {
+            $self['error'] = "ERROR => DHCP server assignment delete failed: {$self['error']}";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+        // Delete DHCP pools
+        list($status, $rows) = db_delete_records($onadb, 'dhcp_pools', array('subnet_id' => $subnet['id']));
+        if ($status) {
+            $self['error'] = "ERROR => DHCP pool delete failed: {$self['error']}";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+        // Delete DHCP options
+        list($status, $rows) = db_delete_records($onadb, 'dhcp_option_entries', array('subnet_id' => $subnet['id']));
+        if ($status) {
+            $self['error'] = "ERROR => DHCP parameter delete failed: {$self['error']}";
+            return(array(5, $self['error'] . "\n"));
+        }
 
 
         // Delete associated host / interface records that need to be deleted
@@ -772,20 +772,18 @@ EOM
 
         // Delete interfaces we have selected
         foreach ($interfaces_to_delete as $interface_id) {
-            // Tell the run_module() function to disable transaction code, since we're already in a transaction.
-            list($status, $output) = run_module('interface_del', array('interface' => $interface_id, 'commit' => 'Y'), false);
+            list($status, $output) = run_module('interface_del', array('interface' => $interface_id, 'commit' => 'Y'));
             if ($status) return(array(5, $output));
         }
 
         // Delete hosts we have selected
         foreach ($hosts_to_delete as $host_id) {
-            // Tell the run_module() function to disable transaction code, since we're already in a transaction.
-            list($status, $output) = run_module('host_del', array('host' => $host_id, 'commit' => 'Y'), false);
+            list($status, $output) = run_module('host_del', array('host' => $host_id, 'commit' => 'Y'));
             if ($status) return(array(5, $output));
         }
 
         // Delete the subnet
-        list($status, $rows) = db_delete_records($onadb, 'subnets', array('ID' => $subnet['id']));
+        list($status, $rows) = db_delete_records($onadb, 'subnets', array('id' => $subnet['id']));
         if ($status or !$rows) {
             $self['error'] = "ERROR => Subnet delete failed: {$self['error']}";
             return(array(5, $self['error'] . "\n"));
@@ -820,36 +818,35 @@ EOM
     list($status, $tmp) = subnet_display("subnet={$subnet['id']}&verbose=N");
     $text .= "\n" . $tmp;
 
-/* FIXME: Add all this in sometime!
-    
+
+
     // Display assignments to any DHCP servers
-    list($status, $rows, $records) = db_get_records($onadb, 'DHCP_SERVER_subnetS_B', array('SUBNET_ID' => $subnet['id']));
+    list($status, $rows, $records) = db_get_records($onadb, 'dhcp_server_subnets', array('subnet_id' => $subnet['id']));
     if ($rows) $text .= "\nASSOCIATED DHCP SERVER ASSIGNMENT RECORDS ({$rows}):\n";
     foreach ($records as $record) {
         $text .= format_array($record);
     }
 
     // Display any DHCP pools on the current subnet
-    list($status, $rows, $records) = db_get_records($onadb, 'DHCP_POOL_B', array('SUBNET_ID' => $subnet['id']));
+    list($status, $rows, $records) = db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $subnet['id']));
     if ($rows) $text .= "\nASSOCIATED DHCP POOL RECORDS ({$rows}):\n";
     foreach ($records as $record) {
         $text .= format_array($record);
     }
 
     // Display associated DHCP entries
-    list($status, $rows, $records) = db_get_records($onadb, 'DHCP_ENTRY_B', array('SUBNET_ID' => $subnet['id']));
+    list($status, $rows, $records) = db_get_records($onadb, 'dhcp_option_entries', array('subnet_id' => $subnet['id']));
     if ($rows) $text .= "\nASSOCIATED DHCP ENTRY RECORDS ({$rows}):\n";
     foreach ($records as $record) {
-        list($status, $rows, $dhcp) = ona_get_dhcp_entry_record(array('ID' => $record['id']));
-        $text .= "  {$dhcp['DHCP_name']} => {$dhcp['DHCP_PARAMETER_VALUE']}\n";
+        list($status, $rows, $dhcp) = ona_get_dhcp_option_entry_record(array('id' => $record['id']));
+        $text .= "  {$dhcp['display_name']} => {$dhcp['value']}\n";
     }
 
-*/
 
     // Display associated host  / interface records that would be deleted
     // BUSINESS RULE: We delete hosts that have only one interface (and it's on this subnet)
     // BUSINESS RULE: We delete interfaces from hosts that have multiple interfaces (including at least one on a different subnet)
-    list($status, $rows, $interfaces) = db_get_records($onadb, 'interfaces', array('SUBNET_ID' => $subnet['id']));
+    list($status, $rows, $interfaces) = db_get_records($onadb, 'interfaces', array('subnet_id' => $subnet['id']));
     $hosts_to_delete = array();
     $interfaces_to_delete = array();
     foreach ($interfaces as $interface) {

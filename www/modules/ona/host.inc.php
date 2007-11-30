@@ -623,6 +623,7 @@ EOM
     if ($options['commit'] == 'Y') {
         $text = "";
         $add_to_error = "";
+        $add_to_status = 0;
 
         // SUMMARY:
         //   Don't allow a delete if it is performing server duties
@@ -682,22 +683,21 @@ EOM
         $dnscount = 0;
         list($status, $rows, $interfaces) = db_get_records($onadb, 'interfaces', array('host_id' => $host['id']));
 
-
-        // FIXME: MP: For now I'm bailing on doing auto delete of DNS records.. needs more thought and time
+        // Delete each DNS record associated with this hosts interfaces.
         foreach ($interfaces as $int) {
-             list($status, $rows, $records) = db_get_records($onadb, 'dns', array('interface_id' => $int['id']));
-            $dnscount = $dnscount + $rows;
+            // MP: FIXME: I think this is an issue as more than one DNS record could exist for an interface.  need to loop here.
+            //while $rows {
+            list($status, $rows, $record) = db_get_record($onadb, 'dns', array('interface_id' => $int['id']));
+            // Run the module
+            if ($rows) list($status, $output) = run_module('dns_record_del', array('name' => $record['id'], 'type' => $record['type'], 'commit' => 'Y', 'delete_by_module' => 'Y'));
+            $add_to_error .= $output;
+            $add_to_status = $add_to_status + $status;
         }
 
-        if ($dnscount) {
-            $self['error'] = "ERROR => host_del() SORRY, LAZY WAY OUT!! There are DNS records on this host, remove them first.";
-            printmsg($self['error'],0);
-            return(array(5, $self['error'] . "\n"));
-        }
 
         // FIXME: MP: Cant delete if one of the interfaces is primary for a cluster
         foreach ($interfaces as $int) {
-             list($status, $rows, $records) = db_get_records($onadb, 'interface_clusters', array('interface_id' => $int['id']));
+            list($status, $rows, $records) = db_get_records($onadb, 'interface_clusters', array('interface_id' => $int['id']));
             $clustcount = $clustcount + $rows;
         }
 
@@ -741,21 +741,13 @@ EOM
 //             $add_to_error .= "INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}\n";
 //         }
 
-/////////////////////////FIX THIS SOON//////////////////////////////////////////////////////
-        // FIXME: MP: why is this not using interface delete??  this will cause problems if not done correctly
-        // do the interface delete
-        list($status, $rows) = db_delete_records($onadb, 'interfaces', array('host_id' => $host['id']));
-        if ($status) {
-            $self['error'] = "ERROR => host_del() interface delete SQL Query failed: {$self['error']}";
-            printmsg($self['error'],0);
-            return(array(5, $self['error'] . "\n"));
-        }
-        // log deletions
         foreach ($interfaces as $record) {
-            printmsg("INFO => Interface DELETED: " . ip_mangle($record['ip_addr'], 'dotted') . " from {$host['fqdn']}",0);
-            $add_to_error .= "INFO => Interface DELETED: " . ip_mangle($record['ip_addr'], 'dotted') . " from {$host['fqdn']}\n";
+            // Run the module
+            list($status, $output) = run_module('interface_del', array('interface' => $record['id'], 'commit' => 'on', 'delete_by_module' => 'Y'));
+            $add_to_error .= $output;
+            $add_to_status = $add_to_status + $status;
         }
-/////////////////////////////////////////////////////////////////////
+
 
         // do the interface_cluster delete
         list($status, $rows) = db_delete_records($onadb, 'interface_clusters', array('host_id' => $host['id']));
@@ -841,9 +833,9 @@ EOM
         }
 
         // Return the success notice
-        $self['error'] = "INFO => Host DELETED: {$host['fqdn']}";
+        if ($add_to_status == 0) $self['error'] = "INFO => Host DELETED: {$host['fqdn']}";
         printmsg($self['error'], 0);
-        return(array(0, $add_to_error . $self['error'] . "\n"));
+        return(array($add_to_status, $add_to_error . $self['error'] . "\n"));
     }
 
 

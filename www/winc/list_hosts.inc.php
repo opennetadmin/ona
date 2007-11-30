@@ -552,9 +552,7 @@ EOL;
 
                     <a title="Delete host"
                        class="act"
-                       onClick="var doit=confirm('Are you sure you want to delete this host?');
-                                if (doit == true)
-                                    xajax_window_submit('edit_host', xajax.getFormValues('{$form['form_id']}_list_host_{$record['id']}'), 'delete');"
+                       onClick="xajax_window_submit('edit_host', xajax.getFormValues('{$form['form_id']}_list_host_{$record['id']}'), 'delete');"
                     ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
         }

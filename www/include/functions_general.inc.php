@@ -12,7 +12,7 @@ require_once($conf['inc_functions_db']);
 
 // (Re)Connect to the DB now.
 global $onadb;
-$onadb = db_pconnect('mysql', $conf['mysql_context']);
+$onadb = db_pconnect('mysqlt', $conf['mysql_context']);
 
 // Include functions that replace the default session handler with one that uses MySQL as a backend
 require_once($conf['inc_db_sessions']);
@@ -1252,10 +1252,10 @@ function auth($resource,$msg_level=0) {
 
     if (!is_string($resource)) return false;
     if (array_key_exists($resource, (array)$_SESSION['ona']['auth']['perms'])) {
-        printmsg("INFO => auth() User[{$_SESSION['ona']['auth']['user']['username']}] has the {$resource} permission",5);
+        printmsg("DEBUG => auth() User[{$_SESSION['ona']['auth']['user']['username']}] has the {$resource} permission",5);
         return true;
     }
-    printmsg("INFO => auth() User[{$_SESSION['ona']['auth']['user']['username']}] does not have the {$resource} permission",$msg_level);
+    printmsg("DEBUG => auth() User[{$_SESSION['ona']['auth']['user']['username']}] does not have the {$resource} permission",$msg_level);
     return false;
 }
 
@@ -1410,6 +1410,12 @@ function run_module($module='', $options='', $transaction=1) {
     if ($transaction) $has_trans = $onadb->BeginTrans();
     if (!$has_trans) printmsg("NOTICE => Transactions support not available on this database!", 1);
 
+    // If begintrans worked and we support transactions, do the smarter "starttrans" function
+    if ($has_trans) {
+        printmsg("DEBUG => Commiting transaction", 1);
+        $onadb->StartTrans();
+    }
+
     // Start a timer so we can display moudle run time if debugging is enabled
     $start_time = microtime_float();
 
@@ -1425,13 +1431,24 @@ function run_module($module='', $options='', $transaction=1) {
     printmsg("DEBUG => Module exit code: {$status}", 1);
     if ($transaction and $has_trans) {
         if ($status != 0) {
-            printmsg("DEBUG => Rolling back transaction", 1);
-            $onadb->RollbackTrans();
+            printmsg("DEBUG => There was a module error, marking transaction for a Rollback!", 1);
+            //$onadb->RollbackTrans();
+            $onadb->FailTrans();
         }
-        else {
-            printmsg("DEBUG => Commiting transaction", 1);
-            $onadb->CommitTrans();
-        }
+//         else {
+//             printmsg("DEBUG => Commiting transaction", 1);
+//             $onadb->CommitTrans();
+//         }
+        //printmsg("DEBUG => Commiting transaction", 1);
+       // $onadb->CompleteTrans();
+    }
+
+    if ($has_trans) {
+        // If there was any sort of failure, make sure the status has incremented, this catches sub module output errors;
+        if ($onadb->HasFailedTrans()) $status = $status + 1;
+
+        printmsg("DEBUG => Commiting transaction", 1);
+        $onadb->CompleteTrans();
     }
 
     // Return the module's output

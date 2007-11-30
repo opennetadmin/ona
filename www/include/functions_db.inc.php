@@ -155,7 +155,7 @@ function db_pconnect($type, $name) {
 
 
 
-
+/* MP: Brandons functions, not currently used here.
 
 
 
@@ -203,7 +203,7 @@ EOL;
 
 
 
-/* MP: Brandons functions, not currently used here.
+
 
 
 

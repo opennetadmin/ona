@@ -624,16 +624,8 @@ EOM
     // If "commit" is yes, delete the interface
     if ($options['commit'] == 'Y') {
 
-        // Check what DNS records are associated with the host.
-        // FIXME: MP for now I'm bailing on the delete.  I wanted to make sure this check was here and have not put a
-        // lot of thought into it yet.  I assume we can display something nice to allow them to remove the dns records too
-        list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']), '', 0);
-        printmsg("DEBUG => total DNS records => {$total_dns}", 3);
-        if ($total_dns > 0) {
-            printmsg("DEBUG => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.",3);
-            $self['error'] = "ERROR => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.";
-            return(array(11, $self['error'] . "\n"));
-        }
+        $add_to_error = '';
+        $add_to_status = 0;
 
         // Check for shared interfaces
         list($status, $clust_rows, $clust) = db_get_records($onadb, 'interface_clusters', array('interface_id' => $interface['id']), '', 0);
@@ -644,16 +636,39 @@ EOM
             return(array(10, $self['error'] . "\n"));
         }
 
-        // Check if this is the last interface on a host
-        list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $interface['host_id']), '', 0);
-        printmsg("DEBUG => total interfaces => {$total_interfaces}", 3);
-        if ($total_interfaces == 1) {
-            printmsg("DEBUG => You cannot delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).",3);
-            $self['error'] = "ERROR => You can not delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).";
-            return(array(13, $self['error'] . "\n"));
+        // Check if this is the last interface on a host but skip it if its the delete host function calling us
+        if (!isset($options['delete_by_module'])) {
+            list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $interface['host_id']), '', 0);
+            printmsg("DEBUG => total interfaces => {$total_interfaces}", 3);
+            if ($total_interfaces == 1) {
+                printmsg("DEBUG => You cannot delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).",3);
+                $self['error'] = "ERROR => You can not delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).";
+                return(array(13, $self['error'] . "\n"));
+            }
         }
 
         printmsg("DEBUG => Deleting interface: ID {$interface['id']}", 3);
+
+
+        // Check what DNS records are associated with the host.
+//         // FIXME: MP for now I'm bailing on the delete.  I wanted to make sure this check was here and have not put a
+//         // lot of thought into it yet.  I assume we can display something nice to allow them to remove the dns records too
+//         list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']), '', 0);
+//         printmsg("DEBUG => total DNS records => {$total_dns}", 3);
+//         if ($total_dns > 0) {
+//             printmsg("DEBUG => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.",3);
+//             $self['error'] = "ERROR => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.";
+//             return(array(11, $self['error'] . "\n"));
+//         }
+
+
+        // Delete any DNS records are associated with the host.
+        list($status, $rows, $record) = db_get_record($onadb, 'dns', array('interface_id' => $interface['id']));
+        // Run the module
+        if ($rows) list($status, $output) = run_module('dns_record_del', array('name' => $record['id'], 'type' => $record['type'], 'commit' => 'Y', 'delete_by_module' => 'Y'));
+        $add_to_error .= $output;
+        $add_to_status = $add_to_status + $status;
+
 
         // Drop the record
         list($status, $rows) = db_delete_records($onadb, 'interfaces', array('id' => $interface['id']));
@@ -669,15 +684,17 @@ EOM
         // Check to see if there are any other interfaces for the current host_id
         // If there aren't, we need to tell the user to delete the host!
         // since we've disallowed removal of the last interface, this should never happen!!!!!
+        if (!isset($options['delete_by_module'])) {
         list($status, $rows, $record) = ona_get_interface_record(array('host_id' => $interface['host_id']));
-        if ($rows == 0) {
-            printmsg("ERROR => Host {$host['fqdn']} has NO remaining interfaces!", 0);
-            $text .= "\n" . "WARNING => Host {$host['fqdn']} has NO remaining interfaces!\n" .
-                            "           Delete this host or add an interface to it now!\n";
+            if ($rows == 0) {
+                printmsg("WARNING => Host {$host['fqdn']} has NO remaining interfaces!", 0);
+                $text .= "\n" . "WARNING => Host {$host['fqdn']} has NO remaining interfaces!\n" .
+                                "           Delete this host or add an interface to it now!\n";
+            }
         }
 
         // Return the success notice
-        return(array(0, $text));
+        return(array($add_to_status, $add_to_error . $text));
     }
 
     // Otherwise, just display the interface that we will be deleting
@@ -687,10 +704,10 @@ EOM
 
     // Display warning if there are DNS records still
     list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']));
-    if ($total_dns) {
-        $text .= "\nWARNING!  This interface has {$total_dns} DNS record(s) still associated with it.\n";
-        $text .= "          Please remove all associated DNS records first.\n";
-    }
+//     if ($total_dns) {
+//         $text .= "\nWARNING!  This interface has {$total_dns} DNS record(s) still associated with it.\n";
+//         $text .= "          Please remove all associated DNS records first.\n";
+//     }
 
     // Display records if this is a shared interface
     list($status, $clust_rows, $clust) = db_get_records($onadb, 'interface_clusters', array('interface_id' => $interface['id']));

@@ -926,7 +926,7 @@ need to do a better delete of DNS records when deleting a host.. currently its a
         return(array(10, $self['error'] . "\n"));
     }
 
-    // If "commit" is yes, delte the host
+    // If "commit" is yes, delete the host
     if ($options['commit'] == 'Y') {
         $text = "";
         $add_to_error = "";
@@ -936,14 +936,15 @@ need to do a better delete of DNS records when deleting a host.. currently its a
         //   Display any associated CNAMEs for an A record
 
 
-        // Test if it is used as a primary_dns_id
-        list($status, $rows, $srecord) = db_get_record($onadb, 'hosts', array('primary_dns_id' => $dns['id']));
-        if ($rows) {
-            $self['error'] = "ERROR => dns_record_del() This DNS record is a primary A record for a host! You can not delete it until you associate a new primary record.";
-            printmsg($self['error'],0);
-            return(array(5, $self['error'] . "\n"));
+        // Test if it is used as a primary_dns_id unless it is the host_del module calling
+        if (!isset($options['delete_by_module'])) {
+            list($status, $rows, $srecord) = db_get_record($onadb, 'hosts', array('primary_dns_id' => $dns['id']));
+            if ($rows) {
+                $self['error'] = "ERROR => dns_record_del() The DNS record, {$dns['name']}[{$dns['id']}], is a primary A record for a host! You can not delete it until you associate a new primary record.";
+                printmsg($self['error'],0);
+                return(array(5, $self['error'] . "\n"));
+            }
         }
-
 
 
         // Delete related PTR records

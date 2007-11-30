@@ -603,7 +603,7 @@ function ws_delete($window_name, $form='') {
 
     // If the module returned an error code display a popup warning
     if ($status)
-        $js .= "alert('Delete failed. " . preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
+        $js .= "alert('Delete failed. " . preg_replace('/[\s\']+/', ' ', $output) . "');";
     else if ($form['js'])
         $js .= $form['js'];  // usually js will refresh the window we got called from
 
