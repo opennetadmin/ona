@@ -65,39 +65,6 @@ print <<<EOL
 {$conf['html_headers']}
 
 
-    <script language="JavaScript1.2">
-    // MP: I left this in in case I use it later.  it wont scale right for counting records.
-
-        //JavaScript Graph-it! (Percentage)- by javascriptkit.com
-        //Visit JavaScript Kit (http://javascriptkit.com) for script
-        //Credit must stay intact for use
-
-        //DEFINE GRAPH VALUES [Item name, Percentage value]
-        var graphv=new Array()
-        graphv[0]=["Hosts","{$host_count}"]
-        graphv[1]=["Interfaces","{$interface_count}"]
-        graphv[2]=["DNS Records","{$dns_count}"]
-        graphv[3]=["DNS Domains","{$domain_count}"]
-
-
-        //YOU CAN DEFINE MULTIPLE GRAPHS, eg:
-        //var graphz=new Array()
-
-        function graphitP(g,gwidth){
-            outputP='<table border="0" cellspacing="0" cellpadding="0">'
-            for (i=0;i<g.length;i++){
-                calwidthP=gwidth*(parseInt(g[i][1])/100)
-                outputP+='<tr><td nowrap="true">'+g[i][0]+'&nbsp;</td><td nowrap="true"><img src="{$images}/graph_bar.gif" width="'+calwidthP+'" height="10"> '+g[i][1]+'</td></tr>'
-            }
-            outputP+='</table>'
-            document.write(outputP)
-        }
-
-        //CALL GRAPHIT FUNCTION
-        //graphitP(NAME OF GRAPH ARRAY, MAXIMUM WIDTH IN PIXELS)
-    </script>
-
-
 </head>
 <body bgcolor="{$color['bg']}" link="{$color['link']}" alink="{$color['alink']}" vlink="{$color['vlink']}">
 
@@ -146,7 +113,7 @@ print <<<EOL
 
             <!-- Task Bar (i.e. Window List) -->
             <span class="topmenu-item" style="border-right: 1px solid {$color['border']};">&nbsp;</span>
-            <span class="topmenu-item" id="menu-window-list"></span>
+            <span class="topmenu-item" style="position: fixed;" id="menu-window-list">&nbsp;</span>
 
         </div>
 

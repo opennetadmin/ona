@@ -71,8 +71,8 @@ a:hover      { cursor: pointer; text-decoration: underline; }
     height:25px;
     background:{$color['bar_bg']};
     border:1px solid {$color['border']};
-    padding-top:.5em;
-    padding-bottom:.1em;
+    padding-top: 8px;
+    padding-bottom: 1px;
     margin:0px;
     vertical-align: middle;
     clear: both;
