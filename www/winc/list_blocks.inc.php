@@ -204,11 +204,6 @@ EOL;
     // Build page links if there are any
     $html .= get_page_links($page, $conf['search_results_per_page'], $count, $window_name, $form['form_id']);
 
-    $js .= <<<EOL
-        /* Make sure this table is 100% wide */
-        el('{$form['form_id']}_block_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
-EOL;
-
     // If there was only 1 result, and we're about to display results in the "Search Results" window, display it.
     if ($count == 1 and $form['content_id'] == 'search_results_list' and $form['filter'] == '')
         $js .= $primary_object_js;

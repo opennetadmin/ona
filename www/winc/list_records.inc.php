@@ -220,7 +220,7 @@ function ws_display_list($window_name, $form='') {
 
             <!-- Table Header -->
             <tr>
-                
+
                 <td colspan="2" class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Time to Live</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
@@ -499,16 +499,6 @@ EOL;
 
     // Build page links if there are any
     $html .= get_page_links($page, $conf['search_results_per_page'], $count, $window_name, $form['form_id']);
-
-    $js .= <<<EOL
-            /* Make sure this table is 100% wide */
-            el('{$form['form_id']}_dns_record_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
-
-            /* Hack to Make sure the other tables are 100% wide */
-            if (el('list_interfaces_filter_form_interface_list'))
-                el('list_interfaces_filter_form_interface_list').style.width = el('list_interfaces_filter_form_table').offsetWidth + 'px';
-EOL;
-
 
     // Insert the new html into the content div specified
     // Instantiate the xajaxResponse object

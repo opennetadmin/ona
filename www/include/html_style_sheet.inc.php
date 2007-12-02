@@ -383,6 +383,7 @@ input.filter {
     background-color: #ffffff;
     border-top: 1px solid {$color['border']};
     margin-bottom: 0.2em;
+    width:100%;
 }
 
 .list-header {

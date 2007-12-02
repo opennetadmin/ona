@@ -174,10 +174,6 @@ EOL;
 EOL;
         }
 
-        $js .= <<<EOL
-            /* Make sure this table is 100% wide */
-            el('{$form['form_id']}_vlan_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
-EOL;
 
     $html .= <<<EOL
     </table>

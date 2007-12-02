@@ -66,7 +66,7 @@ print <<<EOL
 
 
 </head>
-<body bgcolor="{$color['bg']}" link="{$color['link']}" alink="{$color['alink']}" vlink="{$color['vlink']}">
+<body style="overflow: hidden;" bgcolor="{$color['bg']}" link="{$color['link']}" alink="{$color['alink']}" vlink="{$color['vlink']}">
 
     <!-- Top (Task) Bar -->
     <div class="bar" id="bar_top">
@@ -113,6 +113,7 @@ print <<<EOL
 
             <!-- Task Bar (i.e. Window List) -->
             <span class="topmenu-item" style="border-right: 1px solid {$color['border']};">&nbsp;</span>
+            <!-- I set fixed position here so it would not wrap to the next line -->
             <span class="topmenu-item" style="position: fixed;" id="menu-window-list">&nbsp;</span>
 
         </div>
@@ -169,7 +170,7 @@ print <<<EOL
     <div id="trace_history" style="font-size: smaller; border-style: solid; border-width: 0px 1px 1px 1px; background-color: #EDEEFF;white-space: nowrap;">&nbsp;Trace:</div>
 
     <!-- Workspace div -->
-    <div id="content_table" style="height: 93%;" class="theWholeBananna">
+    <div id="content_table" height="100%" class="theWholeBananna">
 
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>&nbsp;
@@ -302,6 +303,11 @@ print <<<EOL
             _bar.innerHTML = html;
         }
     }
+
+    setInterval('if (el(\'work_space_table\')) { ' +
+        'var my_height = document.body.clientHeight - el(\'bar_top\').clientHeight - el(\'trace_history\').clientHeight;' +
+        'el(\'work_space\').style.height = my_height + \'px\';' +
+        'el(\'work_space_content\').style.height = (my_height - el(\'work_space_title\').offsetHeight - 4 ) + \'px\'; }', 500);
 
     setInterval('update_task_bar(el(\'window_container\'), el(\'menu-window-list\'));', 1000);
 

@@ -276,14 +276,7 @@ EOL;
 EOL;
         }
 
-        $js .= <<<EOL
-            /* Make sure this table is 100% wide */
-            el('{$form['form_id']}_interface_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
 
-            /* Hack to Make sure the other tables are 100% wide */
-            if (el('list_records_filter_form_dns_record_list'))
-                el('list_records_filter_form_dns_record_list').style.width = el('list_records_filter_form_table').offsetWidth + 'px';
-EOL;
 
 
     if ($count == 0 and $form['host_id'] and !$form['filter']) {
@@ -297,7 +290,6 @@ EOL;
 EOL;
     // Build page links if there are any
     $html .= get_page_links($page, $conf['search_results_per_page'], $count, $window_name, $form['form_id']);
-
 
     // Insert the new html into the content div specified
     // Instantiate the xajaxResponse object

@@ -62,7 +62,7 @@ function ws_display_list($window_name, $form='') {
                                 WHERE  host_id = '. $onadb->qstr($form['server_id']).'
                                 UNION
                                 SELECT subnet_id
-                                FROM dhcp_pools 
+                                FROM dhcp_pools
                                 WHERE dhcp_failover_group_id IN (SELECT id
                                                                 FROM dhcp_failover_groups
                                                                 WHERE primary_server_id = '. $onadb->qstr($form['server_id']) .'
@@ -253,11 +253,6 @@ EOL;
 
     // Build page links if there are any
     $html .= get_page_links($page, $conf['search_results_per_page'], $count, $window_name, $form['form_id']);
-
-    $js .= <<<EOL
-        /* Make sure this table is 100% wide */
-        el('{$form['form_id']}_dhcp_server_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
-EOL;
 
     // If there was only 1 result, and we're about to display results in the "Search Results" window, display it.
     if ($count == 1 and $form['content_id'] == 'search_results_list' and $form['filter'] == '')

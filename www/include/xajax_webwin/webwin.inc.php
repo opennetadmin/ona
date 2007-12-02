@@ -70,7 +70,7 @@ function window_open($window_name, $window=array()) {
         $window['header'] = <<<EOL
 
         <!-- This wrapper table is so that internal tables can be set to 100% width and they won't stretch the box too wide. -->
-        <table cellspacing="0" border="0" cellpadding="0">
+        <table id="{$window_name}_table" cellspacing="0" border="0" cellpadding="0">
         <tr>
         <td>
 
@@ -120,7 +120,7 @@ EOL;
         "el('$window_name').onclick = function(ev) { focus_window(this.id); };"
     );
     $response->addAssign($window_name, "innerHTML", $window['header'] . $window['html'] . $window['footer']);
-    $response->addScript("toggle_window('{$window_name}');" . $window['js']);
+    $response->addScript("if (el('work_space_table')) { el('work_space_table').style.width = '100%'; } toggle_window('{$window_name}');" . $window['js']);
 
     // Send an XML response to the web browser
     return($response->getXML());

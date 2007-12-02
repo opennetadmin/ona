@@ -74,8 +74,8 @@ $window['js'] .= <<<EOL
     /* Now calculate where we will sit .. the -4 and -2 are for borders */
     var my_top  = content_top;
     var my_left  = content_left;
-    var my_width  = content_width + (content_left - my_left);
-    var my_height = content_height + (content_top - my_top);
+    var my_width  = '100%';
+    var my_height = document.body.clientHeight - el('bar_top').clientHeight - el('trace_history').clientHeight;
     if (browser.isIE) {
         my_width  += 4;
         my_height += 2;
@@ -84,7 +84,7 @@ $window['js'] .= <<<EOL
     /* Finally reposition/resize the window, hide any overflow, and bring it up behind other windows. */
     _el.style.top    = my_top    + 'px';
     _el.style.left   = my_left   + 'px';
-    _el.style.width  = my_width  + 'px';
+    _el.style.width  = my_width ;
     _el.style.height = my_height + 'px';
     _el.style.zIndex = 1;
     _el.style.overflow = 'hidden';
@@ -95,15 +95,15 @@ $window['js'] .= <<<EOL
     el('{$window_name}_title').style.cursor = 'default';
 
     /* Make sure the title bar goes all the way across */
-    el('{$window_name}_title_table').style.width = my_width  + 'px';
+    el('{$window_name}_title_table').style.width = my_width  ;
 
     /* Gray the title bar */
     el('{$window_name}_title_table').style.backgroundColor = '#A6A6A6';
 
     /* Make the content peice scroll */
     _el = el('{$window_name}_content');
-    _el.style.width  = my_width  + 'px';
-    _el.style.height = (my_height - el('{$window_name}_title').offsetHeight - 1 ) + 'px';
+    _el.style.width  = my_width  ;
+    _el.style.height = (my_height - el('{$window_name}_title').offsetHeight - 4 ) + 'px';
     _el.style.overflow = 'auto';
 
     {$javascript}

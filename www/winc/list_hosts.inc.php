@@ -580,13 +580,6 @@ EOL;
     // Build page links if there are any
     $html .= get_page_links($page, $conf['search_results_per_page'], $count, $window_name, $form['form_id']);
 
-    $js .= <<<EOL
-            /* Make sure this table is 100% wide */
-            el('{$form['form_id']}_host_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
-            /* Hack to Make sure the other tables are 100% wide */
-            if (el('list_dhcp_leases_filter_form_dhcp_lease_list'))
-                el('list_dhcp_leases_filter_form_dhcp_lease_list').style.width = el('list_dhcp_leases_filter_form_table').offsetWidth + 'px';
-EOL;
 
     // If there was only 1 result, and we're about to display results in the "Search Results" window, display it.
     if ($count == 1 and $form['content_id'] == 'search_results_list' and $form['filter'] == '')

@@ -178,17 +178,11 @@ EOL;
 EOL;
         }
 
-        $js .= <<<EOL
-            /* Make sure this table is 100% wide */
-            el('{$form['form_id']}_domain_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
-EOL;
-
     $html .= <<<EOL
     </table>
 EOL;
     // Build page links if there are any
     $html .= get_page_links($page, $conf['search_results_per_page'], $count, $window_name, $form['form_id']);
-
 
 
     // Insert the new html into the content div specified
