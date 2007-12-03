@@ -386,6 +386,10 @@ input.filter {
     width: 100%;
 }
 
+/*  Nasty hack to make IE display the lists properly...
+    it kinda screws with the subnet usage div but tough for the IE users. */
+* html .list-box {width:96%}
+
 .list-header {
     background-color: {$color['window_content_bg']};
     border-bottom: 1px solid {$color['border']};
