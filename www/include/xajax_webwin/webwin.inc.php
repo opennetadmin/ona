@@ -120,7 +120,7 @@ EOL;
         "el('$window_name').onclick = function(ev) { focus_window(this.id); };"
     );
     $response->addAssign($window_name, "innerHTML", $window['header'] . $window['html'] . $window['footer']);
-    $response->addScript("if (el('work_space_table')) { el('work_space_table').style.width = '100%'; } toggle_window('{$window_name}');" . $window['js']);
+    $response->addScript("toggle_window('{$window_name}');" . $window['js']);
 
     // Send an XML response to the web browser
     return($response->getXML());

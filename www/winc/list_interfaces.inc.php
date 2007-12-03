@@ -149,7 +149,7 @@ EOL;
                         'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>interface_cluster_list,id=>tt_interface_cluster_list_{$record['id']},interface_id=>{$record['id']}\');'
                         );\"";
                 $clusterhtml .= <<<EOL
-                    <img src="{$images}/silk/sitemap.png" {$clusterscript} />
+                    <img src="{$images}/silk/sitemap.png" border="0" {$clusterscript} />
 EOL;
             }
             $html .= $clusterhtml;
@@ -158,6 +158,7 @@ EOL;
 
             $html .= <<<EOL
                 </td>
+
                 <td class="list-row">
 EOL;
 
@@ -174,7 +175,7 @@ EOL;
             }
             else {
 
-                $html .= "<span style='{$clusterstyle}' {$clusterscript}>{$record['ip_addr']}</span";
+                $html .= "<span style='{$clusterstyle}' {$clusterscript}>{$record['ip_addr']}</span>";
             }
             $html .= <<<EOL
                     <span style="{$clusterstyle}" title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>

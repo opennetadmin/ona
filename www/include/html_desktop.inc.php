@@ -304,11 +304,14 @@ print <<<EOL
         }
     }
 
+    /* This checks to make sure that the work_space fits within the window poperly.  it will adjust the content size as you adjust the window size. */
     setInterval('if (el(\'work_space_table\')) { ' +
+        'el(\'work_space_table\').style.width = \'100%\';' +
         'var my_height = document.body.clientHeight - el(\'bar_top\').clientHeight - el(\'trace_history\').clientHeight;' +
         'el(\'work_space\').style.height = my_height + \'px\';' +
         'el(\'work_space_content\').style.height = (my_height - el(\'work_space_title\').offsetHeight - 4 ) + \'px\'; }', 500);
 
+    /* Keep the taskbar items up to date */
     setInterval('update_task_bar(el(\'window_container\'), el(\'menu-window-list\'));', 1000);
 
     /* Call the process_alerts function to look for alerts to display at a regular interval*/
@@ -316,7 +319,6 @@ print <<<EOL
 
     /* Go ahead and process_alerts on the initial load */
     xajax_window_submit('process_alerts', 'fake=>junk');
-
 
     /* Setup mouse handlers for the "Start" button */
     var _button = el('menu-apps-button');
@@ -354,7 +356,7 @@ print <<<EOL
 --></script>
 
 <!-- Side toolbar -->
-<div nowrap style="position: absolute;top: 85px;right: 1px;z-index: 10;background: #E3E3F0;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;">
+<div nowrap style="position: absolute;top: 90px;right: 1px;z-index: 10;background: #E3E3F0;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;">
     <div style="float:left;padding: 5px 2px;" onclick="toggleBox('ipcalc_content');">
     <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" />
     </div>

@@ -77,7 +77,6 @@ $window['js'] .= <<<EOL
     var my_width  = '100%';
     var my_height = document.body.clientHeight - el('bar_top').clientHeight - el('trace_history').clientHeight;
     if (browser.isIE) {
-        my_width  += 4;
         my_height += 2;
     }
 
@@ -114,13 +113,6 @@ EOL;
 
 
     // Define the window's inner html -
-    // start with a "history" bar at the top.
-//    $window['html'] .= <<<EOL
-
-//    <div id="{$window_name}_history" style="font-size: smaller; background-color: #EDEEFF;white-space: nowrap;">
-
-//EOL;
-//    $window['html'] .= ws_rewrite_history($window_name, ' ', 1);
     $window['html'] .= <<<EOL
 
     </div>
