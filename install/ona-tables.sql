@@ -433,7 +433,7 @@ CREATE TABLE `permissions` (
   `description` varchar(255) NOT NULL default '',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
 
 --
 -- Table structure for table `roles`
@@ -548,4 +548,4 @@ CREATE TABLE `vlans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2007-11-05  3:58:52
+-- Dump completed on 2007-12-05  4:58:38

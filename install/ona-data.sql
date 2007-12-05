@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: ona
 -- ------------------------------------------------------
--- Server version	5.0.41-Dotdeb_1.dotdeb.2-log
+-- Server version	5.0.45-Dotdeb_0.dotdeb.1-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,13 +16,13 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Dumping data for table `manufacturers`
+-- Dumping data for table `configuration_types`
 --
 
-LOCK TABLES `manufacturers` WRITE;
-/*!40000 ALTER TABLE `manufacturers` DISABLE KEYS */;
-INSERT INTO `manufacturers` VALUES (7,'Adtran'),(8,'Allied Telesyn'),(9,'Cabletron'),(1,'Cisco'),(5,'Dell'),(10,'Extreme Networks'),(4,'Hewlett Packard'),(6,'IBM'),(2,'Juniper'),(3,'Unknown');
-/*!40000 ALTER TABLE `manufacturers` ENABLE KEYS */;
+LOCK TABLES `configuration_types` WRITE;
+/*!40000 ALTER TABLE `configuration_types` DISABLE KEYS */;
+INSERT INTO `configuration_types` VALUES (1,'IOS_CONFIG'),(2,'IOS_VERSION');
+/*!40000 ALTER TABLE `configuration_types` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -31,7 +31,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `dcm_module_list` WRITE;
 /*!40000 ALTER TABLE `dcm_module_list` DISABLE KEYS */;
-INSERT INTO `dcm_module_list` VALUES (0,'domain_display','Displays an existing domain','ona/domain.inc.php'),(1,'get_module_list','Returns the list of available modules','get_module_list.inc.php'),(2,'mangle_ip','Converts between various IP address representations','mangle.inc.php'),(3,'mysql_purge_logs','Purges unused replication logs on MySQL masters','mysql_purge_logs.inc.php'),(4,'subnet_add','Add a new subnet','ona/subnet.inc.php'),(5,'subnet_modify','Modify an existing subnet','ona/subnet.inc.php'),(6,'subnet_del','Delete an existing subnet','ona/subnet.inc.php'),(7,'subnet_display','Display an existing subnet','ona/subnet.inc.php'),(8,'host_add','Add a new host','ona/host.inc.php'),(9,'host_display','Display an existing host','ona/host.inc.php'),(10,'host_modify','Modify an existing host','ona/host.inc.php'),(11,'host_del','Delete an existing host','ona/host.inc.php'),(12,'interface_add','Add an interface to an existing host','ona/interface.inc.php'),(13,'interface_modify','Modify an existing interface','ona/interface.inc.php'),(14,'interface_del','Delete an existing interface','ona/interface.inc.php'),(15,'interface_display','Displays details of an existing interface','ona/interface.inc.php'),(16,'interface_move','Move an interface from one subnet to another','ona/interface.inc.php'),(17,'domain_add','Adds a domain entry into the IP database','ona/domain.inc.php'),(18,'domain_del','Deletes a domain from the IP database','ona/domain.inc.php'),(19,'domain_modify','Updates an domain record in the IP database','ona/domain.inc.php'),(20,'dhcp_pool_add','Add DHCP pools','ona/dhcp_pool.inc.php'),(21,'dhcp_pool_modify','Modify DHCP pools','ona/dhcp_pool.inc.php'),(22,'dhcp_pool_del','Delete a DHCP pool','ona/dhcp_pool.inc.php'),(23,'dhcp_entry_add','Add a DHCP option entry','ona/dhcp_entry.inc.php'),(24,'dhcp_entry_del','Delete a DHCP option entry','ona/dhcp_entry.inc.php'),(25,'dhcp_entry_modify','Modify DHCP option entry','ona/dhcp_entry.inc.php'),(26,'message_add','Allows you to add a message to a subnet or host that will so in a display page','ona/message.inc.php'),(27,'block_add','Add an ip block range','ona/block.inc.php'),(28,'block_del','Delete an ip block','ona/block.inc.php'),(29,'block_modify','Modify ip blocks','ona/block.inc.php'),(30,'config_add','Adds a configuration to the database','ona/configuration.inc.php'),(31,'config_chksum','Displays the chksum of a config record from the database','ona/configuration.inc.php'),(32,'config_display','Displays a config record from the database','ona/configuration.inc.php'),(33,'dhcp_server_add','Add a DHCP server to subnet relationship','ona/dhcp_server.inc.php'),(34,'dhcp_server_del','Delete a DHCP server to subnet relationship','ona/dhcp_server.inc.php'),(35,'dhcp_build_conf','Build an ISC dhcp config file','build/build_dhcp.inc.php'),(36,'dns_record_add','Add a DNS record','ona/dns_record.inc.php'),(37,'dns_record_display','Display info about a DNS record','ona/dns_record.inc.php'),(38,'dns_record_del','Delete a DNS record','ona/dns_record.inc.php'),(39,'dns_record_modify','Modify a DNS record','ona/dns_record.inc.php'),(40,'build_zone','Build DNS zone file','build/build_dns.inc.php');
+INSERT INTO `dcm_module_list` VALUES (0,'domain_display','Displays an existing domain','ona/domain.inc.php'),(1,'get_module_list','Returns the list of available modules','get_module_list.inc.php'),(2,'mangle_ip','Converts between various IP address representations','mangle.inc.php'),(3,'mysql_purge_logs','Purges unused replication logs on MySQL masters','mysql_purge_logs.inc.php'),(4,'subnet_add','Add a new subnet','ona/subnet.inc.php'),(5,'subnet_modify','Modify an existing subnet','ona/subnet.inc.php'),(6,'subnet_del','Delete an existing subnet','ona/subnet.inc.php'),(7,'subnet_display','Display an existing subnet','ona/subnet.inc.php'),(8,'host_add','Add a new host','ona/host.inc.php'),(9,'host_display','Display an existing host','ona/host.inc.php'),(10,'host_modify','Modify an existing host','ona/host.inc.php'),(11,'host_del','Delete an existing host','ona/host.inc.php'),(12,'interface_add','Add an interface to an existing host','ona/interface.inc.php'),(13,'interface_modify','Modify an existing interface','ona/interface.inc.php'),(14,'interface_del','Delete an existing interface','ona/interface.inc.php'),(15,'interface_display','Displays details of an existing interface','ona/interface.inc.php'),(16,'interface_move','Move an interface from one subnet to another','ona/interface.inc.php'),(17,'domain_add','Adds a domain entry into the IP database','ona/domain.inc.php'),(18,'domain_del','Deletes a domain from the IP database','ona/domain.inc.php'),(19,'domain_modify','Updates an domain record in the IP database','ona/domain.inc.php'),(20,'dhcp_pool_add','Add DHCP pools','ona/dhcp_pool.inc.php'),(21,'dhcp_pool_modify','Modify DHCP pools','ona/dhcp_pool.inc.php'),(22,'dhcp_pool_del','Delete a DHCP pool','ona/dhcp_pool.inc.php'),(23,'dhcp_entry_add','Add a DHCP option entry','ona/dhcp_entry.inc.php'),(24,'dhcp_entry_del','Delete a DHCP option entry','ona/dhcp_entry.inc.php'),(25,'dhcp_entry_modify','Modify DHCP option entry','ona/dhcp_entry.inc.php'),(26,'message_add','Allows you to add a message to a subnet or host that will so in a display page','ona/message.inc.php'),(27,'block_add','Add an ip block range','ona/block.inc.php'),(28,'block_del','Delete an ip block','ona/block.inc.php'),(29,'block_modify','Modify ip blocks','ona/block.inc.php'),(30,'config_add','Adds a configuration to the database','ona/configuration.inc.php'),(31,'config_chksum','Displays the chksum of a config record from the database','ona/configuration.inc.php'),(32,'config_display','Displays a config record from the database','ona/configuration.inc.php'),(33,'dhcp_server_add','Add a DHCP server to subnet relationship','ona/dhcp_server.inc.php'),(34,'dhcp_server_del','Delete a DHCP server to subnet relationship','ona/dhcp_server.inc.php'),(35,'dhcp_build_conf','Build an ISC dhcp config file','build/build_dhcp.inc.php'),(36,'dns_record_add','Add a DNS record','ona/dns_record.inc.php'),(37,'dns_record_display','Display info about a DNS record','ona/dns_record.inc.php'),(38,'dns_record_del','Delete a DNS record','ona/dns_record.inc.php'),(39,'dns_record_modify','Modify a DNS record','ona/dns_record.inc.php'),(40,'build_zone','Build DNS zone file','build/build_dns.inc.php'),(41,'domain_server_add','Add a DNS domain to a server','ona/domain_server.inc.php'),(42,'domain_server_del','Delete a DNS domain from a server','ona/domain_server.inc.php'),(43,'dhcp_failover_group_del','Delete a DHCP failover group','ona/dhcp_failover.inc.php'),(44,'interface_move_host','Moves an interface from one host to another','ona/interface.inc.php'),(45,'interface_share','Share an existing interface with another host','ona/interface.inc.php'),(46,'interface_share_del','Delete an interface share entry','ona/interface.inc.php'),(47,'vlan_campus_add','Add a VLAN campus (VTP Domain)','ona/vlan_campus.inc.php'),(48,'vlan_campus_del','Delete a VLAN campus','ona/vlan_campus.inc.php'),(49,'vlan_campus_modify','Modify a VLAN campus record','ona/vlan_campus.inc.php'),(50,'vlan_add','Add a VLAN','ona/vlan.inc.php'),(51,'vlan_del','Delete a VLAN','ona/vlan.inc.php'),(52,'vlan_modify','Modify a VLAN','ona/vlan.inc.php');
 /*!40000 ALTER TABLE `dcm_module_list` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -65,6 +65,16 @@ INSERT INTO `dhcp_options` VALUES (1,'subnet-mask',1,'I','Subnet Mask',1),(2,'ro
 UNLOCK TABLES;
 
 --
+-- Dumping data for table `manufacturers`
+--
+
+LOCK TABLES `manufacturers` WRITE;
+/*!40000 ALTER TABLE `manufacturers` DISABLE KEYS */;
+INSERT INTO `manufacturers` VALUES (7,'Adtran'),(8,'Allied Telesyn'),(9,'Cabletron'),(1,'Cisco'),(5,'Dell'),(10,'Extreme Networks'),(4,'Hewlett Packard'),(6,'IBM'),(2,'Juniper'),(3,'Unknown');
+/*!40000 ALTER TABLE `manufacturers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Dumping data for table `models`
 --
 
@@ -90,7 +100,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `sequences` WRITE;
 /*!40000 ALTER TABLE `sequences` DISABLE KEYS */;
-INSERT INTO `sequences` VALUES ('blocks',4),('devices',7),('device_types',7),('dhcp_options',14),('dhcp_option_entries',6),('dhcp_pools',3),('dhcp_server_subnets',4),('dns',26),('hosts',15),('interfaces',16),('manufacturers',47),('models',11),('roles',14),('subnets',20),('subnet_types',14);
+INSERT INTO `sequences` VALUES ('',3),('blocks',4),('configurations',1),('custom_attribute_types',3),('devices',14),('device_types',7),('dhcp_options',14),('dhcp_option_entries',13),('dhcp_pools',3),('dhcp_server_subnets',6),('dns',62),('dns_server_domains',8),('domains',1),('hosts',22),('interfaces',28),('manufacturers',47),('models',11),('roles',14),('subnets',22),('subnet_types',14),('vlans',1),('vlan_campuses',5);
 /*!40000 ALTER TABLE `sequences` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -103,6 +113,56 @@ LOCK TABLES `subnet_types` WRITE;
 INSERT INTO `subnet_types` VALUES (1,'loopback','Loopback','Loopback Interfaces (mostly for routers)'),(2,'','WAN',''),(7,'','VLAN',''),(10,'p2p','Point-to-Point',''),(11,'','VPN',''),(12,'','Wireless LAN',''),(13,'lan','LAN','Simple LAN');
 /*!40000 ALTER TABLE `subnet_types` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping data for table `groups`
+--
+
+LOCK TABLES `groups` WRITE;
+/*!40000 ALTER TABLE `groups` DISABLE KEYS */;
+INSERT INTO `groups` VALUES (5,'dcm.pl','CLI Utility',80),(17,'Default','Default user group',1),(18,'Admin','Admin group',99);
+/*!40000 ALTER TABLE `groups` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `group_assignments`
+--
+
+LOCK TABLES `group_assignments` WRITE;
+/*!40000 ALTER TABLE `group_assignments` DISABLE KEYS */;
+INSERT INTO `group_assignments` VALUES (1,17,1),(2,18,2);
+/*!40000 ALTER TABLE `group_assignments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,'guest','098f6bcd4621d373cade4e832627b4f6',0,'2007-10-30 02:55:37','2007-12-02 23:44:21'),(2,'admin','21232f297a57a5a743894a0e4a801fc3',0,'2007-10-30 03:00:17','2007-12-02 22:10:26');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `permissions`
+--
+
+LOCK TABLES `permissions` WRITE;
+/*!40000 ALTER TABLE `permissions` DISABLE KEYS */;
+INSERT INTO `permissions` VALUES (1,'dns_record_add','Add a DNS record'),(2,'dns_record_modify','Modify a DNS record'),(3,'dns_record_del','Delete a DNS record'),(4,'host_add','Add hosts and interfaces'),(5,'host_modify','Modify hosts (& host classifications)'),(6,'host_del','Delete hosts'),(7,'user_admin','User Administrator'),(8,'subnet_add','Add subnets'),(9,'subnet_modify','Modify subnets'),(10,'subnet_del','Delete subnets'),(11,'interface_modify','Modify interface records'),(12,'interface_del','Delete interface records'),(13,'advanced','Advanced Maintenance'),(14,'host_config_admin','Host config archive admin'),(15,'template_admin','Template system admin');
+/*!40000 ALTER TABLE `permissions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `permission_assignments`
+--
+
+LOCK TABLES `permission_assignments` WRITE;
+/*!40000 ALTER TABLE `permission_assignments` DISABLE KEYS */;
+INSERT INTO `permission_assignments` VALUES (1,1,0,18),(2,2,0,18),(3,3,0,18),(4,4,0,18),(5,5,0,18),(6,6,0,18),(7,7,0,18),(8,8,0,18),(9,9,0,18),(10,10,0,18),(11,11,0,18),(12,12,0,18),(13,13,0,18),(14,14,0,18),(15,15,0,18),(16,16,0,18),(17,17,0,18),(18,18,0,18);
+/*!40000 ALTER TABLE `permission_assignments` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -113,4 +173,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2007-07-31  4:16:20
+-- Dump completed on 2007-12-05  4:59:47
