@@ -1,7 +1,12 @@
 <?php
 
-/////////////////////////////////////////////////////////////////
+///////////////////////   WARNING   /////////////////////////////
 //           This is the site configuration file.              //
+//                                                             //
+//      It is not intended that this file be edited.  Any      //
+//      user configurations should be in the local config or   //
+//      in the database table sys_config                       //
+//                                                             //
 /////////////////////////////////////////////////////////////////
 
 // Used in PHP for include files and such
@@ -11,44 +16,44 @@ $base;
 $include;
 
 // Used in URL links
-//$baseURL=preg_replace('/index\.php.*/', '',$_SERVER['REQUEST_URI']); $baseURL=preg_replace('/\?.*/', '',$_SERVER['REQUEST_URI']); $baseURL = rtrim($baseURL, '/');
 $baseURL=dirname($_SERVER['SCRIPT_NAME']); $baseURL = rtrim($baseURL, '/');
 $images = "{$baseURL}/images";
 
 // help URL location
 $_ENV['help_url'] = "http://www.opennetadmin.com/docs/";
 
+// Many of these settings serve as defaults.  They can be overridden by the settings in
+// the table "sys_config"
 $conf = array (
     /* General Setup */
     // It must have a v<majornum>.<minornum>, no number padding to match the check version code.
     "version"                => "v1.0",
 
     /* Logging - Used by the printmsg() function */
-    "debug"                  => 5,
+    /////////////// This stuff is replicated in the sys_config table //////////////////////////////
+    "debug"                  => 0,
     "stdout"                 => 0, // Print logs to the generated web page, not a good idea!
     "db"                     => 1, // Log to a sql log, highly recommended
     "logfile"                => "/var/log/ona.log",
     "syslog"                 => 0, // It only syslogs if debug is 0.
-
-    // Database Context
-    // For possible values see the $db_context() array and description below
-    "mysql_context"          => 'default',
-
     /* Other Random Things */
     "money_format"           => '%01.2f',
     "date_format"            => 'M jS, g:ia',
     "search_results_per_page"=> 10,
     "suggest_max_results"    => 10,
+    /* Session Settings */
+    "cookie_life"            => (60*60*24*2), // 2 days, in seconds
+    ///////// End sys_config replicaiton stuff ///////////////////
 
+    // Database Context
+    // For possible values see the $db_context() array and description below
+    "mysql_context"          => 'default',
 
     /* Used in header.php */
     "title"                  => 'Open Net Admin :: ',
     "meta_description"       => '',
     "meta_keywords"          => '',
     "html_headers"           => '',
-
-    /* Session Settings */
-    "cookie_life"            => (60*60*24*2), // 2 days
 
     /* Include Files: HTML */
     "html_style_sheet"       => "$include/html_style_sheet.inc.php",
@@ -59,6 +64,7 @@ $conf = array (
     "inc_functions"          => "$include/functions_general.inc.php",
     "inc_functions_gui"      => "$include/functions_gui.inc.php",
     "inc_functions_db"       => "$include/functions_db.inc.php",
+    "inc_functions_auth"     => "$include/functions_auth.inc.php",
     "inc_db_sessions"        => "$include/adodb_sessions.inc.php",
     "inc_adodb"              => "$include/adodb/adodb.inc.php",
     "inc_xajax_stuff"        => "$include/xajax_setup.inc.php",
@@ -142,57 +148,6 @@ $style['borderL'] = "border-left: 1px solid {$color['border']};";
 $style['borderR'] = "border-right: 1px solid {$color['border']};";
 
 
-// Define database context names
-//   The concept here is that we need multiple copies of the entire IP
-//   database to support different "contexts".  For example - the current
-//   database scheme doesn't allow a single server to have both an
-//   internal and external DNS name .. or an IP address in two different
-//   MPLS networks.  By having multiple IP Database instances we can leave
-//   all the code the same and simply switch the "context", or database,
-//   we are using.
-//
-//   I use this array as a place to store the MySQL database info as well,
-//   to keep all database connection info in one place.
-//
-//   Note: after adding a new context here you also need to add the details
-//         for that new context in functions_db.php as well.
-//   Note: the context used is determined by the value of $conf['mysql_context']
-//         at the time functions_db.php is included.
-//   Note: Available ADODB types:
-//         mysql, mysqlt, oracle, oci8, mssql, postgres, sybase, vfp, access, ibase and many others.
-$db_context = array (
-
-    // Note:  I set the login up as ona-sys so that we could have
-    // a more "functional" user to do connections with that is not root or
-    // some sort of full admin.
-    //
-    // Type:
-    'mysqlt' => array(
-        // Name:
-        'default' => array(
-            'description' => 'Website metadata',
-            'primary' => array(
-                'db_type'     => 'mysqlt',  // using mysqlt for transaction support
-                'db_host'     => 'localhost',
-                'db_login'    => 'ona_sys',
-                'db_passwd'   => 'youshouldchangethis',
-                'db_database' => 'ona',
-                'db_debug'    => false,
-            ),
-            // You can use this to connect to a secondary server that is
-            // syncronized on the back end.
-            'secondary' => array(
-                'db_type'     => 'mysqlt',
-                'db_host'     => 'localhost',
-                'db_login'    => 'ona_sys',
-                'db_passwd'   => 'youshouldchangethis',
-                'db_database' => 'ona',
-                'db_debug'    => false,
-            ),
-        ),
-    ),
-);
-
 $conf['dns']['admin_email']     = 'hostmaster'; // per RFC 2412, defaults to hostmaster within the domain origin
 $conf['dns']['primary_master']  = '';           // This should be the fqdn of your default primary master server
 $conf['dns']['default_ttl']     = '86400';      // this is the value of $TTL for the zone, used as the default value
@@ -203,18 +158,54 @@ $conf['dns']['minimum']         = '3600';       // used as the negative caching 
 $conf['dns']['parent']          = '';
 $conf['dns']['defaultdomain']   = 'yourdomain.com';
 
-// This section defines host actions. If you leave the url blank it will not show the option in the list
-// You can use %fqdn and %ip as substitutions in the url for the host being displayed
-// You can specify a tooltip title for the option, otherwise it defaults to the hostaction name "Telnet" "Splunk" etc
-// These will be listed in the order specified here.
-$conf['hostaction']['Telnet']['url'] = "telnet:%fqdn";
-$conf['hostaction']['Telnet']['title'] = "Telnet to the host";
+
+
+
+
+// Include the localized Database settings
+@include("{$base}/local/config/database_settings.inc.php");
+
+// Include the localized configuration settings
+// MP: this may not be needed now that "user" configs are in the database
+@include("{$base}/local/config/config.inc.php");
+
+// Include the basic system functions
+// any $conf settings used in this "require" should not be user adjusted in the sys_config table
+require_once($conf['inc_functions']);
+
+// Now that some initial configuration has been set up.  Get the user configuration from the database
+
+// Include the basic database functions
+require_once($conf['inc_functions_db']);
+
+// (Re)Connect to the DB now.
+global $onadb;
+$onadb = db_pconnect('mysqlt', $conf['mysql_context']);
+
+// Load the actual user config from the database table sys_config
+// These will override any of the defaults set above
+list($status, $rows, $records) = db_get_records($onadb, 'sys_config', 'name like "%"', 'name');
+foreach ($records as $record) {
+    printmsg("INFO => Loaded config item from database: {$record['name']}=''{$record['value']}''",5);
+    $conf[$record['name']] = $record['value'];
+}
+
+// Include functions that replace the default session handler with one that uses MySQL as a backend
+require_once($conf['inc_db_sessions']);
+
+// Include the GUI functions
+require_once($conf['inc_functions_gui']);
+
+// Start the session handler (this calls a function defined in functions_general)
+startSession();
+
+// Include the AUTH functions
+require_once($conf['inc_functions_auth']);
+
 
 // Set session inactivity threshold
 ini_set("session.gc_maxlifetime", $conf['cookie_life']);
 
-// Include the local configuration settings
-@include("{$base}/config/config_local.inc.php");
 
 // DON'T put whitespace at the beginning or end of included files!!!
 ?>

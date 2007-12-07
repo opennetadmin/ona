@@ -45,9 +45,11 @@ else {
     $versit = "<div class='version_check{$sty}'><img src='{$images}/silk/exclamation.png'> You are NOT on the most current version<br>Your version = {$conf['version']}<br>Latest version = {$onaver}</div>";
 }
 
+
+// If there is a message of the day file, display it.
 $motdfile = $base.'/motd.txt';
 if (file_exists($motdfile)) {
-    printmsg("I tried file: {$base}/motd.txt",0);
+    printmsg("INFO => Displaying MOTD: {$motdfile}",1);
     $MOTD = file_get_contents($motdfile);
 }
 
@@ -370,16 +372,22 @@ print <<<EOL
                     onClick="xajax_window_submit('ipcalcgui', xajax.getFormValues('ipcalc_form'));"
                 >
         </form>
-        <span><pre style="font-family: monospace;font-size: medium;" id="ipcalc_data"></pre></span>
+        <pre style="font-family: monospace;font-size: medium;" id="ipcalc_data"></pre>
     </div>
 </div>
 
-
-
-
-</body>
-</html>
 EOL;
+
+
+// Open the work_space that was requested
+// FIXME: MP: find a way to take the request info and feed it into the $form that is passed in.
+if ($work_space) {
+    print <<<EOL
+<script type="text/javascript"><!--
+    xajax_window_submit('work_space', 'xajax_window_submit(\'{$work_space}\', \' \', \'display\')');
+--></script>
+EOL;
+}
 
 // Process any search that was passed
 if ($search) {
@@ -390,5 +398,12 @@ if ($search) {
 --></script>
 EOL;
 }
+
+
+print <<<EOL
+</body>
+</html>
+EOL;
+
 
 ?>

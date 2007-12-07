@@ -204,6 +204,7 @@ function window_find_include($window_name) {
     $file = '';
     $directories = array('.',
                          './winc',
+                         './local/winc',
                          './inc',
                         );
 

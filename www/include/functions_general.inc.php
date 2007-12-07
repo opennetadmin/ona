@@ -6,26 +6,27 @@
 printmsg("Get/Post vars:", 3);
 foreach (array_keys($_REQUEST) as $key) printmsg("Name: $key    Value: $_REQUEST[$key]", 3);
 
+// MP: moved this stuff to config.inc.php
 
 // Include the basic database functions
-require_once($conf['inc_functions_db']);
+//require_once($conf['inc_functions_db']);
 
 // (Re)Connect to the DB now.
-global $onadb;
-$onadb = db_pconnect('mysqlt', $conf['mysql_context']);
+//global $onadb;
+//$onadb = db_pconnect('mysqlt', $conf['mysql_context']);
 
 // Include functions that replace the default session handler with one that uses MySQL as a backend
-require_once($conf['inc_db_sessions']);
+//require_once($conf['inc_db_sessions']);
 
 // Include the GUI functions
-require_once($conf['inc_functions_gui']);
+//require_once($conf['inc_functions_gui']);
 
 // Start the session handler (this calls a function defined below in this file)
-startSession();
+//startSession();
 
 
 // Include the GUI functions
-require_once($base.'/include/functions_auth.inc.php');
+//require_once($base.'/include/functions_auth.inc.php');
 
 
 
@@ -1173,11 +1174,11 @@ function startSession() {
     header("Cache-control: private");
 
     // Display session variables
-    // if ($conf['debug'] >= 6) {
-    //     print "Session Variables:<pre>";
-    //     var_export($_SESSION);
-    //     print "</pre>\n";
-    // }
+//     if ($conf['debug'] >= 0) {
+//         print "Session Variables:<pre>";
+//         var_export($_SESSION);
+//         print "</pre>\n";
+//     }
 
     return(0);
 }
@@ -1196,6 +1197,8 @@ function startSession() {
 //  Call this function at the top of each page that needs to be
 //  secure (i.e. it requires a user who is properly logged in)
 //
+//  MP: not used currently.. login is built into the html_desktop
+//
 ///////////////////////////////////////////////////////////////////////
 function securePage() {
     global $conf;
@@ -1206,7 +1209,7 @@ function securePage() {
 
     // Make sure their session is still active
     if (!(isset($_SESSION['ona']['auth']['user']['username']))) {
-        header("Location: {$https}{$baseURL}/login.php?expired=1");
+        //header("Location: {$https}{$baseURL}/login.php?expired=1");
         exit();
     }
 
@@ -1412,7 +1415,7 @@ function run_module($module='', $options='', $transaction=1) {
 
     // If begintrans worked and we support transactions, do the smarter "starttrans" function
     if ($has_trans) {
-        printmsg("DEBUG => Commiting transaction", 1);
+        printmsg("DEBUG => Commiting transaction", 2);
         $onadb->StartTrans();
     }
 
@@ -1424,30 +1427,22 @@ function run_module($module='', $options='', $transaction=1) {
 
     // Stop the timer, and display how long it took
     $stop_time = microtime_float();
-    printmsg("DEBUG => Module runtime: " . round(($stop_time - $start_time), 2) . " seconds", 1);
-    printmsg("DEBUG => Total SQL Queries: " . $self['db_get_record_count'], 1);
+    printmsg("DEBUG => [Module_runtime] " . round(($stop_time - $start_time), 2) . " seconds -- [Total_SQL_Queries] " . $self['db_get_record_count'] . " --  [Module_exit_code] {$status}", 1);
 
     // Either commit, or roll back the transaction
-    printmsg("DEBUG => Module exit code: {$status}", 1);
     if ($transaction and $has_trans) {
         if ($status != 0) {
-            printmsg("DEBUG => There was a module error, marking transaction for a Rollback!", 1);
+            printmsg("INFO => There was a module error, marking transaction for a Rollback!", 1);
             //$onadb->RollbackTrans();
             $onadb->FailTrans();
         }
-//         else {
-//             printmsg("DEBUG => Commiting transaction", 1);
-//             $onadb->CommitTrans();
-//         }
-        //printmsg("DEBUG => Commiting transaction", 1);
-       // $onadb->CompleteTrans();
     }
 
     if ($has_trans) {
         // If there was any sort of failure, make sure the status has incremented, this catches sub module output errors;
         if ($onadb->HasFailedTrans()) $status = $status + 1;
 
-        printmsg("DEBUG => Commiting transaction", 1);
+        printmsg("DEBUG => Commiting transaction", 2);
         $onadb->CompleteTrans();
     }
 

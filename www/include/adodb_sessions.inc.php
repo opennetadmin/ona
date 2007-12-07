@@ -61,7 +61,7 @@ function sess_close() { return true; }
 // Reads and returns a session's data
 function sess_read($key) {
     global $SESS_DBH, $SESS_LIFE;
-    printmsg("sess_read($key) called", 3);
+    printmsg("sess_read($key) called", 6);
 
     list($status, $rows, $record) = db_get_record($SESS_DBH, 'sessions', "`sesskey` = '$key' AND `expiry` > " . time());
     if ($status or $rows == 0) { return false; }
@@ -82,7 +82,7 @@ function sess_read($key) {
 
 function sess_write($key, $value) {
     global $SESS_DBH, $SESS_LIFE;
-    printmsg("sess_write($key, $value) called", 3);
+    printmsg("sess_write($key, $value) called", 6);
 
     $expiry = time() + $SESS_LIFE;
 

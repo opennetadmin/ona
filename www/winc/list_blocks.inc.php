@@ -60,7 +60,7 @@ function ws_display_list($window_name, $form='') {
 
     // BLOCK , assume a block descripton
     if ($form['blockname']) {
-        $where .= $and . "name LIKE " . $onadb->qstr($form['blockname']);
+        $where .= $and . "name LIKE " . $onadb->qstr('%'.strtoupper($form['blockname']).'%');
         $and = " AND ";
     }
 

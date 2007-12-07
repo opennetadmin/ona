@@ -5,7 +5,7 @@ while ($base and (!is_dir($base.'/include'))) $base = preg_replace('+/[^/]*$+', 
 $include = $base . '/include';
 if (!is_dir($include)) { print "ERROR => Couldn't find include folder!\n"; exit; }
 require_once($base . '/config/config.inc.php');
-require_once($conf['inc_functions']);
+//require_once($conf['inc_functions']);
 /* --------------------------------------------------------- */
 
 // // Redirect them to HTTPS if they're not already logged in
