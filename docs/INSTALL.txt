@@ -1,42 +1,26 @@
-these are just rambling thoughts at this point
+Here are some basic notes on installation of the system.
 
-requirements:
-apache2-server
-mysql-server
-php4
-	php4-gmp
-	php4-mysql
+REQUIREMENTS:
+  An apache server
+  A mysql -server
+  PHP
+	php-mysql module is required
+	php-gmp module is recomended
+
+INSTALL:
+
+1. Download the latest file from http://opennetadmin.com/downloads and place it in /opt
+2. cd /opt
+3. tar -zxvf opennetadmin-1.0.tar.gz
 
 
-NOTE: php5 is not fully supported.  it creates issues with some of the arrays.. not sure why.. specifically breaks the session stuff
--------------
-This is the original way to install
+4. add a symlink in your web server root that points "ona -> /opt/ona/www"
+   For example: ln -s /opt/ona/www /var/www/ona
 
-cd /var/www
-sudo svn co http://svn.opennetadmin.com/repos/ona
-sudo touch /opt/ona/log/ona.log
-sudo chown www-data /opt/ona/log/ona.log
+   -or-
 
----------------
-This is the new way I'd like to look into
+   Add this to your apache configuration file in the approrpiate location:
 
-cd /opt
-tar -zxvf opennetadmin-1.0.tar.gz
-
-# not sure I need to do this, what would the new ona user be used for
-#adduser ona
-#addgroup ona
-#   ona:x:1001:1001:OpenNetAdmin,,,:/opt/ona:/bin/false  <-- should look something like this
-#chown -R ona:ona /opt/ona
-
-cd /opt/ona
-
-add a symlink in your web server root that points ona -> /opt/ona/www
-like: ln -s /opt/ona/www /var/www/ona
-
--or-
-
-add this to your apache configuration file in the approrpiate location:
     Alias /ona "/opt/ona/www/"
     <Directory "/opt/ona/www/">
         Options Indexes MultiViews FollowSymLinks
@@ -45,19 +29,23 @@ add this to your apache configuration file in the approrpiate location:
         allow from all
     </Directory>
 
+5. Point your broswer to http://<servername>/ona
+
+
+
+
+MISC:
+
+# These steps are not required but might be useful... They are future ideas and not recomended at this point
+adduser ona
+addgroup ona
+#   ona:x:1001:1001:OpenNetAdmin,,,:/opt/ona:/bin/false  <-- should look something like this
+chown -R ona:ona /opt/ona
 
 export PATH=$PATH:/opt/ona/bin
 
 add a symlink of /tftpboot/ona -> /opt/ona/<something>
 
-
-mysqladmin -u root create ona
-mysql -u root ona < ona.sql
-mysql -u root ona -e "GRANT ALL ON ona.* TO ona_sys@localhost IDENTIFIED BY 'youshouldchangethis'"
-
-
-
-FIXME: at this point the apache DocumentRoot should not have a trailing / as it screws up the baseURL variable.
 
 
 I recommend using something like eaccelerator.. so far it seems to help things out

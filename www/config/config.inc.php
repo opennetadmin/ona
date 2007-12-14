@@ -158,9 +158,31 @@ $conf['dns']['minimum']         = '3600';       // used as the negative caching 
 $conf['dns']['parent']          = '';
 $conf['dns']['defaultdomain']   = 'yourdomain.com';
 
+// Default db_context.  This info will be overridden by the
+// $base/www/local/config/databas_settings.inc.php file.  It is only here
+// to serve as a place holder for the install script to do its job.
+$db_context = array (
 
-
-
+    // Note:  I set the login up as ona-sys so that we could have
+    // a more "functional" user to do connections with that is not root or
+    // some sort of full admin.
+    //
+    // Type:
+    'mysqlt' => array(
+        // Name:
+        'default' => array(
+            'description' => 'Website metadata',
+            'primary' => array(
+                'db_type'     => 'mysqlt',  // using mysqlt for transaction support
+                'db_host'     => 'localhost',
+                'db_login'    => 'ona_sys',
+                'db_passwd'   => 'youshouldchangethis',
+                'db_database' => 'ona',
+                'db_debug'    => false,
+            ),
+        ),
+    ),
+);
 
 // Include the localized Database settings
 @include("{$base}/local/config/database_settings.inc.php");
@@ -180,7 +202,7 @@ require_once($conf['inc_functions_db']);
 
 // (Re)Connect to the DB now.
 global $onadb;
-$onadb = db_pconnect('mysqlt', $conf['mysql_context']);
+$onadb = @db_pconnect('mysqlt', $conf['mysql_context']);
 
 // Load the actual user config from the database table sys_config
 // These will override any of the defaults set above

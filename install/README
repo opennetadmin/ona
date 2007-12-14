@@ -1,0 +1,7 @@
+This directory contains the information needed to perform an initial setup of the system.
+
+README:		This text
+ona-data.sql:	Initial data required for the system
+ona-tables.sql:	Initial database tables
+install.php:	The installation script ran at first startup
+run_install:	An empty file that you can touch to cause the system to re-run the install process.  This file should exist on a brand new install and will be removed after the install script has processed. The install directory itself should be chmod 666 so the web server can remove this file during install.
