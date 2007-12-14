@@ -5,7 +5,7 @@ while ($base and (!is_dir($base.'/include'))) $base = preg_replace('+/[^/]*$+', 
 $include = $base . '/include';
 if (!is_dir($include)) { print "ERROR => Couldn't find include folder!\n"; exit; }
 require_once($base . '/config/config.inc.php');
-//require_once($conf['inc_functions']);
+require_once($conf['inc_functions']);
 /* --------------------------------------------------------- */
 
 // // Redirect them to HTTPS if they're not already logged in
@@ -23,6 +23,14 @@ require_once($base . '/config/config.inc.php');
 
 // Get any query info
 parse_str($_SERVER['QUERY_STRING']);
+
+// Check to see if the run_install file exists.
+if (file_exists($base.'/../install/run_install')) {
+    printmsg("INFO => Found the run_install flag, performing an install.",0);
+    // Process the install script
+    require_once($base.'/../install/install.php');
+    exit;
+}
 
 // Start out the session as a guest with level 0 access.  This is for view only mode.
 if (!$_SESSION['ona']['auth']['user']['username']) {
