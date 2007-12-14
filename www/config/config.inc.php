@@ -27,7 +27,7 @@ $_ENV['help_url'] = "http://www.opennetadmin.com/docs/";
 $conf = array (
     /* General Setup */
     // It must have a v<majornum>.<minornum>, no number padding to match the check version code.
-    "version"                => "v1.0",
+    "version"                => "v07.12.14_alpha",
 
     /* Logging - Used by the printmsg() function */
     /////////////// This stuff is replicated in the sys_config table //////////////////////////////
