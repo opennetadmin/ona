@@ -380,11 +380,13 @@ EOL;
 
 
 // Open the work_space that was requested
-// FIXME: MP: find a way to take the request info and feed it into the $form that is passed in.
 if ($work_space) {
+    // Take the query from the URL and process it for use in the window_submit
+    $ws_qry = str_replace('&',',',$_SERVER['QUERY_STRING']);
+    $ws_qry = str_replace('=','=>',$ws_qry);
     print <<<EOL
 <script type="text/javascript"><!--
-    xajax_window_submit('work_space', 'xajax_window_submit(\'{$work_space}\', \' \', \'display\')');
+    xajax_window_submit('work_space', 'xajax_window_submit(\'{$work_space}\', \'{$ws_qry}\', \'display\')');
 --></script>
 EOL;
 }
