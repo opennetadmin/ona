@@ -53,13 +53,13 @@ print <<<EOL
                         <tr onmouseover="el('help').innerHTML = input2text;">
                             <td>Database Admin:</td><td><input class='edit' type='text' name='admin_login' value='root' onfocus="el('help').innerHTML = input2text;" /></td></tr>
                         <tr onmouseover="el('help').innerHTML = input3text;">
-                            <td>Database Admin Password:</td><td><input class='edit' type='password' name='admin_passwd' onfocus="el('help').innerHTML = input3text;"/></td></tr>
+                            <td>Database Admin Password:</td><td><input class='edit' type='password' name='admin_passwd' value='{$admin_passwd}' onfocus="el('help').innerHTML = input3text;"/></td></tr>
                         <tr onmouseover="el('help').innerHTML = input4text;">
                             <td>Database Name:</td><td><input class='edit' type='text' name='database_name' value='ona' onfocus="el('help').innerHTML = input4text;"/></td></tr>
                         <tr onmouseover="el('help').innerHTML = input5text;">
                             <td>System User Name:</td><td><input class='edit' type='text' name='sys_login' value='ona_sys' onfocus="el('help').innerHTML = input5text;"/></td></tr>
                         <tr onmouseover="el('help').innerHTML = input6text;">
-                            <td>System User Password:</td><td><input class='edit' type='password' name='sys_passwd' value='' onfocus="el('help').innerHTML = input6text;"/></td></tr>
+                            <td>System User Password:</td><td><input class='edit' type='password' name='sys_passwd' value='{$sys_passwd}' onfocus="el('help').innerHTML = input6text;"/></td></tr>
                         <tr onmouseover="el('help').innerHTML = input7text;">
                             <td>Default Domain Name:</td><td><input class='edit' type='text' name='default_domain' value='example.com' onfocus="el('help').innerHTML = input7text;"/></td></tr>
                         <tr><td colspan=2 style="text-align: center;"><br><input class='edit' type='submit' value='Create my database!' /></td></tr>
