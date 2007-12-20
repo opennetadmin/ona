@@ -54,6 +54,10 @@ global $SESS_DBH, $onadb, $conf;
 $SESS_DBH = $onadb;
 $SESS_LIFE = $conf['cookie_life'];
 
+// The following is a fix/workaround for php 5.2 and the fact
+// that it handles destructors in a new order.
+register_shutdown_function('session_write_close');
+
 function sess_open($save_path, $session_name) { return true; }
 function sess_close() { return true; }
 

@@ -47,7 +47,7 @@ $conf = array (
 
     // Database Context
     // For possible values see the $db_context() array and description below
-    "mysql_context"          => 'default',
+    "db_context"          => 'default',
 
     /* Used in header.php */
     "title"                  => 'Open Net Admin :: ',
@@ -202,7 +202,7 @@ require_once($conf['inc_functions_db']);
 
 // (Re)Connect to the DB now.
 global $onadb;
-$onadb = @db_pconnect('mysqlt', $conf['mysql_context']);
+$onadb = @db_pconnect('mysqlt', $conf['db_context']);
 
 // Load the actual user config from the database table sys_config
 // These will override any of the defaults set above
