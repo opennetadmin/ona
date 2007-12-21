@@ -1249,10 +1249,6 @@ function loggedIn() {
 //////////////////////////////////////////////////////////////////////////////
 function auth($resource,$msg_level=0) {
 
-    // FIXME: hack until we get auth stuff working:
-    //printmsg("DEBUG => FIXME: auth() always returns true for now", 1);
-    //return true;
-
     if (!is_string($resource)) return false;
     if (array_key_exists($resource, (array)$_SESSION['ona']['auth']['perms'])) {
         printmsg("DEBUG => auth() User[{$_SESSION['ona']['auth']['user']['username']}] has the {$resource} permission",5);

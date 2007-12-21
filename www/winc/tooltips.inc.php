@@ -31,6 +31,10 @@ function ws_tooltips_submit($window_name, $form='') {
            list ($html, $js) = get_start_menu_html();
            break;
 
+        case 'local_menu':
+           list ($html, $js) = get_local_menu_html();
+           break;
+
         case 'location':
            $tip_style = 'style="color: #FFFFFF;"';
            list ($html, $js) = get_location_html($form['location_id']);
@@ -112,7 +116,7 @@ function ws_tooltips_submit($window_name, $form='') {
 //////////////////////////////////////////////////////////////////////////////
 function get_start_menu_html() {
     global $conf, $self, $onadb;
-    global $font_family, $color, $style, $images;
+    global $font_family, $color, $style, $images, $menuitem;
 
     $html = $js = '';
 
@@ -160,6 +164,55 @@ function get_start_menu_html() {
 
 EOL;
 
+
+
+
+
+    // Get all the plugin menuitems
+    $pluginlist = plugin_list('menuitem');
+
+    // Load all the plugin menuitems and build a menu entry
+    foreach ($pluginlist as $p) {
+        plugin_load('menuitem',$p);
+
+        // based on the menu cmd type, build the right command
+        switch ($menuitem['type']) {
+            case 'work_space':
+                $menu_type_cmd = "xajax_window_submit('work_space', 'xajax_window_submit(\'{$p}\', \'form=>fake\', \'display\')')";
+                break;
+            case 'window':
+                $menu_type_cmd = "toggle_window('{$p}')";
+                break;
+        }
+
+        // Use a default image if we cant find the one specified.
+ //       if (!file_exists($menuitem['image'])){
+ //           $menuitem['image'] = "{$images}/silk/application.png";
+ //       }
+
+        // Check the authorization and print the menuitem if the are authorized
+        if (auth($menuitem['authname'],3) || !$menuitem['authname']) {
+        $html .= <<<EOL
+
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="removeElement('start_menu'); {$menu_type_cmd};"
+     title="{$menuitem['title']}"
+ ><img style="vertical-align: middle;" src="{$menuitem['image']}" border="0"
+ />&nbsp;{$menuitem['title']}</div>
+
+EOL;
+        }
+    }
+
+
+
+
+
+
+
+
     if (auth('advanced',3)) {
         $html .= <<<EOL
 
@@ -186,11 +239,6 @@ EOL;
 
     return(array($html, $js));
 }
-
-
-
-
-
 
 
 

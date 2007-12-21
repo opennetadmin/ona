@@ -202,19 +202,23 @@ function window_find_include($window_name) {
     if (!$window_name) { return(''); }
 
     $file = '';
+
+    // Check the usual directories, now inlucdes the local plugins as well.
+    // local plugins should override the builtin stuff if they are named the same.
     $directories = array('.',
+                         './local/plugins/'.$window_name,
                          './winc',
-                         './local/winc',
                          './inc',
                         );
 
     // Find the file if at all possible!
-    foreach ($directories as $directory) {
-        $file = "{$directory}/_win_{$window_name}.inc.php";
-        if (is_file($file)) {
-            return($file);
-        }
-    }
+//MP: disabled this as we do not use _win_ anywhere
+//     foreach ($directories as $directory) {
+//         $file = "{$directory}/_win_{$window_name}.inc.php";
+//         if (is_file($file)) {
+//             return($file);
+//         }
+//     }
 
     // If we still didn't find it, try it without the '_win_' in the file prefix
     // but with a .inc.php extension.

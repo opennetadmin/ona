@@ -20,6 +20,67 @@
 
 
 
+/////////////////////////////////////////////
+// Returns a list of available local plugins of given type
+//
+// Patterned from dokuwiki by Andreas Gohr <andi@splitbrain.org>
+//
+// Not currently utilizing the "type" stuff as I could be
+//
+/////////////////////////////////////////////
+function plugin_list($type=''){
+  global $base;
+  $plugins = array();
+  if ($dh = opendir($base."/local/plugins/")) {
+    while (false !== ($plugin = readdir($dh))) {
+      if ($plugin == '.' || $plugin == '..' || $plugin == 'tmp') continue;
+      if (is_file($base."/local/plugins/".$plugin)) continue;
+
+      if ($type=='' || @file_exists($base."/local/plugins/$plugin/$type.inc.php")){
+          $plugins[] = $plugin;
+      }
+    }
+    closedir($dh);
+  }
+  return $plugins;
+}
+
+///////////////////////////////////////////////
+// Loads the given local plugin and creates an object of it
+//
+// Patterned from dokuwiki by Andreas Gohr <andi@splitbrain.org>
+//
+// @param  $type string     type of plugin to load
+// @param  $name string     name of the plugin to load
+// @return objectreference  the plugin object or null on failure
+//
+// Currently not doing any classes.
+//
+//////////////////////////////////////////////
+function &plugin_load($type,$name){
+  //we keep all loaded plugins available in global scope for reuse
+  global $ONA_PLUGINS, $base;
+
+
+  //plugin already loaded?
+  if($ONA_PLUGINS[$type][$name] != null){
+    return $ONA_PLUGINS[$type][$name];
+  }
+
+  //try to load the wanted plugin file
+  if (file_exists($base."/local/plugins/$name/$type.inc.php")){
+    include_once($base."/local/plugins/$name/$type.inc.php");
+  }
+
+  //construct class and instanciate
+  $class = $type.'_plugin_'.$name;
+  if (!class_exists($class)) return null;
+
+  $ONA_PLUGINS[$type][$name] = new $class;
+  return $ONA_PLUGINS[$type][$name];
+}
+
+
 
 
 
