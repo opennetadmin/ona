@@ -48,7 +48,7 @@ Adds a new interface to an existing host record
     description=TEXT          brief description of the interface
 
   Notes:
-    * DOMAIN will default to {$conf['dns']['defaultdomain']} if not specified
+    * DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
 \n
 EOM
         ));
@@ -570,7 +570,7 @@ Deletes an interface (ip address) from the database
 
   Notes:
     * If search returns more than one interface, the first will be deleted
-    * DOMAIN will default to {$conf['dns']['defaultdomain']} if not specified
+    * DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
 \n
 EOM
         ));
@@ -800,7 +800,7 @@ Displays an interface record from the database
 
   Notes:
     * If search returns more than one interface, an error is displayed
-    * DOMAIN will default to {$conf['dns']['defaultdomain']} if not specified
+    * DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
 \n
 EOM
         ));

@@ -1,5 +1,5 @@
 <!--
-This is an example MOTD file. Rename it to ona/www/motd.txt for it to display..
+This is an example MOTD file. Rename it to ona/www/local/config/motd.txt for it to display..
 It technically can be used for whatever content you would like, not just MOTDs
 -->
 <div style="padding-top: 5px;" align="center">

@@ -22,29 +22,22 @@ $images = "{$baseURL}/images";
 // help URL location
 $_ENV['help_url'] = "http://www.opennetadmin.com/docs/";
 
+
+// Get any query info
+parse_str($_SERVER['QUERY_STRING']);
+
+// Check to see if the run_install file exists.
+// If it does, run the install process.
+if (file_exists($base.'/../install/run_install')) {
+    // Process the install script
+    require_once($base.'/../install/install.php');
+    exit;
+}
+
 // Many of these settings serve as defaults.  They can be overridden by the settings in
 // the table "sys_config"
 $conf = array (
     /* General Setup */
-    // It must have a v<majornum>.<minornum>, no number padding to match the check version code.
-    "version"                => "v07.12.20_alpha",
-
-    /* Logging - Used by the printmsg() function */
-    /////////////// This stuff is replicated in the sys_config table //////////////////////////////
-    "debug"                  => 0,
-    "stdout"                 => 0, // Print logs to the generated web page, not a good idea!
-    "db"                     => 1, // Log to a sql log, highly recommended
-    "logfile"                => "/var/log/ona.log",
-    "syslog"                 => 0, // It only syslogs if debug is 0.
-    /* Other Random Things */
-    "money_format"           => '%01.2f',
-    "date_format"            => 'M jS, g:ia',
-    "search_results_per_page"=> 10,
-    "suggest_max_results"    => 10,
-    /* Session Settings */
-    "cookie_life"            => (60*60*24*2), // 2 days, in seconds
-    ///////// End sys_config replicaiton stuff ///////////////////
-
     // Database Context
     // For possible values see the $db_context() array and description below
     "db_context"          => 'default',
@@ -74,7 +67,9 @@ $conf = array (
     "dcm_module_dir"         => "$base/modules",
 );
 
-
+// Read in the version file to our conf variable
+// It must have a v<majornum>.<minornum>, no number padding, to match the check version code.
+if (file_exists($base.'/../VERSION')) { $conf['version'] = trim(file_get_contents($base.'/../VERSION')); }
 
 // The $self array is used to store globally available temporary data.
 // Think of it as a cache or an easy way to pass data around ;)
@@ -148,42 +143,6 @@ $style['borderL'] = "border-left: 1px solid {$color['border']};";
 $style['borderR'] = "border-right: 1px solid {$color['border']};";
 
 
-$conf['dns']['admin_email']     = 'hostmaster'; // per RFC 2412, defaults to hostmaster within the domain origin
-$conf['dns']['primary_master']  = '';           // This should be the fqdn of your default primary master server
-$conf['dns']['default_ttl']     = '86400';      // this is the value of $TTL for the zone, used as the default value
-$conf['dns']['refresh']         = '86400';
-$conf['dns']['retry']           = '3600';
-$conf['dns']['expiry']          = '3600';
-$conf['dns']['minimum']         = '3600';       // used as the negative caching value per RFC 2308
-$conf['dns']['parent']          = '';
-$conf['dns']['defaultdomain']   = 'yourdomain.com';
-
-// Default db_context.  This info will be overridden by the
-// $base/www/local/config/databas_settings.inc.php file.  It is only here
-// to serve as a place holder for the install script to do its job.
-$db_context = array (
-
-    // Note:  I set the login up as ona-sys so that we could have
-    // a more "functional" user to do connections with that is not root or
-    // some sort of full admin.
-    //
-    // Type:
-    'mysqlt' => array(
-        // Name:
-        'default' => array(
-            'description' => 'Website metadata',
-            'primary' => array(
-                'db_type'     => 'mysqlt',  // using mysqlt for transaction support
-                'db_host'     => 'localhost',
-                'db_login'    => 'ona_sys',
-                'db_passwd'   => 'youshouldchangethis',
-                'db_database' => 'ona',
-                'db_debug'    => false,
-            ),
-        ),
-    ),
-);
-
 // First things first, do we have the mysql functions on this system
 if (!function_exists(mysql_close)) {
     print <<<EOL
@@ -193,7 +152,6 @@ Your PHP system does not contain the php mysql libraries.  Try a "php -m" and ch
 EOL;
 exit;
 }
-
 
 // Include the localized Database settings
 @include("{$base}/local/config/database_settings.inc.php");
@@ -205,8 +163,6 @@ exit;
 // Include the basic system functions
 // any $conf settings used in this "require" should not be user adjusted in the sys_config table
 require_once($conf['inc_functions']);
-
-// Now that some initial configuration has been set up.  Get the user configuration from the database
 
 // Include the basic database functions
 require_once($conf['inc_functions_db']);

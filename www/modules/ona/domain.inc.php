@@ -71,16 +71,16 @@ Adds a DNS domain into the database
     server=NAME[.DOMAIN] or ID              server identifier to add new domain to
 
   Optional:
-    admin=STRING                            Default ({$conf['dns']['admin_email']})
-    primary=STRING                          Default ({$conf['dns']['primary_master']})
-    refresh=NUMBER                          Default ({$conf['dns']['refresh']})
-    retry=NUMBER                            Default ({$conf['dns']['retry']})
-    expiry=NUMBER                           Default ({$conf['dns']['expiry']})
-    minimum=NUMBER                          Default ({$conf['dns']['minimum']})
-    parent=DOMAIN_NAME                      Default ({$conf['dns']['parent']})
-    ttl=NUMBER                              Default ({$conf['dns']['default_ttl']})
+    admin=STRING                            Default ({$conf['dns_admin_email']})
+    primary=STRING                          Default ({$conf['dns_primary_master']})
+    refresh=NUMBER                          Default ({$conf['dns_refresh']})
+    retry=NUMBER                            Default ({$conf['dns_retry']})
+    expiry=NUMBER                           Default ({$conf['dns_expiry']})
+    minimum=NUMBER                          Default ({$conf['dns_minimum']})
+    parent=DOMAIN_NAME                      Default ({$conf['dns_parent']})
+    ttl=NUMBER                              Default ({$conf['dns_default_ttl']})
     auth=[Y|N]                              is server authoritative for domain
-                                            Default ({$conf['dns']['auth']})
+                                            Default ({$conf['dns_auth']})
 
 EOM
 
@@ -120,18 +120,18 @@ EOM
 
 
     // Use default if something was not passed on command line
-    if ($options['admin'])   { $admin   = $options['admin'];  } else { $admin   = $conf['dns']['admin_email'];   }
-    if ($options['primary']) { $primary = $options['primary'];} else { $primary = $conf['dns']['primary_master'];  }
-    if ($options['refresh']) { $refresh = $options['refresh'];} else { $refresh = $conf['dns']['refresh']; }
-    if ($options['retry'])   { $retry   = $options['retry'];  } else { $retry   = $conf['dns']['retry'];   }
-    if ($options['expiry'])  { $expiry  = $options['expiry']; } else { $expiry  = $conf['dns']['expiry'];  }
-    if ($options['minimum']) { $minimum = $options['minimum'];} else { $minimum = $conf['dns']['minimum']; }
-    if ($options['ttl'])     { $ttl     = $options['ttl'];}     else { $ttl     = $conf['dns']['default_ttl']; }
+    if ($options['admin'])   { $admin   = $options['admin'];  } else { $admin   = $conf['dns_admin_email'];   }
+    if ($options['primary']) { $primary = $options['primary'];} else { $primary = $conf['dns_primary_master'];  }
+    if ($options['refresh']) { $refresh = $options['refresh'];} else { $refresh = $conf['dns_refresh']; }
+    if ($options['retry'])   { $retry   = $options['retry'];  } else { $retry   = $conf['dns_retry'];   }
+    if ($options['expiry'])  { $expiry  = $options['expiry']; } else { $expiry  = $conf['dns_expiry'];  }
+    if ($options['minimum']) { $minimum = $options['minimum'];} else { $minimum = $conf['dns_minimum']; }
+    if ($options['ttl'])     { $ttl     = $options['ttl'];}     else { $ttl     = $conf['dns_default_ttl']; }
 
 
     // Set the parent to default if it is not passed
     if (!array_key_exists('parent',$options))
-        $options['parent'] = $conf['dns']['parent'];
+        $options['parent'] = $conf['dns_parent'];
 
     // get parent domain info
     if ($options['parent']) {
@@ -461,14 +461,14 @@ EOL;
 
 //  Optional:
 //    set_name=STRING           new domain name
-//    set_admin=STRING          Default ({$conf['dns']['admin_email']})
-//    set_ptr=[Y|N]             Default ({$conf['dns']['ptr']})
-//    set_primary=STRING         Default ({$conf['dns']['primary_master']})
-//    set_refresh=NUMBER        Default ({$conf['dns']['refresh']})
-//    set_retry=NUMBER          Default ({$conf['dns']['retry']})
-//    set_expiry=NUMBER         Default ({$conf['dns']['expir']})
-//    set_minimum=NUMBER        Default ({$conf['dns']['minimum']})
-//    set_parent=DOMAIN_NAME      Default ({$conf['dns']['parent']})
+//    set_admin=STRING          Default ({$conf['dns_admin_email']})
+//    set_ptr=[Y|N]             Default ({$conf['dns_ptr']})
+//    set_primary=STRING         Default ({$conf['dns_primary_master']})
+//    set_refresh=NUMBER        Default ({$conf['dns_refresh']})
+//    set_retry=NUMBER          Default ({$conf['dns_retry']})
+//    set_expiry=NUMBER         Default ({$conf['dns_expir']})
+//    set_minimum=NUMBER        Default ({$conf['dns_minimum']})
+//    set_parent=DOMAIN_NAME      Default ({$conf['dns_parent']})
 //
 //  Output:
 //    Updates an domain record in the IP database.
@@ -521,14 +521,14 @@ Modifies a DNS domain in the database
 
   Optional:
     set_name=STRING           new domain name
-    set_admin=STRING          Default ({$conf['dns']['admin_email']})
-    set_primary=STRING        Default ({$conf['dns']['primary_master']})
-    set_refresh=NUMBER        Default ({$conf['dns']['refresh']})
-    set_retry=NUMBER          Default ({$conf['dns']['retry']})
-    set_expiry=NUMBER         Default ({$conf['dns']['expiry']})
-    set_minimum=NUMBER        Default ({$conf['dns']['minimum']})
-    set_ttl=NUMBER            Default ({$conf['dns']['default_ttl']})
-    set_parent=DOMAIN_NAME    Default ({$conf['dns']['parent']})
+    set_admin=STRING          Default ({$conf['dns_admin_email']})
+    set_primary=STRING        Default ({$conf['dns_primary_master']})
+    set_refresh=NUMBER        Default ({$conf['dns_refresh']})
+    set_retry=NUMBER          Default ({$conf['dns_retry']})
+    set_expiry=NUMBER         Default ({$conf['dns_expiry']})
+    set_minimum=NUMBER        Default ({$conf['dns_minimum']})
+    set_ttl=NUMBER            Default ({$conf['dns_default_ttl']})
+    set_parent=DOMAIN_NAME    Default ({$conf['dns_parent']})
     set_serial=NUMBER
 
 
@@ -750,7 +750,7 @@ Assigns a domain record to a server
   Required:
     domain=NAME or ID    domain name or ID
     server=NAME or ID    server name or ID
-    auth=[Y|N]           is server authoritative for domain ({$conf['dns']['auth']})
+    auth=[Y|N]           is server authoritative for domain ({$conf['dns_auth']})
 
 
 EOM
@@ -843,7 +843,7 @@ EOM
 
     // set auth information and sanitize it
     if ($options['auth']) {$auth = sanitize_YN($options['auth'], 'N');}
-    else {$auth = sanitize_YN($conf['dns']['auth'], 'N');}
+    else {$auth = sanitize_YN($conf['dns_auth'], 'N');}
 
     // Get the next ID
     $id = ona_get_next_id();

@@ -35,15 +35,15 @@ function ws_editor($window_name, $form='') {
         $window['title'] = "Edit Domain";
 
     } else {
-        // Set up default domain information  * FIXME: *
-        $domain['admin_email'] = $conf['dns']['admin_email'];
-        $domain['primary']     = $conf['dns']['primary_master'];
-        $domain['refresh']     = $conf['dns']['refresh'];
-        $domain['retry']       = $conf['dns']['retry'];
-        $domain['expiry']      = $conf['dns']['expiry'];
-        $domain['minimum']     = $conf['dns']['minimum'];
-        $domain['default_ttl'] = $conf['dns']['default_ttl'];
-        $domain['parent']      = $conf['dns']['parent'];
+        // Set up default domain information
+        $domain['admin_email'] = $conf['dns_admin_email'];
+        $domain['primary_master']     = $conf['dns_primary_master'];
+        $domain['refresh']     = $conf['dns_refresh'];
+        $domain['retry']       = $conf['dns_retry'];
+        $domain['expiry']      = $conf['dns_expiry'];
+        $domain['minimum']     = $conf['dns_minimum'];
+        $domain['default_ttl'] = $conf['dns_default_ttl'];
+        $domain['parent']      = $conf['dns_parent'];
 
         // Set the window title:
         $window['title'] = "Add Domain";
@@ -106,7 +106,7 @@ EOL;
                 >
             </td>
         </tr>
-
+<!-- MP: FIXME: Commented out for now.. parent stuff is busted and causes loops, do I even need parent anymore??
         <tr>
             <td align="right" nowrap="true">
                 Parent Domain
@@ -124,7 +124,7 @@ EOL;
                 <div id="suggest_domain_edit" class="suggest"></div>
             </td>
         </tr>
-
+-->
         <tr>
             <td align="right" nowrap="true">
                 Primary Master

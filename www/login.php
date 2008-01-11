@@ -5,12 +5,29 @@ while ($base and (!is_dir($base.'/include'))) $base = preg_replace('+/[^/]*$+', 
 $include = $base . '/include';
 if (!is_dir($include)) { print "ERROR => Couldn't find include folder!\n"; exit; }
 require_once($base . '/config/config.inc.php');
-//require_once($conf['inc_functions']);
 /* --------------------------------------------------------- */
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //  MP: this login is not currently used.  login is directly on html_desktop
 //  This could later serve as a way to auth side apps/modules.  will probably
 //  need some rewrites to do that though
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //

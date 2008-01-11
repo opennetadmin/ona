@@ -1569,7 +1569,7 @@ function ona_find_domain($fqdn="") {
 
     // If we don't have a domain yet, lets assume $fqdn is a basic hostname, and return the default domain
     if (!array_key_exists('id', $domain)) {
-        list($status, $rows, $record) = ona_get_domain_record(array('name' => $conf['dns']['defaultdomain']));
+        list($status, $rows, $record) = ona_get_domain_record(array('name' => $conf['dns_defaultdomain']));
         if($rows)
             $domain = $record;
     }

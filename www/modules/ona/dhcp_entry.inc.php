@@ -653,7 +653,7 @@ Displays an dhcp_entry record from the database
     server=NAME[.DOMAIN] or id    hostname or id of the server to display
 
   Notes:
-    * DOMAIN will default to {$conf['dns']['defaultdomain']} if not specified
+    * DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
 \n
 EOM
 

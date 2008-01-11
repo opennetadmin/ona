@@ -1,19 +1,10 @@
 <?
 /* -------------------- COMMON HEADER ---------------------- */
-
-// Find the include directory
 $base = dirname(__FILE__);
-while ($base and (!is_dir($base . '/include')) ) {
-    $base = preg_replace('+/[^/]*$+', '', $base);
-}   $include = $base . '/include';
-if (!is_dir($include)) {
-    print "ERROR => Couldn't find include folder!\n"; exit;
-}
-
-// Read information from config file
+while ($base and (!is_dir($base.'/include'))) $base = preg_replace('+/[^/]*$+', '', $base);
+$include = $base . '/include';
+if (!is_dir($include)) { print "ERROR => Couldn't find include folder!\n"; exit; }
 require_once($base . '/config/config.inc.php');
-require_once($conf['inc_functions']);
-
 /* --------------------------------------------------------- */
 
 // Set the document content-type

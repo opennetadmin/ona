@@ -47,7 +47,7 @@ else {
 
 
 // If there is a message of the day file, display it.
-$motdfile = $base.'/motd.txt';
+$motdfile = $base.'/local/config/motd.txt';
 if (file_exists($motdfile)) {
     printmsg("INFO => Displaying MOTD: {$motdfile}",1);
     $MOTD = file_get_contents($motdfile);
@@ -237,6 +237,16 @@ print <<<EOL
                 class="act"
                 onClick="toggle_window('app_advanced_search');"
                 >Perform a search</a>&nbsp;
+                <br>
+                <a title="List Hosts"
+                class="act"
+                onClick="xajax_window_submit('search_results', 'search_form_id=>qsearch_form'); return false;"
+                ><img src="{$images}/silk/application_view_detail.png" border="0"></a>&nbsp;
+                <a title="List Hosts"
+                class="act"
+                onClick="xajax_window_submit('search_results', 'search_form_id=>qsearch_form');"
+                >List Hosts</a>&nbsp;
+
 
             <!-- END OF SECOND COLUMN OF SMALL BOXES -->
             </td>
@@ -255,6 +265,7 @@ print <<<EOL
         </tr>
         </table>
 
+        <!-- Print the MOTD info if any -->
         <div>{$MOTD}</div>
 
         </div>
@@ -317,10 +328,10 @@ print <<<EOL
     setInterval('update_task_bar(el(\'window_container\'), el(\'menu-window-list\'));', 1000);
 
     /* Call the process_alerts function to look for alerts to display at a regular interval*/
-    setInterval('xajax_window_submit(\'process_alerts\', \'fake=>junk\');', 300000);
+    setInterval('xajax_window_submit(\'process_alerts\', \'sys_alert=>yes\');', 300000);
 
     /* Go ahead and process_alerts on the initial load */
-    xajax_window_submit('process_alerts', 'fake=>junk');
+    xajax_window_submit('process_alerts', 'sys_alert=>yes');
 
     /* Setup mouse handlers for the "Start" button */
     var _button = el('menu-apps-button');

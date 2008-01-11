@@ -31,7 +31,7 @@
 function plugin_list($type=''){
   global $base;
   $plugins = array();
-  if ($dh = opendir($base."/local/plugins/")) {
+  if ($dh = @opendir($base."/local/plugins/")) {
     while (false !== ($plugin = readdir($dh))) {
       if ($plugin == '.' || $plugin == '..' || $plugin == 'tmp') continue;
       if (is_file($base."/local/plugins/".$plugin)) continue;
