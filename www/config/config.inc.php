@@ -27,7 +27,7 @@ $_ENV['help_url'] = "http://www.opennetadmin.com/docs/";
 $conf = array (
     /* General Setup */
     // It must have a v<majornum>.<minornum>, no number padding to match the check version code.
-    "version"                => "v07.12.14_alpha",
+    "version"                => "v07.12.20_alpha",
 
     /* Logging - Used by the printmsg() function */
     /////////////// This stuff is replicated in the sys_config table //////////////////////////////
@@ -183,6 +183,17 @@ $db_context = array (
         ),
     ),
 );
+
+// First things first, do we have the mysql functions on this system
+if (!function_exists(mysql_close)) {
+    print <<<EOL
+<html><body>
+Your PHP system does not contain the php mysql libraries.  Try a "php -m" and check for mysql in the list.
+</body></html>
+EOL;
+exit;
+}
+
 
 // Include the localized Database settings
 @include("{$base}/local/config/database_settings.inc.php");

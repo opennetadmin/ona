@@ -13,7 +13,8 @@ $baseURL=dirname($_SERVER['SCRIPT_NAME']); $baseURL = rtrim($baseURL, '/');
 // stuff and notes:
 //  maybe change the mysqlt type to a variable..
 
-$mainstyle='visible';
+$mainstyle='';
+
 
 print <<<EOL
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -29,17 +30,17 @@ EOL;
 // print the GPL license and have them "ok" it to continue.
 if ($install_submit != 'Y') {
     $license_text = file_get_contents($base.'/../docs/LICENSE');
-    $mainstyle='hidden';
+    $mainstyle='display: none;';
     print <<<EOL
             <div id="license" style="width: 550px;padding: 35px 0px;text-align: left;">
                 <center><b>OpenNetAdmin is released under the following license:</b></center>
                 <textarea class="edit" rows="25" cols="75">{$license_text}</textarea><br><br>
-                <center><input class='edit' type="button" value="I Agree!" onclick="el('main').style.visibility = 'visible';el('input1').focus();el('license').style.display = 'none';" /></center>
+                <center><input class='edit' type="button" value="I Agree!" onclick="el('main').style.display = '';el('input1').focus();el('license').style.display = 'none';" /></center>
             </div>
 EOL;
 }
 print <<<EOL
-            <div id="main" style="visibility: {$mainstyle};">
+            <div id="main" style="{$mainstyle}">
                 <div id="Greeting" style="width: 450px;padding: 35px 0px;text-align: left;">
                 It looks as though this is your first time running OpenNetAdmin. Please answer a few questions and we'll initialize the system for you. We've pre-populated some of the fields with suggested values.
                 </div>
@@ -216,7 +217,8 @@ EOL;
             $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Loaded tables with default data.<br>";
 
             // Add the system user to the database
-            if(@mysql_query("GRANT ALL ON `{$database_name}`.* TO '{$sys_login}'@'%' IDENTIFIED BY '{$sys_passwd}';",$con)) {
+            if(@mysql_query("GRANT ALL ON `{$database_name}`.* TO '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}';",$con)) {
+                @mysql_query("GRANT ALL ON `{$database_name}`.* TO '{$sys_login}'@'%' IDENTIFIED BY '{$sys_passwd}';",$con);
                 @mysql_query("FLUSH PRIVILEGES;",$con);
                 $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created system user '{$sys_login}'.<br>";
             }
