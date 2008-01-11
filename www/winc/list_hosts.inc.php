@@ -57,6 +57,7 @@ function ws_display_list($window_name, $form='') {
     $orderby = "";
 
     // DISPLAY ALL
+    // MP: I dont think this is used.. remove it if you can
     if ($form['all_flag']) {
         $where .= $and . "id > 0";
         $and = " AND ";
@@ -125,7 +126,16 @@ function ws_display_list($window_name, $form='') {
         //                                "  FROM dns " .
         //                                "  WHERE name LIKE '%{$hostname}%' {$withdomain} ))";
 
-        $where .= $and . "id IN ($hostids)";
+        // If we got a list of hostids from interfaces then use them
+        if ($hostids) {
+            $idqry = "id IN ($hostids)";
+        }
+        // Otherwise assume we found nothing specific and should return all rows.
+        else {
+            $idqry = "";
+        }
+
+        $where .= $and . $idqry;
         $and = " AND ";
 
     }
