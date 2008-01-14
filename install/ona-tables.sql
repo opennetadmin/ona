@@ -499,6 +499,17 @@ CREATE TABLE `subnets` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='IP subnet definitions';
 
+-- 
+-- Table structure for table `sys_config`
+-- 
+
+CREATE TABLE IF NOT EXISTS `sys_config` (
+  `name` varchar(128) NOT NULL,
+  `value` varchar(256) NOT NULL,
+  `description` varchar(512) NOT NULL,
+  PRIMARY KEY  (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 --
 -- Table structure for table `users`
 --
