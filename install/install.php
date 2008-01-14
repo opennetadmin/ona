@@ -10,6 +10,7 @@ $base = dirname(__FILE__);
 
 $baseURL=dirname($_SERVER['SCRIPT_NAME']); $baseURL = rtrim($baseURL, '/');
 
+
 // stuff and notes:
 //  maybe change the mysqlt type to a variable..
 
@@ -20,9 +21,38 @@ print <<<EOL
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="{$baseURL}/include/html_style_sheet.inc.php">
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
         <script type="text/javascript" src="{$baseURL}/include/js/global.js" language="javascript"></script>
     </head>
+    <style type="text/css">
+
+        body {
+            margin: 0px;
+            font-family: Arial, Sans-Serif;
+            color: 000000;
+            background-color: FFFFFF;
+            vertical-align: top;
+        }
+
+        textarea.edit {
+            font-family: monospace;
+            border: 1px solid #8CACBB;
+            color: Black;
+            background-color: white;
+            padding: 3px;
+            width:100%;
+        }
+
+        input.edit,select.edit {
+            border: 1px solid #8CACBB;
+            color: Black;
+            background-color: white;
+            vertical-align: middle;
+            padding: 1px;
+            display: inline;
+        }
+
+    </style>
     <body>
         <div align="center" style="width:100%;">
             <span style="background-color: #D3DBFF; font-size: xx-large;width: 100%;padding: 0px 60px;-moz-border-radius-bottomleft: 10;-moz-border-radius-bottomright: 10;">OpenNetAdmin Install</span><br>
@@ -230,6 +260,7 @@ EOL;
             // add the default domain to the system
             // This is a manual add with hard coded values for timers.
             if (@mysql_query("INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600);",$con)) {
+                @mysql_query("UPDATE sys_config SET value='{$default_domain}' WHERE name like 'dns_defaultdomain';",$con);
                 $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created default DNS domain '{$default_domain}'.<br>";
             }
             else {

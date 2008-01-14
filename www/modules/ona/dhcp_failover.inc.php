@@ -5,13 +5,14 @@
 require_once($conf['inc_functions_db']);
 
 // Set up default failover information
-$conf['dhcp']['response_delay']   = '60';
-$conf['dhcp']['unacked_updates']  = '10';
-$conf['dhcp']['max_balance']  = '3';
-$conf['dhcp']['priport'] = '647';
-$conf['dhcp']['peerport']   = '847';
-$conf['dhcp']['mclt']  = '1800';
-$conf['dhcp']['split'] = '255';
+// FIXME: put this stuff in the sys_config table!!!
+$conf['dhcp_response_delay']   = '60';
+$conf['dhcp_unacked_updates']  = '10';
+$conf['dhcp_max_balance']  = '3';
+$conf['dhcp_priport'] = '647';
+$conf['dhcp_peerport']   = '847';
+$conf['dhcp_mclt']  = '1800';
+$conf['dhcp_split'] = '255';
 
 
 
@@ -83,13 +84,13 @@ Adds a DHCP failover group into the database
     pri_server=NAME[.DOMAIN] or ID          identifier of the primary server
     sec_server=NAME[.DOMAIN] or ID          identifier of the secondary server
   Optional:
-    response_delay=NUMBER                   Default ({$conf['dhcp']['response_delay']})
-    unacked_updates=NUMBER                  Default ({$conf['dhcp']['unacked_updates']})
-    max_balance=NUMBER                      Default ({$conf['dhcp']['max_balance']})
-    priport=NUMBER                          Default ({$conf['dhcp']['priport']})
-    peerport=NUMBER                         Default ({$conf['dhcp']['peerport']})
-    mclt=NUMBER                             Default ({$conf['dhcp']['mclt']})
-    split=NUMBER                            Default ({$conf['dhcp']['split']})
+    response_delay=NUMBER                   Default ({$conf['dhcp_response_delay']})
+    unacked_updates=NUMBER                  Default ({$conf['dhcp_unacked_updates']})
+    max_balance=NUMBER                      Default ({$conf['dhcp_max_balance']})
+    priport=NUMBER                          Default ({$conf['dhcp_priport']})
+    peerport=NUMBER                         Default ({$conf['dhcp_peerport']})
+    mclt=NUMBER                             Default ({$conf['dhcp_mclt']})
+    split=NUMBER                            Default ({$conf['dhcp_split']})
 
 
 
@@ -100,42 +101,44 @@ EOM
 
     if ($options['pri_server']) {
         // Determine the server is valid
-        list($pri_host, $tmp) = ona_find_host($options['pri_server']);
+        list($status, $rows, $pri_server) = ona_find_host($options['pri_server']);
 
-        if (!$pri_host['id']) {
+        if (!$pri_server['id']) {
             printmsg("DEBUG => The server specified, {$options['pri_server']}, does not exist!",3);
             $self['error'] = "ERROR => The server specified, {$options['pri_server']}, does not exist!";
             return(array(2, $self['error'] . "\n"));
         }
 
         // Determine the host that was found is actually a server
-        list($status, $rows, $pri_server) = ona_get_server_record(array('host_id' => $pri_host['id']));
+        // MP: FIXME: dont think I'm going to pursue doing a seperate server table.. lets remove
+/*        list($status, $rows, $pri_server) = ona_get_server_record(array('host_id' => $pri_host['id']));
 
         if (!$pri_server['id']) {
             printmsg("DEBUG => The host specified, {$pri_host['fqdn']}, is not a server!",3);
             $self['error'] = "ERROR => The host specified, {$pri_host['fqdn']}, is not a server!";
             return(array(5, $self['error'] . "\n"));
-        }
+        }*/
     }
 
     if ($options['sec_server']) {
         // Determine the server is valid
-        list($sec_host, $tmp) = ona_find_host($options['sec_server']);
+        list($status, $rows, $sec_server) = ona_find_host($options['sec_server']);
 
-        if (!$sec_host['id']) {
+        if (!$sec_server['id']) {
             printmsg("DEBUG => The server specified, {$options['sec_server']}, does not exist!",3);
             $self['error'] = "ERROR => The server specified, {$options['sec_server']}, does not exist!";
             return(array(2, $self['error'] . "\n"));
         }
 
         // Determine the host that was found is actually a server
-        list($status, $rows, $sec_server) = ona_get_server_record(array('HOST_id' => $sec_host['id']));
+        // MP: FIXME: dont think I'm going to pursue doing a seperate server table.. lets remove
+/*        list($status, $rows, $sec_server) = ona_get_server_record(array('HOST_id' => $sec_host['id']));
 
         if (!$sec_server['id']) {
             printmsg("DEBUG => The host specified, {$sec_host['fqdn']}, is not a server!",3);
             $self['error'] = "ERROR => The host specified, {$sec_host['fqdn']}, is not a server!";
             return(array(5, $self['error'] . "\n"));
-        }
+        }*/
     }
 
 
@@ -147,28 +150,34 @@ EOM
     }
 
 
-    //TODO: does a check of pri/sec AND sec/pri need to be done? why would you have groups that are reverse of eachother?
+
 
     // Validate that this failover group doesnt already exist
     list($status, $rows, $record) = ona_get_dhcp_failover_group_record(array('primary_server_id'   => $pri_server['id'],
                                                                               'secondary_server_id' => $sec_server['id']));
 
+    // Check the reverse primary/secondary host pairing.. 
+    if (!$rows) {
+        list($status, $rows, $record) = ona_get_dhcp_failover_group_record(array('primary_server_id'   => $sec_server['id'],
+                                                                              'secondary_server_id' => $pri_server['id']));
+    }
+
     if ($rows) {
-        printmsg("DEBUG => A failover group using, PRI:{$options['pri_server']} and SEC:{$options['sec_server']}, already exists!",3);
-        $self['error'] = "ERROR => A failover group using, PRI:{$options['pri_server']} and SEC:{$options['sec_server']}, already exists!";
+        printmsg("DEBUG => A failover group using, {$options['pri_server']} and {$options['sec_server']}, already exists!",3);
+        $self['error'] = "ERROR => A failover group using, {$options['pri_server']} and {$options['sec_server']}, already exists!";
         return(array(11, $self['error'] . "\n"));
     }
 
 
 
     // Use default if something was not passed on command line
-    if ($options['response_delay'])   { $response_delay   = $options['response_delay'];  } else { $response_delay  = $conf['dhcp']['response_delay']; }
-    if ($options['unacked_updates'])  { $unacked_updates  = $options['unacked_updates']; } else { $unacked_updates = $conf['dhcp']['unacked_updates'];}
-    if ($options['max_balance'])      { $max_balance  = $options['max_balance']; } else { $max_balance  = $conf['dhcp']['max_balance'];  }
-    if ($options['priport'])          { $priport = $options['priport'];} else { $priport = $conf['dhcp']['priport']; }
-    if ($options['peerport'])         { $peerport   = $options['peerport'];  } else { $peerport   = $conf['dhcp']['peerport'];   }
-    if ($options['mclt'])             { $mclt  = $options['mclt']; } else { $mclt  = $conf['dhcp']['mclt'];  }
-    if ($options['split'])            { $split = $options['split'];} else { $split = $conf['dhcp']['split']; }
+    if ($options['response_delay'])   { $response_delay   = $options['response_delay'];  } else { $response_delay  = $conf['dhcp_response_delay']; }
+    if ($options['unacked_updates'])  { $unacked_updates  = $options['unacked_updates']; } else { $unacked_updates = $conf['dhcp_unacked_updates'];}
+    if ($options['max_balance'])      { $max_balance  = $options['max_balance']; } else { $max_balance  = $conf['dhcp_max_balance'];  }
+    if ($options['priport'])          { $priport = $options['priport'];} else { $priport = $conf['dhcp_priport']; }
+    if ($options['peerport'])         { $peerport   = $options['peerport'];  } else { $peerport   = $conf['dhcp_peerport'];   }
+    if ($options['mclt'])             { $mclt  = $options['mclt']; } else { $mclt  = $conf['dhcp_mclt'];  }
+    if ($options['split'])            { $split = $options['split'];} else { $split = $conf['dhcp_split']; }
 
 
 
@@ -432,13 +441,13 @@ Modifies a DHCP failover group in the database
   Optional:
     set_pri_server=NAME[.DOMAIN] or id     identifier of the primary server
     set_sec_server=NAME[.DOMAIN] or id     identifier of the secondary server
-    set_response_delay=NUMBER              Default ({$conf['dhcp']['response_delay']})
-    set_unacked_updates=NUMBER             Default ({$conf['dhcp']['unacked_updates']})
-    set_max_balance=NUMBER                 Default ({$conf['dhcp']['max_balance']})
-    set_priport=NUMBER                     Default ({$conf['dhcp']['priport']})
-    set_peerport=NUMBER                    Default ({$conf['dhcp']['peerport']})
-    set_mclt=NUMBER                        Default ({$conf['dhcp']['mclt']})
-    set_split=NUMBER                       Default ({$conf['dhcp']['split']})
+    set_response_delay=NUMBER              Default ({$conf['dhcp_response_delay']})
+    set_unacked_updates=NUMBER             Default ({$conf['dhcp_unacked_updates']})
+    set_max_balance=NUMBER                 Default ({$conf['dhcp_max_balance']})
+    set_priport=NUMBER                     Default ({$conf['dhcp_priport']})
+    set_peerport=NUMBER                    Default ({$conf['dhcp_peerport']})
+    set_mclt=NUMBER                        Default ({$conf['dhcp_mclt']})
+    set_split=NUMBER                       Default ({$conf['dhcp_split']})
 
 
 EOM
@@ -472,7 +481,7 @@ EOM
 
     if (array_key_exists('set_pri_server',$options) and $options['set_pri_server']) {
         // Determine the server is valid
-        list($pri_host, $tmp) = ona_find_host($options['set_pri_server']);
+        list($status, $rows, $pri_host) = ona_find_host($options['set_pri_server']);
 
         if (!$pri_host['id']) {
             printmsg("DEBUG => The server specified, {$options['set_pri_server']}, does not exist!",3);
@@ -481,13 +490,14 @@ EOM
         }
 
         // Determine the host that was found is actually a server
-        list($status, $rows, $pri_server) = ona_get_server_record(array('host_id' => $pri_host['id']));
-
-        if (!$pri_server['id']) {
-            printmsg("DEBUG => The host specified, {$pri_host['fqdn']}, is not a server!",3);
-            $self['error'] = "ERROR => The host specified, {$pri_host['fqdn']}, is not a server!";
-            return(array(5, $self['error'] . "\n"));
-        }
+        // MP: FIXME: dont think I'm going to pursue doing a seperate server table.. lets remove
+//         list($status, $rows, $pri_server) = ona_get_server_record(array('host_id' => $pri_host['id']));
+// 
+//         if (!$pri_server['id']) {
+//             printmsg("DEBUG => The host specified, {$pri_host['fqdn']}, is not a server!",3);
+//             $self['error'] = "ERROR => The host specified, {$pri_host['fqdn']}, is not a server!";
+//             return(array(5, $self['error'] . "\n"));
+//         }
 
 
 
@@ -496,7 +506,7 @@ EOM
 
     if (array_key_exists('set_sec_server',$options) and $options['set_sec_server']) {
         // Determine the server is valid
-        list($sec_host, $tmp) = ona_find_host($options['set_sec_server']);
+        list($status, $rows, $sec_host) = ona_find_host($options['set_sec_server']);
 
         if (!$sec_host['id']) {
             printmsg("DEBUG => The server specified, {$options['set_sec_server']}, does not exist!",3);
@@ -505,13 +515,14 @@ EOM
         }
 
         // Determine the host that was found is actually a server
-        list($status, $rows, $sec_server) = ona_get_server_record(array('host_id' => $sec_host['id']));
-
-        if (!$sec_server['id']) {
-            printmsg("DEBUG => The host specified, {$sec_host['fqdn']}, is not a server!",3);
-            $self['error'] = "ERROR => The host specified, {$sec_host['fqdn']}, is not a server!";
-            return(array(5, $self['error'] . "\n"));
-        }
+        // MP: FIXME: dont think I'm going to pursue doing a seperate server table.. lets remove
+//         list($status, $rows, $sec_server) = ona_get_server_record(array('host_id' => $sec_host['id']));
+// 
+//         if (!$sec_server['id']) {
+//             printmsg("DEBUG => The host specified, {$sec_host['fqdn']}, is not a server!",3);
+//             $self['error'] = "ERROR => The host specified, {$sec_host['fqdn']}, is not a server!";
+//             return(array(5, $self['error'] . "\n"));
+//         }
 
 
 
@@ -642,7 +653,7 @@ EOM
 
     if ($options['pri_server'] and $options['sec_server']) {
         // Determine the server is valid
-        list($pri_host, $tmp) = ona_find_host($options['pri_server']);
+        list($status, $rows, $pri_host) = ona_find_host($options['pri_server']);
 
         if (!$pri_host['id']) {
             printmsg("DEBUG => The server specified, {$options['pri_server']}, does not exist!",3);
@@ -651,16 +662,17 @@ EOM
         }
 
         // Determine the host that was found is actually a server
-        list($status, $rows, $pri_server) = ona_get_server_record(array('host_id' => $pri_host['id']));
-
-        if (!$pri_server['id']) {
-            printmsg("DEBUG => The host specified, {$pri_host['FQDN']}, is not a server!",3);
-            $self['error'] = "ERROR => The host specified, {$pri_host['FQDN']}, is not a server!";
-            return(array(5, $self['error'] . "\n"));
-        }
+        // MP: FIXME: dont think I'm going to pursue doing a seperate server table.. lets remove
+//         list($status, $rows, $pri_server) = ona_get_server_record(array('host_id' => $pri_host['id']));
+// 
+//         if (!$pri_server['id']) {
+//             printmsg("DEBUG => The host specified, {$pri_host['FQDN']}, is not a server!",3);
+//             $self['error'] = "ERROR => The host specified, {$pri_host['FQDN']}, is not a server!";
+//             return(array(5, $self['error'] . "\n"));
+//         }
 
         // Determine the server is valid
-        list($sec_host, $tmp) = ona_find_host($options['sec_server']);
+        list($status, $rows, $sec_host) = ona_find_host($options['sec_server']);
 
         if (!$sec_host['id']) {
             printmsg("DEBUG => The server specified, {$options['sec_server']}, does not exist!",3);
@@ -669,13 +681,14 @@ EOM
         }
 
         // Determine the host that was found is actually a server
-        list($status, $rows, $sec_server) = ona_get_server_record(array('HOST_id' => $sec_host['id']));
-
-        if (!$sec_server['id']) {
-            printmsg("DEBUG => The host specified, {$sec_host['fqdn']}, is not a server!",3);
-            $self['error'] = "ERROR => The host specified, {$sec_host['fqdn']}, is not a server!";
-            return(array(5, $self['error'] . "\n"));
-        }
+        // MP: FIXME: dont think I'm going to pursue doing a seperate server table.. lets remove
+//         list($status, $rows, $sec_server) = ona_get_server_record(array('HOST_id' => $sec_host['id']));
+// 
+//         if (!$sec_server['id']) {
+//             printmsg("DEBUG => The host specified, {$sec_host['fqdn']}, is not a server!",3);
+//             $self['error'] = "ERROR => The host specified, {$sec_host['fqdn']}, is not a server!";
+//             return(array(5, $self['error'] . "\n"));
+//         }
 
         $search['primary_server_id']   = $pri_server['id'];
         $search['secondary_server_id'] = $sec_server['id'];
@@ -698,8 +711,8 @@ EOM
         return(array(4, $self['error']. "\n"));
     }
 
-    list($pri_server, $pri_zone) = ona_find_host($failovergroup['primary_server_id']);
-    list($sec_server, $sec_zone) = ona_find_host($failovergroup['secondary_server_id']);
+    list($status, $rows, $pri_server) = ona_find_host($failovergroup['primary_server_id']);
+    list($status, $rows, $sec_server) = ona_find_host($failovergroup['secondary_server_id']);
     $failovergroup['pri_server_name'] = $pri_server['fqdn'];
     $failovergroup['sec_server_name'] = $sec_server['fqdn'];
 
