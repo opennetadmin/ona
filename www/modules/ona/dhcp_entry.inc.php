@@ -104,6 +104,7 @@ EOM
         $anchor = 'host';
         $desc = $host['fqdn'];
         $lvl = $host['lvl'];
+        $subnet['id'] = 0;
 
     } elseif ($options['subnet']) {
         // Determine the subnet is valid
@@ -118,6 +119,11 @@ EOM
         $anchor = 'subnet';
         $desc = "{$subnet['name']} (". ip_mangle($subnet['ip_addr']).")";
         $lvl = $subnet['lvl'];
+        $host['id'] = 0;
+
+
+    // MP: FIXME: the server stuff here is not complete and will not currently work
+    //  The tables do not even have a server_id field in them
     } elseif ($options['server']) {
         // Determine the server is valid
         list($status, $rows, $host) = ona_find_host($options['server']);
@@ -163,6 +169,7 @@ EOM
     if ($host['id']) $search['host_id'] = $host['id'];
     if ($subnet['id']) $search['subnet_id'] = $subnet['id'];
     if ($server['id']) $search['server_id'] = $server['id'];
+
     list($status, $rows, $record) = ona_get_dhcp_option_entry_record($search);
     if ($status or $rows) {
         printmsg("DEBUG => That DHCP option, {$type['display_name']}, is already defined!",3);

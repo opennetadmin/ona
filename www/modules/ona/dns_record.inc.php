@@ -589,7 +589,6 @@ EOM
     //
 
 
-    // FIXME: MP Fix this to use a find_dns_record function  ID only for now
     // Find the DNS record from $options['name']
     list($status, $rows, $dns) = ona_find_dns_record($options['name']);
     printmsg("DEBUG => dns_record_modify() DNS record: {$dns['fqdn']}", 3);
@@ -607,7 +606,9 @@ EOM
         return(array(4, $self['error'] . "\n"));
     }
 
-
+    // Set the current_name variable with the records current name
+    // Used by the add pointer function below since it runs before any names are updated
+    $current_name = $dns['fqdn'];
 
     //
     // Define the records we're updating
@@ -768,7 +769,8 @@ EOM
     if ($options['set_addptr'] and $options['set_type'] == 'A') {
         printmsg("DEBUG => Auto adding a PTR record for {$options['set_name']}.", 0);
         // Run dns_record_add as a PTR type
-        list($status, $output) = run_module('dns_record_add', array('name' => $options['set_name'],'ip' => $options['set_ip'], 'type' => 'PTR'));
+        // Always use the $current_name variable as the name might change during the update
+        list($status, $output) = run_module('dns_record_add', array('name' => $current_name,'ip' => $options['set_ip'], 'type' => 'PTR'));
         if ($status)
             return(array($status, $output));
         $text .= $output;
