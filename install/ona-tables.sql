@@ -503,7 +503,8 @@ CREATE TABLE `subnets` (
 -- Table structure for table `sys_config`
 -- 
 
-CREATE TABLE IF NOT EXISTS `sys_config` (
+DROP TABLE IF EXISTS `sys_config`;
+CREATE TABLE `sys_config` (
   `name` varchar(128) NOT NULL,
   `value` varchar(256) NOT NULL,
   `description` varchar(512) NOT NULL,
