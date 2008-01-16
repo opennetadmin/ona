@@ -11,7 +11,7 @@ $conf['dhcp_pool']['llength']     = '604800';
 $conf['dhcp_pool']['lgrace']      = '0';
 $conf['dhcp_pool']['lrenewal']    = '0';
 $conf['dhcp_pool']['lrebind']     = '0';
-$conf['dhcp_pool']['allow_bootp'] = '1';
+$conf['dhcp_pool']['allow_bootp'] = '0';
 
 ///////////////////////////////////////////////////////////////////////
 //  Function: dhcp_pool_add (string $options='')
@@ -89,6 +89,9 @@ EOM
 
     // set the lease time if it was passed. otherwise, use the default
     $llength = ($options['llength']) ? $options['llength'] : $conf['dhcp_pool']['llength'];
+
+    // make it blank for now.
+    $failovergroupid = 0;
 
     // make sure that the start address is actually part of an existing subnet
     list($status, $rows, $subnet) = ona_find_subnet(ip_mangle($options['start'], 'dotted'));
@@ -243,19 +246,19 @@ EOM
 //         }
 //     }
 
-    if ($fg['primary_server_id']) {
-        list($status, $rows, $serversubnets) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('server_id' => $fg['primary_server_id'], 'subnet_id' => $subnet['id']));
-        if ($rows == 0) {
-            $makeserver[2] = $fg['primary_server_id'];
-        }
-    }
-
-    if ($fg['secondary_server_id']) {
-        list($status, $rows, $serversubnets) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('server_id' => $fg['secondary_server_id'], 'subnet_id' => $subnet['id']));
-        if ($rows == 0) {
-            $makeserver[3] = $fg['secondary_server_id'];
-        }
-    }
+//     if ($fg['primary_server_id']) {
+//         list($status, $rows, $serversubnets) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('server_id' => $fg['primary_server_id'], 'subnet_id' => $subnet['id']));
+//         if ($rows == 0) {
+//             $makeserver[2] = $fg['primary_server_id'];
+//         }
+//     }
+// 
+//     if ($fg['secondary_server_id']) {
+//         list($status, $rows, $serversubnets) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('server_id' => $fg['secondary_server_id'], 'subnet_id' => $subnet['id']));
+//         if ($rows == 0) {
+//             $makeserver[3] = $fg['secondary_server_id'];
+//         }
+//     }
 
 
 //     $add_to_error = "";
@@ -555,7 +558,7 @@ Updates a dhcp pool in the database pointing to the specified identifier
     set_server=NAME[.DOMAIN] or ID      server identifier
     set_start=IP                        Start ip address of pool
     set_end=IP                          End IP of pool
-    set_llength=NUMBER                    Lease Time. Default ({$conf['dhcp_pool']['llength']})
+    set_llength=NUMBER                  Lease Time. Default ({$conf['dhcp_pool']['llength']})
     set_lgrace=NUMBER                   Lease Grace Period. Default ({$conf['dhcp_pool']['lgrace']})
     set_lrenewal=NUMBER                 Lease Renewal. Default ({$conf['dhcp_pool']['lrenewal']})
     set_lrebind=NUMBER                  Lease Rebind. Default ({$conf['dhcp_pool']['lrebind']})
@@ -615,7 +618,12 @@ EOM
         }
     }
 
-    if ($options['set_failover_group']) {
+    // Assign which failover group to use
+    if ($options['set_failover_group'] == 0) {
+        $desc = 'Not using a failover group';
+        $SET['dhcp_failover_group_id'] = 0;
+    }
+    else {
         list($status, $rows, $fg) = ona_get_dhcp_failover_group_record(array('id' => $options['set_failover_group']));
 
         if (!$fg['id']) {

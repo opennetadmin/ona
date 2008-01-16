@@ -308,8 +308,8 @@ EOL;
             if (auth('advanced',$debug_val) && $dhcpsubnetrows == 1) {
                 $html .= <<<EOL
                         <form id="form_dhcp_serv_{$dhcpserver['id']}"
-                                ><input type="hidden" name="server" value="{$host['fqdn']}"
-                                ><input type="hidden" name="subnet" value="{$dhcpserver['subnet_id']}"
+                                ><input type="hidden" name="server_id" value="{$host['fqdn']}"
+                                ><input type="hidden" name="subnet_id" value="{$dhcpserver['subnet_id']}"
                                 ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
 
@@ -378,14 +378,25 @@ EOL;
     list($status, $rows, $dhcp_pool) = db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $record['id']));
     if ($rows) {
         $haspool = 1;
+
+        // Gather info about this subnet and if it is assigned to any dhcp servers.
+        list($status, $srows, $dhcp_servers) = db_get_records($onadb, 'dhcp_server_subnets', array('subnet_id' => $record['id']));
+
         foreach ($dhcp_pool as $pool) {
+            // Test for a dhcp server subnet entry for the pool or that it is part of a failover group
+            $hasserver = $rowstyle = '';
+            if (!$srows and $pool['dhcp_failover_group_id'] == 0) {
+                $hasserver = "<img src='{$images}/silk/error.png' border='0'>";
+                $rowstyle = 'style="background-color: #FFDDDD;" title="There is no DHCP server defined for this subnet!"';
+            }
+
             $pool['ip_addr_start']   = ip_mangle($pool['ip_addr_start'], 'dotted');
             $pool['ip_addr_end']     = ip_mangle($pool['ip_addr_end'], 'dotted');
 
             $html .= <<<EOL
-                <tr>
+                <tr {$rowstyle}>
                     <td align="left" nowrap="true">
-                        {$pool['ip_addr_start']}&nbsp;Thru&nbsp;{$pool['ip_addr_end']}&nbsp;
+                       {$hasserver} {$pool['ip_addr_start']}&nbsp;Thru&nbsp;{$pool['ip_addr_end']}&nbsp;
 EOL;
 
 

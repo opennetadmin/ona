@@ -1,7 +1,7 @@
 <?
 
 $titlehtml = 'DHCP Entries';
-
+$hasgateway = 0;
 
 
 
@@ -26,6 +26,8 @@ if ($rows) {
     foreach ($dhcp_entries as $entry) {
         list($status, $rows, $dhcp_type) = ona_get_dhcp_option_entry_record(array('id' => $entry['id']));
         foreach(array_keys($dhcp_type) as $key) { $dhcp_type[$key] = htmlentities($dhcp_type[$key], ENT_QUOTES); }
+
+        if ($dhcp_type['display_name'] == "Default Gateway") { $hasgateway = 1;}
 
         $modbodyhtml .= <<<EOL
             <tr onMouseOver="this.className='row-highlight';"
@@ -63,6 +65,24 @@ EOL;
 EOL;
     }
 }
+// If there are no DHCP entries but this is a subnet with a pool/and or dhcp servers, we need a gateway at least!
+
+    if ($kind = 'subnet' and $hasgateway == 0) {
+        // Gather info about this subnet and if it is assigned to any dhcp servers.
+        list($status, $rows, $dhcp_servers)   = db_get_records($onadb, 'dhcp_server_subnets', array('subnet_id' => $record['id']));
+        list($status, $poolrows, $dhcp_pools) = db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $record['id']));
+
+
+        if ($rows or $poolrows) {
+            $modbodyhtml .= <<<EOL
+            <tr style="background-color: #FFDDDD;" title="There is no defined gateway entry for this subnet!">
+                <td colspan=10 nowrap="true">
+                    <img src='{$images}/silk/error.png' border='0'> Please add a default gateway option!
+                </td>
+EOL;
+        }
+    }
+
 
 if (auth('advanced',$debug_val)) {
     $modbodyhtml .= <<<EOL
@@ -71,7 +91,7 @@ if (auth('advanced',$debug_val)) {
 
                     <form id="form_dhcp_entry_add_{$record['id']}"
                         ><input type="hidden" name="{$kind}_id" value="{$record['id']}"
-                        ><input type="hidden" name="js" value="{$refresh}"
+                        ><input type="hidden" name="js" value="{$extravars['refresh']}"
                     ></form>
 
                     <a title="Add DHCP Entry"

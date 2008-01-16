@@ -55,7 +55,7 @@ Assigns an existing subnet record to a DHCP server
     server=NAME[.DOMAIN] or ID      server name or ID
 
   Notes:
-    DOMAIN will default to .something.com if not specified
+    DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
 
 EOM
 
@@ -253,7 +253,7 @@ Removes a subnet record from a DHCP server
     commit=[Y|N]                    commit db transaction (no)
 
   Notes:
-    DOMAIN will default to .something.com if not specified
+    DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
 
 
 EOM

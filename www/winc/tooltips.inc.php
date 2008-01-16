@@ -1335,7 +1335,7 @@ function quick_pool_server_search($form) {
 
     // Build failover group list
     list($status, $rows, $fg) = db_get_records($onadb, 'dhcp_failover_groups', 'id >= 1', 'id');
-    $fg_list = '<option value="0">&nbsp;</option>\n';
+    $fg_list = '<option value="0">None</option>\n';
 
     foreach ($fg as $record) {
         list($status, $rows, $fail_host1) = ona_find_host($record['primary_server_id']);
@@ -1376,7 +1376,7 @@ EOL;
 
     <tr>
         <td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
-            DHCP Pool Server Quick Select
+            DHCP Pool Failover Server Quick Select
         </td>
     </tr>
 
