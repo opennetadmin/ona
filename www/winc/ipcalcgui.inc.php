@@ -25,36 +25,39 @@ function ws_ipcalcgui_submit($window_name, $form='') {
 //bin128:      {$ipinfo['mask_bin128']}
 
 
-
+// NOTE: yes it is annoying but I had to do the <br> thing due to windows
+// not being able to handle the new lines via a standard <pre> statement.
+// I went with this as it keeps things consistant between platforms.  The pre is now a span
     $text .= <<<EOL
-
-Input: IP={$ipinfo['in_ip']}    MASK={$ipinfo['in_mask']}
-
-IP={$ipinfo['in_ip']}
-  Dotted:  {$ipinfo['ip_dotted']}
-  Numeric: {$ipinfo['ip_numeric']}
-  binary:  {$ipinfo['ip_binary']}
-  ipv6:    {$ipinfo['ip_ipv6']}
-  ipv6gz:  {$ipinfo['ip_ipv6gz']}
-  flip:    {$ipinfo['ip_flip']}
-
-MASK={$ipinfo['mask_dotted']}
-  Dotted:      {$ipinfo['mask_dotted']}
-  Numeric:     {$ipinfo['mask_numeric']}
-  Cidr:        /{$ipinfo['mask_cidr']}
-  binary:      {$ipinfo['mask_binary']}
-  bin invert:  {$ipinfo['mask_bin_invert']}
-  ipv6:        {$ipinfo['mask_ipv6']}
-  ipv6gz:      {$ipinfo['mask_ipv6gz']}
-  flip:        {$ipinfo['mask_flip']}
-  IP invert:   {$ipinfo['mask_dotted_invert']}
-
-The subnet your IP falls in is:   {$ipinfo['truenet']}/{$ipinfo['mask_cidr']} ({$ipinfo['mask_dotted']})
-
-Total addresses using this mask:  {$ipinfo['ip_total']}
-Usable addresses using this mask: {$ipinfo['ip_usable']}
-Last address using this mask:     {$ipinfo['ip_last']}
-
+<br />
+<br />
+Input: IP={$ipinfo['in_ip']}    MASK={$ipinfo['in_mask']}<br />
+<br />
+IP={$ipinfo['in_ip']}<br />
+  Dotted:  {$ipinfo['ip_dotted']}<br />
+  Numeric: {$ipinfo['ip_numeric']}<br />
+  binary:  {$ipinfo['ip_binary']}<br />
+  ipv6:    {$ipinfo['ip_ipv6']}<br />
+  ipv6gz:  {$ipinfo['ip_ipv6gz']}<br />
+  flip:    {$ipinfo['ip_flip']}<br />
+<br />
+MASK={$ipinfo['mask_dotted']}<br />
+  Dotted:      {$ipinfo['mask_dotted']}<br />
+  Numeric:     {$ipinfo['mask_numeric']}<br />
+  Cidr:        /{$ipinfo['mask_cidr']}<br />
+  binary:      {$ipinfo['mask_binary']}<br />
+  bin invert:  {$ipinfo['mask_bin_invert']}<br />
+  ipv6:        {$ipinfo['mask_ipv6']}<br />
+  ipv6gz:      {$ipinfo['mask_ipv6gz']}<br />
+  flip:        {$ipinfo['mask_flip']}<br />
+  IP invert:   {$ipinfo['mask_dotted_invert']}<br />
+<br />
+The subnet your IP falls in is:   {$ipinfo['truenet']}/{$ipinfo['mask_cidr']} ({$ipinfo['mask_dotted']})<br />
+<br />
+Total addresses using this mask:  {$ipinfo['ip_total']}<br />
+Usable addresses using this mask: {$ipinfo['ip_usable']}<br />
+Last address using this mask:     {$ipinfo['ip_last']}<br />
+<br />
 
 EOL;
 

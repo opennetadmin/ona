@@ -619,7 +619,7 @@ EOM
         return(array(10, $self['error'] . "\n"));
     }
 
-    // If "commit" is yes, delte the host
+    // If "commit" is yes, delete the host
     if ($options['commit'] == 'Y') {
         $text = "";
         $add_to_error = "";
@@ -643,8 +643,6 @@ EOM
         $serverrow = 0;
         // check ALL the places server_id is used and remove the entry from server_b if it is not used
         list($status, $rows, $srecord) = db_get_record($onadb, 'dhcp_server_subnets', array('host_id' => $host['id']));
-        if ($rows) $serverrow++;
-        list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_ENTRY_B', array('SERVER_ID' => $server['ID']));
         if ($rows) $serverrow++;
         list($status, $rows, $srecord) = db_get_record($onadb, 'dhcp_failover_groups', array('primary_server_id' => $host['id']));
         if ($rows) $serverrow++;
@@ -860,13 +858,9 @@ EOM
     if ($rows) {
         $text .= "\nWARNING!  This host is a DHCP server for {$rows} subnet(s)\n";
     }
-    list($status, $rows, $srecord) = db_get_record($onadb, 'DHCP_ENTRY_B', array('SERVER_ID' => $server['ID']));
+    list($status, $rows, $srecord) = db_get_record($onadb, 'dns_server_domains', array('host_id' => $host['id']));
     if ($rows) {
-        $text .= "\nWARNING!  This host is a server which has a server level DHCP entry!\n";
-    }
-    list($status, $rows, $srecord) = db_get_record($onadb, 'DOMAIN_SERVERS_B', array('SERVER_ID' => $server['ID']));
-    if ($rows) {
-        $text .= "\nWARNING!  This host is a server for one or more domains!\n";
+        $text .= "\nWARNING!  This host is a DNS server for one or more domains!\n";
     }
     list($status, $rows, $srecord) = db_get_record($onadb, 'dhcp_failover_groups', array('primary_server_id' => $host['id']));
     if ($rows) {

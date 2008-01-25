@@ -383,7 +383,7 @@ print <<<EOL
                     onClick="xajax_window_submit('ipcalcgui', xajax.getFormValues('ipcalc_form'));"
                 >
         </form>
-        <pre style="font-family: monospace;font-size: medium;" id="ipcalc_data"></pre>
+        <span style="font-family: monospace;font-size: medium;" id="ipcalc_data"></span>
     </div>
 </div>
 

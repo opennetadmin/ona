@@ -21,6 +21,9 @@ global $color, $style;
 if (!$window['title'])
     $window['title'] = "Module Output";
 
+// This puts some nice color queues into the output
+$output = str_replace("WARNING!", "<span style='font-weight: bold;color: red;'>WARNING!</span>", $output);
+
 // Define the Window's inner html
 $window['html'] = <<<EOL
 

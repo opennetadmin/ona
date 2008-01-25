@@ -218,7 +218,7 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Interface</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Device Model</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Unit</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Location</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
             </tr>
 EOL;
@@ -302,7 +302,7 @@ EOL;
         
         // Get unit_number from the unit_id
 //FIXME: PK        list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $host['UNIT_ID']));
-        // Unit number is best displayed as 5 digits zero padded
+        // Location number is best displayed as 5 digits zero padded
 //FIXME: PK        $record['UNIT_NUMBER'] = str_pad($unit['UNIT_NUMBER'], 5, "0", STR_PAD_LEFT);
         
         // Escape data for display in html

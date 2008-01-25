@@ -228,7 +228,7 @@ EOM
                 'id'              => $id,
                 'name'            => $domain_name,
                 'primary_master'  => $primary,
-                'admin_email'     => $admin_email,
+                'admin_email'     => $admin,
                 'refresh'         => $refresh,
                 'retry'           => $retry,
                 'expiry'          => $expiry,
