@@ -264,6 +264,7 @@ function dragStop(event) {
         document.detachEvent("onmouseup",   dragStop);
     }
     if (browser.isNS || browser.isKONQ) {
+        dragObj.elNode.style.position = "fixed";
         document.removeEventListener("mousemove", dragGo,   true);
         document.removeEventListener("mouseup",   dragStop, true);
     }

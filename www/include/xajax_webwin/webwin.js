@@ -123,6 +123,9 @@ function initialize_window(el_name) {
 
     // Make sure it's position is absolute (it should be already)
     _el.style.position   = 'absolute';
+    // Fix for firefox pre 3.0 browsers
+    if (navigator.userAgent.indexOf('Gecko/') != -1)
+        _el.style.position   = 'fixed';
     _el.className        = 'window';
     _el.style.zIndex     = window_default_zindex;
 

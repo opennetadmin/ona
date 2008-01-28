@@ -67,7 +67,7 @@ EOL;
 }
 // If there are no DHCP entries but this is a subnet with a pool/and or dhcp servers, we need a gateway at least!
 
-    if ($kind = 'subnet' and $hasgateway == 0) {
+    if ($kind == 'subnet' and $hasgateway == 0) {
         // Gather info about this subnet and if it is assigned to any dhcp servers.
         list($status, $rows, $dhcp_servers)   = db_get_records($onadb, 'dhcp_server_subnets', array('subnet_id' => $record['id']));
         list($status, $poolrows, $dhcp_pools) = db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $record['id']));
