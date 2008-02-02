@@ -17,10 +17,10 @@
 
 
 // Check permissions
-if (!auth('advanced')) {
-    $window['js'] = "removeElement('{$window_name}'); alert('Permission denied!');";
-    return;
-}
+// if (!auth('advanced')) {
+//     $window['js'] = "removeElement('{$window_name}'); alert('Permission denied!');";
+//     return;
+// }
 
 // Set the window title:
 $window['title'] = "DNS Domain Administration";
@@ -127,11 +127,11 @@ function ws_display_list($window_name, $form) {
     global $font_family, $color, $style, $images;
     
     // Check permissions
-    if (!auth('advanced')) {
-        $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
-    }
+//     if (!auth('advanced')) {
+//         $response = new xajaxResponse();
+//         $response->addScript("alert('Permission denied!');");
+//         return($response->getXML());
+//     }
     
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
@@ -206,13 +206,25 @@ EOL;
                     ><input type="hidden" name="id" value="{$record['id']}"
                     ><input type="hidden" name="js" value="{$refresh}"
             ></form>
-        
+EOL;
+        if (auth('advanced')) {
+            $html .= <<<EOL
             <td class="list-row">
                 <a title="Edit DNS domain. ID: {$record['id']}"
                    class="act"
                    onClick="xajax_window_submit('edit_domain', xajax.getFormValues('{$form['form_id']}_list_domain_{$record['id']}'), 'editor');"
                 >{$record['name']}</a>&nbsp;
             </td>
+EOL;
+        }
+        else {
+            $html .= <<<EOL
+            <td class="list-row">
+                {$record['name']}&nbsp;
+            </td>
+EOL;
+        }
+        $html .= <<<EOL
             
             <td class="list-row">
                 {$record['parent_domain_name']}&nbsp;
@@ -223,7 +235,9 @@ EOL;
                     class="act"
                     onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['id']}\', \'display\')');"
                 ><img src="{$images}/silk/zoom.png" border="0"></a>&nbsp;
-
+EOL;
+        if (auth('advanced')) {
+            $html .= <<<EOL
                 <a title="Edit DNS domain. ID: {$record['id']}"
                     class="act"
                     onClick="xajax_window_submit('edit_domain', xajax.getFormValues('{$form['form_id']}_list_domain_{$record['id']}'), 'editor');"
@@ -235,6 +249,9 @@ EOL;
                             if (doit == true)
                                 xajax_window_submit('edit_domain', xajax.getFormValues('{$form['form_id']}_list_domain_{$record['id']}'), 'delete');"
                 ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
+EOL;
+    }
+        $html .= <<<EOL
             </td>
         
         </tr>

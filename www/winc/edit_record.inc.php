@@ -180,7 +180,7 @@ EOL;
     </div>
 
     <!-- COMMON CONTAINER -->
-    <div id="common_container">
+    <div id="common_container" style="background-color: #F2F2F2;">
         <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
             <tr>
                 <td align="right" nowrap="true">

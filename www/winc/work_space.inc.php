@@ -172,15 +172,17 @@ EOL;
     // Update the work_space window's title
     if($_SESSION['ona'][$window_name]['history']) { $history = end($_SESSION['ona'][$window_name]['history']); }
     $new_title = "Work Space: {$history['type']}: {$history['title']}";
-    $helplink = <<<EOL
+    $new_buttons = <<<EOL
     <a style="cursor: pointer;" title="Open online help for: {$history['type']}" onClick="document.location = '{$_ENV['help_url']}{$history['type']}';"><img src="{$images}/silk/help.png" border="0" /></a>
+
+    <a onclick="removeElement('work_space');" style="cursor: pointer;" title="Home"><img border="0" src="{$images}/silk/application_home.png"/></a>
 EOL;
 
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     $response->addAssign("trace_history", "innerHTML", $html);
-    $response->addAssign("work_space_title_help", "innerHTML", $helplink);
+    $response->addAssign("work_space_title_r", "innerHTML", $new_buttons);
     $response->addAssign("work_space_title", "innerHTML", $new_title);
     return($response->getXML());
 }

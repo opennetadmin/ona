@@ -16,6 +16,7 @@ list ($status, $domain_count, $records)     = db_get_records($onadb, 'domains', 
 list ($status, $subnet_count, $records)     = db_get_records($onadb, 'subnets', $where, "", 0);
 list ($status, $pool_count, $records)       = db_get_records($onadb, 'dhcp_pools', $where, "", 0);
 list ($status, $block_count, $records)      = db_get_records($onadb, 'blocks', $where, "", 0);
+list ($status, $vlan_campus_count, $records) = db_get_records($onadb, 'vlan_campuses', $where, "", 0);
 
 
 // The following checks with the opennetadmin server to see what the most current version is.
@@ -136,7 +137,7 @@ print <<<EOL
                                            );"
             ><img src="{$images}/silk/comment.png" border="0" /></span>
 
-            <span class="topmenu-item" style="cursor: pointer;" title="Display user info" onClick="toggle_window('app_user_info');">
+            <span class="topmenu-item" style="cursor: pointer;" title="Current user: {$_SESSION['ona']['auth']['user']['username']}, Click to display user info." onClick="toggle_window('app_user_info');">
                 <img style="vertical-align: middle;" src="{$images}/silk/user_gray.png" border="0" />
             </span>
             <input id="login_userid"
@@ -186,13 +187,14 @@ print <<<EOL
 
                 <b>Record Counts</b>
                 <table border=1 style="border-collapse: collapse;border-color: #999999;">
-                    <tr><td>Subnets</td><td>{$subnet_count}</td>
-                    <tr><td>Hosts</td><td>{$host_count}</td>
+                    <tr><td><a title="List Subnets" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form');">Subnets</a></td><td>{$subnet_count}</td>
+                    <tr><td><a title="List Hosts" onClick="xajax_window_submit('search_results', 'search_form_id=>host_search_form');">Hosts</a></td><td>{$host_count}</td>
                     <tr><td>Interfaces</td><td>{$interface_count}</td>
                     <tr><td>DNS Records</td><td>{$dns_count}</td>
-                    <tr><td>DNS Domains</td><td>{$domain_count}</td>
+                    <tr><td><a title="List DNS Domains" onClick="toggle_window('app_domain_list');">DNS Domains</a></td><td>{$domain_count}</td>
                     <tr><td>DHCP Pools</td><td>{$pool_count}</td>
-                    <tr><td>Blocks</td><td>{$block_count}</td>
+                    <tr><td><a title="List Blocks" onClick="xajax_window_submit('search_results', 'search_form_id=>block_search_form');"> Blocks</a></td><td>{$block_count}</td>
+                    <tr><td><a title="List VLAN Campuses" onClick="xajax_window_submit('search_results', 'search_form_id=>vlan_campus_search_form');">VLAN Campuses</a></td><td>{$vlan_campus_count}</td>
                 </table>
 
             <!-- END OF FIRST COLUMN OF SMALL BOXES -->
