@@ -26,7 +26,10 @@ list ($status, $vlan_campus_count, $records) = db_get_records($onadb, 'vlan_camp
 $onachkserver[0] = 'opennetadmin.com';
 if ($onachkserver[0]) {
     $old = @ini_set('default_socket_timeout', 2);
-    $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
+   // $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
+    // use fsockopen to test that the connection works, if it does, open using fopen
+    if (@fsockopen("http://{$onachkserver[0]}/check_version.php", 80, $errNo, $errString, 2))
+        $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
     @ini_set('default_socket_timeout', $old);
 }
 $onaver = "Unable to determine";

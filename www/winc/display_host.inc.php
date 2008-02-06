@@ -79,6 +79,7 @@ function ws_display($window_name, $form='') {
     list($status, $rows, $location) = ona_get_location_record(array('id' => $record['location_id']));
     // extra stuff to pass to ws_plugins
     $extravars['refresh']=$refresh;
+    $extravars['window_name']=$window_name;
 
     $style['content_box'] = <<<EOL
         margin: 10px 20px;
@@ -120,7 +121,7 @@ EOL;
 
 EOL;
 
-    $html .= workspace_plugin_loader('host_detail',$record);
+    $html .= workspace_plugin_loader('host_detail',$record,$extravars);
     $html .= workspace_plugin_loader('host_services',$record);
 
 /* FIXME: MP this needs to be changed to custom attributes
