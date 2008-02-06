@@ -1,6 +1,6 @@
 <?
 
-$titlehtml = 'Managed services on this host';
+$title_left_html = 'Managed services on this host';
 
     // SERVICE CONFIGURATION BOX
     $serverinfo = '';

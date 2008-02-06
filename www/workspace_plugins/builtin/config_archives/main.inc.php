@@ -9,7 +9,7 @@
 // if (auth('host_config_admin',$debug_val) and authlvl($record['lvl'])) {
 list($status, $total_configs, $tmp) = db_get_records($onadb, 'configurations', array('host_id' => $record['id']), '', 0);
 
-$titlehtml = "Config Archives&nbsp;&#040;{$total_configs}&#041";
+$title_left_html = "Config Archives&nbsp;&#040;{$total_configs}&#041";
 
 
 if ($total_configs) {

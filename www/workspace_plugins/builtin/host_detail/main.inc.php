@@ -1,9 +1,9 @@
 <?
 
-$titlehtml = '';
+$title_left_html = '';
 
 if (auth('host_modify',$debug_val)) {
-    $titlehtml .= <<<EOL
+    $title_left_html .= <<<EOL
                 <a title="Edit host. ID: {$record['id']}"
                 class="act"
                 onClick="xajax_window_submit('edit_host', xajax.getFormValues('form_host_{$record['id']}'), 'editor');"
@@ -11,7 +11,7 @@ if (auth('host_modify',$debug_val)) {
 EOL;
 }
 if (auth('host_del',$debug_val)) {
-    $titlehtml .= <<<EOL
+    $title_left_html .= <<<EOL
                 <a title="Delete host"
                 class="act"
                 onClick="xajax_window_submit('edit_host', xajax.getFormValues('form_host_{$record['id']}'), 'delete');"
@@ -19,7 +19,7 @@ if (auth('host_del',$debug_val)) {
 EOL;
 }
 
-$titlehtml .= <<<EOL
+$title_left_html .= <<<EOL
                 &nbsp;{$record['name']}.<a title="View domain. ID: {$record['domain_id']}"
                                                 class="domain"
                                                 onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
@@ -29,11 +29,14 @@ EOL;
 
 
 
+$title_right_html .= <<<EOL
+                <a href="?work_space={$extravars['window_name']}&host={$record['id']}"><img title="Direct link to {$record['fqdn']}" src="{$images}/silk/application_link.png" border="0"></a>
+EOL;
 
 
 
 
-$modbodyhtml = '';
+
 $modbodyhtml .= <<<EOL
             <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
                 <tr>

@@ -1,6 +1,6 @@
 <?
 
-$titlehtml = 'DHCP Entries';
+$title_left_html = 'DHCP Entries';
 $hasgateway = 0;
 
 

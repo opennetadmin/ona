@@ -1,12 +1,11 @@
 <?
 
-$titlehtml = 'Host Actions';
+$title_left_html = 'Host Actions';
 
 
 
-$confightml = '';
-$confightml .= <<<EOL
-                <img title="Edit plugin configuration" onClick="" src="{$images}/silk/cog_edit.png" border="0">
+$title_right_html .= <<<EOL
+                <img title="Edit plugin configuration" onClick="" src="{$images}/silk/plugin_edit.png" border="0">
 EOL;
 
 

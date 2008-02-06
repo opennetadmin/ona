@@ -101,8 +101,8 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     $min_img = "{$images}/silk/bullet_arrow_up.png";
 
     //Default the module title
-    $titlehtml = $modulename;
-    $confightml = '';
+    $title_left_html = $modulename;
+    $title_right_html = '';
 
     // Load the modules contents from the modules directory.
     // Check for an installed module first. if not then use a builtin one
@@ -148,9 +148,9 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
             <div style="margin-bottom: 8px;">
                 <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
                 <tr>
-                    <td style="{$style['label_box']} border-right: 0px;">{$titlehtml}</td>
+                    <td style="{$style['label_box']} border-right: 0px;">{$title_left_html}</td>
                     <td style="{$style['label_box']} border-left: 0px;" align="right">
-                    {$confightml}
+                    {$title_right_html}
                     <img  src="{$min_img}"
                           id="{$modulename}_dropdown"
                           title="Min/Max"
