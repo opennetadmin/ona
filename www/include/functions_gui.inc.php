@@ -141,7 +141,7 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
 
 
 
-    // FIXME: used the supid margin-top to move the icon up to the right spot.. not sure why divs not working.. figure it out someday
+
     // Create a standard div container for the module
     $modhtml .= <<<EOL
             <!-- {$modulename} start -->

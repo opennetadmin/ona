@@ -21,34 +21,39 @@ list ($status, $vlan_campus_count, $records) = db_get_records($onadb, 'vlan_camp
 
 // The following checks with the opennetadmin server to see what the most current version is.
 // It will do this each time the interface is opened so the traffic should be very minimal.
-@ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']);
-//$onachkserver = @gethostbynamel('opennetadmin.com');
-$onachkserver[0] = 'opennetadmin.com';
-if ($onachkserver[0]) {
-    $old = @ini_set('default_socket_timeout', 2);
-   // $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
-    // use fsockopen to test that the connection works, if it does, open using fopen
-    if (@fsockopen("http://{$onachkserver[0]}/check_version.php", 80, $errNo, $errString, 2))
-        $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
-    @ini_set('default_socket_timeout', $old);
-}
-$onaver = "Unable to determine";
-if ($file) {
-    while (!feof ($file)) {
-        $buffer = trim(fgets ($file, 4096));
-        $onaver = $buffer;
+// Dont perform a version check if the user has requested not to
+if (!$conf['skip_version_check']) {
+    @ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']);
+    //$onachkserver = @gethostbynamel('opennetadmin.com');
+    $onachkserver[0] = 'opennetadmin.com';
+    if ($onachkserver[0]) {
+        // use fsockopen to test that the connection works, if it does, open using fopen
+        // for some reason the default_socket_timeout was not working properly.
+        $fsock = @fsockopen("tcp://{$onachkserver[0]}", 80, $errNo, $errString, 2);
+        if ($fsock) {
+            $old = @ini_set('default_socket_timeout', 2);
+            $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
+            @ini_set('default_socket_timeout', $old);
+        }
     }
-    fclose($file);
+    
+    $onaver = "Unable to determine";
+    if ($file) {
+        while (!feof ($file)) {
+            $buffer = trim(fgets ($file, 4096));
+            $onaver = $buffer;
+        }
+        fclose($file);
+    }
+    if ($conf['version'] == $onaver) {
+        $versit = "<img src='{$images}/silk/accept.png'> You are on the most current version! ({$onaver})<br/><br/>";
+    }
+    else {
+        $sty='fail';
+        if ($onaver == "Unable to determine") $sty='_unknown';
+        $versit = "<div class='version_check{$sty}'><img src='{$images}/silk/exclamation.png'> You are NOT on the most current version<br>Your version = {$conf['version']}<br>Latest version = {$onaver}</div><br/>";
+    }
 }
-if ($conf['version'] == $onaver) {
-    $versit = "<img src='{$images}/silk/accept.png'> You are on the most current version! ({$onaver})<br>";
-}
-else {
-    $sty='fail';
-    if ($onaver == "Unable to determine") $sty='_unknown';
-    $versit = "<div class='version_check{$sty}'><img src='{$images}/silk/exclamation.png'> You are NOT on the most current version<br>Your version = {$conf['version']}<br>Latest version = {$onaver}</div>";
-}
-
 
 // If there is a message of the day file, display it.
 $motdfile = $base.'/local/config/motd.txt';
@@ -76,7 +81,7 @@ print <<<EOL
 
     <!-- Top (Task) Bar -->
     <div class="bar" id="bar_top">
-        <div style="position: absolute; font-size: 8px; top: 1px; z-index: 2; right: 5px;">&copy; {$year} OpenNetAdmin - {$conf['version']}</div>
+        
         <!-- Left Side -->
         <div class="bar-left">
 
@@ -181,23 +186,110 @@ print <<<EOL
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>&nbsp;
 
+        <div style="font-size: xx-small;text-align:center;">&copy; {$year} OpenNetAdmin - {$conf['version']}</div>
+
         <!-- FORMATTING TABLE -->
         <div valign="center" align="center" style="{$style['content_box']};padding-left: 8px;">
         <table cellspacing="0" border="0" cellpadding="0"><tr>
 
             <!-- START OF FIRST COLUMN OF SMALL BOXES -->
+            <td nowrap="true" valign="top" style="padding: 15px;"><br/><canvas id="record_counts_pie" width="150" height="150"></canvas></td>
             <td nowrap="true" valign="top" style="padding: 15px;">
 
+<script type="text/javascript">
+  function record_counts_pie(rownum) {
+    // Function modified from code posted on http://www.phpied.com/canvas-pie/
+    //
+
+    // source data table and canvas tag
+    var data_table = document.getElementById('record_counts');
+    var td_index = 1; // which TD contains the data
+    var canvas = document.getElementById('record_counts_pie');
+
+    // exit if canvas is not supported
+    if (typeof canvas.getContext === 'undefined') {
+        return;
+    }
+
+    // define some colors
+    var color = [];
+    color[0] = "#bbaaff";
+    color[1] = "#ffaaaa";
+    color[2] = "#8899ff";
+    color[3] = "#ddffaa";
+    color[4] = "#aaffee";
+    color[5] = "#66ddcc";
+    color[6] = "#dd6677";
+    color[7] = "#55DD88";
+
+    // get the data[] from the table
+    var tds, data = [], value = 0, total = 0, bump = [];
+    var trs = data_table.getElementsByTagName('tr'); // all TRs
+    for (var i = 0; i < trs.length; i++) {
+        tds = trs[i].getElementsByTagName('td'); // all TDs
+
+        if (tds.length === 0) continue; //  no TDs here, move on
+
+        bump[i] = 0;
+        if (i == rownum) bump[i] = 10;
+
+        // get the value, update total
+        value  = parseFloat(tds[td_index].innerHTML);
+        data[data.length] = value;
+        total += value;
+    }
+
+    // get canvas context, determine radius and center
+    var ctx = canvas.getContext('2d');
+    var canvas_size = [canvas.width, canvas.height];
+    var radius = Math.min((canvas_size[0]-20), (canvas_size[1]-20)) / 2;
+    var center = [canvas_size[0]/2, canvas_size[1]/2];
+
+    var sofar = 0; // keep track of progress
+
+    // clear out the current contents
+    ctx.fillStyle = "rgb(255,255,255)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+//this.onerror = function() { return true; }
+    // loop through each table row
+    for (var piece in trs) {
+
+        var thisvalue = data[piece] / total;
+
+        ctx.beginPath();
+        ctx.moveTo(center[0], center[1]); // center of the pie
+
+        ctx.arc(  // draw next arc
+            center[0],
+            center[1],
+            (radius + bump[piece]),
+            Math.PI * (- 0.5 + 2 * sofar), // -0.5 sets set the start to be top
+            Math.PI * (- 0.5 + 2 * (sofar + thisvalue)),
+            false
+        );
+
+        ctx.lineTo(center[0], center[1]); // line back to the center
+        ctx.closePath();
+        ctx.fillStyle = color[piece];
+        ctx.fill();
+
+        sofar += thisvalue; // increment progress tracker
+    }
+//this.onerror = 1;
+}
+</script>
+
                 <b>Record Counts</b>
-                <table border=1 style="border-collapse: collapse;border-color: #999999;">
-                    <tr><td><a title="List Subnets" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form');">Subnets</a></td><td>{$subnet_count}</td>
-                    <tr><td><a title="List Hosts" onClick="xajax_window_submit('search_results', 'search_form_id=>host_search_form');">Hosts</a></td><td>{$host_count}</td>
-                    <tr><td>Interfaces</td><td>{$interface_count}</td>
-                    <tr><td>DNS Records</td><td>{$dns_count}</td>
-                    <tr><td><a title="List DNS Domains" onClick="toggle_window('app_domain_list');">DNS Domains</a></td><td>{$domain_count}</td>
-                    <tr><td>DHCP Pools</td><td>{$pool_count}</td>
-                    <tr><td><a title="List Blocks" onClick="xajax_window_submit('search_results', 'search_form_id=>block_search_form');"> Blocks</a></td><td>{$block_count}</td>
-                    <tr><td><a title="List VLAN Campuses" onClick="xajax_window_submit('search_results', 'search_form_id=>vlan_campus_search_form');">VLAN Campuses</a></td><td>{$vlan_campus_count}</td>
+                <table onmouseout="record_counts_pie(99)" id="record_counts" border=1 style="border-collapse: collapse;border-color: #999999;"s>
+                    <tr onmouseover="record_counts_pie(0)"><td><a title="List Subnets" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form');">Subnets</a></td><td>{$subnet_count}</td>
+                    <tr onmouseover="record_counts_pie(1)"><td><a title="List Hosts" onClick="xajax_window_submit('search_results', 'search_form_id=>host_search_form');">Hosts</a></td><td>{$host_count}</td>
+                    <tr onmouseover="record_counts_pie(2)"><td>Interfaces</td><td>{$interface_count}</td>
+                    <tr onmouseover="record_counts_pie(3)"><td>DNS Records</td><td>{$dns_count}</td>
+                    <tr onmouseover="record_counts_pie(4)"><td><a title="List DNS Domains" onClick="toggle_window('app_domain_list');">DNS Domains</a></td><td>{$domain_count}</td>
+                    <tr onmouseover="record_counts_pie(5)"><td>DHCP Pools</td><td>{$pool_count}</td>
+                    <tr onmouseover="record_counts_pie(6)"><td><a title="List Blocks" onClick="xajax_window_submit('search_results', 'search_form_id=>block_search_form');"> Blocks</a></td><td>{$block_count}</td>
+                    <tr onmouseover="record_counts_pie(7)"><td><a title="List VLAN Campuses" onClick="xajax_window_submit('search_results', 'search_form_id=>vlan_campus_search_form');">VLAN Campuses</a></td><td>{$vlan_campus_count}</td>
                 </table>
 
             <!-- END OF FIRST COLUMN OF SMALL BOXES -->
@@ -259,7 +351,6 @@ print <<<EOL
             <!-- START OF THIRD COLUMN OF SMALL BOXES -->
             <td valign="top" style="padding: 15px;">
                 {$versit}
-                <br>
                 <ul>
                 <li>If you need further assistance, look for the <img src='{$images}/silk/help.png'> icon<br>
                 in the title bar of windows.<br></li>
@@ -364,6 +455,8 @@ print <<<EOL
     // Populate the trace_history with anything that might already be in the session
     el('trace_history').innerHTML=xajax_window_submit('work_space', 'return_html=>1', 'rewrite_history');
 
+    // Print the nice pie chart!
+    record_counts_pie(99);
 
 --></script>
 
