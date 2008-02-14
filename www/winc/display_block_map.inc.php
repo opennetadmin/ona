@@ -79,7 +79,7 @@ EOL;
         /* Finally reposition/resize the window */
         _el.style.position = 'relative';
         _el.style.height   = my_height + 'px';
-        _el.style.width    = my_width + 'px';
+
 EOL;
 
     // Get javascript to setup the map portal
