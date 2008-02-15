@@ -23,7 +23,7 @@ list ($status, $vlan_campus_count, $records) = db_get_records($onadb, 'vlan_camp
 // It will do this each time the interface is opened so the traffic should be very minimal.
 // Dont perform a version check if the user has requested not to
 if (!$conf['skip_version_check']) {
-    @ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']);
+    @ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']."-----".$conf['version']);
     //$onachkserver = @gethostbynamel('opennetadmin.com');
     $onachkserver[0] = 'opennetadmin.com';
     if ($onachkserver[0]) {
