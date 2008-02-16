@@ -93,8 +93,8 @@ function calcOffset(_el, offsetType) {
     var calculatedOffset = 0;
     var start_id = _el.id;
     while (_el) {
-        // Stop if we've reached an absolutly or relativly positioned element
-        if (_el.id != start_id && (_el.style.position == 'absolute' || _el.style.position == 'relative') ) { break; }
+        // Stop if we've reached an absolutly, fixed, or relativly positioned element
+        if (_el.id != start_id && (_el.style.position == 'absolute' || _el.style.position == 'fixed' || _el.style.position == 'relative') ) { break; }
         // Otherwise add the offset of the current element and go to our parent.
         calculatedOffset += _el[offsetType];
         _el = _el.offsetParent;

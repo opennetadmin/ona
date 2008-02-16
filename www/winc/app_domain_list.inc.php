@@ -153,7 +153,7 @@ function ws_display_list($window_name, $form) {
         <!-- Table Header -->
         <tr>
             <td class="list-header" align="center" style="{$style['borderR']};">Domain name</td>
-            <td class="list-header" align="center" style="{$style['borderR']};">Parent domain</td>
+            <td class="list-header" align="center" style="{$style['borderR']};">Records in domain</td>
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
         
@@ -199,7 +199,9 @@ EOL;
         foreach(array_keys($record) as $key) {
             $record[$key] = htmlentities($record[$key], ENT_QUOTES);
         }
-        
+
+        list($status, $usage_rows, $tmp) = db_get_records($onadb, 'dns', "domain_id = {$record['id']}", '', 0);
+
         $html .= <<<EOL
         <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
             <form id="{$form['form_id']}_list_domain_{$record['id']}"
@@ -227,7 +229,7 @@ EOL;
         $html .= <<<EOL
             
             <td class="list-row">
-                {$record['parent_domain_name']}&nbsp;
+                {$usage_rows}
             </td>
             
             <td align="right" class="list-row" nowrap="true">
