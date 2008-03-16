@@ -87,38 +87,6 @@ EOM
         ));
     }
 
-    // Validate that this domain doesnt already exist
-    list($status, $rows, $record) = ona_get_domain_record(array('name' => $options['name']));
-
-    if ($record['id']) {
-        printmsg("DEBUG => The domain specified ({$record['name']}) already exists!", 3);
-        $self['error'] = "ERROR => The domain specified, {$options['name']}, already exists!";
-        return(array(11, $self['error'] . "\n"));
-    }
-
-
-    if ($options['server']) {
-        // Determine if the server is valid
-        list($status, $rows, $host) = ona_find_host($options['server']);
-
-        if (!$host['id']) {
-            printmsg("DEBUG => The server specified ({$options['server']}) does not exist!", 3);
-            $self['error'] = "ERROR => The server specified, {$options['server']}, does not exist!";
-            return(array(2, $self['error'] . "\n"));
-        }
-
-// FIXME: PK: we don't do this yet, so it's commented out.
-//        // Determine the host that was found is actually a server
-//        list($status, $rows, $server) = ona_get_server_record(array('HOST_ID' => $host['ID']));
-
-//        if (!$server['ID']) {
-//            printmsg("DEBUG => The host specified ({$host['FQDN']}) is not a server!", 3);
-//            $self['error'] = "ERROR => The host specified, {$host['FQDN']}, is not a server!";
-//            return(array(5, $self['error'] . "\n"));
-//        }
-    }
-
-
     // Use default if something was not passed on command line
     if ($options['admin'])   { $admin   = $options['admin'];  } else { $admin   = $conf['dns_admin_email'];   }
     if ($options['primary']) { $primary = $options['primary'];} else { $primary = $conf['dns_primary_master'];  }
@@ -130,22 +98,39 @@ EOM
 
 
     // Set the parent to default if it is not passed
-    if (!array_key_exists('parent',$options))
-        $options['parent'] = $conf['dns_parent'];
+//MP: this isnt right.. this would force a parent every time.
+//   if (!array_key_exists('parent',$options))
+//        $options['parent'] = $conf['dns_parent'];
 
     // get parent domain info
     if ($options['parent']) {
-        list($status, $rows, $parent_domain)  = ona_get_domain_record(array('name' => $options['parent']));
+        list($status, $rows, $parent_domain)  = ona_find_domain($options['parent'],0);
         if (!$rows) {
             printmsg("DEBUG => The parent domain specified ({$options['parent']}) does not exist!", 3);
             $self['error'] = "ERROR => The parent domain specified, {$options['parent']}, does not exist!";
             return(array(5, $self['error'] . "\n"));
         }
+        // Set up the parent part of the search if there was one
+        $parentsearch = '.'.$parent_domain['fqdn'];
     }
+
+
+    // Validate that this domain doesnt already exist
+    list($status, $rows, $record) = ona_get_domain_record(array('name' => $options['name'].$parentsearch));
+
+    if ($record['id']) {
+        printmsg("DEBUG => The domain specified ({$record['name']}) already exists!", 3);
+        $self['error'] = "ERROR => The domain specified, {$options['name']}, already exists!";
+        return(array(11, $self['error'] . "\n"));
+    }
+
+
+
 
     if ($options['name']) {
         // If NOT a PTR domain, make sure the domain name is a valid format
-        if($ptr != 'Y'){
+//         if($ptr != 'Y'){
+// MP: probably not going to do ptr zones this way.. commented out for now
             // FIXME: not sure if its needed but this was calling sanitize_domainname, which did not exist
             $domain_name = sanitize_hostname($options['name']);
             if (!$domain_name) {
@@ -153,18 +138,18 @@ EOM
                 $self['error'] = "ERROR => The domain name ({$options['name']}) is invalid!";
                 return(array(4, $self['error'] . "\n"));
             }
-        } else {
-        // If a PTR domain, make sure the domain name is a valid IP address
-            $valid_ptr_domain = ip_mangle($options['name'],1);
-            if ($valid_ptr_domain == -1) {
-                printmsg("DEBUG => The PTR domain ({$options['name']}) is not a valid IP address!", 3);
-                $self['error'] = "ERROR => The PTR domain ({$options['name']}) is not a valid IP address!";
-                return(array(4, $self['error'] . "\n"));
-            }
-            $domain_name = $options['name'];
-            // force parent domain to be empty if this is a valid PTR domain
-            $parent_domain['id'] = '';
-        }
+//         } else {
+//         // If a PTR domain, make sure the domain name is a valid IP address
+//             $valid_ptr_domain = ip_mangle($options['name'],1);
+//             if ($valid_ptr_domain == -1) {
+//                 printmsg("DEBUG => The PTR domain ({$options['name']}) is not a valid IP address!", 3);
+//                 $self['error'] = "ERROR => The PTR domain ({$options['name']}) is not a valid IP address!";
+//                 return(array(4, $self['error'] . "\n"));
+//             }
+//             $domain_name = $options['name'];
+//             // force parent domain to be empty if this is a valid PTR domain
+//             $parent_domain['id'] = '';
+//         }
     }
     if ($primary) {
         // Determine the primary master is a valid host
@@ -176,15 +161,6 @@ EOM
             return(array(2, $self['error'] . "\n"));
         }
 
-// FIXME: (PK): We don't support this yet
-//        // Determine the host that was found is actually a server
-//        list($status, $rows, $oserver) = ona_get_server_record(array('HOST_ID' => $ohost['ID']));
-
-//        if (!$oserver['ID']) {
-//            printmsg("DEBUG => The origin host specified ({$ohost['FQDN']}) is not a server!", 3);
-//            $self['error'] = "ERROR => The host specified ({$ohost['FQDN']}) is not a server!";
-//            return(array(5, $self['error'] . "\n"));
-//        }
     }
 
 
@@ -204,7 +180,7 @@ EOM
         printmsg($self['error'], 0);
         return(array(6, $self['error'] . "\n"));
     }
-    printmsg("DEBUG => domain_add(): New domain ID: {$id} name: {$domain_name}", 3);
+    printmsg("DEBUG => domain_add(): New domain ID: {$id} name: {$domain_name}.{$parent_domain['fqdn']}", 3);
 
 
     // come up with a serial_number
@@ -214,9 +190,6 @@ EOM
     // for now I'm going with non zero padded(zp) month,zp day, zp hour, zp minute, zp second.  The only issue I can see at this point with this is when it rolls to january..
     // will that be too much of an increment for it to properly zone xfer?  i.e.  1209230515 = 12/09 23:05:15 in time format
     $serial_number = date('njHis');
-
-    // FIXME: MP there is a problem currently with parent.. it creates a loop for find_domain, I'm blanking it out for now.
-    $parent_domain['id'] = '';
 
 
     // Add the record
@@ -243,34 +216,6 @@ EOM
         printmsg($self['error'],0);
         return(array(7, $self['error'] . "\n"));
     }
-
-// FIXME: (PK) Disabled, we don't track servers yet.
-//    // Get the next domain server ID
-//    $id = ona_get_next_id();
-//    if (!$id) {
-//        $self['error'] = "ERROR => The ona_get_next_id() call failed!";
-//        printmsg($self['error'], 0);
-//        return(array(6, $self['error'] . "\n"));
-//    }
-//    printmsg("DEBUG => domain_add(): New domain server ID: $id", 3);
-
-//    // Add new record to domain_servers_b
-//    list($status, $rows) =
-//        db_insert_record(
-//            $onadb,
-//            'DOMAIN_SERVERS_B',
-//            array(
-//                'DOMAIN_SERVERS_ID'           => $id,
-//                'DNS_DOMAINS_ID'              => $first_id,
-//                'SERVER_ID'                 => $server['ID'],
-//                'AUTHORITATIVE_FLAG'        => $auth
-//            )
-//        );
-//    if ($status or !$rows) {
-//        $self['error'] = "ERROR => domain_add() SQL Query (Zone_Servers_b) failed: " . $self['error'];
-//        printmsg($self['error'],0);
-//        return(array(8, $self['error'] . "\n"));
-//    }
 
 
     // Return the success notice

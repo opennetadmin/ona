@@ -29,7 +29,7 @@ function ws_editor($window_name, $form='') {
     if (is_numeric($form['id'])) {
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $form['id']));
         list($status, $rows, $parent) = ona_get_domain_record(array('id' => $domain['parent_id']));
-        $domain['parent'] = $parent['name'];
+        $domain['parent'] = ona_build_domain_name($parent['id']);
 
         // Set the window title:
         $window['title'] = "Edit Domain";
@@ -106,7 +106,7 @@ EOL;
                 >
             </td>
         </tr>
-<!-- MP: FIXME: Commented out for now.. parent stuff is busted and causes loops, do I even need parent anymore??
+
         <tr>
             <td align="right" nowrap="true">
                 Parent Domain
@@ -116,7 +116,7 @@ EOL;
                     id="domain_edit"
                     name="parent"
                     alt="Parent Domain"
-                    value="{$parent['parent']}"
+                    value="{$domain['parent']}"
                     class="edit"
                     type="text"
                     size="30" maxlength="255"
@@ -124,7 +124,7 @@ EOL;
                 <div id="suggest_domain_edit" class="suggest"></div>
             </td>
         </tr>
--->
+
         <tr>
             <td align="right" nowrap="true">
                 Primary Master
@@ -314,6 +314,9 @@ function ws_save($window_name, $form='') {
         $response->addScript("alert('Please complete the domain name field to continue!');");
         return($response->getXML());
     }
+
+    //MP: FIXME: It would be nice to disallow "." in the name.. this would force us to create .com .org .net etc domains.
+    //  Not that this is a bad thing but it will require a fix to the sub,sub,sub,sub domain issue when doing searches.
 
     if (!$form['ptr']) $form['ptr'] = 'N';
 

@@ -28,7 +28,7 @@ parse_str($_SERVER['QUERY_STRING']);
 
 // Check to see if the run_install file exists.
 // If it does, run the install process.
-if (file_exists($base.'/../install/run_install')) {
+if (file_exists($base.'/local/config/run_install')) {
     // Process the install script
     require_once($base.'/../install/install.php');
     exit;

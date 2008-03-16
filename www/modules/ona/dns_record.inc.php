@@ -106,7 +106,7 @@ FIXME: do some validation of the different options, pointsto only with cname typ
     //
     // Find the domain name piece of $search
     list($status, $rows, $domain) = ona_find_domain($options['name']);
-    printmsg("DEBUG => ona_find_domain({$options['name']}) returned: {$domain['fqdn']}", 3);
+    //printmsg("DEBUG => ona_find_domain({$options['name']}) returned: {$domain['fqdn']}", 3);
 
     // Now find what the host part of $search is
     $hostname = str_replace(".{$domain['fqdn']}", '', $options['name']);
@@ -119,7 +119,7 @@ FIXME: do some validation of the different options, pointsto only with cname typ
         return(array(4, $self['error'] . "\n"));
     }
     // Debugging
-    printmsg("DEBUG => Using hostname: {$hostname}.{$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
+    printmsg("DEBUG => Using hostname: {$hostname} Domainname: {$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
 
 
 
@@ -553,7 +553,7 @@ Modify a DNS record
   Synopsis: dns_record_modify [KEY=VALUE] ...
 
   Where:
-    name=NAME[.DOMAIN] or ID  select dns record by name or ID
+    name=NAME[.DOMAIN] or ID    select dns record by name or ID
 
   Update:
     set_name=NAME[.DOMAIN]      change name and/or domain

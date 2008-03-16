@@ -43,6 +43,7 @@ function ws_display($window_name, $form='') {
     // Get associated info
     if ($record['parent_id']) {
         list($status, $rows, $parent_domain) = ona_get_domain_record(array('id' => $record['parent_id']));
+        $parent_domain['name'] = ona_build_domain_name($parent_domain['id']);
     } else {
         $parent_domain = "";
     }

@@ -9,14 +9,6 @@
 // The other half of this is in search_results.inc.php
 // if (is_numeric($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
 
-// Register ONA specific functions with xajax
-// (set the function names in a variable so they'll be processed later)
-// Note that these functions must be already defined!
-// $xajax->registerFunction("your_function");
-
-
-
-
 
 
 
@@ -88,8 +80,8 @@ function &plugin_load($type,$name){
 // Used in display_ pages to load a workspace plugin module and wrap it
 // in a common looking div.
 //
-// Returns a three part list:
-//    list()
+// Returns the html to render the ws plugin
+//
 //////////////////////////////////////////////////////////////////////////////
 function workspace_plugin_loader($modulename, $record=array(), $extravars=array()) {
     global $conf, $self, $base, $images, $color, $style, $onadb;
@@ -145,8 +137,8 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     // Create a standard div container for the module
     $modhtml .= <<<EOL
             <!-- {$modulename} start -->
-            <div style="margin-bottom: 8px;">
-                <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
+            <div id="{$modulename}_container" style="margin-bottom: 8px;float: left; padding-right: 4px; padding-left: 4px;display:block;">
+                <table  cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
                 <tr>
                     <td style="{$style['label_box']} border-right: 0px;">{$title_left_html}</td>
                     <td style="{$style['label_box']} border-left: 0px;" align="right">
@@ -170,8 +162,8 @@ EOL;
     // Close out the modules div container
     $modhtml .= <<<EOL
                 </td></tr>
-            </table>
-
+                </table>
+            </div>
             <!-- {$modulename} end -->
 EOL;
 
@@ -291,7 +283,7 @@ function get_host_suggestions($q, $max_results=10) {
     $q = $q . '%';
 
     $table = 'dns';
-    $field = 'name'; // FIXME: (PK) name is no longer in hosts table ... its in dns table.
+    $field = 'name';
     $where  = "{$field} LIKE " . $onadb->qstr($q);
     $order  = "{$field} ASC";
 
@@ -359,7 +351,45 @@ function get_alias_suggestions($q, $max_results=10) {
 }
 
 function get_domain_suggestions($q, $max_results=10) {
-    return(get_text_suggestions($q . '%', 'domains', 'name', $max_results));
+    global $self, $conf, $onadb;
+    $results = array();
+
+    // wildcard the query before searching
+    $q = $q . '%';
+
+    $table = 'domains';
+    $field = 'name';
+    $where  = "{$field} LIKE " . $onadb->qstr($q);
+    $order  = "{$field} ASC";
+
+    // Search the db for results
+    list ($status, $rows, $records) = db_get_records(
+                                        $onadb,
+                                        $table,
+                                        $where,
+                                        $order,
+                                        $max_results
+                                      );
+
+    // If the query didn't work return the error message
+    if ($status) { $results[] = "Internal Error: {$self['error']}"; }
+
+    foreach ($records as $record) {
+        if ($record['parent_id']) {
+            list($status, $rows, $domain) = db_get_record($onadb, 'domains', array('id' => $record['parent_id']));
+            $results[] = $record[$field].".".ona_build_domain_name($domain['id']);
+        } else {
+            $results[] = $record[$field];
+            // Also check if this record is a parent of others
+            list ($status, $rows, $precords) = db_get_records($onadb, $table, "{$record['id']} = parent_id", $order, $max_results);
+            foreach ($precords as $precord) {
+                $results[] = $precord[$field].".".ona_build_domain_name($record['id']);
+            }
+        }
+    }
+
+    // Return the records
+    return($results);
 }
 
 function get_vlan_campus_suggestions($q, $max_results=10) {
@@ -386,7 +416,7 @@ function get_mac_suggestions($q, $max_results=10) {
 
     $q = strtoupper($q);
     //if (preg_match('/[^\%\:\.\-0-9A-F]/', $q)) return(array()); // It's not a mac address ;)
-    // MP: I added the %3A line because some searches were comming through with the : replaced.
+    // MP: I added the %3A line because some searches were coming through with the : replaced.
     $q = preg_replace('/\%3A/', '', $q);  // Discard characters that aren't stored in the db
     $q = preg_replace('/[\:\.\-]/', '', $q);  // Discard characters that aren't stored in the db
 
@@ -476,13 +506,6 @@ function suggest_qsearch($q, $el_input, $el_suggest) {
         $results = array_unique($results);
     }
 
-    // Search the DB for aliases
- //   if (count($results) < $conf['suggest_max_results']) {
- //       $array = get_alias_suggestions($q, $conf['suggest_max_results'] - count($results));
- //       foreach($array as $suggestion) { $results[] = $suggestion; }
- //       $results = array_unique($results);
-  //  }
-
     // Search the DB for subnets
     if (count($results) < $conf['suggest_max_results']) {
         $array = get_subnet_suggestions($q, $conf['suggest_max_results'] - count($results));
@@ -496,13 +519,6 @@ function suggest_qsearch($q, $el_input, $el_suggest) {
         foreach($array as $suggestion) { $results[] = $suggestion; }
         $results = array_unique($results);
     }
-
-    // Search the DB for aliases (*)
-//    if (count($results) < $conf['suggest_max_results']) {
-//        $array = get_alias_suggestions('%' . $q, $conf['suggest_max_results'] - count($results));
-//        foreach($array as $suggestion) { $results[] = $suggestion; }
-//        $results = array_unique($results);
-//    }
 
     // Search the DB for subnets (*)
     if (count($results) < $conf['suggest_max_results']) {

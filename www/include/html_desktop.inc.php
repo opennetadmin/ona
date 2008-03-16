@@ -46,12 +46,12 @@ if (!$conf['skip_version_check']) {
         fclose($file);
     }
     if ($conf['version'] == $onaver) {
-        $versit = "<img src='{$images}/silk/accept.png'> You are on the most current version! ({$onaver})<br/><br/>";
+        $versit = "<img src='{$images}/silk/accept.png'> You are on the official stable version! ({$onaver})<br/><br/>";
     }
     else {
         $sty='fail';
         if ($onaver == "Unable to determine") $sty='_unknown';
-        $versit = "<div class='version_check{$sty}'><img src='{$images}/silk/exclamation.png'> You are NOT on the most current version<br>Your version = {$conf['version']}<br>Latest version = {$onaver}</div><br/>";
+        $versit = "<div class='version_check{$sty}'><img src='{$images}/silk/exclamation.png'> You are NOT on the official stable version<br>Your version = {$conf['version']}<br>Official version = {$onaver}</div><br/>";
     }
 }
 
@@ -89,7 +89,7 @@ print <<<EOL
             <span class="topmenu-item" id="menu-apps-item">
                 <a id="menu-apps-button"
                    class="button"
-                ><img style="vertical-align: middle;" src="{$images}/silk/house.png" border="0" />&nbsp;Start&nbsp;</a>
+                ><img style="vertical-align: middle;" src="{$images}/silk/house.png" border="0" />&nbsp;Tools&nbsp;</a>
             </span>
 
             <!-- Quick Search -->
@@ -186,7 +186,7 @@ print <<<EOL
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>&nbsp;
 
-        <div style="font-size: xx-small;text-align:center;">&copy; {$year} OpenNetAdmin - {$conf['version']}</div>
+        <div style="font-size: xx-small;text-align:center;">&copy; {$year} <a href="http://opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}</div>
 
         <!-- FORMATTING TABLE -->
         <div valign="center" align="center" style="{$style['content_box']};padding-left: 8px;">
