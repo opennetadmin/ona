@@ -76,13 +76,13 @@ function &plugin_load($type,$name){
 
 
 
-//////////////////////////////////////////////////////////////////////////////
+/*
 // Used in display_ pages to load a workspace plugin module and wrap it
 // in a common looking div.
 //
 // Returns the html to render the ws plugin
 //
-//////////////////////////////////////////////////////////////////////////////
+*/
 function workspace_plugin_loader($modulename, $record=array(), $extravars=array()) {
     global $conf, $self, $base, $images, $color, $style, $onadb;
     $modhtml = '';

@@ -166,6 +166,10 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
 
+    //MP: zero out the level for now
+    //TODO: fix or remove level at some point
+    $form['level'] = 0;
+
     // Create a new record?
     if (!$form['id']) {
         list ($status, $rows) = db_insert_record(

@@ -43,7 +43,7 @@ $conf = array (
     "db_context"          => 'default',
 
     /* Used in header.php */
-    "title"                  => 'Open Net Admin :: ',
+    "title"                  => 'OpenNetAdmin :: ',
     "meta_description"       => '',
     "meta_keywords"          => '',
     "html_headers"           => '',

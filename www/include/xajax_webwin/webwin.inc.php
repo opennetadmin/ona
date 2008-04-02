@@ -229,6 +229,11 @@ function window_find_include($window_name) {
         }
     }
 
+    // If we still have not found it, lets just try the windowname as the file itself
+    if (is_file('.'.$window_name)) {
+        return('.'.$window_name);
+    }
+
     // Couldn't find it :|
     return(FALSE);
 }
