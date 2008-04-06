@@ -1,0 +1,3 @@
+Upgrades prior to version 08.02.18 must be manually done by loading the file install/PRE-v08.02.18-to-08.02.18.sql into the database. 
+
+Updates after this version should automatically process.

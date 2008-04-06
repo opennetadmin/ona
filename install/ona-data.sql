@@ -155,7 +155,9 @@ INSERT INTO `sys_config` (`name`, `value`, `description`) VALUES
 ('search_results_per_page', '10', 'Sets the amount of rows per page in list items'),
 ('stdout', '0', 'Flag to allow logging via STDOUT.. This is extreme debugging, not recomended.'),
 ('suggest_max_results', '10', 'Limits the amount of rows returned by queries. (test impact of changing this first)'),
-('syslog', '0', 'Log via syslog, only works if debug is set to 0');
+('syslog', '0', 'Log via syslog, only works if debug is set to 0'),
+('version', '', 'Tracks current installed version, used to detect when upgrades should be done.'),
+('upgrade_index', '1', 'Tracks current upgrade index, used to perform database upgrades.');
 
 --
 -- Dumping data for table `users`

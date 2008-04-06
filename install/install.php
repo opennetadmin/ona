@@ -1,79 +1,100 @@
 <?php
-/* -------------------- COMMON HEADER ---------------------- */
+
 $base = dirname(__FILE__);
-//while ($base and (!is_dir($base.'/include'))) $base = preg_replace('+/[^/]*$+', '', $base);
-//$include = $base . '/include';
-//if (!is_dir($include)) { print "ERROR => Couldn't find include folder!\n"; exit; }
-//require_once($base . '/config/config.inc.php');
-//require_once($conf['inc_functions']);
-/* --------------------------------------------------------- */
-
 $baseURL=dirname($_SERVER['SCRIPT_NAME']); $baseURL = rtrim($baseURL, '/');
-
 
 // stuff and notes:
 //  maybe change the mysqlt type to a variable..
 
-$mainstyle='';
+// Init and setup some variables.
+$DBname = $database_name;
+$DBPrefix = '';
+$text = '';
+$status=0;
+$installdir = dirname($base);
+$runinstall = $installdir.'/www/local/config/run_install';
+$sqlfile = $base.'/ona-tables.sql';
+$sqlfile_data = $base.'/ona-data.sql';
+$dbconffile = $installdir.'/www/local/config/database_settings.inc.php';
+$license_text = file_get_contents($base.'/../docs/LICENSE');
+$new_ver = trim(file_get_contents($installdir.'/VERSION'));
 
 
-print <<<EOL
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-        <script type="text/javascript" src="{$baseURL}/include/js/global.js" language="javascript"></script>
-    </head>
-    <style type="text/css">
+// Get some pre-requisite information
+$version = phpversion() > '4.1' ? 'Yes' : '<font color="red">No</font>';
+$hasmysql = function_exists( 'mysql_connect' ) ? 'Yes' : '<font color="red">No</font>';
+$hasgmp = function_exists( 'gmp_init' ) ? 'Yes' : 'Recommended';
+$dbconfwrite = @is_writable($installdir.'/www/local/config/') ? 'Yes' : '<font color="red">No</font>';
 
-        body {
-            margin: 0px;
-            font-family: Arial, Sans-Serif;
-            color: 000000;
-            background-color: FFFFFF;
-            vertical-align: top;
-        }
+$blankmain = "<script>el('main').style.display = 'none';</script>";
 
-        textarea.edit {
-            font-family: monospace;
-            border: 1px solid #8CACBB;
-            color: Black;
-            background-color: white;
-            padding: 3px;
-            width:100%;
-        }
-
-        input.edit,select.edit {
-            border: 1px solid #8CACBB;
-            color: Black;
-            background-color: white;
-            vertical-align: middle;
-            padding: 1px;
-            display: inline;
-        }
-
-    </style>
-    <body>
-        <div align="center" style="width:100%;">
-            <span style="background-color: #D3DBFF; font-size: xx-large;width: 100%;padding: 0px 60px;-moz-border-radius-bottomleft: 10;-moz-border-radius-bottomright: 10;">OpenNetAdmin Install</span><br>
-EOL;
-// print the GPL license and have them "ok" it to continue.
-if ($install_submit != 'Y') {
-    $license_text = file_get_contents($base.'/../docs/LICENSE');
-    $mainstyle='display: none;';
-    print <<<EOL
-            <div id="license" style="width: 550px;padding: 35px 0px;text-align: left;">
+// This is the div that contains the license
+$licensediv = <<<EOL
+            <div id="license">
                 <center><b>OpenNetAdmin is released under the following license:</b></center>
                 <textarea class="edit" rows="25" cols="75">{$license_text}</textarea><br><br>
-                <center><input class='edit' type="button" value="I Agree!" onclick="el('main').style.display = '';el('input1').focus();el('license').style.display = 'none';" /></center>
+                <center>
+                    <input class='edit' type="button" value="I Agree!" onclick="el('work').style.display = '';el('input1').focus();el('license').style.display = 'none';" />&nbsp;&nbsp;
+                    <a style="text-decoration: none;" href="/"><input class='edit' type="button" value="I don't like free stuff?" onclick="" /></a>
+                </center>
             </div>
 EOL;
+
+// Div with the prerequisite checks
+$requisitediv = <<<EOL
+            <div id="checksdiv">
+                <table id="checks">
+                    <tr><th colspan="5">Prerequisite checks</th></tr>
+                    <tr><td>PHP version > 4.1:</td><td>{$version}</td></tr>
+                    <tr><td>Has MySQL support:</td><td>{$hasmysql}</td></tr>
+                    <tr title="The PHP GMP modules provide extra functionality, but are not required."><td>Has GMP support:</td><td>{$hasgmp}</td></tr>
+                    <tr title="The local config directory must be writable by the web server."><td>{$installdir}/www/local/config dir writable:</td><td>{$dbconfwrite}</td></tr>
+                </table>
+            </div>
+EOL;
+
+// Initial text for the greeting div
+$greet_txt = "It looks as though this is your first time running OpenNetAdmin. Please answer a few questions and we'll initialize the system for you. We've pre-populated some of the fields with suggested values.  If the database you specify below already exists, it will be overwritten.";
+
+
+$upgrademain = '';
+
+if (@file_exists($dbconffile)) {
+    // Get the existing database config so we can connect using its settings
+    include($dbconffile);
+    // Connect to the database as the administrator user
+    $con = mysql_connect($db_context['mysqlt']['default']['primary']['db_host'],$db_context['mysqlt']['default']['primary']['db_login'],$db_context['mysqlt']['default']['primary']['db_passwd']);
+    if (!$con) {
+        $status++;
+        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to connect to '{$db_context['mysqlt']['default']['primary']['db_host']}' as '{$db_context['mysqlt']['default']['primary']['db_login']}'.<br>";
+    } else {
+        if (mysql_select_db($db_context['mysqlt']['default']['primary']['db_database'], $con)) {
+            $result = mysql_query("SELECT value FROM sys_config WHERE name like 'version';",$con);
+            $curr_ver = @mysql_result($result, 0);
+
+            if ($curr_ver == ' ') { $curr_ver = 'PRE-v08.02.18'; }
+
+            // Update the greet text with new info
+            $greet_txt = "It looks as though you already have version '{$curr_ver}' of OpenNetAdmin installed.  You should make a backup of the data before proceeding with the upgrade.<br><br>We will be upgrading to the version '{$new_ver}'.";
+
+            $upgrademain = <<<EOL
+            <div id="upgrademain">
+                <form id="upgradeform">
+                    <input type='hidden' name='install_submit' value='Y' />
+                    <input id='upgrade' type='hidden' name='upgrade' value='N' />
+                    <a style="text-decoration: none;" href="/"><input class='edit' type="button" value="Cancel upgrade" onclick="" /></a>
+                    <input class='edit' type='button' name='upgrade' value='Perform the upgrade.' onclick="el('upgrade').value='Y';el('upgradeform').submit();" />
+                </form>
+            </div>
+EOL;
+        }
+    }
+    // Close the database connection
+    @mysql_close($con);
 }
-print <<<EOL
+
+$main = <<<EOL
             <div id="main" style="{$mainstyle}">
-                <div id="Greeting" style="width: 450px;padding: 35px 0px;text-align: left;">
-                It looks as though this is your first time running OpenNetAdmin. Please answer a few questions and we'll initialize the system for you. We've pre-populated some of the fields with suggested values.
-                </div>
                 <form id="mainform">
                     <input type='hidden' name='install_submit' value='Y' />
                     <input id='overwrite' type='hidden' name='overwrite' value='N' />
@@ -107,20 +128,13 @@ print <<<EOL
                     var input7text = '<b>Default Domain Name:</b> The default DNS domain for your site.  This will be your primary domain to add hosts to and will serve the default domain for certain tasks.';
 
                 </script>
+            </div>
 EOL;
 
 
 
 
-// Init and setup some variables.
-$DBname = $database_name;
-$DBPrefix = '';
-$text = '';
-$status=0;
-$runinstall = $base.'/run_install';
-$sqlfile = $base.'/ona-tables.sql';
-$sqlfile_data = $base.'/ona-data.sql';
-$dbconffile = $base.'/../www/local/config/database_settings.inc.php';
+
 
 $dbconfig_contents = <<<EOL
 <?php
@@ -144,11 +158,8 @@ $dbconfig_contents = <<<EOL
 //         mysql, mysqlt, oracle, oci8, mssql, postgres, sybase, vfp, access, ibase and many others.
 \$db_context = array (
 
-    // Note:  I set the login up as ona-sys so that we could have
-    // a more "functional" user to do connections with that is not root or
-    // some sort of full admin.
-    //
-    // Type:
+
+    // Type: -- The type should be a transactional database to support proper data rollbacks.
     'mysqlt' => array(
         // Name:
         'default' => array(
@@ -181,57 +192,96 @@ EOL;
 
 
 
-// http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
-
 // If they have selected to keep the tables then remove the run_install file
-if ($install_submit == 'Y' && $keep == 'Y') {
-    unlink($runinstall);
-    print <<<EOL
-                <br>
-                <img src="{$images}/silk/accept.png" border="0" /> Keeping your original data.<br>
-                You can now <a href='{$baseURL}'>CLICK HERE</a> to start using OpenNetAdmin! Enjoy!
-            </div>
-        </div>
-    </body>
-</html>
-EOL;
-    exit;
+if ($install_submit == 'Y' && $upgrade == 'Y') {
+    // Connect to the database as the administrator user
+    $con = mysql_connect($db_context['mysqlt']['default']['primary']['db_host'],$db_context['mysqlt']['default']['primary']['db_login'],$db_context['mysqlt']['default']['primary']['db_passwd']);
+    if (!$con) {
+        $status++;
+        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to connect to '{$db_context['mysqlt']['default']['primary']['db_host']}' as '{$db_context['mysqlt']['default']['primary']['db_login']}'.<br>";
+    } else {
+        mysql_select_db($db_context['mysqlt']['default']['primary']['db_database'], $con);
+
+        $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Keeping your original data.<br>";
+
+        // Get the current upgrade index if there is one.
+        if (mysql_select_db($db_context['mysqlt']['default']['primary']['db_database'], $con)) {
+            $result = mysql_query("SELECT value FROM sys_config WHERE name like 'upgrade_index';",$con);
+            $upgrade_index = @mysql_result($result, 0);
+        }
+$upgrade_index =1;
+        if ($upgrade_index == '') {
+            $text .= "<img src=\"{$images}/silk/error.png\" border=\"0\" /> Auto upgrades not yet supported. Please see docs/UPGRADES<br>";
+        } else {
+            // loop until we have processed all the upgrades
+            while(1 > 0) {
+                // Find out what the next index will be
+                $new_index = $upgrade_index + 1;
+                // Determine file name
+                $upgrade_sqlfile = "{$base}/{$upgrade_index}-to-{$new_index}.sql";
+                // Check that the upgrade file exists
+                if (file_exists($upgrade_sqlfile)) {
+                    //populate_db($db_context['mysqlt']['default']['primary']['db_database'],$DBPrefix,$upgrade_sqlfile);
+                    $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Upgraded from index {$upgrade_index} to {$new_index}.<br>";
+                    // Update the upgrade_index element in the sys_config table
+                    if(mysql_query("UPDATE sys_config SET value='{$new_index}' WHERE name like 'upgrade_index';",$con)) {
+                        $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Updated database upgrade_index variable to '{$new_index}'.<br>";
+                    }
+                    else {
+                        $status++;
+                        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to update upgrade_index variable in table 'sys_config'.<br>";
+                    }
+                    $upgrade_index++;
+                } else {
+                    break;
+                }
+            }
+
+        }
+
+        // Update the version element in the sys_config table
+        if(mysql_query("UPDATE sys_config SET value='{$new_ver}' WHERE name like 'version';",$con)) {
+            $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Updated database version variable to '{$new_ver}'.<br>";
+        }
+        else {
+            $status++;
+            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to update version info in table 'sys_config'.<br>";
+        }
+
+        $text .= "You can now <a href='{$baseURL}'>CLICK HERE</a> to start using OpenNetAdmin! Enjoy!";
+
+        if (!@unlink($runinstall)) {
+            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to delete the file '{$runinstall}'.<br>";
+            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Please remove '{$runinstall}' manually.<br>";
+        }
+    }
+    // Close the database connection
+    @mysql_close($con);
 }
 
+
+
+
+
+
 // If the initialize button was clicked, lets go for it!
-if ($install_submit == 'Y') {
+if ($install_submit == 'Y' && !isset($upgrade)) {
     // Connect to the database as the administrator user
     $con = @mysql_connect($database_host,$admin_login,$admin_passwd);
     if (!$con) {
         $status++;
         $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to connect to '{$database_host}' as '{$admin_login}'.<br>";
-    }
-    else {
-        // If the selected database already exists. we should warn of that.
-        if (mysql_select_db($database_name, $con) && $overwrite != 'Y') {
-            $text .= "<img src=\"{$images}/silk/exlamation.png\" border=\"0\" /> The database '{$database_name}' seems to already exist, are you sure you want to over write it?.<br>";
-print <<<EOL
-                <br>
-                <img src="{$images}/silk/error.png" border="0" /> The database '{$database_name}' seems to already exist, are you sure you want to over write it? <img src="{$images}/silk/error.png" border="0" /> <br>
-                You will loose all data in the current database if you click Yes.  If you are ok with wiping out the data, click Yes.<br>
-                If you want to keep the data, click no to bypass the database creation steps.<br><br>
-                <input class='edit' type='button' name='over' value='Yes, Clear the data.' onclick="el('overwrite').value='Y';el('mainform').submit();" />&nbsp;&nbsp;&nbsp;
-                <input class='edit' type='button' name='keep' value='No, Keep the data.' onclick="el('keep').value='Y';el('mainform').submit();" />
-            </div>
-        </div>
-    </body>
-</html>
-EOL;
-            exit;
-        }
-
-
-
-        $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Connected to '{$database_host}' as '{$admin_login}'.<br>";
+    } else {
+        mysql_select_db($database_name, $con);
+        $text .= "<script>el('mainform').style.display = 'none';</script><img src=\"{$images}/silk/accept.png\" border=\"0\" /> Connected to '{$database_host}' as '{$admin_login}'.<br>";
         // Drop out any existing database and user
-        if (@mysql_query("DROP DATABASE {$database_name};",$con)) {
-            @mysql_query("DROP USER '{$sys_login}'@'%';",$con);
+        if (@mysql_query("DROP DATABASE IF EXISTS {$database_name};",$con)) {
+            @mysql_query("DROP USER IF EXISTS '{$sys_login}'@'%';",$con);
             $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Dropped existing instance of '{$database_name}'.<br>";
+        }
+        else {
+            $status++;
+            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to drop existing instance of '{$database_name}'.<br>";
         }
 
         // Create the database
@@ -269,7 +319,7 @@ EOL;
             }
 
             // Open the database config and write the contents to it.
-            if (!$fh = fopen($dbconffile, 'w')) {
+            if (!$fh = @fopen($dbconffile, 'w')) {
                 $status++;
                 $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to open config file for writing: '{$dbconffile}'.<br>";
             }
@@ -279,42 +329,146 @@ EOL;
                 $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created database config file.<br>";
             }
 
+            // Update the version element in the sys_config table
+            if(@mysql_query("UPDATE sys_config SET value='{$new_ver}' WHERE name like 'version';",$con)) {
+               // $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Updated local version info.<br>";
+            }
+            else {
+                $status++;
+                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to update version info in table 'sys_config'.<br>";
+            }
 
-            // maybe check for gmp module and recommend it
-
-        }
-        else {
+        } else {
             $status++;
             $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to create new database '{$database_name}'.<br>";
         }
 
         if ($status > 0) {
-            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was a fatal error. Install may be incomplete. Fix the issue and try again.<br>";
-        }
-        else {
+            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was a fatal error. Install may be incomplete. Fix the issue and <a href=\"{$baseURL}\">try again</a>.<br>";
+        } else {
             // remove the run_install file in the install dir
-            unlink($runinstall);
-            $text .= "You can now <a href='{$baseURL}'>CLICK HERE</a> to start using OpenNetAdmin!<br>You can log in as 'admin' with a password of 'admin'<br>Enjoy!";
+            if (!@unlink($runinstall)) {
+                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to delete the file '{$runinstall}'.<br>";
+                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Please remove '{$runinstall}' manually.<br>";
+            }
+            $text .= "You can now <a href='{$baseURL}'>CLICK HERE TO START</a> using OpenNetAdmin!<br>You can log in as 'admin' with a password of 'admin'<br>Enjoy!";
         }
     }
-
     // Close the database connection
     @mysql_close($con);
 }
 
-// Print a status to the user
+
+
+// Start printing the html
 print <<<EOL
-            <br>
-            <script type="text/javascript" language="javascript">el('help').innerHTML = input1text;</script>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+        <script type="text/javascript" src="{$baseURL}/include/js/global.js" language="javascript"></script>
+    </head>
+    <style type="text/css">
+
+        body {
+            margin: 0px;
+            font-family: Arial, Sans-Serif;
+            color: 000000;
+            background-color: FFFFFF;
+            vertical-align: top;
+        }
+
+        textarea.edit {
+            font-family: monospace;
+            border: 1px solid #8CACBB;
+            color: Black;
+            background-color: white;
+            padding: 3px;
+            width:100%;
+        }
+
+        input.edit,select.edit {
+            border: 1px solid #8CACBB;
+            color: Black;
+            background-color: white;
+            vertical-align: middle;
+            padding: 1px;
+            display: inline;
+        }
+        #checks {
+            font-size: small;
+            border: 1px solid;
+            margin-top: 15px;
+        }
+        #license {
+            width: 550px;
+            padding: 35px 0px;
+            text-align: left;
+        }
+        #greeting, #upgreeting {
+            width: 450px;
+            padding: 20px 0px;
+            text-align: left;
+        }
+        #help {
+            -moz-border-radius: 6;
+            padding: 5px;
+            border: 1px solid;
+            text-align: left;
+            width:500px;
+        }
+        #maintitle {
+            background-color: #D3DBFF;
+            font-size: xx-large;
+            width: 100%;
+            padding: 0px 60px;
+            -moz-border-radius-bottomleft: 10;
+            -moz-border-radius-bottomright: 10;
+        }
+        #status {
+            padding: 5px;
+            border: 1px solid;
+            text-align: left;
+            width:500px;
+        }
+
+    </style>
+    <body>
+        <div align="center" style="width:100%;">
+            <span id="maintitle">OpenNetAdmin Install</span><br>
 EOL;
 
-if ($install_submit == 'Y') {print "<div id='status' style='padding: 5px;border: 1px solid;text-align: left;width:500px;'>{$text}</div>"; }
+
+
+
+// print the GPL license and have them "ok" it to continue.
+if ($install_submit != 'Y' and $overwrite != 'Y') { echo $licensediv; }
+
+// Print a status to the user
+print <<<EOL
+            <div id="work" style="display: none;">
+                <div id="prereq">{$requisitediv}</div>
+                <div id="Greeting">{$greet_txt}</div>
+EOL;
+
+if ($install_submit == 'Y') { print "<script>el('work').style.display = '';</script>"; }
+
+if ($upgrademain != '') {
+    print $upgrademain;
+    print $main;
+    print $blankmain;
+} else {
+    print $main;
+}
+
+if ($install_submit == 'Y') {print "<div id='status'>{$text}</div><br>"; }
+
+if ($install_submit == 'Y') {print '<div id="help">Thanks for using ONA. Please visit <a href="http://opennetadmin.com>http://opennetadmin.com</a></div>';}
+if ($upgrademain == '') {print '<div id="help"></div>';}
 
 print <<<EOL
-            <br>
-            <div id="help" style="-moz-border-radius: 6;padding: 5px;border: 1px solid;text-align: left;width:500px;">Thanks for using ONA. Please visit <a href="http://opennetadmin.com>http://opennetadmin.com</a></div><br>
+                </div>
             </div>
-        </div>
     </body>
 </html>
 EOL;
