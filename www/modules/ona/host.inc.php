@@ -109,7 +109,6 @@ EOM
     //
     list($status, $rows, $host) = ona_find_host($options['host']);
 
-    // FIXME: MP: there is an issue here.. it fails to say an existing DNS entry was found.  It gets invalide host name first.
 
     // Validate that the DNS name has only valid characters in it
     $host['name'] = sanitize_hostname($host['name']);
@@ -125,15 +124,9 @@ EOM
     $h_status = $h_rows = 0;
     // does the domain $host_domain_id even exist?
     list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $host['name'], 'domain_id' => $host['domain_id']));
-    if (!$d_status && $d_rows) {
-        list($h_status, $h_rows, $h_record) =  ona_get_host_record(array('primary_dns_id' => $d_record[0]));
-    }
-
-    error_log($d_status.",".$d_rows.",".print_r($d_record,true));
-    error_log($h_status.",".$h_rows.",".print_r($h_record,true));
-    if ($h_status or $h_rows) {
-        printmsg("DEBUG => Another DNS record named {$host['name']}.{$host['domain_fqdn']} already exists!",3);
-        $self['error'] = "ERROR => Another DNS record named {$host['name']}.{$host['domain_fqdn']} already exists!";
+    if ($d_status or $d_rows) {
+        printmsg("DEBUG => The name {$host['name']}.{$host['domain_fqdn']} is already in use, the primary name for a host should be unique!",3);
+        $self['error'] = "ERROR => Another DNS record named {$host['name']}.{$host['domain_fqdn']} is already in use, the primary name for a host should be unique!";
         return(array(5, $self['error'] . "\n"));
     }
 
@@ -348,10 +341,7 @@ Modify a host record
     interface=[ID|IP|MAC]     select host by IP or MAC
 
   Update:
-    set_host=NAME[.DOMAIN]    change hostname and/or domain
     set_type=TYPE or ID       change device/model type or ID
-    set_unit=NAME or ID       change location/unit ID
-    set_security_level=LEVEL  change numeric security level ({$conf['ona_lvl']})
     set_notes=NOTES           change the textual notes
 \n
 EOM
@@ -396,6 +386,10 @@ EOM
 
     // This variable will contain the updated info we'll insert into the DB
     $SET = array();
+
+
+/* MP: removed for now.. you should change the dns record entry or select a new primary dns record
+// the gui does not show this option anyway, the command line probably should not allow it either
     $SET_DNS = array();
 
     // Set options['set_host']?
@@ -420,7 +414,7 @@ EOM
         if($host['domain_id'] != $tmp_host['domain_id'])
             $SET_DNS['domain_id'] = $tmp_host['domain_id'];
     }
-
+*/
 
     // Set options['set_type']?
     if ($options['set_type']) {
@@ -437,33 +431,6 @@ EOM
         if ($device['device_type_id'] != $device_type['id'])
             $SET_DEV_TYPE['device_type_id'] = $device_type['id'];
     }
-
-
-/*PK    // Set options['set_unit']?
-    if ($options['set_unit']) {
-        // Find the Unit ID to use
-        list($status, $rows, $unit) = ona_find_unit($options['set_unit']);
-        if ($status or $rows != 1 or !$unit['UNIT_ID']) {
-            printmsg("DEBUG => The unit specified, {$options['set_unit']}, does not exist!",3);
-            $self['error'] = "ERROR => The unit specified, {$options['set_unit']}, does not exist!";
-            return(array(7, $self['error'] . "\n"));
-        }
-        printmsg("DEBUG => Unit selected: {$unit['UNIT_NAME']} Unit number: {$unit['UNIT_NUMBER']}", 3);
-        $SET['UNIT_ID'] = $unit['UNIT_ID'];
-    }*/
-
-/* PK
-    // Set options['set_security_level']
-    if ($options['set_security_level']) {
-        // Sanitize "security_level" option
-        $options['set_security_level'] = sanitize_security_level($options['set_security_level']);
-        if ($options['set_security_level'] == -1) {
-            printmsg("DEBUG => Sanitize security level failed either ({$options['set_security_level']}) is invalid or is higher than user's level!", 3);
-            return(array(3, $self['error'] . "\n"));
-        }
-        $SET['LVL'] = $options['set_security_level'];
-    }
-*/
 
     // Set options['set_notes'] (it can be a null string!)
     if (array_key_exists('set_notes', $options)) {
@@ -494,6 +461,8 @@ EOM
             return(array(8, $self['error'] . "\n"));
         }
     }
+/* MP: removed for now.. you should change the dns record entry or select a new primary dns record
+// the gui does not show this option anyway, the command line probably should not allow it either
     // Update DNS table if necessary
     if(count($SET_DNS) > 0) {
         list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $host['primary_dns_id']), $SET_DNS);
@@ -503,6 +472,7 @@ EOM
             return(array(8, $self['error'] . "\n"));
         }
     }
+*/
     // Update device table if necessary
     if(count($SET_DEV_TYPE) > 0) {
         list($status, $rows) = db_update_record($onadb, 'devices', array('id' => $host['device_id']), $SET_DEV_TYPE);
@@ -724,6 +694,7 @@ EOM
 
 
         // FIXME: MP this needs some work.. deleting DNS records is much more complicated than this.!
+// I think this works due to each interface being deleted using interface_del module
         // Delete DNS record
 //         list($status, $rows, $records) = db_get_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
 //         // do the delete
@@ -1028,34 +999,12 @@ EOM
             $text .= format_array($device);
         }
 
-// FIXME: MP like aliases below, show list of dns records associated
-
-        // Unit record
-/*        list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $host['UNIT_ID']));
-        if ($rows >= 1) {
-            $text .= "\nASSOCIATED UNIT RECORD\n";
-            $text .= format_array($unit);
-        }
-
-        // Alias record(s)
-        $i = 0;
-        do {
-            list($status, $rows, $alias) = ona_get_alias_record(array('host_id' => $host['id']));
-            if ($rows == 0) { break; }
-            $i++;
-            $text .= "\nASSOCIATED ALIAS RECORD ({$i} of {$rows})\n";
-            $text .= format_array($alias);
-        } while ($i < $rows);*/
     }
 
     // Return the success notice
     return(array(0, $text));
 
 }
-
-
-
-
 
 
 

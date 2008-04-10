@@ -97,10 +97,6 @@ EOM
     if ($options['ttl'])     { $ttl     = $options['ttl'];}     else { $ttl     = $conf['dns_default_ttl']; }
 
 
-    // Set the parent to default if it is not passed
-//MP: this isnt right.. this would force a parent every time.
-//   if (!array_key_exists('parent',$options))
-//        $options['parent'] = $conf['dns_parent'];
 
     // get parent domain info
     if ($options['parent']) {
@@ -112,6 +108,8 @@ EOM
         }
         // Set up the parent part of the search if there was one
         $parentsearch = '.'.$parent_domain['fqdn'];
+    } else {
+        $parent_domain['id'] = 0;
     }
 
 

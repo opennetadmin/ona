@@ -92,6 +92,10 @@ ptr records:
 
 FIXME: do some validation of the different options, pointsto only with cname type etc etc
 
+FIXME: what about when you add an entry with a name that matches a primary dns record that already exists.  while adding
+multiple A records that have the same name is ok, its not really a good thing to have the primary name for a host be duplicated.  the
+primary name for a host should be unique in all cases I'm aware of
+
 */
 
     // Switch the type setting to uppercase

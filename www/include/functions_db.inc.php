@@ -1118,7 +1118,6 @@ function ona_get_domain_record($array='', $order='') {
 
 // Returns an additional "fqdn" field for some dns records
 function ona_get_dns_record($array='', $order='') {
-printmsg("DEBUG => ona_get_dns_record({$fqdn}) Found: {$domain['fqdn']}", 3);
     list($status, $rows, $record) = ona_get_record($array, 'dns', $order);
     if ($record['type'] == 'A') {
         $record['fqdn'] = $record['name'].'.'.ona_build_domain_name($record['domain_id']);
