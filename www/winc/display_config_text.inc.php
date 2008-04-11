@@ -4,7 +4,7 @@
 // Yes, it's more of Brandon's black magic ;)
 $window['js'] = <<<EOL
     removeElement('{$window_name}');
-    xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'host_id=>{$_REQUEST['host_id']}\', \'display_list\')');
+    xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'host_id=>{$_REQUEST['host_id']}\', \'display\')');
 EOL;
 
 
@@ -17,14 +17,29 @@ EOL;
 //   Displays a list of config text records in the work_space div.
 //   A host_id and config_type_id must be supplied.
 //////////////////////////////////////////////////////////////////////////////
-function ws_display_list($window_name, $form='') {
+function ws_display($window_name, $form='') {
     global $conf, $self, $onadb, $baseURL;
     global $images, $color, $style;
     $html = '';
     $js = '';
+    $debug_val = 3;  // used in the auth() calls to supress logging
+
+    // Dont display this if they dont have access
+    if (!auth('host_config_admin',$debug_val)) {
+        array_pop($_SESSION['ona']['work_space']['history']);
+        $html .= "<br><center><font color=\"red\"><b>You don't have access to this page</b></font></center>";
+        $response = new xajaxResponse();
+        $response->addAssign("work_space_content", "innerHTML", $html);
+        return($response->getXML());
+    }
 
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
+
+    if ($form['type_id']) {
+        list($status, $rows, $rec) = ona_get_config_type_record(array('id' => $form['type_id']));
+        $default_type = $rec['name'];
+    }
 
     // Load the host record
     list($status, $rows, $host) = ona_find_host($form['host_id']);
@@ -36,7 +51,11 @@ function ws_display_list($window_name, $form='') {
         return($response->getXML());
     }
 
-    // Update History Title
+    // Get configurations info
+    list($status, $rows, $configs) = db_get_records($onadb,'configurations',array('host_id' => $host['id']),'ctime DESC');
+
+
+    // Update History Title (and tell the browser to re-draw the history div)
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
     if ($history['title'] == $window_name) {
@@ -48,57 +67,40 @@ function ws_display_list($window_name, $form='') {
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
 
-    // Check permissions
-//    if (! (auth('host_config_admin') and authlvl($host['lvl'])) ) {
- //       $response = new xajaxResponse();
-//        $response->addScript("alert('Permission denied!');");
-//        return($response->getXML());
-//    }
+    $style['content_box'] = <<<EOL
+        margin: 10px 20px;
+        padding: 2px 4px;
+        background-color: #FFFFFF;
+        vertical-align: top;
+EOL;
 
-    // Load the config type
-    list($status, $rows, $type) = ona_get_config_type_record(array('id' => $form['type_id']));
-    if ($status or !$rows) {
-        $response = new xajaxResponse();
-        $response->addScript("alert('ERROR => Config type was empty!');");
-        return($response->getXML());
-    }
-
-    // Display the host's archived configs
-
-    // Generate a SQL query to list configs to display
-    $q = "SELECT configurations.id,
-                 configuration_types.name,
-                 configurations.md5_checksum,
-                 configurations.ctime
-            FROM configurations, configuration_types
-           WHERE configurations.configuration_type_id = configuration_types.id
-             AND configurations.host_id = " . $onadb->qstr($host['id']) . "
-             AND configurations.configuration_type_id = " . $onadb->qstr($type['id']) . "
-        ORDER BY configuration_types.name DESC,
-                 configurations.ctime DESC";
-
-//                 to_char(configurations.ctime, 'MM/DD/YYYY HH:MI AM') as ctime,
-
-
-    // Execute the SQL
-    $rs = $onadb->Execute($q);
-
-    // Die if it didn't work
-    if ($rs === false) {
-        $response->addScript("alert('ERROR => SQL failed: {$self['error']}');");
-        return($response->getXML());
-    }
+    $style['label_box'] = <<<EOL
+        font-weight: bold;
+        padding: 2px 4px;
+        border: solid 1px {$color['border']};
+        background-color: {$color['window_content_bg']};
+EOL;
 
     // Escape data for display in html
-    foreach(array_keys($host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
 
-    // List the available configs in a pseudo table
     $html .= <<<EOL
-        <div style="margin: 10px 20px;">
-            <table width="100%" cellspacing="0" border="0" cellpadding="2" align="left">
+    <!-- FORMATTING TABLE -->
+    <div style="{$style['content_box']}">
+    <table cellspacing="0" border="0" cellpadding="0"><tr>
 
-            <tr>
-                <td colspan="7" class="list-header" style="padding: 2px 4px; {$style['borderT']}; {$style['borderL']}; {$style['borderR']}; background-color: #FFFFFF;">
+        <!-- START OF FIRST COLUMN OF SMALL BOXES -->
+        <td nowrap="true" valign="top" style="padding-right: 15px;">
+EOL;
+
+
+    // Config archive INFORMATION
+    $html .= <<<EOL
+            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
+
+                <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">
+                    <!-- LABEL -->
+
                     <b>Configuration archives for:</b>
                     <a title="View host. ID: {$host['id']}"
                        class="nav"
@@ -108,87 +110,102 @@ function ws_display_list($window_name, $form='') {
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$host['domain_id']}\', \'display\')');"
                     >{$host['domain_fqdn']}</a>
-                </td>
-            </tr>
-
-            <tr>
-                <td class="list-header" style="padding-right: 4px; width: 20px; {$style['borderL']}; ">Old </td>
-                <td class="list-header" style="padding-right: 4px; width: 20px;">New </td>
-                <td class="list-header" style="padding-right: 8px;">Date </td>
-                <td class="list-header" style="padding-right: 8px;">Type </td>
-                <td class="list-header" style="padding-right: 8px;">MD5 </td>
-                <td class="list-header" style="padding-right: 8px;">Size (chars) </td>
-                <td class="list-header" style="padding-right: 8px; text-align: right; {$style['borderR']}; ">Action</td>
-            </tr>
 EOL;
-    $id = 0;
-    while (!$rs->EOF) {
-        $id++; // Counter used in javascript
-        // Color different types of configs differently
-        // FIXME (MP) there will be more config types.. do some sort of dynamic coloring based on anything in the type table
-        $color = "#FFFFFF";
-        if ($rs->fields['name'] == "IOS_CONFIG")
-            $color = "#DEE7EC";
-        else if ($rs->fields['name'] == "IOS_VERSION")
-            $color = "#ECDDDD";
-
-        // Escape data for display in html
-        foreach(array_keys($rs->fields) as $key) { $rs->fields[$key] = htmlentities($rs->fields[$key], ENT_QUOTES); }
-
-        // Get the length of the configuration
-        // FIXME (MP) figure out why objects are not returning for these properly.. fix this formatting.
-        $confsize = strlen($rs->fields['config_body']);
-        $timeformat = date('m/d/Y h:i A',$rs->fields['ctime']);
 
         $html .= <<<EOL
-            <tr>
-                <td bgcolor="{$color}" class="borderBL" style="{$style['borderL']}; padding-right: 4px; width: 20px;"
-                  ><input id="old{$id}" name="old" type="radio" value="{$rs->fields['id']}"
-                    onClick="
-                        var tmp = 1; var obj = el('new' + tmp);
-                        while (obj) {
-                            obj.style.visibility = (tmp <= {$id}) ? 'visible' : 'hidden';
-                            if (tmp > {$id}) obj.checked = false;
-                            obj = el('new' + tmp++);
-                        }"
-                ></td>
-                <td bgcolor="{$color}" class="borderB"  style="padding-right: 4px; width: 20px;"><input id="new{$id}" style="visibility: hidden;" name="new" type="radio" value="{$rs->fields['id']}"></td>
-                <td bgcolor="{$color}" class="borderB"  style="padding-right: 6px;">{$rs->fields['ctime']}</td>
-                <td bgcolor="{$color}" class="borderB"  style="padding-right: 6px;">{$rs->fields['name']}</td>
-                <td bgcolor="{$color}" class="borderB"  style="padding-right: 6px;">{$rs->fields['md5_checksum']}</td>
-                <td bgcolor="{$color}" class="borderB"  style="padding-right: 6px;">??</td>
-                <td bgcolor="{$color}" class="borderBR" style="{$style['borderR']};text-align: right; padding-right: 4px;">
-                    <a title="View config: {$rs->fields['id']}"
-                       class="nav"
-                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'config_id=>{$rs->fields['id']}\', \'display_config\')');"
-                    ><img src="{$images}/silk/zoom.png" alt="View config" border="0"></a>&nbsp;
+                </td></tr>
 
-                    <a title="Download config" class="act" target="null" href="{$baseURL}/apps/config_diff.php?text_id={$rs->fields['id']}&download=1"
-                    ><img src="{$images}/silk/disk.png" alt="Download config" border="0"></a>&nbsp;
-
-                    <form id="{$window_name}_list_{$rs->fields['id']}"
-                        ><input type="hidden" name="config_id" value="{$rs->fields['id']}"
-                        ><input type="hidden" name="js" value="{$refresh}"
-                    ></form>
-
-                    <a title="Delete config"
-                       class="nav"
-                       onClick="var doit=confirm('Are you sure you want to delete this config record?');
-                                if (doit == true)
-                                    xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_list_{$rs->fields['id']}'), 'delete_config');"
-                    ><img src="{$images}/silk/delete.png" alt="Delete config" border="0"></a>&nbsp;
-                </td>
-            </tr>
+            </table>
 EOL;
-        $rs->MoveNext();
-    }
-    $html .= <<<EOL
+    // END CONFIG INFORMATION
 
+
+    $html .= <<<EOL
+        <!-- END OF FIRST COLUMN OF SMALL BOXES -->
+        </td>
+
+    </tr></table>
+    </div>
+    <!-- END OF TOP SECTION -->
+EOL;
+
+
+
+
+
+
+
+
+
+
+
+    // Config archive LIST
+    $tab = 'configs';
+    $submit_window = "list_{$tab}";
+    $form_id = "{$submit_window}_filter_form";
+    $_SESSION['ona'][$form_id]['tab'] = $tab;
+    $content_id = "{$window_name}_{$submit_window}";
+    $html .= <<<EOL
+    <!-- Archive LIST -->
+    <div style="border: 1px solid {$color['border']}; margin: 10px 20px;">
+
+        <!-- Tab & Quick Filter -->
+        <table id="{$form_id}_table" cellspacing="0" border="0" cellpadding="0">
             <tr>
-            <td colspan="3" class="list-header" style="{$style['borderL']};">
+                <td id="{$form_id}_{$tab}_tab" class="table-tab-active">
+                    Associated {$tab} <span id="{$form_id}_{$tab}_count"></span>
+                </td>
+
+                <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
+                    <form id="{$form_id}" onSubmit="return false;">
+                    <input id="{$form_id}_page" name="page" value="1" type="hidden">
+                    <input name="content_id" value="{$content_id}" type="hidden">
+                    <input name="form_id" value="{$form_id}" type="hidden">
+                    <input name="host_id" value="{$host['id']}" type="hidden">
+                    <div id="{$form_id}_filter_overlay"
+                         title="Filter"
+                         style="position: relative;
+                                display: inline;
+                                color: #CACACA;
+                                cursor: text;"
+                         onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
+                    ></div>
+                    <input
+                        id="{$form_id}_filter"
+                        name="filter"
+                        class="filter"
+                        type="text"
+                        value="{$default_type}"
+                        size="15"
+                        maxlength="20"
+                        alt="Quick Filter"
+                        onFocus="el('{$form_id}_filter_overlay').style.display = 'none';"
+                        onBlur="if (this.value == '') el('{$form_id}_filter_overlay').style.display = 'inline';"
+                        onKeyUp="
+                            if (typeof(timer) != 'undefined') clearTimeout(timer);
+                            code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
+                                   '    {$form_id}_last_search = el(\'{$form_id}_filter\').value;' +
+                                   '    document.getElementById(\'{$form_id}_page\').value = 1;' +
+                                   '    xajax_window_submit(\'{$submit_window}\', xajax.getFormValues(\'{$form_id}\'), \'display\');' +
+                                   '}';
+                            timer = setTimeout(code, 700);"
+                    >
+                    </form>
+                </td>
+
+            </tr>
+        </table>
+
+        <div id='{$content_id}'>
+            {$conf['loading_icon']}
+        </div>
+
+        <!-- Tool LINKS -->
+        <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}">
+
             <input type="button"
                 name="compare"
-                value="Compare"
+                value="Compare selected configs"
                 class="button"
                 onClick="
                   var tmp = 1; var OLD = el('old' + tmp);
@@ -204,133 +221,29 @@ EOL;
                     if ((!OLD) || (!NEW))
                       alert('ERROR => You must select and old and new config to compare them!');
                     else
-                      xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'old_id=>' + OLD.value + ',new_id=>' + NEW.value + '\', \'display_diff\')');
+                      xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'host_id=>{$form['host_id']}, old_id=>' + OLD.value + ',new_id=>' + NEW.value + '\', \'display\')');
             ">
-            </td>
-            <td colspan="4" align="right" class="list-header" style="{$style['borderR']};">
-                <form id="{$window_name}_list_{$host['id']}"
-                    ><input type="hidden" name="type_id" value="{$type['id']}"
-                    ><input type="hidden" name="host_id" value="{$host['id']}"
-                    ><input type="hidden" name="js" value="{$refresh}"
-                ></form>
-
-                <input type="button"
-                    name="delete"
-                    title="Delete all configs from host ID: {$host['id']}"
-                    value="Delete All"
-                    class="button"
-                    onClick="var doit=confirm('Are you sure you want to delete ALL of these config records?');
-                                if (doit == true)
-                                    xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_list_{$host['id']}'), 'delete_configs');">
-            </td>
-            </tr>
-
-            </table>
         </div>
+
+    </div>
+
+EOL;
+    $js .= <<<EOL
+        /* Setup the quick filter */
+        el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
+        {$form_id}_last_search = '';
+
+        /* Tell the browser to load/display the list */
+        xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display');
 EOL;
 
+    // If they have selected to display the config, show it
+    if ($form['displayconf']) {
+        list($status, $rows, $config) = ona_get_config_record(array('id' => $form['displayconf']));
+        $html .= <<<EOL
+        <div style="margin: 10px 20px; float: left; width: 96%; background-color: {$color['bar_bg']}; border: 1px solid;">
 
-    // Insert the new html into the window
-    // Instantiate the xajaxResponse object
-    $response = new xajaxResponse();
-    $response->addAssign("work_space_content", "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// Function: ws_display_config()
-//
-// Description:
-//   Displays a config text record in the work_space div.
-//////////////////////////////////////////////////////////////////////////////
-function ws_display_config($window_name, $form='') {
-    global $conf, $self, $onadb, $baseURL;
-    global $images, $color, $style;
-    $html = '';
-    $js = '';
-
-    // If the user supplied an array in a string, build the array and store it in $form
-    $form = parse_options_string($form);
-
-    // Load the config text record
-    list($status, $rows, $config) = ona_get_config_record(array('id' => $form['config_id']));
-    if (!$config['id']) {
-        array_pop($_SESSION['ona']['work_space']['history']);
-        $html .= "<br><center><font color=\"red\"><b>Configuration text record doesn't exist!</b></font></center>";
-        $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
-    }
-
-    // Load the asscoiated host record
-    list($status, $rows, $host) = ona_find_host($config['host_id']);
-    if (!$host['id']) {
-        array_pop($_SESSION['ona']['work_space']['history']);
-        $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
-        $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
-    }
-
-    // Update History Title
-    $history = array_pop($_SESSION['ona']['work_space']['history']);
-    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
-    if ($history['title'] == $window_name) {
-        $history['title'] = "Config text ({$host['name']})";
-       array_push($_SESSION['ona']['work_space']['history'], $history);
-    }
-
-    // Create some javascript to refresh the current page
-    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
-    $refresh = "xajax_window_submit('work_space', '{$refresh}');";
-
-    // Check permissions
-//    if (! (auth('host_config_admin') and authlvl($host['LVL'])) ) {
-//        $response = new xajaxResponse();
-//        $response->addScript("alert('Permission denied!');");
-//        return($response->getXML());
-//    }
-
-    // Display the config text
-
-    // Escape data for display in html
-    foreach(array_keys($host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
-    foreach(array_keys($config) as $key) { $config[$key] = htmlentities($config[$key], ENT_QUOTES); }
-
-
-    // Build html to display the config
-    $html .= <<<EOL
-        <div style="margin: 10px 20px; float: left; width: 90%; background-color: {$color['bar_bg']}; border: 1px solid">
-            <table cellspacing="0" border="0" cellpadding="2" align="left">
-                <tr>
-                    <td style="font-weight: bold;">Host:</td>
-                    <td>
-                        <a title="View host. ID: {$host['id']}"
-                           class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')');"
-                        >{$host['name']}</a
-                        >.<a title="View domain. ID: {$host['domain_id']}"
-                             class="domain"
-                             onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$host['domain_id']}\', \'display\')');"
-                        >{$host['domain_fqdn']}</a>
-                    </td>
-                </tr>
+            <table cellspacing="0" border="0" cellpadding="2" align="left" style="font-size:small;">
                 <tr>
                     <td style="font-weight: bold;">Insert date:</td>
                     <td>{$config['ctime']}</td>
@@ -343,40 +256,13 @@ function ws_display_config($window_name, $form='') {
                     <td style="font-weight: bold;">MD5:</td>
                     <td>{$config['md5_checksum']}</td>
                 </tr>
-                <tr>
-                    <td style="font-weight: bold;">Actions:</td>
-                    <td>
-                        <a title="Download config" class="act" target="null" href="{$baseURL}/apps/config_diff.php?text_id={$config['id']}&download=1"
-                        ><img src="{$images}/silk/disk.png" alt="Download config" border="0"></a>&nbsp;
-
-                        <form id="{$window_name}_display_{$config['id']}"
-                            ><input type="hidden" name="config_id" value="{$config['id']}"
-                            ><input type="hidden" name="js" value="{$refresh}"
-                        ></form>
-
-                        <a title="Delete config"
-                           class="nav"
-                           onClick="var doit=confirm('Are you sure you want to delete this config record?');
-                                    if (doit == true)
-                                        xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_display_{$config['id']}'), 'delete_config');"
-                        ><img src="{$images}/silk/delete.png" alt="Delete config" border="0"></a>&nbsp;
-                    </td>
-                </tr>
             </table>
         </div>
-        <div style="margin: 10px 20px; float: left; width: 90%;">
-            <pre>{$config['config_body']}</pre>
+        <div style="margin: 0px 20px; float: left;">
+            <pre style='font-family: monospace; font-size: large;'>{$config['config_body']}</pre>
         </div>
 EOL;
-
-
-    // Insert the new html into the window
-    // Instantiate the xajaxResponse object
-    $response = new xajaxResponse();
-    $response->addAssign("work_space_content", "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
-}
+    }
 
 
 
@@ -384,98 +270,47 @@ EOL;
 
 
 
-
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// Function: ws_display_diff()
-//
-// Description:
-//   Displays a config text record in the work_space div.
-//////////////////////////////////////////////////////////////////////////////
-function ws_display_diff($window_name, $form='') {
-    global $conf, $self, $onadb;
-    global $images, $color, $style, $baseURL;
-    $html = '';
-    $js = '';
-
-    // If the user supplied an array in a string, build the array and store it in $form
-    $form = parse_options_string($form);
-
+    // If they have selected to display the diff mode
+    if ($form['old_id'] && $form['new_id']) {
     // Load the old config text record
     list($status, $rows, $old) = ona_get_config_record(array('id' => $form['old_id']));
     if (!$old['id']) {
-        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Configuration text record doesn't exist!</b></font></center>";
-        $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
     }
 
     // Load the new config text record
     list($status, $rows, $new) = ona_get_config_record(array('id' => $form['new_id']));
     if (!$new['id']) {
-        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Configuration text record doesn't exist!</b></font></center>";
-        $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
     }
 
     // Load the asscoiated old host record
     list($status, $rows, $old_host) = ona_find_host($old['host_id']);
     if (!$old_host['id']) {
-        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
-        $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
     }
 
     // Load the asscoiated new host record
     list($status, $rows, $new_host) = ona_find_host($new['host_id']);
     if (!$new_host['id']) {
-        array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
-        $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
     }
 
     // Update History Title
     $history = array_pop($_SESSION['ona']['work_space']['history']);
-    $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
-    if ($history['title'] == $window_name) {
-        $history['title'] = "Config diff ({$form['old_id']} / {$form['new_id']})";
-        array_push($_SESSION['ona']['work_space']['history'], $history);
-    }
+    $history['title'] = "Config diff ({$form['old_id']} / {$form['new_id']})";
+    array_push($_SESSION['ona']['work_space']['history'], $history);
 
-    // Create some javascript to refresh the current page
-    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
-    $refresh = "xajax_window_submit('work_space', '{$refresh}');";
-
-    // Check permissions
-//    if (! (auth('host_config_admin') and authlvl($old_host['LVL']) and authlvl($new_host['LVL'])) ) {
-//        $response = new xajaxResponse();
-//        $response->addScript("alert('Permission denied!');");
-//        return($response->getXML());
-//    }
 
     // Display the config text diff
-
     $html .= <<<EOL
         <div style="margin: 10px 20px;">
 
             <!-- Diff Headers -->
-            <table width="100%" cellspacing="0" border="0" cellpadding="2" align="left">
+            <table width="100%" cellspacing="0" border="0" cellpadding="2" align="left" style="font-size:small;">
             <tr>
             <td align="left" style="background-color: {$color['bar_bg']};">
-                <table cellspacing="0" border="0" cellpadding="2" align="left">
+                <table cellspacing="0" border="0" cellpadding="2" align="left" style="font-size:small;">
                     <tr>
                         <td style="font-weight: bold;">Host:</td>
                         <td>
@@ -506,17 +341,17 @@ function ws_display_diff($window_name, $form='') {
                         <td>
                             <a title="View config"
                                class="nav"
-                               onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'config_id=>{$old['id']}\', \'display_config\')');"
+                               onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'host_id=>{$old_host['id']},displayconf=>{$old['id']}\', \'display\')');"
                             ><img src="{$images}/silk/zoom.png" alt="View config" border="0"></a>&nbsp;
 
-                            <a title="Download config" class="act" target="null" href="{$baseURL}/apps/config_diff.php?text_id={$old['id']}&download=1"
+                            <a title="Download config" class="act" target="null" href="{$baseURL}/config_dnld.php?config_id={$old['id']}&download=1"
                             ><img src="{$images}/silk/disk.png" alt="Download config" border="0"></a>&nbsp;
                         </td>
                     </tr>
                 </table>
             </td>
             <td align="left" style="background-color: {$color['bar_bg']};">
-                <table cellspacing="0" border="0" cellpadding="2" align="left">
+                <table cellspacing="0" border="0" cellpadding="2" align="left" style="font-size:small;">
                     <tr>
                         <td style="font-weight: bold;">Host:</td>
                         <td>
@@ -547,10 +382,10 @@ function ws_display_diff($window_name, $form='') {
                         <td>
                             <a title="View config"
                                class="nav"
-                               onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'config_id=>{$new['id']}\', \'display_config\')');"
+                               onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'host_id=>{$new_host['id']},displayconf=>{$new['id']}\', \'display\')');"
                             ><img src="{$images}/silk/zoom.png" alt="View config" border="0"></a>&nbsp;
 
-                            <a title="Download config" class="act" target="null" href="{$baseURL}/apps/config_diff.php?text_id={$new['id']}&download=1"
+                            <a title="Download config" class="act" target="null" href="{$baseURL}/config_dnld.php?config_id={$new['id']}&download=1"
                             ><img src="{$images}/silk/disk.png" alt="Download config" border="0"></a>&nbsp;
                         </td>
                     </tr>
@@ -562,7 +397,7 @@ function ws_display_diff($window_name, $form='') {
 EOL;
 
     // Display the diff
-    $html .= html_diff($old['config_body'], $new['config_body'], "Older text", "Newer text", 0);
+    $html .= html_diff($old['config_body'], $new['config_body'], "Config A", "Config B", 0);
 
     $html .= <<<EOL
             </td>
@@ -570,6 +405,10 @@ EOL;
             </table>
         </div>
 EOL;
+
+}
+
+
 
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
@@ -582,14 +421,7 @@ EOL;
 
 
 
-
-
-
-
-
-
-
-
+//MP: TODO this delete stuff should be in configuration.inc.php module!!!!!!
 
 
 //////////////////////////////////////////////////////////////////////////////

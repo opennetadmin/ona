@@ -353,6 +353,8 @@ EOM
         return(array(3, $self['error']));
     }
     
+    $options['config'] = preg_replace('/\\\"/','"',$options['config']);
+    $options['config'] = preg_replace('/\\\=/','=',$options['config']);
     // Get the next ID for the new config_text record
     $id = ona_get_next_id('configurations');
     if (!$id) {
@@ -361,26 +363,25 @@ EOM
     printmsg("DEBUG => ID for new config_record: $id", 3);
     
     // Add the config_text
-    // I guess we don't add anything to the APPROVED_DT field..?
-    $q = 'INSERT INTO configurations (
-              ID, 
-              CONFIGURATION_TYPE_ID,
-              HOST_ID,
-              MD5_CHECKSUM,
-              CONFIG_BODY
-          )
-          VALUES (' . 
-              $onadb->qstr($id) . ', ' .
-              $onadb->qstr($config_type['id']) . ', ' .
-              $onadb->qstr($host['id']) . ', ' .
-              $onadb->qstr(md5($options['config'])) . ', ' .
-              $onadb->qstr($options['config']) .
-          ')';
-    $ok = $onadb->Execute($q);
-    $error = $onadb->ErrorMsg();
+    list($status, $rows) = db_insert_record(
+        $onadb,
+        'configurations',
+        array(
+            'id'                      => $id,
+            'configuration_type_id'   => $config_type['id'],
+            'host_id'                 => $host['id'],
+            'md5_checksum'            => md5($options['config']),
+            'config_body'             => $options['config']
+        )
+    );
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => message_add() SQL Query failed: " . $self['error'];
+        printmsg($self['error'], 0);
+        return(array(6, $self['error'] . "\n"));
+    }
     
     list($status, $rows, $record) = ona_get_config_record(array('id'    => $id));
-    if ($ok === false or $status or $rows != 1) {
+    if ($status or !$rows) {
         $self['error'] = 'ERROR => SQL INSERT failed.  Database error: ' . $error . "\n";
         return(array(5, $self['error']));
     }

@@ -362,9 +362,8 @@ EOL;
     // END DHCP SERVER LIST
 
 
-    // FIXME: MP could do a test to see if there are "servers" for dhcp but no gateway.  force a popup to add the gateway.?????
     $extravars['refresh']=$refresh;
-    $html .= workspace_plugin_loader('dhcp_entries',$record,$extravars);
+
 
     // DHCP POOL INFO
     $haspool = 0;
@@ -484,6 +483,8 @@ EOL;
 
     // END DHCP POOL INFO
 
+    $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
     // START MESSAGES BOX
     // $tablename is a reference directly to the table that contains the item

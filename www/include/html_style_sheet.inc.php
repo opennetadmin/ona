@@ -405,7 +405,9 @@ table.diff { background:white; }
 td.diff-blockheader {font-weight:bold}
 td.diff-header {
     border-bottom: 1px solid #8CACBB;
-    font-size:120%;
+    font-size: small;
+    font-weight: bold;
+    text-align: center;
 }
 td.diff-addedline {
     background:#ddffdd;

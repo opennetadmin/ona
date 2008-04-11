@@ -121,8 +121,10 @@ EOL;
 
 EOL;
 
-    $html .= workspace_plugin_loader('host_detail',$record,$extravars);
-    $html .= workspace_plugin_loader('host_services',$record);
+    $wspl = workspace_plugin_loader('host_detail',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
+    $wspl = workspace_plugin_loader('host_services',$record);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
 /* FIXME: MP this needs to be changed to custom attributes
     // INFOBIT LIST (CLASSIFICATIONS)
@@ -222,13 +224,15 @@ EOL;
     $js .= $locationjs;
     // END LOCATION INFO BOX
 
-    $html .= workspace_plugin_loader('dhcp_entries',$record,$extravars);
+    $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
     // Check if there are configs.. if so. load the config archive plugin
     // FIXME: MP: have the module check if it should be displayed or not and hide the workspace_plugin div
     list($status, $total_configs, $tmp) = db_get_records($onadb, 'configurations', array('host_id' => $record['id']), '', 0);
     if($total_configs>0) {
-        $html .= workspace_plugin_loader('config_archives',$record);
+        $wspl = workspace_plugin_loader('config_archives',$record);
+        $html .= $wspl[0]; $js .= $wspl[1];
     }
 
 
@@ -244,7 +248,8 @@ EOL;
 
 
     // Display the host_action workspace_plugin
-    $html .= workspace_plugin_loader('host_actions',$record);
+    $wspl = workspace_plugin_loader('host_actions',$record);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
     // START MESSAGES BOX
     // $tablename is a reference directly to the table that contains the item

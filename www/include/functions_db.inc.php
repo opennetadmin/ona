@@ -2444,15 +2444,21 @@ function ona_find_config($options=array()) {
         }
 
         // Now find the ID of the config type they entered
-        $config_type_id = ona_get_config_type_record(array('id' => $options['type']));
-        if ($config_type_id == 0) {
+        list($status, $rows, $config_type) = ona_get_config_type_record(array('name' => $options['type']));
+        if (!$config_type['id']) {
             $self['error'] = "ERROR => The config type specified, {$options['type']}, is invalid!";
             return(array(4, 0, array()));
         }
 
         // Select the first config record of the specified type and host
         list($status, $rows, $config) = ona_get_config_record(array('host_id' => $host['id'],
-                                                                     'configuration_type_id' => $config_type_id));
+                                                                     'configuration_type_id' => $config_type['id']));
+
+        if ($status) {
+            $self['error'] = "ERROR => The config type specified, {$options['type']}, is invalid!";
+            return(array(5, 0, array()));
+        }
+
     }
 
     // Return the config record we got

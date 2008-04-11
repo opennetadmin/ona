@@ -167,7 +167,7 @@ EOL;
             <!-- {$modulename} end -->
 EOL;
 
-    return($modhtml);
+    return(array($modhtml,$modjs));
 }
 
 
