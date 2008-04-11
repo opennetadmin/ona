@@ -84,7 +84,7 @@ EOL;
                     ></form>
 EOL;
 
-    if (auth('advanced',$debug_val)) {
+    if (auth('vlan_del',$debug_val)) {
         $html .= <<<EOL
                     <a title="Edit Vlan. ID: {$record['id']}"
                        class="act"

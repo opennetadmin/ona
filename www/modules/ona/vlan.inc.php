@@ -108,7 +108,7 @@ EOM
 
 
     // Check permissions
-    if (!auth('advanced')) {
+    if (!auth('vlan_add')) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(10, $self['error'] . "\n"));
@@ -244,7 +244,7 @@ EOM
     if ($options['commit'] == 'Y') {
 
         // Check permissions
-        if (!auth('advanced')) {
+        if (!auth('vlan_del')) {
             $self['error'] = "Permission denied!";
             printmsg($self['error'], 0);
             return(array(10, $self['error'] . "\n"));
@@ -441,7 +441,7 @@ EOM
     }
 
     // Check permissions
-    if (!auth('advanced')) {
+    if (!auth('vlan_modify')) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(10, $self['error'] . "\n"));

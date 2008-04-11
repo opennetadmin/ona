@@ -49,9 +49,9 @@ EOL;
         if (!$status and $rows) { $overwrite = 'yes'; }
     }
 
-    // Build role list
+    // Build model list
     // TODO: this needs to be made more efficent
-    list($status, $rows, $model) = db_get_records($onadb, 'models','id >= 1', 'name');
+    list($status, $rows, $model) = db_get_records($onadb, 'manufacturers b, models a','a.manufacturer_id = b.id and a.id >= 1', 'b.name, a.name');
     $model['name'] = htmlentities($model['name']);
     foreach ($model as $entry) {
         $selected = "";

@@ -175,7 +175,25 @@ UNLOCK TABLES;
 
 LOCK TABLES `permissions` WRITE;
 /*!40000 ALTER TABLE `permissions` DISABLE KEYS */;
-INSERT INTO `permissions` VALUES (1,'dns_record_add','Add a DNS record'),(2,'dns_record_modify','Modify a DNS record'),(3,'dns_record_del','Delete a DNS record'),(4,'host_add','Add hosts and interfaces'),(5,'host_modify','Modify hosts (& host classifications)'),(6,'host_del','Delete hosts'),(7,'user_admin','User Administrator'),(8,'subnet_add','Add subnets'),(9,'subnet_modify','Modify subnets'),(10,'subnet_del','Delete subnets'),(11,'interface_modify','Modify interface records'),(12,'interface_del','Delete interface records'),(13,'advanced','Advanced Maintenance'),(14,'host_config_admin','Host config archive admin'),(15,'template_admin','Template system admin');
+INSERT INTO `permissions` VALUES
+(1,'dns_record_add','Add a DNS record'),
+(2,'dns_record_modify','Modify a DNS record'),
+(3,'dns_record_del','Delete a DNS record'),
+(4,'host_add','Add hosts and interfaces'),
+(5,'host_modify','Modify hosts (& host classifications)'),
+(6,'host_del','Delete hosts'),
+(7,'user_admin','User Administrator'),
+(8,'subnet_add','Add subnets'),
+(9,'subnet_modify','Modify subnets'),
+(10,'subnet_del','Delete subnets'),
+(11,'interface_modify','Modify interface records'),
+(12,'interface_del','Delete interface records'),
+(13,'advanced','Advanced Maintenance'),
+(14,'host_config_admin','Host config archive admin'),
+(15,'template_admin','Template system admin'),
+(16,'vlan_add','Add VLANs and VLAN Campuses'),
+(17,'vlan_del','Delete VLANs and VLAN Campuses'),
+(18,'vlan_modify','Modify VLANs and VLAN Campuses');
 /*!40000 ALTER TABLE `permissions` ENABLE KEYS */;
 UNLOCK TABLES;
 

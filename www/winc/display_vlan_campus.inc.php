@@ -83,7 +83,7 @@ EOL;
                     ></form>
 EOL;
 
-    if (auth('advanced',$debug_val)) {
+    if (auth('vlan_del',$debug_val)) {
         $html .= <<<EOL
 
                     <a title="Edit Vlan Campus. ID: {$record['id']}"
@@ -215,11 +215,11 @@ EOL;
         </div>
 EOL;
 
-    if (auth('advanced',$debug_val)) {
+    if (auth('vlan_add',$debug_val)) {
         $html .= <<<EOL
 
         <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}">
-            <form id="form_vlan_campus_{$record['ID']}"
+            <form id="form_vlan_campus_{$record['id']}"
                 ><input type="hidden" name="vlan_campus_name" value="{$record['name']}"
                 ><input type="hidden" name="vlan_campus_id" value="{$record['id']}"
                 ><input type="hidden" name="js" value="{$refresh}"

@@ -16,7 +16,7 @@ function ws_editor($window_name, $form='') {
     $window = array();
 
     // Check permissions
-    if (!auth('advanced')) {
+    if (!auth('vlan_add')) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
