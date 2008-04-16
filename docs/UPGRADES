@@ -6,3 +6,9 @@ If you are currently on v08.02.18 and you are upgrading to version v08.04.15 the
 mysql -u <adminuser> -p ona < install/v08.02.18-to-v08.04.15.sql
 
 Updates after version v08.04.15 should automatically process.
+
+Also, each time you install a new tar archive, you will most likly need to change
+permissions on the /opt/ona/www/local/config directory to whatever your webserver user is.
+
+This can be done with the following command, as an example:
+chown www-data /opt/ona/www/local/config

@@ -1,5 +1,5 @@
 INSERT INTO `sys_config` (`name`, `value`, `description`) VALUES
-('version', '', 'Tracks current installed version, used to detect when upgrades should be done.'),
+('version', 'v08.04.15', 'Tracks current installed version, used to detect when upgrades should be done.'),
 ('upgrade_index', '1', 'Tracks current upgrade index, used to process database upgrades in order.');
 
 INSERT INTO `permissions` (`id`, `name`, `description`) VALUES 
