@@ -1,3 +1,6 @@
+-- Use this file to upgrade from older versions
+-- It has not been fully tested and will probably break!
+
 --
 -- Table structure for table `sys_config`
 --

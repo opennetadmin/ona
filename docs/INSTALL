@@ -1,5 +1,8 @@
 Here are some basic notes on installation of the system.
 
+The files in www/local will not be touched and are meant to house local
+configuration and modules/plugins.
+
 REQUIREMENTS:
   An apache server
   A mysql server
@@ -9,7 +12,7 @@ REQUIREMENTS:
 INSTALL:
 
 1. Download the latest file from http://opennetadmin.com/downloads
-2. tar -C /opt -zpxvf opennetadmin-1.0.tar.gz
+2. tar -C /opt -zxvf ona-v00.00.00.tar.gz
    This should extract the tar file into /opt/ona
 
 3. Add a symlink in your web server root that points "ona -> /opt/ona/www"
@@ -32,13 +35,9 @@ INSTALL:
 6. Point your broswer to http://<servername>/ona
 
 
-You may want to make sure that the following file permissions are set before pointing your browser at ona:
-  chmod 777 /opt/ona/install
-  chmod 666 /opt/ona/www/local/config/database_settings.inc.php
-
 MISC:
 
-# These steps are not required but might be useful... They are future ideas and not recomended at this point
+# These steps are not required but are things I might do in the future... They are not recomended at this point
 
 adduser ona
 addgroup ona

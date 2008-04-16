@@ -12,6 +12,12 @@ INSTALL:
 1. Follow the steps in docs/INSTALL.
 2. If you have trouble, refer to the CONTACT section below for sources of information.
 
+NOTICE:
+Upgrades from versions prior to v08.02.18 will break as I had not yet completed the
+design of an upgrade system.
+
+Starting with version v08.02.18 you should be able to upgrade to newer versions.
+
 
 CONTACT:
 http://opennetadmin.com/				-- Main website
