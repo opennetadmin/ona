@@ -72,7 +72,7 @@ if (@file_exists($dbconffile)) {
             $result = mysql_query("SELECT value FROM sys_config WHERE name like 'version';",$con);
             $curr_ver = @mysql_result($result, 0);
 
-            if ($curr_ver == ' ') { $curr_ver = 'PRE-v08.02.18'; }
+            if ($curr_ver == '') { $curr_ver = 'PRE-v08.02.18'; }
 
             // Update the greet text with new info
             $greet_txt = "It looks as though you already have version '{$curr_ver}' of OpenNetAdmin installed.  You should make a backup of the data before proceeding with the upgrade.<br><br>We will be upgrading to the version '{$new_ver}'.";
@@ -209,7 +209,7 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
             $result = mysql_query("SELECT value FROM sys_config WHERE name like 'upgrade_index';",$con);
             $upgrade_index = @mysql_result($result, 0);
         }
-$upgrade_index =1;
+
         if ($upgrade_index == '') {
             $text .= "<img src=\"{$images}/silk/error.png\" border=\"0\" /> Auto upgrades not yet supported. Please see docs/UPGRADES<br>";
         } else {

@@ -1,3 +1,8 @@
 Upgrades prior to version 08.02.18 must be manually done by loading the file install/PRE-v08.02.18-to-08.02.18.sql into the database. 
+This upgrade step has not been tested and likly has errors.
 
-Updates after this version should automatically process.
+If you are currently on v08.02.18 and you are upgrading to version v08.04.15 then you must load the following sql file:
+
+mysql -u <adminuser> -p ona < install/v08.02.18-to-v08.04.15.sql
+
+Updates after version v08.04.15 should automatically process.
