@@ -450,7 +450,7 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
     // Validate domain is valid
-    list($status, $rows, $domain) = ona_get_domain_record(array('name' => $form['set_domain']));
+    list($status, $rows, $domain) = ona_find_domain($form['set_domain']);
     if ($status or !$rows) {
         $response->addScript("alert('Invalid domain!');");
         return($response->getXML());
