@@ -70,6 +70,7 @@ function ws_display($window_name, $form='') {
     list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
     $record['devicefull'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
     $record['device'] = str_replace('Unknown', '?', $record['devicefull']);
+    $record['location_id'] = $device['location_id']; 
 
     // Device serial number and/or asset tag
     $record['serial_number'] = $device['serial_number'];
@@ -123,6 +124,10 @@ EOL;
 
     $wspl = workspace_plugin_loader('host_detail',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];
+
+    $wspl = workspace_plugin_loader('location_detail',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
+
     $wspl = workspace_plugin_loader('host_services',$record);
     $html .= $wspl[0]; $js .= $wspl[1];
 
@@ -217,12 +222,6 @@ EOL;
         <td valign="top" style="padding-right: 15px;">
 EOL;
 
-    // LOCATION INFO BOX
-    require_once('winc/tooltips.inc.php');
-    list ($locationhtml, $locationjs) = get_location_html($record['location_id']);
-    $html .= $locationhtml;
-    $js .= $locationjs;
-    // END LOCATION INFO BOX
 
     $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];

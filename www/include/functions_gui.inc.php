@@ -239,42 +239,6 @@ EOL
 
 
 
-
-// Lookup hostnames and check their host_id is in server_b
-function get_server_suggestions($q, $max_results=10) {
-    global $onadb, $self, $conf;
-    $results = array();
-
-    // wildcard the query before searching
-    $q = $q . '%';
-
-    $table = 'hosts';
-    $field = 'name'; // FIXME: (PK) name is no longer in hosts table ... its in dns table.
-    $where  = "{$field} LIKE " . $onadb->qstr($q) . " AND id IN (SELECT host_id FROM SERVER_B)";
-    $order  = "{$field} ASC";
-
-    // Search the db for results
-    list ($status, $rows, $records) = db_get_records(
-                                        $onadb,
-                                        $table,
-                                        $where,
-                                        $order,
-                                        $max_results
-                                      );
-
-    // If the query didn't work return the error message
-    if ($status) { $results[] = "Internal Error: {$self['error']}"; }
-
-    foreach ($records as $record) {
-        list($status, $rows, $domain) = db_get_record($onadb, 'dns', array('id' => $record['domain_id']));
-        $results[] = $record[$field].".".$domain['fqdn'];
-    }
-
-    // Return the records
-    return($results);
-}
-
-
 function get_host_suggestions($q, $max_results=10) {
     global $self, $conf, $onadb;
     $results = array();

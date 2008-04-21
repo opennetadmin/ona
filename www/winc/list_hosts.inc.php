@@ -69,6 +69,12 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
+    // DEVICE ID
+    if ($form['device_id']) {
+        $where .= $and . "device_id = " . $onadb->qstr($form['device_id']);
+        $and = " AND ";
+    }
+
 
     // HOSTNAME
     if ($form['hostname']) {
@@ -474,7 +480,7 @@ EOL;
         $record['notes_short'] = truncate($record['notes'], 40);
 
         // Get location_number from the location_id
-        list($status, $rows, $location) = ona_get_location_record(array('id' => $record['location_id']));
+        list($status, $rows, $location) = ona_get_location_record(array('id' => $device['location_id']));
 
         // Escape data for display in html
         foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
@@ -526,11 +532,11 @@ EOL;
 
                 <td class="list-row" align="right">
                     <span onMouseOver="wwTT(this, event,
-                                            'id', 'tt_location_{$record['location_id']}',
+                                            'id', 'tt_location_{$device['location_id']}',
                                             'type', 'velcro',
                                             'styleClass', 'wwTT_niceTitle',
                                             'direction', 'south',
-                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>location,id=>tt_location_{$record['location_id']},location_id=>{$record['location_id']}\');'
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>location,id=>tt_location_{$device['location_id']},location_id=>{$device['location_id']}\');'
                                            );"
                     >{$location['reference']}</span>&nbsp;
                 </td>

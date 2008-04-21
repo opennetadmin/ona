@@ -439,5 +439,7 @@ span.diffchange { color: red; }
 
 .hidden  { visibility:hidden; display:none; }
 
+.display_notes { border: none; }
+
 EOL;
 ?>

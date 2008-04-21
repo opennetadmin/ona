@@ -36,9 +36,10 @@ function ws_tooltips_submit($window_name, $form='') {
            break;
 
         case 'location':
-           $tip_style = 'style="color: #FFFFFF;"';
-           list ($html, $js) = get_location_html($form['location_id']);
-           $tip_style = '';
+            $record['location_id'] = $form['location_id'];
+            $extravars['tipstyle'] = 'style="color: #FFFFFF;background-color: #4c4c4c;border: none;"';
+            $wspl = workspace_plugin_loader('location_detail',$record,$extravars);
+            $html .= $wspl[0]; $js .= $wspl[1];
            break;
 
         case 'subnet':
@@ -535,115 +536,6 @@ function ws_logingo($window_name, $form='') {
 
 
 
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// Function: get_location_html($location_id)
-//
-// Description:
-//     Builds HTML for displaying info about a location
-//     Returns a two part array ($html, $js)
-//////////////////////////////////////////////////////////////////////////////
-function get_location_html($location_id) {
-    global $conf, $self, $onadb, $tip_style;
-    global $font_family, $color, $style, $images;
-
-    $html = $js = '';
-
-    // Location Record
-    list($status, $rows, $location) = ona_get_location_record(array('id' => $location_id));
-    if ($rows == 0 or $status) return(array('', ''));
-
-    foreach(array_keys((array)$location) as $key) { $location[$key] = htmlentities($location[$key], ENT_QUOTES); }
-
-    $style['content_box'] = <<<EOL
-        margin: 10px 20px;
-        padding: 2px 4px;
-        background-color: #FFFFFF;
-        vertical-align: top;
-EOL;
-
-    $style['label_box'] = <<<EOL
-        font-weight: bold;
-        padding: 2px 4px;
-        border: solid 1px {$color['border']};
-        background-color: {$color['window_content_bg']};
-EOL;
-
-    $html .= <<<EOL
-
-        <!-- LOCATION INFORMATION -->
-        <table cellspacing="0" border="0" cellpadding="0">
-
-            <!-- LABEL -->
-            <tr><td width="100%" colspan="2" nowrap="true" style="{$style['label_box']}">
-                <a title="View map"
-                    class="act"
-                    onClick="window.open(
-                               'http://maps.google.com/maps?q={$location['address']},{$location['city']},{$location['state']},{$location['zip_code']}',
-                               'MapIT',
-                               'toolbar=0,location=1,menubar=0,scrollbars=0,status=0,resizable=1,width=985,height=700')"
-                ><img src="{$images}/silk/world_link.png" border="0"></a>&nbsp;
-                <b>Location ref. {$location['reference']}
-            </td></tr>
-
-            <tr>
-                <td align="right" valign="top" nowrap="true" {$tip_style}><b>Location ref.</b>&nbsp;</td>
-                <td class="padding" align="left" {$tip_style}>{$location['reference']}&nbsp;</td>
-            </tr>
-
-EOL;
-    if ($location['name']) {
-        $html .= <<<EOL
-            <tr>
-                <td align="right" valign="top" nowrap="true" {$tip_style}><b>Name</b>&nbsp;</td>
-                <td class="padding" align="left" {$tip_style}>{$location['name']}&nbsp;</td>
-            </tr>
-EOL;
-    }
-    $address = '';
-    if ($location['address']) {
-        $address .= "{$location['address']}&nbsp;<br>\n";
-    }
-    if ($location['city']) {
-        $address .= $location['city'];
-    }
-    if ($location['state']) {
-        if ($location['state']) {
-            $address .= ", ";
-        }
-        $address .= "{$location['state']}";
-    }
-    $address .= ' ' . $location['zip_code'];
-    if ($address) {
-        $html .= <<<EOL
-            <tr>
-                <td align="right" valign="top" nowrap="true" {$tip_style}><b>Address</b>&nbsp;</td>
-                <td class="padding" valign="top" align="left" {$tip_style}>
-                    {$address}&nbsp;
-                </td>
-            </tr>
-EOL;
-    }
-
-    $html .= <<<EOL
-        </table>
-EOL;
-
-    return(array($html, $js));
-}
-
-
-
-
-
-
-
-
-
-
 //////////////////////////////////////////////////////////////////////////////
 // Function: get_subnet_html($subnet_ip)
 //
@@ -909,16 +801,6 @@ EOL;
             thru
             <input id="ip_subnet_thru_qf" name="ip_subnet_thru" class="edit" type="text" size="15">
             <div id="suggest_ip_subnet_thru_qf" class="suggest"></div>
-        </td>
-    </tr>
-
-    <tr>
-        <td align="right" class="qf-search-line">
-            <u>U</u>nit number
-        </td>
-        <td align="left" class="qf-search-line">
-            <input id="location_number_qf" class="edit" type="text" name="location" size="8" accesskey="u" />
-            <div id="suggest_location_number_qf" class="suggest"></div>
         </td>
     </tr>
 
@@ -1416,7 +1298,7 @@ EOL;
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Function: get_host_interface_list_html($location_id)
+// Function: get_host_interface_list_html($form)
 //
 // Description:
 //     Builds HTML for displaying info about multiple host interfaces
@@ -1513,7 +1395,7 @@ EOL;
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Function: get_interface_cluster_list_html($location_id)
+// Function: get_interface_cluster_list_html($form)
 //
 // Description:
 //     Builds HTML for displaying info about interface cluster hosts
