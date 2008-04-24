@@ -264,7 +264,8 @@ function dragStop(event) {
         document.detachEvent("onmouseup",   dragStop);
     }
     if (browser.isNS || browser.isKONQ) {
-        if (dragObj.elNode.id != 'display_subnet_substrate' && dragObj.elNode.id != 'display_block_map_substrate') {
+        // MP: FIXME: this is not a good fix as it is a hard coding of block maps.  find a better way!
+        if (dragObj.elNode.id != 'display_subnet_substrate' && dragObj.elNode.id != 'display_block_map_substrate' && dragObj.elNode.id != 'display_block_substrate') {
             dragObj.elNode.style.position = "fixed";
         }
         document.removeEventListener("mousemove", dragGo,   true);
