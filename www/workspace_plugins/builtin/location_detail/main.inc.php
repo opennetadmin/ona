@@ -88,6 +88,8 @@ $modbodyhtml .= <<<EOL
             </table>
 EOL;
 
+} else {
+    // MP: FIXME: find a better way to just delete the div element outright.
+    $modjs = "el('location_detail_container').innerHTML='';";
 }
-
 ?>

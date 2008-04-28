@@ -33,8 +33,11 @@ if ($rows) {
             <tr onMouseOver="this.className='row-highlight';"
                 onMouseOut="this.className='row-normal';">
 
+                <td align="left" nowrap="true" title="DHCP Option number: {$dhcp_type['number']}">
+                    {$dhcp_type['display_name']}&nbsp;&nbsp;
+                </td>
                 <td align="left" nowrap="true">
-                    {$dhcp_type['display_name']}&nbsp;&#061;&#062;&nbsp;{$dhcp_type['value']}&nbsp;
+                    {$dhcp_type['value']}&nbsp;
                 </td>
                 <td align="right">
                     <form id="form_dhcp_entry_{$entry['id']}"
@@ -48,14 +51,14 @@ EOL;
                     <a title="Edit DHCP Entry. ID: {$dhcp_type['id']}"
                         class="act"
                         onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_{$entry['id']}'), 'editor');"
-                    ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
+                    ><img src="{$images}/silk/page_edit.png" border="0"></a>
 
                     <a title="Delete DHCP Entry. ID: {$dhcp_type['id']}"
                         class="act"
                         onClick="var doit=confirm('Are you sure you want to delete this DHCP entry?');
                                 if (doit == true)
                                     xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_{$entry['id']}'), 'delete');"
-                    ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
+                    ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
         }
         $modbodyhtml .= <<<EOL
@@ -87,7 +90,7 @@ EOL;
 if (auth('advanced',$debug_val)) {
     $modbodyhtml .= <<<EOL
             <tr>
-                <td colspan="2" align="left" valign="middle" nowrap="true" class="act-box">
+                <td colspan="5" align="left" valign="middle" nowrap="true" class="act-box">
 
                     <form id="form_dhcp_entry_add_{$record['id']}"
                         ><input type="hidden" name="{$kind}_id" value="{$record['id']}"
