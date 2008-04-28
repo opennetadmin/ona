@@ -185,12 +185,11 @@ require_once($conf['inc_db_sessions']);
 // Include the GUI functions
 require_once($conf['inc_functions_gui']);
 
-// Start the session handler (this calls a function defined in functions_general)
-startSession();
-
 // Include the AUTH functions
 require_once($conf['inc_functions_auth']);
 
+// Start the session handler (this calls a function defined in functions_general)
+startSession();
 
 // Set session inactivity threshold
 ini_set("session.gc_maxlifetime", $conf['cookie_life']);
