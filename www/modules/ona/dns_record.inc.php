@@ -132,8 +132,8 @@ primary name for a host should be unique in all cases I'm aware of
         // find the IP interface record,
         list($status, $rows, $interface) = ona_find_interface($options['ip']);
         if (!$rows) {
-            printmsg("ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}",3);
-            $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}\n";
+            printmsg("ERROR => dns_record_add() Unable to find existing IP interface: {$options['ip']}",3);
+            $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}\\nA records must point to existing IP addresses.\\nPlease add an interface with this IP address first.";
             return(array(4, $self['error']));
         }
 
@@ -182,7 +182,7 @@ primary name for a host should be unique in all cases I'm aware of
         list($status, $rows, $interface) = ona_find_interface($options['ip']);
         if (!$rows) {
             printmsg("ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}",3);
-            $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}\n";
+            $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}\\nPTR records must point to existing IP addresses.\\nPlease add an interface with this IP address first.";
             return(array(4, $self['error']));
         }
 
@@ -395,7 +395,7 @@ complex DNS messes for themselves.
             list($status, $rows, $interface) = ona_find_interface($options['ip']);
             if (!$rows) {
                 printmsg("ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}",3);
-                $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}\n";
+                $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}\\nTXT records must point to existing IP addresses.\\nPlease add an interface with this IP address first.";
                 return(array(4, $self['error']));
             }
 

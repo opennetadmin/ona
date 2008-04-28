@@ -309,7 +309,8 @@ function config_add($options="") {
     // Version - UPDATE on every edit!
     $version = '1.00';
     
-    printmsg('DEBUG => config_add('.$options.') called', 3);
+    // This debug is set very high as it can contain large configs and sensitive data, you gotta mean it!
+    printmsg('DEBUG => config_add('.$options.') called', 7);
     
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -399,7 +400,103 @@ EOM
 
 
 
+/*
+ Function: config_diff (string $options='')
+ 
+ Input Options:
+   $options = key=value pairs of options for this function.
+              multiple sets of key=value pairs should be separated
+              by an "&" symbol.
+ 
+ Output:
+   Returns a two part list:
+     1. The exit status of the function (0 on success, non-zero on error)
+     2. A textual message displaying information on the selected unit
+        record from the database.
+ 
+ Example: list($status, $text) = config_diff('config=12345');
+ 
+ Exit codes:
+   0  :: No error
+   1  :: Help text printed - Insufficient or invalid input received
+   2  :: No config text entries found!
+*/
+function config_diff($options="") {
+    
+    // The important globals
+    global $conf;
+    global $self;
+    global $onadb;
+    
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+    
+    printmsg('DEBUG => config_diff('.$options.') called', 3);
+    
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+    
+    // Return the usage summary if we need to
+    if ($options['help'] or ( !$options['host'] or !$options['type'] ) ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        return(array(1, 
+<<<EOM
 
+config_diff-v{$version}
+Displays the difference between selected archive entries
+  
+  Synopsis: config_display [KEY=VALUE] ...
+  
+  Required:
+    host=ID or NAME[.DOMAIN]    display most recent config for specified host
+    type=TYPE                   type of config to display -
+                                  usually "IOS_VERSION" or "IOS_CONFIG"
+  Optional:
+    ida=ID                      First config ID to compare against idb
+    idb=ID                      Second config ID to compare against ida
+
+  Note:
+    If you don't pass any IDs you will get the two most recent configs
+    related to the host/type you provide.
+
+\n
+EOM
+
+        ));
+    }
+    
+    
+    // Get a config record if there is one
+    $self['error'] = "";
+    list($status, $rows, $config) = ona_find_config($options);
+    list($status, $rows, $configs) = db_get_records($onadb,'configurations',
+                                               array('host_id' => $config['host_id'],'configuration_type_id' => $config['configuration_type_id']),
+                                               'ctime DESC',
+                                               '2',
+                                               ''
+                                           );
+    
+    // Error if an error was returned
+    if ($status or !$config['id']) {
+        $text = "";
+        if ($self['error']) { $text = $self['error'] . "\n"; }
+        $text .= "ERROR => No config text entries found!\n";
+        return(array(2, $text));
+    }
+
+    // Compare the last two configurations based on the host and type specified
+    // requires the xdiff pecl module to be installed
+    if (!extension_loaded("xdiff")) { return(array(1, "ERROR => This command requires the xdiff pecl module, which is not installed, please see http://pecl.php.net/package/xdiff\nVerify 'xdiff' is listed in the output of the command 'php -m'\n")); }
+    $text .= xdiff_string_diff($configs[1]['config_body']."\n", $configs[0]['config_body']."\n");
+    
+    // Compare arbitrary configs based on config IDs
+    // MP: FIXME: put code here for that sometime
+
+
+    // Return the success notice
+    return(array(0, $text));
+    
+}
 
 
 
