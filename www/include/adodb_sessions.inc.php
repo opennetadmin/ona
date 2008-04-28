@@ -86,7 +86,7 @@ function sess_read($key) {
 
 function sess_write($key, $value) {
     global $SESS_DBH, $SESS_LIFE;
-    printmsg("sess_write($key, $value) called", 6);
+    //printmsg("sess_write($key, $value) called", 6);
 
     $expiry = time() + $SESS_LIFE;
 

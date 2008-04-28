@@ -1154,7 +1154,7 @@ function startSession() {
 
         // Pretend to log them in
         if (preg_match('/unix_username=([^&]+?)(&|$)/', $_REQUEST['options'], $matches)) {
-            $_SESSION['auth']['user']['username'] = $matches[1];
+            $_SESSION['ona']['auth']['user']['username'] = $matches[1];
         }
 
         return(1);
@@ -1400,6 +1400,11 @@ function run_module($module='', $options='', $transaction=1) {
         }
     }
 
+    // Remove config info as it can be huge and could have sensitive info in it.
+    // This could cause issues since I"m doing & as an anchor at the end.  see how it goes.
+    // The module that is called could also display this information depending on debug level
+    $options_string = preg_replace("/config=.*&/", '', $options_string);
+
     printmsg("INFO => Running module: {$module} options: {$options_string}", 0);
 
     // Load the module
@@ -1407,7 +1412,7 @@ function run_module($module='', $options='', $transaction=1) {
 
     // Start an DB transaction (If the database supports it)
     if ($transaction) $has_trans = $onadb->BeginTrans();
-    if (!$has_trans) printmsg("NOTICE => Transactions support not available on this database!", 1);
+    if (!$has_trans) printmsg("WARNING => Transactions support not available on this database, this can cause problems!", 1);
 
     // If begintrans worked and we support transactions, do the smarter "starttrans" function
     if ($has_trans) {
