@@ -339,8 +339,6 @@ div.wwTT_qf .contents {
 div.wwTT_int_menu
 {
     background-color: #F2F2F2;
-    color: #FFFFFF;
-    font-weight: bold;
     font-size: 13px;
     font-family: "Trebuchet MS", sans-serif;
     left: 0;
@@ -365,6 +363,24 @@ div.wwTT_int_menu .contents
     -khtml-opacity: 1;
     opacity: 1;
 }
+div.wwTT_int_menu .row {
+    font-size: 10px;
+    font-family: Verdana, Helvetica;
+    vertical-align: center;
+    padding: 2px;
+    color: #4A4A4A;
+    background-color: #F1F1FF;
+    border-bottom: 1px solid #E3E3F0;
+}
+div.wwTT_int_menu .hovered {
+    font-size: 10px;
+    font-family: Verdana, Helvetica;
+    vertical-align: center;
+    padding: 2px;
+    color: #ECECEC;
+    background-color: #7392DC;
+    border-bottom: 1px solid #E3E3F0;
+}
 div.wwTT_int_menu p
 {
     color: #D17E62;
@@ -374,23 +390,7 @@ div.wwTT_int_menu p
     text-align: left;
     -moz-opacity: 1;
 }
-div.wwTT_int_menu a
-{
-    color: black;
-    font-size: 10px;
-    text-decoration: none;
-    text-align: left;
-}
-div.wwTT_int_menu a:hover
-{
-    color: black;
-    background-color: #CBCEFD;
-    font-size: 10px;
-    text-decoration: none;
-    padding: 3px 0 0 0;
-    margin: 0;
-    text-align: left;
-}
+
 
 .table-tab-active {
     font-size: 10pt;

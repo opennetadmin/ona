@@ -87,7 +87,6 @@ function ws_display_list($window_name, $form='') {
     }
     $count = $rows;
 
-    //$js .= "alert('Where: " . str_replace("'", '"', $where) . "');";
 
     $html .= <<<EOL
         <!-- Interface List -->
@@ -179,7 +178,6 @@ EOL;
 EOL;
 
             // MP: Disabling the display_interface link. I dont think this will be needed
-            //if (auth('interface_del')) {
             if (1<0) {
                 $html .= <<<EOL
                     <a title="View interface. ID: {$record['id']}"

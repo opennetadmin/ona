@@ -1745,15 +1745,17 @@ function quick_interface_menu($form) {
     global $font_family, $color, $style, $images;
     $html = $js = '';
 
-    $html .= "<div style=\"text-align: center;color: black;padding-bottom:4px;\">Interface Actions<br/> [{$form['ip_addr']}]</div>";
+    $html .= "<div style=\"text-align: center;color: black;padding-bottom:4px;font-weight: bold;\">Interface Actions<br/> [{$form['ip_addr']}]</div>";
 
 
-    if (auth('interface_modify')) {
+    if (auth('interface_modify') and !$form['natip']) {
         $html .= <<<EOL
-
-                <a title="Add an external NAT IP"
-                    class="act"
-                    onClick="wwTT(this, event,
+            <div class="row"
+                onMouseOver="this.className='hovered';"
+                onMouseOut="this.className='row';"
+                title="Add an external NAT IP"
+                class="act"
+                onClick="wwTT(this, event,
                                         'id', 'tt_quick_interface_nat_{$form['interface_id']}',
                                         'type', 'static',
                                         'delay', 0,
@@ -1761,29 +1763,33 @@ function quick_interface_menu($form) {
                                         'direction', 'southwest',
                                         'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_nat,id=>tt_quick_interface_nat_{$form['interface_id']},interface_id=>{$form['interface_id']},ip_addr=>{$form['ip_addr']}\');'
                                         );"
-                ><img src="{$images}/silk/world_link.png" border="0">&nbsp; Add NAT IP</a><br/>
+                ><img src="{$images}/silk/world_link.png" border="0">&nbsp; Add NAT IP</div>
 EOL;
     }
 
-    if (auth('interface_modify')) {
+    if (auth('interface_modify') and $form['natip']) {
         $html .= <<<EOL
-
-                <a title="Delete an external NAT IP"
-                    class="act"
-                    onClick="var doit=confirm('Are you sure you want to delete this NAT address?\\nIt will remove any DNS names associated with the external IP.');
+            <div class="row"
+                onMouseOver="this.className='hovered';"
+                onMouseOut="this.className='row';"
+                title="Delete the external NAT IP"
+                class="act"
+                onClick="var doit=confirm('Are you sure you want to delete this NAT address?\\nIt will remove any DNS names associated with the external IP.');
                             if (doit == true)
                                 xajax_window_submit('tooltips', 'ip=>{$form['interface_id']},natip=>{$form['natip']},nataction=>delete,commit=>yes', 'interface_nat_save');"
-                ><img src="{$images}/silk/world_delete.png" border="0">&nbsp; Delete NAT IP</a><br/>
+                ><img src="{$images}/silk/world_delete.png" border="0">&nbsp; Delete NAT IP</div>
 EOL;
     }
 
 
     if (auth('interface_modify')) {
         $html .= <<<EOL
-
-                <a title="Move IP to another host"
-                    class="act"
-                    onClick="wwTT(this, event,
+            <div class="row"
+                onMouseOver="this.className='hovered';"
+                onMouseOut="this.className='row';"
+                title="Move IP to another host"
+                class="act"
+                onClick="wwTT(this, event,
                                         'id', 'tt_quick_interface_move_{$form['interface_id']}',
                                         'type', 'static',
                                         'delay', 0,
@@ -1791,16 +1797,18 @@ EOL;
                                         'direction', 'southwest',
                                         'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_move,id=>tt_quick_interface_move_{$form['interface_id']},interface_id=>{$form['interface_id']},ip_addr=>{$form['ip_addr']},orig_host=>{$form['orig_host']}\');'
                                         );"
-                ><img src="{$images}/silk/lorry_flatbed.png" border="0">&nbsp; Move IP</a><br/>
+                ><img src="{$images}/silk/lorry_flatbed.png" border="0">&nbsp; Move IP</div>
 EOL;
     }
 
     if (auth('interface_modify')) {
         $html .= <<<EOL
-
-                <a title="Share IP with another host (hsrp,carp,vrrp)"
-                    class="act"
-                    onClick="wwTT(this, event,
+            <div class="row"
+                onMouseOver="this.className='hovered';"
+                onMouseOut="this.className='row';"
+                title="Share IP with another host (hsrp,carp,vrrp)"
+                class="act"
+                onClick="wwTT(this, event,
                                         'id', 'tt_quick_interface_share_{$form['interface_id']}',
                                         'type', 'static',
                                         'delay', 0,
@@ -1808,17 +1816,19 @@ EOL;
                                         'direction', 'southwest',
                                         'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_share,id=>tt_quick_interface_share_{$form['interface_id']},interface_id=>{$form['interface_id']},ip_addr=>{$form['ip_addr']}\');'
                                         );"
-                ><img src="{$images}/silk/sitemap.png" border="0">&nbsp; Share IP</a><br/>
+                ><img src="{$images}/silk/sitemap.png" border="0">&nbsp; Share IP</div>
 EOL;
     }
 
     if (auth('interface_modify')) {
         $html .= <<<EOL
-
-                <a title="Add DNS record to this interface"
-                    class="act"
-                    onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}'), 'editor');"
-                ><img src="{$images}/silk/font_add.png" border="0">&nbsp; Add DNS</a><br/>
+            <div class="row"
+                onMouseOver="this.className='hovered';"
+                onMouseOut="this.className='row';"
+                title="Add DNS record to this interface"
+                class="act"
+                onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}'), 'editor');"
+                ><img src="{$images}/silk/font_add.png" border="0">&nbsp; Add DNS</div>
 EOL;
     }
 
