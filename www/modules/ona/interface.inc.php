@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -46,6 +46,7 @@ Adds a new interface to an existing host record
     mac=ADDRESS               mac address (most formats are ok)
     name=NAME                 interface name (i.e. "FastEthernet0/1.100")
     description=TEXT          brief description of the interface
+    natip=ADDRESS             IP of NAT address to add with this new interface
 
   Notes:
     * DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
@@ -104,15 +105,14 @@ EOM
     }
 
     // Since the IP seems available, let's double check and make sure it's not in a DHCP address pool
-/*    list($status, $rows, $pool) = ona_get_dhcp_pool_record("IP_ADDRESS_START < '{$options['ip']}' AND IP_ADDRESS_END > '{$options['ip']}'");
+    list($status, $rows, $pool) = ona_get_dhcp_pool_record("ip_addr_start < '{$options['ip']}' AND ip_addr_end > '{$options['ip']}'");
     if ($status or $rows) {
         printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") falls within a DHCP address pool!",3);
         $self['error'] = "ERROR => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") falls within a DHCP address pool!";
-        return(array(5, $self['error'] . "\n" .
-                        "INFO => Conflicting DHCP pool record ID: {$pool['DHCP_POOL_ID']}\n"));
-    }*/
+        return(array(5, $self['error'] . "\nINFO => Conflicting DHCP pool record ID: {$pool['id']}\n"));
+    }
 
-    // Find the Subnet (network) ID to use from the IP address
+    // Find the Subnet ID to use from the IP address
     list($status, $rows, $subnet) = ona_find_subnet($options['ip']);
     if ($status or $rows != 1 or !$subnet['id']) {
         printmsg("DEBUG => That IP address (" . ip_mangle($orig_ip,'dotted') . ") is not inside a defined subnet!",3);
@@ -133,25 +133,6 @@ EOM
         return(array(8, $self['error'] . "\n"));
     }
 
-
-// FIXME: MP this was removed as many situations call for same subnet interfaces on a single host
-//        I do feel however that a warning or message could be usefull.  find a clean way to indicate this and add it in
-
-
-    // Validate that the specified host doesn't have any other interfaces on the
-    // same subnet as the new ip address.  Allow an override though.
-//     if ($options['force'] == 'N') {
-//         // Search for any existing interfaces on the same subnet
-//         list($status, $rows, $interface) = ona_get_interface_record(array('subnet_id' => $subnet['id'],
-//                                                                            'host_id'    => $host['id']));
-//         if ($status or $rows) {
-//             printmsg("DEBUG => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").",3);
-//             $self['error'] = "ERROR => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").";
-//             return(array(9, $self['error'] . "\n" .
-//                             "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n" .
-//                             "INFO => Conflicting interface record ID: {$interface['id']}\n"));
-//         }
-//     }
 
     // Remove any MAC address formatting
     if ($options['mac']) {
@@ -177,10 +158,8 @@ EOM
         }
     }
 
-    // FIXME: what if the host already has another interface with create_ptr enabled?
-
     // Check permissions
-    if (!auth('host_add') or !authlvl($host['LVL']) or !authlvl($subnet['LVL'])) {
+    if (!auth('host_add')) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(12, $self['error'] . "\n"));
@@ -214,6 +193,16 @@ EOM
         $self['error'] = "ERROR => interface_add() SQL Query failed: " . $self['error'];
         printmsg($self['error'], 0);
         return(array(14, $self['error'] . "\n"));
+    }
+
+    // if natip is passed, add the nat interface first
+    if ($options['natip']) {
+        $natint['ip'] = $id;
+        $natint['natip'] = $options['natip'];
+        printmsg("DEBUG => interface_add() calling nat_add() for new ip: {$options['natip']}", 3);
+        list($status, $output) = run_module('nat_add', $natint);
+        if ($status) { return(array($status, $output)); }
+        $self['error'] .= $output;
     }
 
     // Return the success notice
@@ -347,13 +336,13 @@ EOM
         }
 
         // Since the IP seems available, let's double check and make sure it's not in a DHCP address pool
-/*        list($status, $rows, $pool) = ona_get_dhcp_pool_record("IP_ADDRESS_START < '{$options['set_ip']}' AND IP_ADDRESS_END > '{$options['set_ip']}'");
+        list($status, $rows, $pool) = ona_get_dhcp_pool_record("ip_addr_start < '{$options['set_ip']}' AND ip_addr_end > '{$options['set_ip']}'");
         if ($status or $rows) {
             printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") falls within a DHCP address pool!",3);
             $self['error'] = "ERROR => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") falls within a DHCP address pool!";
             return(array(5, $self['error'] . "\n" .
-                            "INFO => Conflicting DHCP pool record ID: {$pool['DHCP_POOL_ID']}\n"));
-        }*/
+                            "INFO => Conflicting DHCP pool record ID: {$pool['id']}\n"));
+        }
 
         // Find the Subnet (network) ID to use from the IP address
         list($status, $rows, $subnet) = ona_find_subnet(ip_mangle($options['set_ip'], 'dotted'));
@@ -457,6 +446,7 @@ EOM
 //        $SET['CREATE_REVERSE_DNS_ENTRY'] = sanitize_YN($options['set_create_ptr'], 'Y');
 //    }
 
+
     // Set options[set_name]?
     if (array_key_exists('set_name', $options) && $interface['name'] != $options['set_name']) {
         $SET['name'] = $options['set_name'];
@@ -469,7 +459,7 @@ EOM
 
     // Check permissions
     list($status, $rows, $host) = ona_find_host($interface['host_id']);
-    if (!auth('interface_modify') or !authlvl($host['LVL'])) {
+    if (!auth('interface_modify')) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(13, $self['error'] . "\n"));
@@ -581,7 +571,7 @@ EOM
     $options['commit'] = sanitize_YN($options['commit'], 'N');
 
     // Check permissions
-    if (!auth('interface_del') or !authlvl($host['LVL']) or !authlvl($subnet['LVL'])) {
+    if (!auth('interface_del') or !auth('host_del')) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(13, $self['error'] . "\n"));
@@ -592,22 +582,6 @@ EOM
         // Find an interface record by something in that interface's record
         list($status, $rows, $interface) = ona_find_interface($options['interface']);
     }
-
-// I've commented out the option to specify a host.  this does not make sense if you are not allowed
-// to delete the last interface on a host. and if a host has more than one interface, you will only
-// delete a random interface from the host which is dangerous.
-
-    // If a hostname was provided, do a search based on that
- /*   else if ($options['host']) {
-        // Find a host by the user's input
-        list($status, $rows, $host) = ona_find_host($options['host']);
-        if (!$host['id']) {
-            $self['error'] = "ERROR => No interfaces found: no such host!";
-            return(array(2, $self['error'] . "\n"));
-        }
-        // If we got one, load an associated interface
-        list($status, $rows, $interface) = ona_get_interface_record(array('host_id' => $host['id']));
-    }*/
 
     // If we didn't get a record then exit
     if (!$interface or !$interface['id']) {
@@ -649,18 +623,10 @@ EOM
 
         printmsg("DEBUG => Deleting interface: ID {$interface['id']}", 3);
 
-
-        // Check what DNS records are associated with the host.
-//         // FIXME: MP for now I'm bailing on the delete.  I wanted to make sure this check was here and have not put a
-//         // lot of thought into it yet.  I assume we can display something nice to allow them to remove the dns records too
-//         list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']), '', 0);
-//         printmsg("DEBUG => total DNS records => {$total_dns}", 3);
-//         if ($total_dns > 0) {
-//             printmsg("DEBUG => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.",3);
-//             $self['error'] = "ERROR => There are {$total_dns} DNS record(s) associated with this interface, you must remove them first.";
-//             return(array(11, $self['error'] . "\n"));
-//         }
-
+        if ($interface['nat_interface_id'] > 0) {
+            list($status, $output) = run_module('interface_del', array('interface' => $interface['nat_interface_id'], 'commit' => 'Y', 'delete_by_module' => 'Y'));
+            $add_to_status = $add_to_status + $status;
+        }
 
         // Delete any DNS records are associated with the host.
         list($status, $rows, $record) = db_get_record($onadb, 'dns', array('interface_id' => $interface['id']));
@@ -678,7 +644,7 @@ EOM
             return(array(5, $self['error']));
         }
         // Build a success notice to return to the user
-        $text = "INFO => Interface DELETED: " . ip_mangle($interface['ip_addr'], 'dotted') . "  from {$host['fqdn']}";
+        $text = "INFO => Interface DELETED: " . ip_mangle($interface['ip_addr'], 'dotted') . " from {$host['fqdn']}\n";
         printmsg($text, 0);
 
         // Check to see if there are any other interfaces for the current host_id
@@ -699,15 +665,9 @@ EOM
 
     // Otherwise, just display the interface that we will be deleting
     list($status, $displaytext) = interface_display("interface={$interface['id']}&verbose=N");
+
     $text = "Record(s) NOT DELETED (see \"commit\" option)\n" .
             "Displaying record(s) that would have been deleted:\n";
-
-    // Display warning if there are DNS records still
-    list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']));
-//     if ($total_dns) {
-//         $text .= "\nWARNING!  This interface has {$total_dns} DNS record(s) still associated with it.\n";
-//         $text .= "          Please remove all associated DNS records first.\n";
-//     }
 
     // Display records if this is a shared interface
     list($status, $clust_rows, $clust) = db_get_records($onadb, 'interface_clusters', array('interface_id' => $interface['id']));
@@ -730,11 +690,21 @@ EOM
         $text .= "  {$clusthost['fqdn']}\n";
     }
 
-
-
+    // Display DNS records associated with this interface
+    list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']), '', 0);
     if ($total_dns) $text .= "\nASSOCIATED DNS RECORDS ({$total_dns}):\n";
     foreach ($dns as $rec) {
         $text .= "  TYPE: {$rec['type']}, {$rec['name']} -> {$interface['ip_addr_text']}\n";
+    }
+
+    if ($interface['nat_interface_id'] > 0) {
+        printmsg("DEBUG => interface_del() calling interface_del() for external NAT ip: {$options['nat_interface_id']}", 3);
+        $natint['interface'] = $interface['nat_interface_id'];
+        $natint['commit'] = $options['commit'];
+        list($status, $output) = run_module('interface_del', $natint);
+       // if ($status) { return(array($status, $output)); }
+        $text .= "\nASSOCIATED NAT INTERFACE DELETE:\n\n";
+        $text .= $output . "\n";
     }
 
     return(array(6, $text));
@@ -866,14 +836,6 @@ EOM
             $text .= format_array($device);
         }
 
-        // Unit record
-// FIXME: (PK) this code isn't implemented yet
-//        list($status, $rows, $unit) = ona_get_unit_record(array('location_id' => $host['location_id']));
-//        if ($rows >= 1) {
-//            $text .= "\nASSOCIATED LOCATION RECORD\n";
-//            $text .= format_array($unit);
-//        }
-
     }
 
     // Return the success notice
@@ -892,7 +854,7 @@ EOM
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: interface_move_subnet (string $options='')
+//  Function: interface_move (string $options='')
 //
 //  Input Options:
 //    $options = key=value pairs of options for this function.
@@ -907,12 +869,12 @@ EOM
 //
 //  Example: list($status, $result) = interface_move_subnet('');
 ///////////////////////////////////////////////////////////////////////
-function interface_move_subnet($options="") {
+function interface_move($options="") {
     global $conf, $self, $onadb;
-    printmsg("DEBUG => interface_move_subnet({$options}) called", 3);
+    printmsg("DEBUG => interface_move({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -927,11 +889,12 @@ function interface_move_subnet($options="") {
         return(array(1,
 <<<EOM
 
-interface_move_subnet-v{$version}
-  Move interfaces to a new subnet
+interface_move-v{$version}
   Moves all interface addresses from one subnet to another.
+  The initial range of IPs does not have to be consecutive.
+  The new range of IPs will be used sequentially.
 
-  Synopsis: interface_move_subnet [KEY=VALUE] ...
+  Synopsis: interface_move [KEY=VALUE] ...
 
   IP block to move: (source)
     start=IP                      first IP to move
@@ -1027,7 +990,7 @@ EOM
 
 
     // Check permissions at the subnet level
-    if (!auth('interface_modify') or !authlvl($old_subnet['LVL']) or !authlvl($new_subnet['LVL'])) {
+    if (!auth('interface_modify')) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(13, $self['error'] . "\n"));
@@ -1071,17 +1034,18 @@ EOM
         list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id'], 'type' => 'A'));
         // Check permissions at the subnet level
         if (!authlvl($host['LVL'])) {
-            $self['error'] = "Permission denied! Can't modify Host: {$host['id']} {$dns['name']}.{$dns['fqdn']}";
+            $self['error'] = "Permission denied! Can't modify Host: {$host['id']} {$dns['fqdn']}";
             printmsg($self['error'], 0);
             return(array(14, $self['error'] . "\n"));
         }
         // Check to see if the host has any interfaces in the destination subnet
-        list($status, $rows, $interface) = ona_get_interface_record(array('host_id' => $interface['host_id'], 'subnet_id' => $new_subnet['id']));
-        if ($status or $rows) {
-            printmsg("DEBUG => Source host {$dns['name']}.{$ddns['fqdn']} already has an interface on the destination subnet!",3);
-            $self['error'] = "ERROR => Source host {$dns['name']}.{$dns['fqdn']} (ID {$host['id']}) already has an interface on the destination subnet!";
-            return(array(15, $self['error'] . "\n"));
-        }
+// MP: this is now allowed
+//         list($status, $rows, $interface) = ona_get_interface_record(array('host_id' => $interface['host_id'], 'subnet_id' => $new_subnet['id']));
+//         if ($status or $rows) {
+//             printmsg("DEBUG => Source host {$ddns['fqdn']} already has an interface on the destination subnet!",3);
+//             $self['error'] = "ERROR => Source host {$dns['fqdn']} (ID {$host['id']}) already has an interface on the destination subnet!";
+//             return(array(15, $self['error'] . "\n"));
+//         }
     }
 
     // Get the numeric version of the start/end addresses we are moving interfaces to
@@ -1100,8 +1064,7 @@ EOM
             list($status, $rows, $interface) = ona_get_interface_record(array('ip_addr' => $low_ip));
             if ($rows == 0 and $status == 0) {
                 // Since the IP seems available, let's double check and make sure it's not in a DHCP address pool
-                // FIXME: (PK) we haven't implemented the DHCP pool code yet!
-                // list($status, $rows, $pool) = ona_get_dhcp_pool_record("IP_ADDRESS_START < '{$low_ip}' AND IP_ADDRESS_END > '{$low_ip}'");
+                list($status, $rows, $pool) = ona_get_dhcp_pool_record("ip_addr_start < '{$low_ip}' AND ip_addr_end > '{$low_ip}'");
                 if ($rows == 0 and $status == 0) {
                     // The IP is available, lets use it!
                     $to_move[$i]['new_ip_address'] = $low_ip;
@@ -1120,8 +1083,8 @@ EOM
     if ($total_assigned != $total_to_move) {
         printmsg("DEBUG => The destination IP range doesn't have enough free IP addresses!", 3);
         $self['error'] = "ERROR => The destination IP range doesn't have enough free IP addresses!\n";
-// FIXME: (PK)        if ($pool_interfering)
-//            $self['error'] .= "INFO => Some IPs in the destination range were part of a DHCP pool range.\n";
+    if ($pool_interfering)
+        $self['error'] .= "INFO => Some IPs in the destination range were part of a DHCP pool range.\n";
         return(array(6, $self['error']));
     }
 
@@ -1135,15 +1098,14 @@ EOM
             // Get display the hostname we would have moved, as well as it's IP address.
             list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
             list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id'], 'type' => 'A'));
-            $hostname = strtolower("{$dns['name']}.{$dns['fqdn']}");
+            $hostname = strtolower("{$dns['fqdn']}");
             $text .= "  " . ip_mangle($interface['ip_addr'], 'dotted') . " -> " . ip_mangle($interface['new_ip_address'], 'dotted') . "\t({$hostname})\n";
         }
         $text .= "\n";
         return(array(7, $text));
     }
 
-    // Loop through and update each interface's IP_ADDRESS and NETWORK_ID
-    // FIXME: (PK) Need to test this section still (4.3.2007):
+    // Loop through and update each interface's IP_ADDRESS and SUBNET_ID
     $text = "SUCCESS => {$total_to_move} interface(s) moved\n";
     $text .= "Interface(s) moved:\n\n";
     foreach ($to_move as $interface) {
@@ -1163,7 +1125,7 @@ EOM
         // Get display the hostname we would have moved, as well as its IP address.
         list($status, $rows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
         list($status, $rows, $dns) = ona_get_dns_record(array('id' => $host['primary_dns_id'], 'type' => 'A'));
-        $hostname = strtolower("{$dns['name']}.{$dns['fqdn']}");
+        $hostname = strtolower("{$dns['fqdn']}");
         $text .= "  " . ip_mangle($interface['ip_addr'], 'dotted') . " -> " . ip_mangle($interface['new_ip_address'], 'dotted') . "\t({$hostname})\n";
     }
 
@@ -1235,12 +1197,12 @@ EOM
 
     // Find the interface that is moving
     list($status, $rows, $interface) = ona_find_interface($options['ip']);
-    if (!$host['id']) {
-        printmsg("DEBUG => The interface specified, {$options['id']}, does not exist!",3);
-        $self['error'] = "ERROR => The interface specified, {$options['id']}, does not exist!";
+    if (!$interface['id']) {
+        printmsg("DEBUG => The interface specified, {$options['ip']}, does not exist!",3);
+        $self['error'] = "ERROR => The interface specified, {$options['ip']}, does not exist!";
         return(array(3, $self['error'] . "\n"));
     }
-    printmsg("DEBUG => Interface selected: {$options['host']}", 3);
+    printmsg("DEBUG => Interface selected: {$options['ip']}", 3);
 
     // Check that this interface is not associated with this host via an interface_cluster
     list($status, $rows, $int_cluster) = db_get_records($onadb, 'interface_clusters', array('host_id' => $host['id'],'interface_id' => $interface['id']), '', 0);
@@ -1352,12 +1314,12 @@ EOM
 
     // Find the interface
     list($status, $rows, $interface) = ona_find_interface($options['ip']);
-    if (!$host['id']) {
-        printmsg("DEBUG => The interface specified, {$options['id']}, does not exist!",3);
-        $self['error'] = "ERROR => The interface specified, {$options['id']}, does not exist!";
+    if (!$interface['id']) {
+        printmsg("DEBUG => The interface specified, {$options['ip']}, does not exist!",3);
+        $self['error'] = "ERROR => The interface specified, {$options['ip']}, does not exist!";
         return(array(3, $self['error'] . "\n"));
     }
-    printmsg("DEBUG => Interface selected: {$options['host']}", 3);
+    printmsg("DEBUG => Interface selected: {$options['ip']}", 3);
 
     // Check that this interface is not associated with this host via an interface_cluster already
     list($status, $rows, $int_cluster) = db_get_records($onadb, 'interface_clusters', array('host_id' => $host['id'],'interface_id' => $interface['id']), '', 0);
@@ -1466,12 +1428,12 @@ EOM
 
     // Find the interface
     list($status, $rows, $interface) = ona_find_interface($options['ip']);
-    if (!$host['id']) {
-        printmsg("DEBUG => The interface specified, {$options['id']}, does not exist!",3);
-        $self['error'] = "ERROR => The interface specified, {$options['id']}, does not exist!";
+    if (!$interface['id']) {
+        printmsg("DEBUG => The interface specified, {$options['ip']}, does not exist!",3);
+        $self['error'] = "ERROR => The interface specified, {$options['ip']}, does not exist!";
         return(array(3, $self['error'] . "\n"));
     }
-    printmsg("DEBUG => Interface selected: {$options['host']}", 3);
+    printmsg("DEBUG => Interface selected: {$options['ip']}", 3);
 
     // Check that this interface is not associated with this host via an interface_cluster already
     list($status, $rows, $int_cluster) = db_get_records($onadb, 'interface_clusters', array('host_id' => $host['id'],'interface_id' => $interface['id']), '', 0);
@@ -1500,6 +1462,212 @@ EOM
 
 }
 
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: nat_add (string $options='')
+//
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function.  0 on success, non-zero on
+//         error.  All errors messages are stored in $self['error'].
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = nat_add('');
+///////////////////////////////////////////////////////////////////////
+function nat_add($options="") {
+    global $conf, $self, $onadb;
+    printmsg("DEBUG => nat_add({$options}) called", 3);
+
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Return the usage summary if we need to
+    if ($options['help'] or !($options['natip'] and $options['ip']) ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+nat_add-v{$version}
+  Add a NAT entry to an existing IP
+
+  Synopsis: nat_add [KEY=VALUE] ...
+
+  Required:
+    ip=[address|ID]       the IP address or ID of the existing inside interface
+    natip=IP_ADDRESS      the IP address of the external NAT entry
+
+\n
+EOM
+        ));
+    }
+
+
+    // Find the internal interface
+    list($status, $rows, $interface) = ona_find_interface($options['ip']);
+    if (!$interface['id']) {
+        printmsg("DEBUG => The interface specified, {$options['ip']}, does not exist!",3);
+        $self['error'] = "ERROR => The interface specified, {$options['ip']}, does not exist!";
+        return(array(2, $self['error'] . "\n"));
+    }
+    printmsg("DEBUG => Interface selected: {$options['ip']}", 3);
+
+    if ($interface['nat_interface_id'] > 0) {
+        printmsg("DEBUG => The interface specified, already has a NAT IP!",3);
+        $self['error'] = "ERROR => The interface specified, already has a NAT IP!";
+        return(array(3, $self['error'] . "\n")); 
+    }
+
+    // Add the new external NAT interface to the database
+    $newint['host'] = $interface['host_id'];
+    $newint['ip'] = $options['natip'];
+    $newint['mac'] = '';
+    $newint['name'] = '';
+    $newint['description'] = 'EXT NAT';
+    printmsg("DEBUG => nat_add() calling interface_add() for new ip: {$options['natip']}", 3);
+    list($status, $output) = run_module('interface_add', $newint);
+    if ($status) { return(array($status, $output)); }
+    $self['error'] .= $output;
+
+    // Find the interface_id for the interface we just added
+    list($status, $rows, $int) = ona_find_interface($options['natip']);
+
+    // update the existing inside interface with the new nat_interface_id value
+    list($status, $rows) = db_update_record($onadb, 'interfaces', array('id' => $interface['id']), array('nat_interface_id' => $int['id']));
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => nat_add() SQL Query failed to update nat_interface_id for interface: " . $self['error'];
+        printmsg($self['error'], 0);
+        return(array(4, $self['error'] . "\n"));
+    }
+
+
+
+    // Return the success notice
+    $self['error'] = "INFO => External NAT entry added: {$interface['ip_addr_text']} => {$int['ip_addr_text']}.";
+    printmsg($self['error'], 0);
+    return(array(0, $self['error'] . "\n"));
+
+}
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: nat_del (string $options='')
+//
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function.  0 on success, non-zero on
+//         error.  All errors messages are stored in $self['error'].
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = nat_del('');
+///////////////////////////////////////////////////////////////////////
+function nat_del($options="") {
+    global $conf, $self, $onadb;
+    printmsg("DEBUG => nat_del({$options}) called", 3);
+
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Return the usage summary if we need to
+    if ($options['help'] or !($options['natip'] and $options['ip']) ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+nat_del-v{$version}
+  Delete a NAT entry from an existing IP
+  This will delete the NAT IP interface from the subnet as well.
+
+  Synopsis: nat_del [KEY=VALUE] ...
+
+  Required:
+    ip=[address|ID]       the IP address or ID of the existing inside interface
+    natip=[address|ID]    the IP address or ID of the external NAT entry
+
+  Optional:
+    commit=[yes|no]       commit db transaction (no)
+
+\n
+EOM
+        ));
+    }
+
+    // Sanitize "options[commit]" (no is the default)
+    $options['commit'] = sanitize_YN($options['commit'], 'N');
+
+    // Find the internal interface
+    list($status, $rows, $interface) = ona_find_interface($options['ip']);
+    if (!$interface['id']) {
+        printmsg("DEBUG => The interface specified, {$options['ip']}, does not exist!",3);
+        $self['error'] = "ERROR => The interface specified, {$options['ip']}, does not exist!";
+        return(array(2, $self['error'] . "\n"));
+    }
+    printmsg("DEBUG => Interface selected: {$options['ip']}", 3);
+
+    // Find the NAT interface
+    list($status, $rows, $natinterface) = ona_find_interface($options['natip']);
+    if (!$natinterface['id']) {
+        printmsg("DEBUG => The NAT interface specified, {$options['natip']}, does not exist!",3);
+        $self['error'] = "ERROR => The NAT interface specified, {$options['natip']}, does not exist!";
+        return(array(3, $self['error'] . "\n"));
+    }
+    printmsg("DEBUG => NAT Interface selected: {$options['natip']}", 3);
+
+    // Check that the two IP addresses are really paired with each other
+    if ($interface['nat_interface_id'] != $natinterface['id']) {
+        $self['error'] = "ERROR => nat_del() The provided IP addresses are not associated with each other for NAT.";
+        printmsg($self['error'], 0);
+        return(array(4, $self['error'] . "\n"));
+    }
+
+    printmsg("DEBUG => nat_del() calling interface_del() for ip: {$options['natip']}", 3);
+    $natint['interface'] = $natinterface['id'];
+    $natint['commit'] = $options['commit'];
+    list($status, $output) = run_module('interface_del', $natint);
+    if ($status) { return(array($status, $output)); }
+    $self['error'] .= $output;
+
+    // update the existing inside interface and remove the old nat_interface_id value
+    list($status, $rows) = db_update_record($onadb, 'interfaces', array('id' => $interface['id']), array('nat_interface_id' => '0'));
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => nat_del() SQL Query failed to update nat_interface_id for interface: " . $self['error'];
+        printmsg($self['error'], 0);
+        return(array(5, $self['error'] . "\n"));
+    }
+
+
+
+    // Return the success notice
+    $self['error'] = "INFO => External NAT entry deleted: {$natinterface['ip_addr_text']} from {$interface['ip_addr_text']}.";
+    printmsg($self['error'], 0);
+    return(array(0, $self['error'] . "\n"));
+
+}
 
 
 

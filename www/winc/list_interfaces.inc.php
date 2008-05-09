@@ -109,6 +109,22 @@ EOL;
         foreach($results as $record) {
             // Get additional info about each host record //
 
+            // Check if this interface has an external NAT
+            unset($extnatint, $extnatdisplay);
+            if ($record['nat_interface_id'] > 0) {
+                list($status, $rows, $extnatint) = ona_get_interface_record(array('id' => $record['nat_interface_id']));
+                $extnatint['ip_addr'] = ip_mangle($extnatint['ip_addr'], 'dotted');
+                $extnatdisplay = "<span title='Interface is NATed to {$extnatint['ip_addr']}'> &nbsp;&nbsp;=> &nbsp;{$extnatint['ip_addr']}</span>";
+            }
+
+            // Check if this interface is an external NAT for another interface
+            list ($isnatstatus, $isnatrows, $isnat) = db_get_records($onadb, 'interfaces', "nat_interface_id = {$record['id']}", '', 0 );
+            // If the current interface is external NAT for another, dont display it in the list.
+            if ($isnatrows > 0) {
+                $count = $count - 1; // MP: not sure if this will always total correctly
+                continue;
+            }
+
             list ($status, $intclusterrows, $intcluster) = db_get_records($onadb, 'interface_clusters', "interface_id = {$record['id']}");
 
             // Grab some info from the associated subnet record
@@ -178,7 +194,7 @@ EOL;
                 $html .= "<span style='{$clusterstyle}' {$clusterscript}>{$record['ip_addr']}</span>";
             }
             $html .= <<<EOL
-                    <span style="{$clusterstyle}" title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>
+                    <span style="{$clusterstyle}" title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span> {$extnatdisplay}
                 </td>
 
                 <td class="list-row" align="left">
@@ -210,44 +226,19 @@ EOL;
         if (auth('interface_modify')) {
             $html .= <<<EOL
 
-                    <a title="Move IP to another host"
+                    <a title="Interface Menu"
+                       id="int_menu_button_{$record['id']}"
                        class="act"
-                       onClick="wwTT(this, event,
-                                            'id', 'tt_quick_interface_move_{$record['id']}',
-                                            'type', 'static',
+                       onmouseover="wwTT(this, event,
+                                            'id', 'tt_quick_interface_menu_{$record['id']}',
+                                            'type', 'velcro',
                                             'delay', 0,
-                                            'styleClass', 'wwTT_qf',
-                                            'direction', 'southwest',
-                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_move,id=>tt_quick_interface_move_{$record['id']},interface_id=>{$record['id']},ip_addr=>{$record['ip_addr']},orig_host=>{$record['host_id']}\');'
+                                            'styleClass', 'wwTT_int_menu',
+                                            'lifetime', 1000,
+                                            'direction', 'west',
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_menu,id=>tt_quick_interface_menu_{$record['id']},interface_id=>{$record['id']},ip_addr=>{$record['ip_addr']},orig_host=>{$record['host_id']},form_id=>{$form['form_id']}_list_interface_{$record['id']},natip=>{$record['nat_interface_id']}\');'
                                            );"
-                    ><img src="{$images}/silk/lorry_flatbed.png" border="0"></a>&nbsp;
-EOL;
-        }
-
-        if (auth('interface_modify')) {
-            $html .= <<<EOL
-
-                    <a title="Share IP with another host (hsrp,carp,vrrp)"
-                       class="act"
-                       onClick="wwTT(this, event,
-                                            'id', 'tt_quick_interface_share_{$record['id']}',
-                                            'type', 'static',
-                                            'delay', 0,
-                                            'styleClass', 'wwTT_qf',
-                                            'direction', 'southwest',
-                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_share,id=>tt_quick_interface_share_{$record['id']},interface_id=>{$record['id']},ip_addr=>{$record['ip_addr']}\');'
-                                           );"
-                    ><img src="{$images}/silk/sitemap.png" border="0"></a>&nbsp;
-EOL;
-        }
-
-        if (auth('interface_modify')) {
-            $html .= <<<EOL
-
-                    <a title="Add DNS record to this interface"
-                       class="act"
-                       onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}_list_interface_{$record['id']}'), 'editor');"
-                    ><img src="{$images}/silk/font_add.png" border="0"></a>&nbsp;
+                    ><img src="{$images}/silk/add.png" border="0"></a>&nbsp;
 EOL;
         }
 

@@ -70,8 +70,8 @@ function ws_editor($window_name, $form='') {
 
     // Escape data for display in html
     foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
-  //  foreach(array_keys($subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
- //   foreach(array_keys($host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
 
 
     // Set the window title:
@@ -174,7 +174,7 @@ EOL;
 
         <tr>
             <td align="right" nowrap="true">
-                Network
+                Subnet
             </td>
             <td class="padding" align="left" width="100%" nowrap="true">
                 <span id="associated_subnet_{$window_name}"

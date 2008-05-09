@@ -335,6 +335,63 @@ div.wwTT_qf .contents {
     padding: 0 3px;
 }
 
+/* Interface menu tooltips */
+div.wwTT_int_menu
+{
+    background-color: #F2F2F2;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 13px;
+    font-family: "Trebuchet MS", sans-serif;
+    left: 0;
+    top: 0;
+    padding: 4px;
+    position: absolute;
+    text-align: left;
+    z-index: 20;
+    -moz-border-radius: 4px;
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=87);
+    -moz-opacity: .87;
+    -khtml-opacity: .87;
+    opacity: .87;
+    border: solid black 1px
+}
+div.wwTT_int_menu .contents
+{
+    margin: 0;
+    padding: 0 3px;
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=100);
+    -moz-opacity: 1;
+    -khtml-opacity: 1;
+    opacity: 1;
+}
+div.wwTT_int_menu p
+{
+    color: #D17E62;
+    font-size: 9px;
+    padding: 3px 0 0 0;
+    margin: 0;
+    text-align: left;
+    -moz-opacity: 1;
+}
+div.wwTT_int_menu a
+{
+    color: black;
+    font-size: 10px;
+    text-decoration: none;
+    text-align: left;
+}
+div.wwTT_int_menu a:hover
+{
+    color: black;
+    background-color: #CBCEFD;
+    font-size: 10px;
+    text-decoration: none;
+    padding: 3px 0 0 0;
+    margin: 0;
+    text-align: left;
+}
+
 .table-tab-active {
     font-size: 10pt;
     white-space: nowrap;

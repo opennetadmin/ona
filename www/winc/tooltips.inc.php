@@ -66,8 +66,16 @@ function ws_tooltips_submit($window_name, $form='') {
            list ($html, $js) = quick_pool_server_search($form);
            break;
 
+        case 'quick_interface_menu':
+           list ($html, $js) = quick_interface_menu($form);
+           break;
+
         case 'quick_interface_move':
            list ($html, $js) = quick_interface_move($form);
+           break;
+
+        case 'quick_interface_nat':
+           list ($html, $js) = quick_interface_nat($form);
            break;
 
         case 'quick_interface_share':
@@ -1720,6 +1728,246 @@ function ws_interface_share_del($window_name, $form='') {
 
 
 
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: quick_interface_menu($form)
+//
+// Description:
+//     Builds HTML for displaying a quick menu popup.
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function quick_interface_menu($form) {
+    global $conf, $self, $onadb;
+    global $font_family, $color, $style, $images;
+    $html = $js = '';
+
+    $html .= "<div style=\"text-align: center;color: black;padding-bottom:4px;\">Interface Actions<br/> [{$form['ip_addr']}]</div>";
+
+
+    if (auth('interface_modify')) {
+        $html .= <<<EOL
+
+                <a title="Add an external NAT IP"
+                    class="act"
+                    onClick="wwTT(this, event,
+                                        'id', 'tt_quick_interface_nat_{$form['interface_id']}',
+                                        'type', 'static',
+                                        'delay', 0,
+                                        'styleClass', 'wwTT_qf',
+                                        'direction', 'southwest',
+                                        'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_nat,id=>tt_quick_interface_nat_{$form['interface_id']},interface_id=>{$form['interface_id']},ip_addr=>{$form['ip_addr']}\');'
+                                        );"
+                ><img src="{$images}/silk/world_link.png" border="0">&nbsp; Add NAT IP</a><br/>
+EOL;
+    }
+
+    if (auth('interface_modify')) {
+        $html .= <<<EOL
+
+                <a title="Delete an external NAT IP"
+                    class="act"
+                    onClick="var doit=confirm('Are you sure you want to delete this NAT address?\\nIt will remove any DNS names associated with the external IP.');
+                            if (doit == true)
+                                xajax_window_submit('tooltips', 'ip=>{$form['interface_id']},natip=>{$form['natip']},nataction=>delete,commit=>yes', 'interface_nat_save');"
+                ><img src="{$images}/silk/world_delete.png" border="0">&nbsp; Delete NAT IP</a><br/>
+EOL;
+    }
+
+
+    if (auth('interface_modify')) {
+        $html .= <<<EOL
+
+                <a title="Move IP to another host"
+                    class="act"
+                    onClick="wwTT(this, event,
+                                        'id', 'tt_quick_interface_move_{$form['interface_id']}',
+                                        'type', 'static',
+                                        'delay', 0,
+                                        'styleClass', 'wwTT_qf',
+                                        'direction', 'southwest',
+                                        'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_move,id=>tt_quick_interface_move_{$form['interface_id']},interface_id=>{$form['interface_id']},ip_addr=>{$form['ip_addr']},orig_host=>{$form['orig_host']}\');'
+                                        );"
+                ><img src="{$images}/silk/lorry_flatbed.png" border="0">&nbsp; Move IP</a><br/>
+EOL;
+    }
+
+    if (auth('interface_modify')) {
+        $html .= <<<EOL
+
+                <a title="Share IP with another host (hsrp,carp,vrrp)"
+                    class="act"
+                    onClick="wwTT(this, event,
+                                        'id', 'tt_quick_interface_share_{$form['interface_id']}',
+                                        'type', 'static',
+                                        'delay', 0,
+                                        'styleClass', 'wwTT_qf',
+                                        'direction', 'southwest',
+                                        'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_share,id=>tt_quick_interface_share_{$form['interface_id']},interface_id=>{$form['interface_id']},ip_addr=>{$form['ip_addr']}\');'
+                                        );"
+                ><img src="{$images}/silk/sitemap.png" border="0">&nbsp; Share IP</a><br/>
+EOL;
+    }
+
+    if (auth('interface_modify')) {
+        $html .= <<<EOL
+
+                <a title="Add DNS record to this interface"
+                    class="act"
+                    onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}'), 'editor');"
+                ><img src="{$images}/silk/font_add.png" border="0">&nbsp; Add DNS</a><br/>
+EOL;
+    }
+
+
+
+    return(array($html, $js));
+}
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: quick_interface_nat($form)
+//
+// Description:
+//     Builds HTML for displaying a quick search popup.
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function quick_interface_nat($form) {
+    global $conf, $self, $onadb;
+    global $font_family, $color, $style, $images;
+    $html = $js = '';
+    $font_color = '#FFFFFF';
+
+    $style['content_box'] = <<<EOL
+        padding: 2px 4px;
+        vertical-align: top;
+EOL;
+
+    // WARNING: this one's different than most of them!
+    $style['label_box'] = <<<EOL
+        font-weight: bold;
+        cursor: move;
+        color: #FFFFFF;
+EOL;
+
+
+
+    $html .= <<<EOL
+
+    <!-- QUICK INTERFACE NAT -->
+    <form id="quick_interface_nat_form" onSubmit="return(false);">
+    <input type="hidden" name="id" value="{$form['id']}">
+    <input type="hidden" name="js" value="{$form['js']}">
+    <input type="hidden" name="nataction" value="add">
+    <input type="hidden" name="ip" value="{$form['interface_id']}">
+    <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
+
+    <tr><td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
+        Quick interface NAT
+    </td></tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            Internal IP
+        </td>
+        <td align="left" class="qf-search-line">
+            {$form['ip_addr']}
+        </td>
+    </tr>
+
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            <u>E</u>xternal NAT IP
+        </td>
+        <td align="left" class="qf-search-line">
+            <input id="natip" name="natip" type="text" class="edit" size="24" accesskey="e" />
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            &nbsp;
+        </td>
+        <td align="right" class="qf-search-line">
+            <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
+            <input class="button" type="button" name="save" value="Save" accesskey="m" onClick="xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_nat_form'), 'interface_nat_save');removeElement('{$form['id']}');">
+        </td>
+    </tr>
+
+    </table>
+    </form>
+EOL;
+
+    // Javascript to run after the window is built
+    $js .= <<<EOL
+        el('natip').focus();
+EOL;
+
+    return(array($html, $js));
+}
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function:
+//     Save Form
+//
+// Description:
+//     Creates/updates an interface record.
+//////////////////////////////////////////////////////////////////////////////
+function ws_interface_nat_save($window_name, $form='') {
+    global $base, $include, $conf, $self, $onadb;
+
+    // Check permissions
+    if (! (auth('interface_modify')) ) {
+        $response = new xajaxResponse();
+        $response->addScript("alert('Permission denied!');");
+        return($response->getXML());
+    }
+
+    $form = parse_options_string($form);
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    $js = '';
+
+    $refresh = "xajax_window_submit('list_interfaces', xajax.getFormValues('list_interfaces_filter_form'), 'display_list');";
+
+    // Validate input
+    if (!$form['ip'] and !$form['natip']) {
+        $response->addScript("alert('Please complete all fields to continue!');");
+        return($response->getXML());
+    }
+
+    // Decide if we're deleting or adding
+    $module = 'nat_add';
+    if ($form['nataction'] == "delete") { $module = 'nat_del'; }
+
+    // Run the module
+    list($status, $output) = run_module($module, $form);
+
+    // If the module returned an error code display a popup warning
+    if ($status)
+        $js .= "alert('Save failed. ". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
+    else {
+        $js .= "removeElement('{$window_name}');{$refresh}";
+        if ($form['js']) $js .= $form['js'];
+    }
+
+
+    // Insert the new table into the window
+    $response->addScript($js);
+    return($response->getXML());
+}
 
 
 
