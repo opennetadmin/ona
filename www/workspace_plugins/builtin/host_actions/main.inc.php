@@ -1,5 +1,11 @@
 <?
 
+// Load any user specific entries and add them to the list
+// If you re-define an existing entry, it will override the default
+$mod_conf="{$base}/local/config/{$modulename}.config.php";
+if (file_exists($mod_conf)) { require_once($mod_conf); }
+
+
 $title_left_html = 'Host Actions';
 
 

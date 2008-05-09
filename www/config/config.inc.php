@@ -144,7 +144,7 @@ $style['borderR'] = "border-right: 1px solid {$color['border']};";
 
 
 // First things first, do we have the mysql functions on this system
-if (!function_exists(mysql_close)) {
+if (!function_exists('mysql_close')) {
     print <<<EOL
 <html><body>
 Your PHP system does not contain the php mysql libraries.  Try a "php -m" and check for mysql in the list.
