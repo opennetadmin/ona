@@ -48,7 +48,7 @@ function ws_display_list($window_name, $form='') {
 
     // HOST ID
     if ($form['host_id']) {
-        $where .= $and . "host_id = " . $onadb->qstr($form['host_id']). "OR id in (select interface_id from interface_clusters where host_id = ".$onadb->qstr($form['host_id']).")";
+        $where .= $and . "host_id = " . $onadb->qstr($form['host_id']). " OR id in (select interface_id from interface_clusters where host_id = ".$onadb->qstr($form['host_id']).")";
         $and = " AND ";
     }
 
@@ -74,18 +74,18 @@ function ws_display_list($window_name, $form='') {
         $rows += ($conf['search_results_per_page'] * ($page - 1));
     }
 
-    // If there were more than $conf['search_results_per_page'] find out how many records there really are
-    else if ($rows >= $conf['search_results_per_page']) {
-        list ($status, $rows, $records) =
-            db_get_records(
-                $onadb,
-                'interfaces',
-                $where . $filter,
-                "",
-                0
-            );
-    }
+
+    // Re-Count only "internal" interfaces, not nat interfaces
+    list ($status, $rows, $records) =
+        db_get_records(
+            $onadb,
+            'interfaces',
+            'nat_interface_id = \'0\' and ' . $where . $filter,
+            "",
+            0
+        );
     $count = $rows;
+
 
 
     $html .= <<<EOL
@@ -120,7 +120,6 @@ EOL;
             list ($isnatstatus, $isnatrows, $isnat) = db_get_records($onadb, 'interfaces', "nat_interface_id = {$record['id']}", '', 0 );
             // If the current interface is external NAT for another, dont display it in the list.
             if ($isnatrows > 0) {
-                $count = $count - 1; // MP: not sure if this will always total correctly
                 continue;
             }
 
@@ -188,7 +187,6 @@ EOL;
 EOL;
             }
             else {
-
                 $html .= "<span style='{$clusterstyle}' {$clusterscript}>{$record['ip_addr']}</span>";
             }
             $html .= <<<EOL
@@ -221,8 +219,8 @@ EOL;
                     ></form>&nbsp;
 EOL;
 
-        if (auth('interface_modify')) {
-            $html .= <<<EOL
+            if (auth('interface_modify')) {
+                $html .= <<<EOL
 
                     <a title="Interface Menu"
                        id="int_menu_button_{$record['id']}"
@@ -238,34 +236,33 @@ EOL;
                                            );"
                     ><img src="{$images}/silk/add.png" border="0"></a>&nbsp;
 EOL;
-        }
+            }
 
-        if (auth('interface_modify')) {
-            $html .= <<<EOL
+            if (auth('interface_modify')) {
+                $html .= <<<EOL
 
                     <a title="Edit interface. ID: {$record['id']}"
                        class="act"
                        onClick="xajax_window_submit('edit_interface', xajax.getFormValues('{$form['form_id']}_list_interface_{$record['id']}'), 'editor');"
                     ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 EOL;
-        }
+            }
 
-        if (auth('interface_del')) {
-            $html .= <<<EOL
+            if (auth('interface_del')) {
+                $html .= <<<EOL
 
                     <a title="Delete interface"
                        class="act"
                        onClick="xajax_window_submit('edit_interface', xajax.getFormValues('{$form['form_id']}_list_interface_{$record['id']}'), 'delete');"
                     ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
 EOL;
-        }
-        $html .= <<<EOL
+            }
+            $html .= <<<EOL
                 </td>
 
             </tr>
 EOL;
         }
-
 
 
 

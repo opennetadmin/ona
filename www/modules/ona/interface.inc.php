@@ -1177,7 +1177,7 @@ interface_move_host-v{$version}
 
   Required:
     ip=[address|ID]       the IP address or ID of the interface
-    host=[fqdn|ID]        the fqdn or ID of the host
+    host=[fqdn|ID]        the fqdn or ID of the new host
 
 \n
 EOM
@@ -1202,18 +1202,35 @@ EOM
         $self['error'] = "ERROR => The interface specified, {$options['ip']}, does not exist!";
         return(array(3, $self['error'] . "\n"));
     }
+
+    // check if this interface is the primary DNS interface address.
+    list($status, $rows, $primaryhost) = ona_get_host_record(array('id' => $interface['host_id']));
+    list($status, $rows, $primarydns) = ona_get_dns_record(array('id' => $primaryhost['primary_dns_id']));
+    if ($primarydns['interface_id'] == $interface['id']) {
+        printmsg("DEBUG => This interface is part of the primary DNS name for {$primaryhost['fqdn']}, please assign a new primary DNS.",3);
+        $self['error'] = "ERROR => This interface is part of the primary DNS name for {$primaryhost['fqdn']}, please assign a new primary DNS.";
+        return(array(4, $self['error'] . "\n"));
+    }
+
+    // if this is the last interface on the host display a message
+    // TODO: MP is this best? I would think a lot of people WANT to move the last IP before removing the host
+    // it would cut some steps of having to delete/re-add when moving an IP.  maybe allow this?!?
+    // ------ Since most hosts use the last interface as a primary dns id then they cant move the last interface.--------
+
+//     list($status, $rows, $int) = db_get_records($onadb, 'interfaces', array('host_id' => $interface['host_id'], '', 0);
+//     if ($rows == 1) {
+//         printmsg("DEBUG => You cannot delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).",3);
+//         $self['error'] = "ERROR => You can not delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).";
+//         return(array(5, $self['error'] . "\n"));
+//     }
     printmsg("DEBUG => Interface selected: {$options['ip']}", 3);
 
     // Check that this interface is not associated with this host via an interface_cluster
     list($status, $rows, $int_cluster) = db_get_records($onadb, 'interface_clusters', array('host_id' => $host['id'],'interface_id' => $interface['id']), '', 0);
-    printmsg("DEBUG => New host is clustered with that IP", 3);
+    printmsg("DEBUG => interface_move_host() New host is clustered with this IP, Deleting cluster record", 3);
     if ($rows == 1) {
-        printmsg("DEBUG => You cannot delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).",3);
-        $self['error'] = "ERROR => You can not delete the last interface on a host, you must delete the host itself ({$host['fqdn']}).";
-        return(array(13, $self['error'] . "\n"));
-
         // Delete the interface_cluster if there is one
-        list($status, $rows) = db_delete_records($onadb, 'interfaces', array('id' => $interface['id']));
+        list($status, $rows) = db_delete_records($onadb, 'interface_clusters', array('interface_id' => $interface['id'],'host_id' => $host['id']));
         if ($status or !$rows) {
             $self['error'] = "ERROR => interface_move_host() SQL Query failed: " . $self['error'];
             printmsg($self['error'], 0);
@@ -1221,14 +1238,23 @@ EOM
         }
     }
 
-    //FIXME: MP: make sure you check if this is the last interface on the host and do some sort of warning popup etc.
+    // If the interface being moved has a NAT IP then the ext interface needs the host_id updated as well
+    if ($interface['nat_interface_id'] > 0) {
+        printmsg("DEBUG => interface_move_host() Moving interface with NAT IP.", 3);
+        list($status, $rows) = db_update_record($onadb, 'interfaces', array('id' => $interface['nat_interface_id']), array('host_id' => $host['id']));
+        if ($status or !$rows) {
+            $self['error'] = "ERROR => interface_move_host() SQL Query failed: " . $self['error'];
+            printmsg($self['error'], 0);
+            return(array(15, $self['error'] . "\n"));
+        }
+    }
 
     // Update the interface record
     list($status, $rows) = db_update_record($onadb, 'interfaces', array('id' => $interface['id']), array('host_id' => $host['id']));
     if ($status or !$rows) {
         $self['error'] = "ERROR => interface_move_host() SQL Query failed: " . $self['error'];
         printmsg($self['error'], 0);
-        return(array(14, $self['error'] . "\n"));
+        return(array(16, $self['error'] . "\n"));
     }
 
     $text = "INFO => Interface " . ip_mangle($interface['ip_addr'], 'dotted') . " moved to {$host['fqdn']}";
