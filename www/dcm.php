@@ -11,7 +11,7 @@ require_once($base . '/config/config.inc.php');
 $status = 1;
 $output = "ERROR => No module specified!\n";
 
-// FIXME: Add IP Auth in Later
+// FIXME: Add IP Auth in Later --- or just use htaccess method
 // Disconnect the user if their IP address isn't in our allowed list
 // $remote_ip = ip_mangle($_SERVER['REMOTE_ADDR'], 'numeric');
 // if (!in_array($remote_ip, $ips)) { print "1\r\nPermission denied!\n"; exit; }
@@ -19,13 +19,22 @@ $output = "ERROR => No module specified!\n";
 printmsg("DEBUG => DCM_USER: {$_SERVER['PHP_AUTH_USER']}", 4);
 
 // FIXME: for now this hard codes the user.. this needs to pay attention to the user passed in and the password!
+// will this ever even happen?  it would come up as "unknown user" anyway
 if ($_SERVER['PHP_AUTH_USER'] == '') {
     $_SESSION['ona']['auth']['user']['username']='dcm.pl';
     get_perms('dcm.pl');
 }
 else {
     $_SESSION['ona']['auth']['user']['username']=$_SERVER['PHP_AUTH_USER'];
-    get_perms($_SERVER['PHP_AUTH_USER']);
+    $status = get_perms($_SERVER['PHP_AUTH_USER']);
+    if ($status == 1) {
+        printmsg("ERROR => DCM: Unknown user {$_SERVER['PHP_AUTH_USER']}", 4);
+        print "Unknown or unauthorized user: {$_SERVER['PHP_AUTH_USER']}\nSee -l and -p options within dcm.pl.\n";
+        // clear the session
+        // FIXME: should I do a sess_destroy or sess_close instead?  to clear crap from the DB
+        unset($_SESSION['ona']['auth']);
+        exit;
+    }
 }
 
 
@@ -43,5 +52,9 @@ if (isset($_REQUEST['module'])) {
 // Send the module status code and output to dcm.pl
 print $status . "\r\n";
 print $output;
+
+// clear the session
+// FIXME: should I do a sess_destroy or sess_close instead?  to clear crap from the DB
+unset($_SESSION['ona']['auth']);
 
 ?>

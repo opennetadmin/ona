@@ -1,7 +1,7 @@
 <?php
 
 
-function get_authentication($login_name='guest', $login_password='') {
+function get_authentication($login_name='', $login_password='') {
     global $conf, $self, $onadb;
 
     $js = "el('loginmsg').innerHTML = '<span style=\"color: green;\">Success!</span>'; setTimeout('removeElement(\'tt_loginform\')',1000);";
@@ -45,7 +45,6 @@ function get_perms($login_name='') {
     // Basic flow:
     //   check to see if they have login info
     //   check to see if they have a local user ID
-    //     else use guest ID
     //   check to see what local and upstream groups they're a part of
     //   load user permissions
     //   load group permissions
@@ -60,8 +59,8 @@ function get_perms($login_name='') {
     // Load their user record
     list($status, $rows, $user) = db_get_record($onadb, 'users', array('username' => $login_name));
     if ($status or $rows != 1) {
-        // Load the guest account since they don't have an account of their own
-        list($status, $rows, $user) = db_get_record($onadb, 'users', array('username' => 'guest'));
+        printmsg("ERROR => Login failure for {$login_name}: Unknown user", 0);
+        return(1);
     }
 
     // Update the user's atime
