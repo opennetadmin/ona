@@ -221,7 +221,7 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
                 $upgrade_sqlfile = "{$base}/{$upgrade_index}-to-{$new_index}.sql";
                 // Check that the upgrade file exists
                 if (file_exists($upgrade_sqlfile)) {
-                    //populate_db($db_context['mysqlt']['default']['primary']['db_database'],$DBPrefix,$upgrade_sqlfile);
+                    populate_db($db_context['mysqlt']['default']['primary']['db_database'],$DBPrefix,$upgrade_sqlfile);
                     $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Upgraded from index {$upgrade_index} to {$new_index}.<br>";
                     // Update the upgrade_index element in the sys_config table
                     if(mysql_query("UPDATE sys_config SET value='{$new_index}' WHERE name like 'upgrade_index';",$con)) {
