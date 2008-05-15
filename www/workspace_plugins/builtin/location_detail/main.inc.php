@@ -16,7 +16,7 @@ $title_left_html .= <<<EOL
                 <a title="View map"
                     class="act"
                     onClick="window.open(
-                               'http://maps.google.com/maps?q={$location['address']},{$location['city']},{$location['state']},{$location['zip_code']}',
+                               'http://maps.google.com/maps?q={$location['address']},{$location['city']},{$location['state']},{$location['zip_code']} ({$location['name']})',
                                'MapIT',
                                'toolbar=0,location=1,menubar=0,scrollbars=0,status=0,resizable=1,width=985,height=700')"
                 ><img src="{$images}/silk/world_link.png" border="0"></a>

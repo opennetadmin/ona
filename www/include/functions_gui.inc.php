@@ -371,7 +371,7 @@ function get_subnet_suggestions($q, $max_results=10) {
     return(get_text_suggestions($q . '%', 'subnets', 'name', $max_results));
 }
 
-function get_location_number_suggestions($q, $max_results=10) {
+function get_location_suggestions($q, $max_results=10) {
     return(get_text_suggestions($q . '%', 'locations', 'reference', $max_results));
 }
 
@@ -853,7 +853,9 @@ function suggest_block_ip_subnet_thru($q, $el_input, $el_suggest) {
 function suggest_set_ip_edit_interface($q, $el_input, $el_suggest) {
     return(suggest_ip($q, $el_input, $el_suggest));
 }
-
+function suggest_natip_qf($q, $el_input, $el_suggest) {
+    return(suggest_ip($q, $el_input, $el_suggest));
+}
 
 
 
@@ -1101,7 +1103,7 @@ function suggest_masks_edit_subnet($q, $el_input, $el_suggest) {
 // xajax server
 // This function is called by the suggest() function.
 //////////////////////////////////////////////////////////////////////////////
-function suggest_location_number($q, $el_input, $el_suggest) {
+function suggest_location($q, $el_input, $el_suggest) {
     global $conf;
 
     // Instantiate the xajaxResponse object
@@ -1110,8 +1112,8 @@ function suggest_location_number($q, $el_input, $el_suggest) {
     $js = "";
 
     // Search the DB
-    $results = get_location_number_suggestions($q);
-    $results = array_merge($results, get_location_number_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = get_location_suggestions($q);
+    $results = array_merge($results, get_location_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
     $results = array_unique($results);
 
     // Build the javascript to return
@@ -1130,8 +1132,8 @@ function suggest_location_number($q, $el_input, $el_suggest) {
     return($response->getXML());
 }
 // Used in all QF (tool-tip based) search boxes
-function suggest_location_number_qf($q, $el_input, $el_suggest) {
-    return(suggest_location_number($q, $el_input, $el_suggest));
+function suggest_location_qf($q, $el_input, $el_suggest) {
+    return(suggest_location($q, $el_input, $el_suggest));
 }
 // Advanced search subnet tab
 function suggest_location_number_subnet($q, $el_input, $el_suggest) {

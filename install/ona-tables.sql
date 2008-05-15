@@ -1,8 +1,5 @@
--- MySQL dump 10.11
---
--- Host: localhost    Database: ona
+-- OpenNetAdmin MySQL table structure for initial loads.
 -- ------------------------------------------------------
--- Server version	5.0.45-Dotdeb_0.dotdeb.1-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -345,6 +342,7 @@ CREATE TABLE `interfaces` (
   `id` int(10) unsigned NOT NULL,
   `subnet_id` int(10) unsigned NOT NULL,
   `host_id` int(10) unsigned NOT NULL,
+  `nat_interface_id` int(10) unsigned NOT NULL default '0' COMMENT 'ID of external interface that this interface is NATed to',
   `ip_addr` int(10) unsigned NOT NULL,
   `mac_addr` varchar(12) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -359,11 +357,15 @@ CREATE TABLE `interfaces` (
 DROP TABLE IF EXISTS `locations`;
 CREATE TABLE `locations` (
   `id` int(10) unsigned NOT NULL,
-  `city_id` int(10) unsigned NOT NULL,
-  `state_id` int(10) unsigned NOT NULL,
-  `country_id` int(10) unsigned NOT NULL,
-  `lattitude` varchar(20) NOT NULL,
+  `reference` varchar(10) NOT NULL,
+  `name` varchar(63) NOT NULL,
+  `address` varchar(63) NOT NULL,
+  `city` varchar(63) NOT NULL,
+  `state` varchar(31) NOT NULL,
+  `zip_code` int(5) unsigned NOT NULL,
+  `latitude` varchar(20) NOT NULL,
   `longitude` varchar(20) NOT NULL,
+  `misc` varchar(256) NOT NULL COMMENT 'Misc info, site contacts, phone numbers etc.',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='This table needs re-worked';
 

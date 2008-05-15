@@ -178,7 +178,7 @@ EOM
         array(
             'id'                => $host['device_id'],
             'device_type_id'    => $device_type['id'],
-            'location_id'       => 1 // FIXME: (MP) hard coding location as it is a required field
+            'location_id'       => 0 // FIXME: (MP) hard coding location as it is a required field
             // FIXME: (MP) add in the asset tag and serial number stuff too
         )
     );
