@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -156,8 +156,13 @@ EOM
                                 "INFO => Conflicting interface record ID: {$interface['id']}\n"));
             }
         }
+    } else {
+        $options['mac'] = '';
     }
 
+    if (!$options['name']) {
+        $options['name'] = '';
+    }
     // Check permissions
     if (!auth('host_add')) {
         $self['error'] = "Permission denied!";

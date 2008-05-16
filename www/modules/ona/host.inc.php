@@ -25,7 +25,7 @@ function host_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     printmsg("DEBUG => host_add({$options}) called", 3);
 
@@ -34,7 +34,6 @@ function host_add($options="") {
 
     // Return the usage summary if we need to
     if ($options['help'] or !($options['host'] and $options['type']) ) {
-//FIXME: PK:    if ($options['help'] or !($options['host'] and $options['type'] and $options['unit']) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
         $self['error'] = 'ERROR => Insufficient parameters';
         return(array(1,

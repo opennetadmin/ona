@@ -102,7 +102,7 @@ function ws_display_list($window_name, $form='') {
             <tr>
                 <td class="list-header" align="center" style="{$style['borderR']};">Vlan Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Vlan Number</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Networks In Vlan</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Subnets In Vlan</td>
                 <td class="list-header" align="center">&nbsp;</td>
             </tr>
 EOL;

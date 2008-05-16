@@ -1487,7 +1487,7 @@ EOL;
                     >{$host['fqdn']}</a>&nbsp;</td>
                 <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">{$interface['name']}</td>
                 <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">
-                    <img src="/ona/images/silk/delete.png"
+                    <img src="{$images}/silk/delete.png"
                          title="Remove interface share with {$host['fqdn']}"
                          border="0"
                          onClick="xajax_window_submit('tooltips', xajax.getFormValues('quick_interface_share_del_form'), 'interface_share_del');removeElement('{$form['id']}');"
@@ -1594,7 +1594,7 @@ EOL;
 
     <tr>
         <td align="right" class="qf-search-line">
-            <u>N</u>ame
+            Int <u>N</u>ame
         </td>
         <td align="left" class="qf-search-line">
             <input name="name" type="text" class="edit" size="24" accesskey="n" />

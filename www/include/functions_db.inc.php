@@ -1495,6 +1495,12 @@ function ona_find_host($search="") {
         return(array($status, $rows, $host));
     }
 
+    // MP: NEEDS MORE VALIDATION ON THIS PART!!
+    // If it does not have a dot in it. append the default domain
+    if (!strstr($search,'.')) {
+        $search = $search.'.'.$conf['dns_defaultdomain'];
+    }
+
     //
     // It's an FQDN, do a bunch of stuff!
     //
@@ -2065,7 +2071,7 @@ function ona_find_device($search="") {
 //      3. An array of a record from the devices table where
 //         $search matchs.
 //
-//  Example: list($status, $rows, $subnet) = ona_find_device('10.44.10.123');
+//  Example: list($status, $rows, $subnet) = ona_find_device_type('something');
 ///////////////////////////////////////////////////////////////////////
 function ona_find_device_type($search="") {
     global $self;
@@ -2074,12 +2080,6 @@ function ona_find_device_type($search="") {
     if ($search == "") {
         return(array(1, 0, array()));
     }
-
-/* PK BOGUS FUNCTION.  FIXME: remove when the 'devices' table gets set up */
-//$retval = array('id' => 1, 'DEVICE_TYPE_ID' => 1, 'MANUFACTURER_ID' => 1, 'MODEL_DESCRIPTION' => "A bogus record");
-//return(array(0, 1, $retval));
-/* END BOGUS FUNCTION */
-
 
     // If it's numeric
     if (preg_match('/^\d+$/', $search)) {
@@ -2098,13 +2098,18 @@ function ona_find_device_type($search="") {
                 printmsg("DEBUG => ona_find_device() found device record by $field", 2);
                 return(array(0, $rows, $record));
             }
-        }
-    }*/
+        }*/
+    }
 
     // It's a string - do several sql queries and see if we can get a unique match
-    list($status, $rows, $record) = ona_get_model_record(array('model' => $search));
+    list($manufmodel, $role) = split("\(",$search);
+    list($manuf, $model) = split(" ",$manufmodel);
+    $role = preg_replace(array('/\(/','/\)/'),'',"{$role}");
+    list($status, $rows, $manu) = ona_get_manufacturer_record(array('name' => $manuf));
+    list($status, $rows, $rol) = ona_get_role_record(array('name' => $role));
+    list($status, $rows, $record) = ona_get_model_record(array('name' => $model,'manufacturer_id' => $manu['id']));
     if ($status == 0 and $rows == 1) {
-        list($status, $rows, $record) = ona_get_device_type_record(array('model_id' => $record['id']));
+        list($status, $rows, $record) = ona_get_device_type_record(array('model_id' => $record['id'],'role_id' => $rol['id']));
     }
     // If we got it, return it
     if ($status == 0 and $rows == 1) {
@@ -2117,7 +2122,7 @@ function ona_find_device_type($search="") {
     $self['error'] = "NOTICE => couldn't find a unique device_type record with specified search criteria";
     printmsg($self['error'], 2);
     return(array(2, 0, array()));
-    }
+
 }
 
 
