@@ -55,6 +55,7 @@ function ws_display_list($window_name, $form='') {
     $where = "";
     $and = "";
     $orderby = "";
+    $from = 'hosts';
 
     // DISPLAY ALL
     // MP: I dont think this is used.. remove it if you can
@@ -197,14 +198,7 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
-    // subnet ID
-    if (is_numeric($form['subnet_id'])) {
-        // We do a sub-select to find interface id's that match
-        $where .= $and . "id IN ( SELECT host_id " .
-                                 "  FROM interfaces " .
-                                 "  WHERE subnet_id = " . $onadb->qstr($form['subnet_id']) . " ) ";
-        $and = " AND ";
-    }
+
 
 
     // MAC
@@ -314,7 +308,18 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
+    // subnet ID
+    if (is_numeric($form['subnet_id'])) {
+        // We do a sub-select to find interface id's that match
+        $from = "(
+SELECT distinct a.*
+from hosts as a, interfaces as b
+where a.id = b.host_id
+and b.subnet_id = ". $onadb->qstr($form['subnet_id']). "
+order by b.ip_addr) hosts";
 
+        $and = " AND ";
+    }
 
 
     // Wild card .. if $while is still empty, add a 'ID > 0' to it so you see everything.
@@ -337,7 +342,7 @@ function ws_display_list($window_name, $form='') {
     list ($status, $rows, $results) =
         db_get_records(
             $onadb,
-            'hosts',
+            $from,
             $where . $filter,
             $orderby,
             $conf['search_results_per_page'],
@@ -355,18 +360,13 @@ function ws_display_list($window_name, $form='') {
         list ($status, $rows, $records) =
             db_get_records(
                 $onadb,
-                'hosts',
+                $from,
                 $where . $filter,
                 "",
                 0
             );
     }
     $count = $rows;
-
-   // $js .= "alert('Where: " . str_replace("'", '"', $status) . "');";
-
-
-
 
 
     //
@@ -400,7 +400,7 @@ EOL;
             list($status, $rows, $records) = db_get_records($onadb,
                                                             'interfaces',
                                                             'host_id = '. $onadb->qstr($record['id']),
-                                                            "",
+                                                            "ip_addr",
                                                             0);
 
             $interfaces = $rows;
@@ -411,14 +411,14 @@ EOL;
                                                             'host_id = '. $onadb->qstr($record['id']) .
                                                             ' AND ip_addr >= ' . $onadb->qstr($ip) .
                                                             ' AND ip_addr <= ' . $onadb->qstr($ip_end),
-                                                            "",
+                                                            "ip_addr",
                                                             0);
 
             // Count how many rows and assign it back to the interfaces variable
             list($status, $rows, $records) = db_get_records($onadb,
                                                             'interfaces',
                                                             'host_id = '. $onadb->qstr($record['id']),
-                                                            "",
+                                                            "ip_addr",
                                                             0);
 
             $interfaces = $rows;

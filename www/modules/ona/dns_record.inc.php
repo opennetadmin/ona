@@ -385,6 +385,43 @@ complex DNS messes for themselves.
             // Debugging
             printmsg("DEBUG => Using hostname: {$hostname}.{$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
         }
+
+        // Determine the host and domain name portions of the pointsto option
+        // Find the domain name piece of $search
+        list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
+        printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$pdomain['fqdn']} for pointsto.", 3);
+
+        // Now find what the host part of $search is
+        $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
+
+        // Validate that the DNS name has only valid characters in it
+        $phostname = sanitize_hostname($phostname);
+        if (!$phostname) {
+            printmsg("ERROR => Invalid pointsto host name ({$options['pointsto']})!", 3);
+            $self['error'] = "ERROR => Invalid pointsto host name ({$options['pointsto']})!";
+            return(array(4, $self['error'] . "\n"));
+        }
+        // Debugging
+        printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
+
+        // Find the dns record that it will point to
+        list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A'));
+        if ($status or !$rows) {
+            printmsg("ERROR => Unable to find DNS A record to point NS entry to!",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+
+        $add_name = $hostname;
+        $add_domainid = $domain['id'];
+        $add_interfaceid = $pointsto_record['interface_id'];
+        $add_dnsid = $pointsto_record['id'];
+        $add_mx_preference = $options['mx_preference'];
+
+        $info_msg = "{$hostname}.{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+
+
     }
     // Process TXT record types
     else if ($options['type'] == 'TXT') {

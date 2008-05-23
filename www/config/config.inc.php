@@ -20,7 +20,7 @@ $baseURL=dirname($_SERVER['SCRIPT_NAME']); $baseURL = rtrim($baseURL, '/');
 $images = "{$baseURL}/images";
 
 // help URL location
-$_ENV['help_url'] = "http://www.opennetadmin.com/docs/";
+$_ENV['help_url'] = "http://opennetadmin.com/docs/";
 
 
 // Get any query info
