@@ -124,8 +124,7 @@ print <<<EOL
 
             <!-- Task Bar (i.e. Window List) -->
             <span class="topmenu-item" style="border-right: 1px solid {$color['border']};">&nbsp;</span>
-            <!-- I set fixed position here so it would not wrap to the next line -->
-            <span class="topmenu-item" style="position: fixed;" id="menu-window-list">&nbsp;</span>
+            <span class="topmenu-item" id="menu-window-list">&nbsp;</span>
 
         </div>
 
@@ -228,14 +227,14 @@ print <<<EOL
     for (var i = 0; i < trs.length; i++) {
         tds = trs[i].getElementsByTagName('td'); // all TDs
 
-        if (tds.length === 0) continue; //  no TDs here, move on
+        if (tds.value === 0) continue; //  no TDs here, move on
 
         bump[i] = 0;
         if (i == rownum) bump[i] = 10;
 
         // get the value, update total
         value  = parseFloat(tds[td_index].innerHTML);
-        data[data.length] = value;
+        data[i] = value;
         total += value;
     }
 
@@ -251,9 +250,8 @@ print <<<EOL
     ctx.fillStyle = "rgb(255,255,255)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-//this.onerror = function() { return true; }
     // loop through each table row
-    for (var piece in trs) {
+    for (var piece = 0; piece < trs.length; piece++) {
 
         var thisvalue = data[piece] / total;
 
@@ -276,7 +274,6 @@ print <<<EOL
 
         sofar += thisvalue; // increment progress tracker
     }
-//this.onerror = 1;
 }
 </script>
 
