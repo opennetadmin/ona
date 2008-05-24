@@ -1137,7 +1137,7 @@ function suggest_location_qf($q, $el_input, $el_suggest) {
 }
 // Advanced search subnet tab
 function suggest_location_number_subnet($q, $el_input, $el_suggest) {
-    return(suggest_location_number($q, $el_input, $el_suggest));
+    return(suggest_location($q, $el_input, $el_suggest));
 }
 
 

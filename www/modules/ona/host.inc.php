@@ -19,13 +19,13 @@
 //         error.  All errors messages are stored in $self['error'].
 //      2. A textual message for display on the console or web interface.
 //
-//  Example: list($status, $result) = host_add('host=test&type=&unit=');
+//  Example: list($status, $result) = host_add('host=test&type=something');
 ///////////////////////////////////////////////////////////////////////
 function host_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     printmsg("DEBUG => host_add({$options}) called", 3);
 
@@ -56,6 +56,7 @@ Add a new host
     mac=ADDRESS               mac address (most formats are ok)
     name=NAME                 interface name (i.e. "FastEthernet0/1.100")
     description=TEXT          brief description of the interface
+    location=REF              reference of location
 
 \n
 EOM
@@ -73,24 +74,25 @@ EOM
         }
     }
 
+    // Find the Location ID to use
+    if ($options['location']) {
+        list($status, $rows, $loc) = ona_find_location($options['location']);
+        if ($status or !$rows) {
+            printmsg("DEBUG => The location specified, {$options['location']}, does not exist!", 3);
+            return(array(2, "ERROR => The location specified, {$options['location']}, does not exist!\n"));
+        }
+        printmsg("DEBUG => Location selected: {$loc['reference']}, location name: {$loc['name']}", 3);
+    } else {
+        $loc['id'] = 0;
+    }
 
-// FIXME: commented out by Paul K 3/21/07 because we probably won't use units
-//    // Find the Unit ID to use
-//    list($status, $rows, $unit) = ona_find_unit($options['unit']);
-//    if ($status or $rows != 1 or !$unit['UNIT_ID']) {
-//        printmsg("DEBUG => The unit specified, {$options['unit']}, does not exist!", 3);
-//        return(array(2, "ERROR => The unit specified, {$options['unit']}, does not exist!\n"));
-//    }
-//    printmsg("DEBUG => Unit selected: {$unit['UNIT_NAME']} Unit number: {$unit['UNIT_NUMBER']}", 3);
-
-
-   // Find the Device Type ID (i.e. Type) to use
-   list($status, $rows, $device_type) = ona_find_device_type($options['type']);
-   if ($status or $rows != 1 or !$device_type['id']) {
-       printmsg("DEBUG => The device type specified, {$options['type']}, does not exist!", 3);
-       return(array(3, "ERROR => The device type specified, {$options['type']}, does not exist!\n"));
-   }
-   printmsg("DEBUG => Device type selected: {$device_type['model_description']} Device ID: {$device_type['id']}", 3);
+    // Find the Device Type ID (i.e. Type) to use
+    list($status, $rows, $device_type) = ona_find_device_type($options['type']);
+    if ($status or $rows != 1 or !$device_type['id']) {
+        printmsg("DEBUG => The device type specified, {$options['type']}, does not exist!", 3);
+        return(array(3, "ERROR => The device type specified, {$options['type']}, does not exist!\n"));
+    }
+    printmsg("DEBUG => Device type selected: {$device_type['model_description']} Device ID: {$device_type['id']}", 3);
 
 
     // Sanitize "security_level" option
@@ -145,15 +147,6 @@ EOM
     }
     printmsg("DEBUG => ID for new host record: $id", 3);
 
-//     // Get the next ID for the new dns record
-//     $host['primary_dns_id'] = ona_get_next_id('dns');
-//     if (!$id) {
-//         $self['error'] = "ERROR => The ona_get_next_id('dns') call failed!";
-//         printmsg($self['error'], 0);
-//         return(array(7, $self['error'] . "\n"));
-//     }
-//     printmsg("DEBUG => ID for new dns record: $id", 3);
-
     // Get the next ID for the new device record
     $host['device_id'] = ona_get_next_id('devices');
     if (!$id) {
@@ -177,7 +170,7 @@ EOM
         array(
             'id'                => $host['device_id'],
             'device_type_id'    => $device_type['id'],
-            'location_id'       => 0 // FIXME: (MP) hard coding location as it is a required field
+            'location_id'       => $loc['id']
             // FIXME: (MP) add in the asset tag and serial number stuff too
         )
     );
@@ -204,25 +197,6 @@ EOM
         printmsg($self['error'], 0);
         return(array(6, $self['error'] . "\n"));
     }
-
-// // FIXME: MP this should use the run_module('dns_record_add')!!!
-//     // Add the dns record
-//     list($status, $rows) = db_insert_record(
-//         $onadb,
-//         'dns',
-//         array(
-//             'id'                   => $host['primary_dns_id'],
-//             'type'                 => 'A',
-//             'ttl'                  => '3600', // FIXME: (PK) pull this from the parent domain? (MP) also allow it to be passed on commandline
-//             'name'                 => $host['name'],
-//             'domain_id'            => $host['domain_id']
-//         )
-//     );
-//     if ($status or !$rows) {
-//         $self['error'] = "ERROR => host_add() SQL Query failed adding dns record: " . $self['error'];
-//         printmsg($self['error'], 0);
-//         return(array(6, $self['error'] . "\n"));
-//     }
 
     // Else start an output message
     $text = "INFO => Host ADDED: {$host['name']}.{$host['domain_fqdn']}";
@@ -308,7 +282,7 @@ function host_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     printmsg("DEBUG => host_modify({$options}) called", 3);
 
@@ -320,8 +294,7 @@ function host_modify($options="") {
        (!$options['interface'] and !$options['host']) or
        (!$options['set_host'] and
         !$options['set_type'] and
-        !$options['set_unit'] and
-        !$options['set_security_level'] and
+        !$options['set_location'] and
         !$options['set_notes']
        ) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
@@ -342,6 +315,7 @@ Modify a host record
   Update:
     set_type=TYPE or ID       change device/model type or ID
     set_notes=NOTES           change the textual notes
+    set_location=REF          reference for location
 \n
 EOM
         ));
@@ -386,35 +360,6 @@ EOM
     // This variable will contain the updated info we'll insert into the DB
     $SET = array();
 
-
-/* MP: removed for now.. you should change the dns record entry or select a new primary dns record
-// the gui does not show this option anyway, the command line probably should not allow it either
-    $SET_DNS = array();
-
-    // Set options['set_host']?
-    // Validate that the DNS name has only valid characters in it
-    if ($options['set_host']) {
-        $options['set_host'] = sanitize_hostname($options['set_host']);
-        if (!$options['set_host']) {
-            printmsg("DEBUG => Invalid host name ({$options['set_host']})!", 3);
-            $self['error'] = "ERROR => Invalid host name ({$options['set_host']})!";
-            return(array(5, $self['error'] . "\n"));
-        }
-        // Get the host & domain part
-        list($status, $rows, $tmp_host) = ona_find_host($options['set_host']);
-        // If the function above returned a host, and it's not the one we're editing, stop!
-        if ($tmp_host['id'] and $tmp_host['id'] != $host['id']) {
-            printmsg("DEBUG => Another host named {$tmp_host['fqdn']} already exists!",3);
-            $self['error'] = "ERROR => Another host named {$tmp_host['fqdn']} already exists!";
-            return(array(5, $self['error'] . "\n"));
-        }
-        if($host['name'] != $tmp_host['name'])
-            $SET_DNS['name']      = $tmp_host['name'];
-        if($host['domain_id'] != $tmp_host['domain_id'])
-            $SET_DNS['domain_id'] = $tmp_host['domain_id'];
-    }
-*/
-
     // Set options['set_type']?
     if ($options['set_type']) {
         // Find the Device Type ID (i.e. Type) to use
@@ -428,7 +373,7 @@ EOM
 
         // Everything looks ok, add it to $SET if it changed...
         if ($device['device_type_id'] != $device_type['id'])
-            $SET_DEV_TYPE['device_type_id'] = $device_type['id'];
+            $SET_DEV['device_type_id'] = $device_type['id'];
     }
 
     // Set options['set_notes'] (it can be a null string!)
@@ -441,8 +386,25 @@ EOM
             $SET['notes'] = $options['set_notes'];
     }
 
+
+  //  $SET_DEV['location_id'] = 0;
+    if (array_key_exists('set_location', $options)) {
+        if (!$options['set_location'])
+            $SET_DEV['location_id'] = '';
+        else {
+            list($status, $rows, $loc) = ona_find_location($options['set_location']);
+            if (!$rows) {
+                printmsg("DEBUG => The location specified, {$options['set_location']}, does not exist!",3);
+                $self['error'] = "ERROR => The location specified, {$options['set_location']}, does not exist!";
+                return(array(7, $self['error'] . "\n"));
+            }
+            // If location is changing, then set the variable
+            if ($device['location_id'] != $loc['id']) $SET_DEV['location_id'] = $loc['id'];
+        }
+    }
+
     // Check permissions
-    if (!auth('host_modify') or !authlvl($host['LVL'])) {
+    if (!auth('host_modify')) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(10, $self['error'] . "\n"));
@@ -460,25 +422,14 @@ EOM
             return(array(8, $self['error'] . "\n"));
         }
     }
-/* MP: removed for now.. you should change the dns record entry or select a new primary dns record
-// the gui does not show this option anyway, the command line probably should not allow it either
-    // Update DNS table if necessary
-    if(count($SET_DNS) > 0) {
-        list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $host['primary_dns_id']), $SET_DNS);
-        if ($status or !$rows) {
-            $self['error'] = "ERROR => host_modify() SQL Query failed for dns record: " . $self['error'];
-            printmsg($self['error'], 0);
-            return(array(8, $self['error'] . "\n"));
-        }
-    }
-*/
+
     // Update device table if necessary
-    if(count($SET_DEV_TYPE) > 0) {
-        list($status, $rows) = db_update_record($onadb, 'devices', array('id' => $host['device_id']), $SET_DEV_TYPE);
+    if(count($SET_DEV) > 0) {
+        list($status, $rows) = db_update_record($onadb, 'devices', array('id' => $host['device_id']), $SET_DEV);
         if ($status or !$rows) {
             $self['error'] = "ERROR => host_modify() SQL Query failed for device type: " . $self['error'];
             printmsg($self['error'], 0);
-            return(array(8, $self['error'] . "\n"));
+            return(array(9, $self['error'] . "\n"));
         }
     }
 

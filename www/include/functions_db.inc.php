@@ -1726,14 +1726,6 @@ function ona_find_location($search="") {
 
     // If it's numeric
     if (preg_match('/^\d+$/', $search)) {
-        // Search for it by Location Reference
-        list($status, $rows, $record) = ona_get_location_record(array('reference' => $search));
-        // If we got it, return it
-        if ($status == 0 and $rows == 1) {
-            printmsg("DEBUG => ona_find_location() found location record by reference", 2);
-            return(array(0, $rows, $record));
-        }
-
         // Search for it by Location ID
         list($status, $rows, $record) = ona_get_location_record(array('id' => $search));
         // If we got it, return it
@@ -1751,17 +1743,35 @@ function ona_find_location($search="") {
         }
     }
 
-
-    // We assume data in the DB is upper cased (most, but not all, of it is)
-    // FIXME: do a separate onadb query so we can do case insensitive queries
-    $search = strtoupper($search);
-
     // It's a string - do several sql queries and see if we can get a unique match
-    foreach (array('name', 'address', 'city', 'state') as $field) {
+    foreach (array('reference','name', 'address', 'city', 'state') as $field) {
+        // First, try it as they send it
         list($status, $rows, $record) = ona_get_location_record(array($field => $search));
         // If we got it, return it
         if ($status == 0 and $rows == 1) {
             printmsg("DEBUG => ona_find_location() found location record by $field search", 2);
+            return(array(0, $rows, $record));
+        }
+    }
+
+    foreach (array('reference','name', 'address', 'city', 'state') as $field) {
+        // Next, do an upper on it to try it as upper case
+        $search = strtoupper($search);
+        list($status, $rows, $record) = ona_get_location_record(array($field => $search));
+        // If we got it, return it
+        if ($status == 0 and $rows == 1) {
+            printmsg("DEBUG => ona_find_location() found location record by UPPER($field) search", 2);
+            return(array(0, $rows, $record));
+        }
+    }
+
+    foreach (array('reference','name', 'address', 'city', 'state') as $field) {
+        // Last, try it all lowercase
+        $search = strtolower($search);
+        list($status, $rows, $record) = ona_get_location_record(array($field => $search));
+        // If we got it, return it
+        if ($status == 0 and $rows == 1) {
+            printmsg("DEBUG => ona_find_location() found location record by LOWER($field) search", 2);
             return(array(0, $rows, $record));
         }
     }

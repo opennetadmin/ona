@@ -19,13 +19,13 @@
 //         error.  All errors messages are stored in $self['error'].
 //      2. A textual message for display on the console or web interface.
 //
-//  Example: list($status, $result) = dns_record_add('host=test&type=&unit=');
+//  Example: list($status, $result) = dns_record_add('host=test&type=something');
 ///////////////////////////////////////////////////////////////////////
 function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -34,7 +34,6 @@ function dns_record_add($options="") {
 
     // Return the usage summary if we need to
     if ($options['help'] or !($options['name'] and $options['type']) ) {
-//FIXME: PK:    if ($options['help'] or !($options['host'] and $options['type'] and $options['unit']) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
         $self['error'] = 'ERROR => Insufficient parameters';
         return(array(1,
@@ -65,6 +64,7 @@ Add a new DNS record
     dns_record_add name=host.something.com type=TXT txt="my text value"
     dns_record_add name=domain.com type=MX pointsto=mxhost.domain.com mx_preference=10
 
+    DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
 EOM
         ));
     }
@@ -608,6 +608,7 @@ Modify a DNS record
   Note:
     * You are not allowed to change the type of the DNS record, to do that
       you must delete and re-add the record with the new type.
+    * DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
 \n
 EOM
         ));

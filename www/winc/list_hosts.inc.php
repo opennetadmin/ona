@@ -304,7 +304,8 @@ function ws_display_list($window_name, $form='') {
 
     // LOCATION No.
     if ($form['location']) {
-        $where .= $and . "location_id = " . $onadb->qstr($form['location']);
+        list($status, $rows, $loc) = ona_find_location($form['location']);
+        $where .= $and . "device_id in (select id from devices where location_id = " . $onadb->qstr($loc['id']) . ")";
         $and = " AND ";
     }
 

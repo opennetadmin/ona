@@ -369,7 +369,7 @@ function subnet_modify($options="") {
     printmsg('DEBUG => subnet_modify('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -423,13 +423,12 @@ EOM
     }
 
 
-// FIXME: add auth code here!
-//       Check permissions
-//     if (!auth('subnet_modify') or !authlvl($subnet['LVL'])) {
-//         $self['error'] = "Permission denied!";
-//         printmsg($self['error'], 0);
-//         return(array(3, $self['error'] . "\n"));
-//     }
+    // Check permissions
+    if (!auth('subnet_modify')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(3, $self['error'] . "\n"));
+    }
 
     // Validate the ip address
     if (!$options['set_ip']) {
@@ -586,19 +585,6 @@ EOM
         }
         printmsg("Subnet type selected: {$subnet_type['display_name']} ({$subnet_type['short_name']})", 1);
         $SET['subnet_type_id'] = $subnet_type['id'];
-    }
-
-
-    // Set options['set_location']?
-    if ($options['set_location']) {
-        // Find the location from $options[set_location]
-        list($status, $rows, $location) = ona_find_location($options['set_location']);
-        if ($status or $rows != 1) {
-            $self['error'] = "ERROR => Location not found!";
-            return(array(14, $self['error'] . "\n"));
-        }
-        printmsg("Location selected: {$location['location_number']} Name: {$location['location_name']}", 1);
-        $SET['location_id'] = $location['id'];
     }
 
 

@@ -268,7 +268,7 @@ EOL;
         
         // Subnet description
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $record['subnet_id']));
-        $record['NETWORK'] = $subnet['name'];
+        $record['subnet'] = $subnet['name'];
         $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
         $record['IP_SUBNET_MASK_CIDR'] = ip_mangle($subnet['ip_mask'], 'cidr');
         
@@ -300,10 +300,9 @@ EOL;
 EOL;
         }
         
-        // Get unit_number from the unit_id
-//FIXME: PK        list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $host['UNIT_ID']));
-        // Location number is best displayed as 5 digits zero padded
-//FIXME: PK        $record['UNIT_NUMBER'] = str_pad($unit['UNIT_NUMBER'], 5, "0", STR_PAD_LEFT);
+        // Get location info
+        list($status, $rows, $loc) = ona_get_location_record(array('id' => $device['location_id']));
+
         
         // Escape data for display in html
         foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
@@ -327,7 +326,7 @@ EOL;
                     <a title="View subnet. ID: {$subnet['id']}"
                          class="nav"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['id']}\', \'display\')');"
-                    >{$record['NETWORK']}</a>&nbsp;
+                    >{$record['subnet']}</a>&nbsp;
                 </td>
                 
                 <td class="list-row" align="left">
@@ -355,13 +354,13 @@ EOL;
                 
                 <td class="list-row" align="right">
                     <span onMouseOver="wwTT(this, event, 
-                                            'id', 'tt_unit_{$record['UNIT_NUMBER']}', 
+                                            'id', 'tt_location_{$device['location_id']}', 
                                             'type', 'velcro',
                                             'styleClass', 'wwTT_niceTitle',
                                             'direction', 'south',
-                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>unit,id=>tt_unit_{$record['UNIT_NUMBER']},unit_id=>{$record['UNIT_NUMBER']}\');'
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>location,id=>tt_location_{$device['location_id']},location_id=>{$device['location_id']}\');'
                                            );"
-                    >{$record['UNIT_NUMBER']}</span>&nbsp;
+                    >{$loc['reference']}</span>&nbsp;
                 </td>
                 
                 <td class="list-row">

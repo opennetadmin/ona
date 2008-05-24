@@ -40,8 +40,30 @@ $window['js'] = <<<EOL
     suggest_setup('ip_subnet', 'suggest_ip_subnet');
     suggest_setup('ip_subnet_thru',  'suggest_ip_subnet_thru');
     suggest_setup('subnet', 'suggest_subnet');
+    suggest_setup('location', 'suggest_location');
     el('host_search_form').onsubmit = function() { return false; };
     el('subnet_search_form').onsubmit = function() { return false; };
+
+        /* Setup the Quick Find location icon */
+        var _button = el('qf_location_{$window_name}');
+        _button.style.cursor = 'pointer';
+        _button.onclick =
+            function(ev) {
+                if (!ev) ev = event;
+                /* Create the popup div */
+                wwTT(this, ev,
+                     'id', 'tt_qf_location_{$window_name}',
+                     'type', 'static',
+                     'direction', 'south',
+                     'delay', 0,
+                     'styleClass', 'wwTT_qf',
+                     'javascript',
+                     "xajax_window_submit('tooltips', '" +
+                         "tooltip=>qf_location," +
+                         "id=>tt_qf_location_{$window_name}," +
+                         "input_id=>qf_location_{$window_name}');"
+                );
+            }; 
 
 EOL;
 
@@ -125,18 +147,18 @@ $window['html'] = <<<EOL
             <div id="suggest_notes" class="suggest"></div>
         </td>
     </tr>
-    <!--
+
     <tr>
         <td align="right" class="asearch-line">
-            <u>U</u>nit number
+            <u>L</u>ocation Ref
         </td>
         <td align="left" class="asearch-line">
-            <input id="unit_number" class="edit" type="text" name="unit" size="8" accesskey="u" />
-            <span id="qf_unit_{$window_name}"><img src="{$images}/silk/find.png" border="0"/></span>
-            <div id="suggest_unit_number" class="suggest"></div>
+            <input id="location" class="edit" type="text" name="location" size="8" accesskey="l" />
+            <!--<span id="qf_location_{$window_name}"><img src="{$images}/silk/find.png" border="0"/></span>-->
+            <div id="suggest_location" class="suggest"></div>
         </td>
     </tr>
-    -->
+
     <tr id='more_options_link'>
         <td align="right" class="asearch-line">
             <a class="nav" onClick="xajax_window_submit('{$window_name}', 'show more', 'more_host_options');">More &gt;&gt;</a>

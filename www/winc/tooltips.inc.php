@@ -748,7 +748,6 @@ function quick_subnet_search($form) {
     suggest_setup('ip_subnet_qf',      'suggest_ip_subnet_qf');
     suggest_setup('ip_subnet_thru_qf', 'suggest_ip_subnet_thru_qf');
     suggest_setup('subnet_qf', 'suggest_subnet_qf');
-    suggest_setup('location_number_qf', 'suggest_location_number_qf');
 EOL;
 
     $style['content_box'] = <<<EOL
@@ -895,6 +894,15 @@ EOL;
     <tr>
         <td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
             Location Quick Search
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            <u>R</u>eference
+        </td>
+        <td align="left" class="qf-search-line">
+             <input name="reference" type="text" class="edit" size="32" accesskey="r" />
         </td>
     </tr>
 
@@ -1090,7 +1098,6 @@ function quick_free_ip_search($form) {
     suggest_setup('ip_subnet_qf',      'suggest_ip_subnet_qf');
     suggest_setup('ip_subnet_thru_qf', 'suggest_ip_subnet_thru_qf');
     suggest_setup('subnet_qf', 'suggest_subnet_qf');
-    suggest_setup('location_number_qf', 'suggest_location_number_qf');
 EOL;
 
     $style['content_box'] = <<<EOL
@@ -1155,16 +1162,6 @@ EOL;
             thru
             <input id="ip_subnet_thru_qf" name="ip_subnet_thru" class="edit" type="text" size="15">
             <div id="suggest_ip_subnet_thru_qf" class="suggest"></div>
-        </td>
-    </tr>
-
-    <tr>
-        <td align="right" class="qf-search-line">
-            <u>U</u>nit number
-        </td>
-        <td align="left" class="qf-search-line">
-            <input id="location_number_qf" class="edit" type="text" name="location" size="8" accesskey="u" />
-            <div id="suggest_location_number_qf" class="suggest"></div>
         </td>
     </tr>
 

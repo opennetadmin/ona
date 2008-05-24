@@ -299,7 +299,7 @@ function block_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => block_modify({$options}) called", 3);
 
@@ -390,8 +390,11 @@ EOM
         $SET['ip_addr_end'] = ip_mangle($options['set_end'], 'numeric');
     }
 
-    if ($options['set_notes']) {
-        $SET['notes'] = $options['set_notes'];
+    if (array_key_exists('set_notes', $options)) {
+        // There is an issue with escaping '=' and '&'.  We need to avoid adding escape characters
+        $options['set_notes'] = str_replace('\\=','=',$options['set_notes']);
+        $options['set_notes'] = str_replace('\\&','&',$options['set_notes']);
+        if ($options['set_notes'] != $block['notes']) $SET['notes'] = $options['set_notes'];
     }
 
     // Check permissions

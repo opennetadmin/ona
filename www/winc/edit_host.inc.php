@@ -47,17 +47,13 @@ function ws_editor($window_name, $form='') {
             $interface['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
             if ($interface['mac_addr'])
                 $interface['mac_addr'] = mac_mangle($interface['mac_addr'], 2); //FIXME: (PK) should not use numeric format specifier here!
-            // Load associated UNIT record (get unit_number from the unit_id)
-//PK            list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $host['UNIT_ID']));
-            // Unit number is best displayed as 5 digits zero padded
-//PK            $host['UNIT_NUMBER'] = str_pad($unit['UNIT_NUMBER'], 5, "0", STR_PAD_LEFT);
         }
     }
 
     // Set the default security level if there isn't one
     if (!array_key_exists('lvl', $host)) $host['lvl'] = $conf['ona_lvl'];
 
-    // Load a subnet record if we got passed a subnet_id (FIXME: this should be subnet_id, but the GUI code has to change)
+    // Load a subnet record if we got passed a subnet_id
     if ($form['subnet_id'])
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
 
@@ -77,11 +73,13 @@ function ws_editor($window_name, $form='') {
         list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
         $device_types[$type['id']] = "{$manufacturer['name']} {$model['name']} ({$role['name']})";
     }
-    //    $models = array(); $models[1] = "DEFAULT default_device (A bogus record)"; // FIXME: (PK) temp code!
-
     asort($device_types);
-    //$device_model_list = '<option value="">&nbsp;</option>\n';
+
     list($status, $rows, $device) = ona_get_device_record(array('id' => $host['device_id']));
+    list($status, $rows, $location) = ona_get_location_record(array('id' => $device['location_id']));
+
+    $host['location'] = $location['reference'];
+    
     foreach (array_keys((array)$device_types) as $id) {
         $device_types[$id] = htmlentities($device_types[$id]);
         $selected = '';
@@ -116,27 +114,28 @@ function ws_editor($window_name, $form='') {
 
         suggest_setup('set_domain_{$window_name}',    'suggest_set_domain_{$window_name}');
 
-        /* Setup the Quick Find Unit icon */
-        /* (FIXME: commented out by Paul K 4/13/07 - we don't do units right now)
-        var _button = el('qf_unit_{$window_name}');
+        /* Setup the Quick Find location icon */
+
+        var _button = el('qf_location_{$window_name}');
         _button.style.cursor = 'pointer';
         _button.onclick =
             function(ev) {
                 if (!ev) ev = event;
-                /* Create the popup div */ /*PK
+                /* Create the popup div */
                 wwTT(this, ev,
-                     'id', 'tt_qf_unit_{$window_name}',
+                     'id', 'tt_qf_location_{$window_name}',
                      'type', 'static',
                      'direction', 'south',
                      'delay', 0,
                      'styleClass', 'wwTT_qf',
                      'javascript',
                      "xajax_window_submit('tooltips', '" +
-                         "tooltip=>qf_unit," +
-                         "id=>tt_qf_unit_{$window_name}," +
-                         "input_id=>set_unit_{$window_name}');"
+                         "tooltip=>qf_location," +
+                         "id=>tt_qf_location_{$window_name}," +
+                         "input_id=>set_location_{$window_name}');"
                 );
-            }; */
+            }; 
+
 
 EOL;
 
@@ -219,7 +218,23 @@ EOL;
                 <textarea name="set_notes" class="edit" cols="40" rows="1">{$host['notes']}</textarea>
             </td>
         </tr>
-
+        <tr>
+            <td align="right" nowrap="true">
+                Location
+            </td>
+            <td class="padding" align="left" width="100%">
+                <input
+                    id="set_location_{$window_name}"
+                    name="set_location"
+                    alt="Location"
+                    value="{$host['location']}"
+                    class="edit"
+                    type="text"
+                    size="7" maxlength="10"
+                >
+                <span id="qf_location_{$window_name}" title="Location Quick Search"><img src="{$images}/silk/find.png" border="0"/></span>
+            </td>
+        </tr>
 EOL;
 
     // Display an interface edit section if it's a new host or there were exactly one interface.
@@ -468,7 +483,8 @@ function ws_save($window_name, $form='') {
     // FIXME: If we're editing, validate the $form['interface'] is valid
     // FIXME: Verify that the device "type" ID is valid (not a big risk since they select from a drop-down)
 
-
+    // If no location is passed, make sure the value is 0
+   // if (array_key_exists('set_location', $form)) $form['set_location'] = 0;
 
     // Decide if we're editing or adding
     $module = 'modify';
@@ -476,15 +492,18 @@ function ws_save($window_name, $form='') {
     if ($form['host'] == '.') {
         $module = 'add';
 
+        // Device options
+        $form['type'] = $form['set_type'];              unset($form['set_type']);
+        $form['location'] = $form['set_location'];      unset($form['set_location']);
+
         // Host options
-        $form['host'] = $form['set_host'] . '.' . $form['set_domain'];
-        $form['type'] = $form['set_type'];
-        $form['notes'] = $form['set_notes'];
+        $form['host'] = $form['set_host'] . '.' . $form['set_domain'];          unset($form['set_host']); unset($form['set_domain']);
+        $form['notes'] = $form['set_notes'];            unset($form['set_notes']);
 
         // Interface options
-        $form['ip'] = $form['set_ip'];
-        $form['mac'] = $form['set_mac'];
-        $form['name'] = $form['set_name'];
+        $form['ip'] = $form['set_ip'];                  unset($form['set_ip']);
+        $form['mac'] = $form['set_mac'];                unset($form['set_mac']);
+        $form['name'] = $form['set_name'];              unset($form['set_name']);
 
         // If there's no "refresh" javascript, add a command to view the new host
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['host']}\', \'display\')');";

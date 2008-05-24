@@ -113,10 +113,6 @@ function ws_display_list($window_name, $form='') {
     $count = $rows;
 
 
-
-
-
-
     //
     // *** BUILD HTML LIST ***
     //
@@ -130,8 +126,6 @@ function ws_display_list($window_name, $form='') {
             <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Usage</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
-            <!--  <td class="list-header" align="center" style="{$style['borderR']};">Unit</td>
-            <td class="list-header" align="center" style="{$style['borderR']};">Lvl</td>    -->
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
 EOL;
@@ -147,12 +141,6 @@ EOL;
 
         list($status, $rows, $type) = ona_get_subnet_type_record(array('id' => $record['subnet_type_id']));
         $record['type'] = $type['display_name'];
-
-// FIXME: MP put back when we do something with locations
-        // Get unit_number from the unit_id
-//         list($status, $rows, $unit) = ona_get_unit_record(array('UNIT_ID' => $record['UNIT_ID']));
-//         // Unit number is best displayed as 5 digits zero padded
-//         $record['UNIT_NUMBER'] = str_pad($unit['UNIT_NUMBER'], 5, "0", STR_PAD_LEFT);
 
         // Calculate the percentage of the subnet that's used (total size - allocated hosts - dhcp pool size)
         $usage_html = get_subnet_usage_html($record['id']);
@@ -184,21 +172,6 @@ EOL;
             <td class="list-row" align="right">
                 {$record['type']}&nbsp;
             </td>
-
-            <!-- <td class="list-row" align="right">
-                <span onMouseOver="wwTT(this, event,
-                      'id', 'tt_unit_{$record['UNIT_NUMBER']}',
-                      'type', 'velcro',
-                      'styleClass', 'wwTT_niceTitle',
-                      'direction', 'south',
-                      'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>unit,id=>tt_unit_{$record['UNIT_NUMBER']},unit_id=>{$record['UNIT_NUMBER']}\');'
-                      );"
-                >{$record['UNIT_NUMBER']}</span>&nbsp;
-            </td>
-
-            <td class="list-row" align="right">
-                {$record['LVL']}&nbsp;
-            </td>  -->
 
             <td class="list-row" align="right">
                 <form id="{$form['form_id']}_list_dhcp_server_{$record['id']}"

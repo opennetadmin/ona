@@ -73,13 +73,6 @@ function ws_subnet($window_name, $form='') {
         }
     }
 
-    // UNIT NUMBER
-    if ($form['unit']) {
-        $where .= $and . "UNIT_NUMBER = " . $onadb->qstr($form['unit']);
-        $and = " AND ";
-    }
-
-
 
     // Do the SQL Query
     $filter = '';
@@ -341,17 +334,17 @@ EOL;
 
 //////////////////////////////////////////////////////////////////////////////
 // Function:
-//     unit ($window_name, $form_id)
+//     location ($window_name, $form_id)
 //
 // Description:
-//     Does a quick unit search and puts the results in the div specified
+//     Does a quick location search and puts the results in the div specified
 //     in $form['content_id'].  At most 250 results will be returned unless
 //     overridden in $form['max_results'].
 //     When a search result is clicked on, it's value will be put into the
 //     input element specified in $form['input_id'] and the quick filter
 //     popup window identified by $form['id'] is removed from the dom.
 //////////////////////////////////////////////////////////////////////////////
-function ws_unit($window_name, $form='') {
+function ws_location($window_name, $form='') {
     global $conf, $self, $onadb;
     global $color, $style, $images;
     $html = $js = '';
@@ -366,7 +359,7 @@ function ws_unit($window_name, $form='') {
 
 
     //
-    // *** QF UNIT SEARCH ***
+    // *** QF LOCATION SEARCH ***
     //
 
     // Search results go in here
@@ -377,23 +370,24 @@ function ws_unit($window_name, $form='') {
     $where = "";
     $and = "";
 
-    // UNIT TYPE
-    if ($form['type']) {
-        $where .= $and . "UNIT_TYPE_ID = " . $onadb->qstr($form['type']);
+    // LOCATION REFERENCE
+    if ($form['reference']) {
+        // This field is always upper case
+        $form['reference'] = strtoupper($form['reference']);
+        $where .= $and . "reference LIKE " . $onadb->qstr('%'.$form['reference'].'%');
         $and = " AND ";
     }
 
-    // UNIT NAME
+    // LOCATION NAME
     if ($form['name']) {
         // This field is always upper case
-        $form['name'] = strtoupper($form['name']);
-        $where .= $and . "UNIT_NAME LIKE " . $onadb->qstr('%'.$form['name'].'%');
+        $where .= $and . "name LIKE " . $onadb->qstr('%'.$form['name'].'%');
         $and = " AND ";
     }
 
-    // UNIT ADDRESS
+    // LOCATION ADDRESS
     if ($form['address']) {
-        $where .= $and . "UNIT_STREET_ADDRESS LIKE " . $onadb->qstr('%'.$form['address'].'%');
+        $where .= $and . "address LIKE " . $onadb->qstr('%'.$form['address'].'%');
         $and = " AND ";
     }
 
@@ -401,7 +395,7 @@ function ws_unit($window_name, $form='') {
     if ($form['city']) {
         // This field is always upper case
         $form['city'] = strtoupper($form['city']);
-        $where .= $and . "UNIT_CITY_NAME LIKE " . $onadb->qstr('%'.$form['city'].'%');
+        $where .= $and . "city LIKE " . $onadb->qstr('%'.$form['city'].'%');
         $and = " AND ";
     }
 
@@ -409,13 +403,13 @@ function ws_unit($window_name, $form='') {
     if ($form['state']) {
         // This field is always upper case
         $form['state'] = strtoupper($form['state']);
-        $where .= $and . "UNIT_STATE_ABBREVIATION = " . $onadb->qstr($form['state']);
+        $where .= $and . "state = " . $onadb->qstr($form['state']);
         $and = " AND ";
     }
 
     // ZIP CODE
     if ($form['zip']) {
-        $where .= $and . "UNIT_ZIP_CODE = " . $onadb->qstr($form['zip']);
+        $where .= $and . "zip_code = " . $onadb->qstr($form['zip']);
         $and = " AND ";
     }
 
@@ -426,14 +420,14 @@ function ws_unit($window_name, $form='') {
     $filter = '';
     if ($form['filter']) {
         $form['filter'] = strtoupper($form['filter']);
-        $filter = $and . ' UNIT_NAME LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
+        $filter = $and . ' name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
     list ($status, $rows, $results) =
         db_get_records(
             $onadb,
-            'UNIT_MASTER_V',
+            'locations',
             $where . $filter,
-            "UNIT_NUMBER ASC",
+            "reference ASC",
             $form['max_results']
         );
 
@@ -442,7 +436,7 @@ function ws_unit($window_name, $form='') {
         list ($status, $rows, $records) =
             db_get_records(
                 $onadb,
-                'UNIT_MASTER_V',
+                'locations',
                 $where . $filter,
                 "",
                 0
@@ -465,15 +459,14 @@ EOL;
     }
 
     foreach ($results as $record) {
-        $record['UNIT_NUMBER'] = str_pad($record['UNIT_NUMBER'], 5, "0", STR_PAD_LEFT);
         $html .= <<<EOL
 <tr onMouseOver="this.className='row-highlight';"
     onMouseOut="this.className='row-normal';"
-    onClick="el('{$form['input_id']}').value = '{$record['UNIT_NUMBER']}'; removeElement('{$form['id']}');"
-    title="{$record['UNIT_NAME']}">
-    <td style="font-size: 10px; padding: 0px 2px;">{$record['UNIT_NUMBER']}</td>
-    <td style="font-size: 10px; padding: 0px 2px;">{$record['UNIT_STREET_ADDRESS']}</td>
-    <td style="font-size: 10px; padding: 0px 2px;">{$record['UNIT_CITY_NAME']}, {$record['UNIT_STATE_ABBREVIATION']}</td>
+    onClick="el('{$form['input_id']}').value = '{$record['reference']}'; removeElement('{$form['id']}');"
+    title="{$record['name']}">
+    <td style="font-size: 10px; padding: 0px 2px;">{$record['reference']}</td>
+    <td style="font-size: 10px; padding: 0px 2px;">{$record['address']}</td>
+    <td style="font-size: 10px; padding: 0px 2px;">{$record['city']}, {$record['state']}</td>
 </tr>
 EOL;
     }
