@@ -170,6 +170,14 @@ function get_start_menu_html() {
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Block</div>
 
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="removeElement('start_menu'); xajax_window_submit('edit_location', ' ', 'editor');"
+     title="Add a new location"
+ ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ />&nbsp;Add Location</div>
+
 
 EOL;
 

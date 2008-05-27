@@ -50,6 +50,14 @@ $window['html'] .= <<<EOL
     <div class="row"
          onMouseOver="this.className='hovered';"
          onMouseOut="this.className='row';"
+         onClick="toggle_window('app_location_list');"
+         title="Manage locations"
+    ><img style="vertical-align: middle;" src="{$images}/silk/map.png" border="0"
+     />&nbsp;Manage locations</div>
+
+    <div class="row"
+         onMouseOver="this.className='hovered';"
+         onMouseOut="this.className='row';"
          onClick="removeElement('start_menu'); toggle_window('app_template_list');"
          title="Template administration"
      ><img style="vertical-align: middle;" src="{$images}/silk/plugin.png" border="0"

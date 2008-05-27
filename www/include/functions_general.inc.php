@@ -1342,6 +1342,13 @@ function load_module($name='') {
     // The file should define a function called generate_config() to which we pass a node-name,
     // and receive a configuration file.
     require_once($file);
+
+    // Test that the module function existed in the file we just loaded
+    if (!function_exists($name)) {
+        $self['error'] = "ERROR => The module function {$name} doesn't exist in file: {$file}";
+        return(1);
+    }
+
     return(0);
 }
 

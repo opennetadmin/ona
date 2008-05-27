@@ -50,13 +50,13 @@ Add a new host
 
   Optional:
     notes=NOTES               textual notes
+    location=REF              reference of location
 
   Optional, add an interface too:
     ip=ADDRESS                ip address (numeric or dotted)
     mac=ADDRESS               mac address (most formats are ok)
     name=NAME                 interface name (i.e. "FastEthernet0/1.100")
     description=TEXT          brief description of the interface
-    location=REF              reference of location
 
 \n
 EOM
@@ -387,7 +387,6 @@ EOM
     }
 
 
-  //  $SET_DEV['location_id'] = 0;
     if (array_key_exists('set_location', $options)) {
         if (!$options['set_location'])
             $SET_DEV['location_id'] = '';
