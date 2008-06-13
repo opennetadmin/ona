@@ -299,6 +299,7 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
             // Add the system user to the database
             if(@mysql_query("GRANT ALL ON `{$database_name}`.* TO '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}';",$con)) {
                 @mysql_query("GRANT ALL ON `{$database_name}`.* TO '{$sys_login}'@'%' IDENTIFIED BY '{$sys_passwd}';",$con);
+                @mysql_query("GRANT ALL ON `{$database_name}`.* TO '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}';",$con);
                 @mysql_query("FLUSH PRIVILEGES;",$con);
                 $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created system user '{$sys_login}'.<br>";
             }
