@@ -176,6 +176,19 @@ primary name for a host should be unique in all cases I'm aware of
 
     }
 
+    // MP: FIXME: there is an issue that you cant have just a ptr record with no A record.  so you cant add something like:
+/*
+router.example.com  A  10.1.1.1
+
+10.1.2.1   PTR  router.example.com
+10.1.3.1   PTR  router.example.com
+10.1.4.1   PTR  router.example.com
+
+This is a senario where you want just the loopback interface of a router to respond as the A record,
+but you still want to reverse lookup all the other interfaces to know they are on router.example.com
+
+--- I think if I add a "build A record" flag so that the A record wont build in DNS but the PTR could.. doesnt work since multiple a record entries will exist and they are not really tied together.??
+*/
     // Process PTR record types
     else if ($options['type'] == 'PTR') {
         // find the IP interface record,
