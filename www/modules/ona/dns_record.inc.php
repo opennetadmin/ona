@@ -438,6 +438,8 @@ complex DNS messes for themselves.
     }
     // Process TXT record types
     else if ($options['type'] == 'TXT') {
+        // Set interface id to zero by default, only needed if associating with an IP address
+        $add_interfaceid = 0;
         // If you want to associate a TXT record with a host you need to provide an IP.. otherwise it will just be associated with the domain its in.
         // I might also check here that if there is no $hostname, then dont use the IP address value even if it is passed
         if ($options['ip']) {
@@ -664,6 +666,7 @@ EOM
     // Set the current_name variable with the records current name
     // Used by the add pointer function below since it runs before any names are updated
     $current_name = $dns['fqdn'];
+    $current_int_id = $dns['interface_id'];
 
     //
     // Define the records we're updating
@@ -844,23 +847,24 @@ EOM
 
     // Update the host record if necessary
     if(count($SET) > 0) {
-        list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $dns['id']), $SET);
-        if ($status or !$rows) {
-            $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record: " . $self['error'];
-            printmsg($self['error'], 0);
-            return(array(8, $self['error'] . "\n"));
-        }
-
-        // If the interface id has changed, make sure any child records are updated
-        if ($SET['interface_id']) {
+        // If the interface id has changed, make sure any child records are updated first
+        if ($SET['interface_id'] != $current_int_id) {
+            printmsg("DEBUG = > dns_record_modify: Updating child interfaces to new interface.", 2);
             list($status, $rows) = db_update_record($onadb, 'dns', array('dns_id' => $dns['id']), array('interface_id' => $SET['interface_id']));
             if ($status or !$rows) {
                 $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record: " . $self['error'];
                 printmsg($self['error'], 0);
-                return(array(8, $self['error'] . "\n"));
+                return(array(11, $self['error'] . "\n"));
             }
         }
 
+        // Change the actual DNS record
+        list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $dns['id']), $SET);
+        if ($status or !$rows) {
+            $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record: " . $self['error'];
+            printmsg($self['error'], 0);
+            return(array(12, $self['error'] . "\n"));
+        }
 
     }
 

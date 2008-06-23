@@ -129,7 +129,8 @@ function get_start_menu_html() {
 
     $html = $js = '';
 
-    $html .= <<<EOL
+    if (auth('host_modify') and auth('host_add')) {
+        $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
@@ -137,7 +138,11 @@ function get_start_menu_html() {
      title="Add a new host"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Host</div>
+EOL;
+    }
 
+    if (auth('subnet_add')) {
+        $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
@@ -145,7 +150,11 @@ function get_start_menu_html() {
      title="Add a new subnet"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Subnet</div>
+EOL;
+    }
 
+    if (auth('vlan_add')) {
+        $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
@@ -153,7 +162,11 @@ function get_start_menu_html() {
      title="Add a new VLAN campus"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add VLAN campus</div>
+EOL;
+    }
 
+    if (auth('vlan_add')) {
+        $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
@@ -161,7 +174,11 @@ function get_start_menu_html() {
      title="Add a new VLAN"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add VLAN</div>
+EOL;
+    }
 
+    if (auth('subnet_add')) {
+        $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
@@ -169,7 +186,11 @@ function get_start_menu_html() {
      title="Add a new block"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Block</div>
+EOL;
+    }
 
+    if (auth('location_add')) {
+        $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
@@ -178,9 +199,8 @@ function get_start_menu_html() {
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Location</div>
 
-
 EOL;
-
+    }
 
 
 
