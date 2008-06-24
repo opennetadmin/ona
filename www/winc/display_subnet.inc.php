@@ -216,11 +216,15 @@ EOL;
 
                 <tr><td colspan="99" nowrap="true" align="center">
                     <input type="hidden" id="{$window_name}_zoom" name="zoom" value="7">
-                    <div id="{$window_name}_portal" onclick="el('{$window_name}_portal').style.color = '#FFFFFF';el('{$window_name}_portal').style.height = '150px';el('{$window_name}_portal').myonmouseup('fake event');" style="text-align: center;color: #999999;position: relative; height: 19px; width: 355px;">
+                    <div id="{$window_name}_portal" onclick="el('dragmessage').style.display='';el('{$window_name}_portal').style.color = '#FFFFFF';el('{$window_name}_portal').style.height = '150px';el('{$window_name}_portal').myonmouseup('fake event');" style="text-align: center;color: #999999;position: relative; height: 19px; width: 355px;">
                         Click here to show map
                         <span id="{$window_name}_substrate"></span>
                     </div>
-                </td></tr>
+                    </td>
+                    <td>
+                        <span id="dragmessage" style="display: none;font-size:10px;position:fixed;margin-left: -11px;">&uarr;<br><br>D<br>R<br>A<br>G<br><br>&darr;<br></span>
+                    </td>
+                </tr>
             </table>
 EOL;
 

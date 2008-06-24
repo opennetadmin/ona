@@ -73,11 +73,55 @@ EOL;
                     value="{$record['name']}"
                     class="edit"
                     type="text"
-                    size="30" maxlength="30"
+                    size="30" maxlength="63"
                 >
             </td>
         </tr>
 
+        <tr>
+            <td align="right">
+                Field Validaiton Rule
+            </td>
+            <td class="padding" align="left" width="100%">
+                <textarea
+                    name="field_validation_rule"
+                    alt="Field Validaiton Rule"
+                    class="edit"
+                    rows="2"
+                    cols="40"
+                >{$record['field_validation_rule']}</textarea>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right">
+                Failed Rule Text
+            </td>
+            <td class="padding" align="left" width="100%">
+                <textarea
+                    name="failed_rule_text"
+                    alt="Failed Rule Text"
+                    class="edit"
+                    rows="2"
+                    cols="40"
+                >{$record['failed_rule_text']}</textarea>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right">
+                Notes
+            </td>
+            <td class="padding" align="left" width="100%">
+                <textarea
+                    name="notes"
+                    alt="Notes"
+                    class="edit"
+                    rows="2"
+                    cols="40"
+                >{$record['notes']}</textarea>
+            </td>
+        </tr>
 
         <tr>
             <td align="right" valign="top">
@@ -138,7 +182,7 @@ function ws_save($window_name, $form='') {
     $form['cust_attrib_type_name'] = trim($form['cust_attrib_type_name']);
 
     // Don't insert a string of all white space!
-    if(trim($form['cust_attrib_type_name']) == "") {
+    if($form['cust_attrib_type_name'] == "") {
         $self['error'] = "ERROR => Blank names not allowed.";
         printmsg($self['error'], 0);
         $response->addScript("alert('{$self['error']}');");
@@ -156,7 +200,11 @@ function ws_save($window_name, $form='') {
                                          $onadb,
                                          'custom_attribute_types',
                                          array('id' => $form['id']),
-                                         array('name' => $form['cust_attrib_type_name'])
+                                         array('name' => $form['cust_attrib_type_name'],
+                                               'field_validation_rule' => $form['field_validation_rule'],
+                                               'failed_rule_text' => $form['failed_rule_text'],
+                                               'notes' => $form['notes']
+                                              )
                                      );
             if ($status or !$rows) {
                 $self['error'] = "ERROR => cust_attrib_type edit update ws_save() failed: " . $self['error'];
@@ -187,7 +235,12 @@ function ws_save($window_name, $form='') {
             list($status, $rows) = db_insert_record($onadb,
                                         "custom_attribute_types",
                                         array('id' => $id,
-                                        'name' => trim($form['cust_attrib_type_name'])));
+                                              'name' => $form['cust_attrib_type_name'],
+                                              'field_validation_rule' => $form['field_validation_rule'],
+                                              'failed_rule_text' => $form['failed_rule_text'],
+                                              'notes' => $form['notes']
+                                             )
+                                   );
 
             if ($status or !$rows) {
                 $self['error'] = "ERROR => Custom attribute type add ws_save() failed: " . $self['error'];

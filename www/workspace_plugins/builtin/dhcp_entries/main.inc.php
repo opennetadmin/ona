@@ -36,10 +36,10 @@ if ($rows) {
                 <td align="left" nowrap="true" title="DHCP Option number: {$dhcp_type['number']}">
                     {$dhcp_type['display_name']}&nbsp;&nbsp;
                 </td>
-                <td align="left" nowrap="true">
+                <td align="left" nowrap="true" style="border-left: 1px solid; border-left-color: #aaaaaa;padding-left: 3px;">
                     {$dhcp_type['value']}&nbsp;
                 </td>
-                <td align="right">
+                <td align="right" nowrap="true">
                     <form id="form_dhcp_entry_{$entry['id']}"
                         ><input type="hidden" name="id" value="{$entry['id']}"
                         ><input type="hidden" name="{$kind}_id" value="{$record['id']}"

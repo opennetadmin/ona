@@ -1161,9 +1161,12 @@ function ona_get_custom_attribute_record($array) {
     list($status, $rows, $record) = ona_get_record($array, 'custom_attributes');
 
     // Lets be nice and return a little associated info
-    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_custom_attribute_type_record(array('id' => $record['id']));
+    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_custom_attribute_type_record(array('id' => $record['custom_attribute_type_id']));
     $status += $status_tmp;
     $record['name'] = $record_tmp['name'];
+    $record['field_validation_rule'] = $record_tmp['field_validation_rule'];
+    $record['failed_rule_text'] = $record_tmp['failed_rule_text'];
+    $record['notes'] = $record_tmp['notes'];
 
     return(array($status, $rows, $record));
 }
@@ -2209,7 +2212,7 @@ function ona_find_subnet_type($search="") {
 //  Function: ona_find_infobit(string $search)
 //
 //  Input:
-//    $search = A string or ID that can uniquly identify an infobit
+//    $search = A string or ID that can uniquly identify a record
 //              from the custom_attributes table in the database.
 //
 //  Output:
@@ -2224,7 +2227,7 @@ function ona_find_subnet_type($search="") {
 //
 //  Example: list($status, $rows, $net_type) = ona_find_infobit('Status (Testing)');
 ///////////////////////////////////////////////////////////////////////
-function ona_find_infobit($search="") {
+function ona_find_custom_attribute($search="") {
     global $self;
 
     // Validate input
@@ -2234,8 +2237,8 @@ function ona_find_infobit($search="") {
 
     // If it's numeric, search by record ID
     if (is_numeric($search)) {
-        $field = 'ID';
-        list($status, $rows, $record) = ona_get_infobit_record(array($field => $search));
+        $field = 'id';
+        list($status, $rows, $record) = ona_get_custom_attribute_record(array($field => $search));
         // If we got it, return it
         if ($status == 0 and $rows == 1) {
             printmsg("DEBUG => ona_find_infobit() found infobit record by $field", 2);
@@ -2244,18 +2247,18 @@ function ona_find_infobit($search="") {
     }
 
     // Split the infobit description based on the () enclosed infobit type
-    list($infobit_type, $infobit_value) = preg_split("/\(|\)/",$search);
+    list($ca_type, $ca_value) = preg_split("/\(|\)/",$search);
 
-    printmsg("DEBUG => ona_find_infobit(): Split is {$infobit_type},{$infobit_value}", 3);
+    printmsg("DEBUG => ona_find_custom_attribute(): Split is {$ca_type},{$ca_value}", 3);
 
 
     // It's a string - do several sql queries and see if we can get a unique match
-    list($status, $rows, $type) = ona_get_infobit_type_record(array('NAME' => trim($infobit_type)));
+    list($status, $rows, $type) = ona_get_custom_attribute_type_record(array('name' => trim($ca_type)));
 
-    printmsg("DEBUG => ona_find_infobit(): Found {$rows} infobit type record", 3);
+    printmsg("DEBUG => ona_find_custom_attribute(): Found {$rows} custom attribute type record", 3);
 
     // Find the infobit ID using the type id and value
-    list($status, $rows, $record) = ona_get_infobit_record(array('VALUE' => $infobit_value,'INFOBIT_TYPE_ID' => $type['ID']));
+    list($status, $rows, $record) = ona_get_custom_attribute_record(array('VALUE' => $infobit_value,'INFOBIT_TYPE_ID' => $type['ID']));
     // If we got it, return it
     if ($status == 0 and $rows == 1) {
         printmsg("DEBUG => ona_find_infobit(): Found infobit record by its full name", 2);
