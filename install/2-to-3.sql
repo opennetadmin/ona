@@ -1,3 +1,5 @@
+-- This is to upgrade the database info to version XXX
+
 -- add primary_host_id to devices
 ALTER TABLE `devices`
  ADD `primary_host_id` INT( 10 ) UNSIGNED NOT NULL AFTER `location_id` COMMENT 'Tracks the host that references this device by name';
@@ -8,6 +10,9 @@ ALTER TABLE `custom_attribute_types`
 
 ALTER TABLE `custom_attributes` CHANGE `attribute` `value` LONGTEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
 
+ALTER TABLE `locations`  COMMENT = 'Stores basic location information for devices.';
+
+-- SOMETHING is wrong with the ID in this table.. missing ona_sql maybe???
 INSERT INTO `dcm_module_list` ( `id` , `name` , `description` , `file` ) VALUES
 ('59', 'location_add', 'Add a location record', 'ona/location.inc.php'),
 ('60', 'location_modify', 'Modify a location record', 'ona/location.inc.php'),
@@ -17,11 +22,27 @@ INSERT INTO `dcm_module_list` ( `id` , `name` , `description` , `file` ) VALUES
 ('64', 'custom_attribute_modify', 'Modify a custom attribute', 'ona/custom_attribute.inc.php');
 
 INSERT INTO `permissions` ( `id` , `name` , `description` ) VALUES
-( '19', 'location_del', 'Delete a location'),
-( '20', 'location_add', 'Add a location');
+( '100019', 'location_del', 'Delete a location'),
+( '100020', 'location_add', 'Add a location'),
+( '100021', 'ona_sql', 'Perform SQL operations on the ONA tables'),
+( '100022', 'custom_attribute_add', 'Add custom attribute'),
+( '100023', 'custom_attribute_del', 'Delete custom attribute'),
+( '100024', 'custom_attribute_modify', 'Modify custom attribute');
 
-INSERT INTO `permission_assignments` ( `id` , `perm_id` , `user_id` , `group_id` ) VALUES
-('23', '19', '0', '18'),
-('24', '20', '0', '18');
+INSERT INTO `permission_assignments` ( `id` , `perm_id` , `user_id` , `group_id` ) 
+SELECT '100001', '100019', '0', id FROM `groups` WHERE name LIKE 'Admin';
 
+INSERT INTO `permission_assignments` ( `id` , `perm_id` , `user_id` , `group_id` ) 
+SELECT '100002', '100020', '0', id FROM `groups` WHERE name LIKE 'Admin';
 
+INSERT INTO `permission_assignments` ( `id` , `perm_id` , `user_id` , `group_id` ) 
+SELECT '100003', '100021', '0', id FROM `groups` WHERE name LIKE 'Admin';
+
+INSERT INTO `permission_assignments` ( `id` , `perm_id` , `user_id` , `group_id` ) 
+SELECT '100004', '100022', '0', id FROM `groups` WHERE name LIKE 'Admin';
+
+INSERT INTO `permission_assignments` ( `id` , `perm_id` , `user_id` , `group_id` ) 
+SELECT '100005', '100023', '0', id FROM `groups` WHERE name LIKE 'Admin';
+
+INSERT INTO `permission_assignments` ( `id` , `perm_id` , `user_id` , `group_id` ) 
+SELECT '100006', '100024', '0', id FROM `groups` WHERE name LIKE 'Admin';

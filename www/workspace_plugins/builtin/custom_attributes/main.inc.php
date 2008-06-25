@@ -7,13 +7,14 @@ $title_left_html = 'Custom Attributes';
 
 // Determine if this is a host or a subnet we are dealing with
 if (is_numeric($record['subnet_type_id'])) {
-    $kind = 'subnets';
+    $kind = 'subnet';
 }
 else {
-    $kind = 'hosts';
+    $kind = 'host';
 }
 
-list($status, $rows, $attributes) = db_get_records($onadb, 'custom_attributes', array('table_id_ref' => $record['id'], 'table_name_ref' => $kind), '');
+// This adds an "s" at the end of the table name.  assumes all tables are plural
+list($status, $rows, $attributes) = db_get_records($onadb, 'custom_attributes', array('table_id_ref' => $record['id'], 'table_name_ref' => $kind.'s'), '');
 
 // CUSTOM ATTRIBUTES LIST
 $modbodyhtml .= <<<EOL
@@ -42,10 +43,12 @@ if ($rows) {
                     <form id="form_custom_attribute_{$entry['id']}"
                         ><input type="hidden" name="id" value="{$entry['id']}"
                         ><input type="hidden" name="{$kind}_id" value="{$record['id']}"
+                        ><input type="hidden" name="kind" value="{$kind}"
+                        ><input type="hidden" name="type" value="{$entry['custom_attribute_type_id']}"
                         ><input type="hidden" name="js" value="{$extravars['refresh']}"
                     ></form>
 EOL;
-        if (auth('advanced',$debug_val)) {
+        if (auth('custom_attribute_del',$debug_val)) {
             $modbodyhtml .= <<<EOL
                     <a title="Edit Custom Attribute. ID: {$ca_type['id']}"
                         class="act"
@@ -69,7 +72,7 @@ EOL;
 }
 
 
-if (auth('advanced',$debug_val)) {
+if (auth('custom_attribute_add',$debug_val)) {
     $modbodyhtml .= <<<EOL
             <tr>
                 <td colspan="5" align="left" valign="middle" nowrap="true" class="act-box">

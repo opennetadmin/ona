@@ -131,7 +131,7 @@ EOL;
     $wspl = workspace_plugin_loader('host_services',$record);
     $html .= $wspl[0]; $js .= $wspl[1];
 
-    $wspl = workspace_plugin_loader('custom_attributes',$record);
+    $wspl = workspace_plugin_loader('custom_attributes',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];
 
 /* FIXME: MP this needs to be changed to custom attributes
