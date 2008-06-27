@@ -2,7 +2,7 @@
 
 
 // We need to build the html drop-down boxes for the
-// "Classification", "Device model", "Device type", and "Device manufacturer" fields.
+// "Custom Attribute", "Device model", "Device type", and "Device manufacturer" fields.
 global $onadb;
 
 
@@ -266,19 +266,13 @@ function ws_more_host_options($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
-    
+
     // Build custom attribute list
-    // TODO: MP fix this for custom_attributes
-    list($status, $rows, $records) = db_get_records($onadb, 'custom_attributes', 'id >= 1', 'custom_attribute_type_id');
-    $classification_list = '<option value="">&nbsp;</option>\n';
+    list($status, $rows, $records) = db_get_records($onadb, 'custom_attribute_types', 'id >= 1', '');
+    $custom_attribute_type_list = '<option value="">&nbsp;</option>\n';
     foreach ($records as $record) {
-        list($status, $rows, $customs) = db_get_records($onadb, 'custom_attribute_types', array('INFOBIT_TYPE_ID' => $record['ID']), 'VALUE');
-        $record['NAME'] = htmlentities($record['NAME']);
-        $infobit['VALUE'] = htmlentities($infobit['VALUE']);
-        foreach ($customs as $custom) {
-            $custom_attribute_list .= "<option value=\"{$custom['ID']}\">{$record['NAME']} ({$custom['VALUE']})</option>\n";
-        }
-        unset($customs, $custom);
+        $custom_attribute_type_list .= "<option value=\"{$record['id']}\">{$record['name']}</option>\n";
+        unset($records, $ca);
     }
     
     
@@ -324,9 +318,11 @@ function ws_more_host_options($window_name, $form='') {
             <u>C</u>ustom attribute
         </td>
         <td align="left" class="asearch-line">
-            <select id="custom_attribute" name="custom_attribute" class="edit" accesskey="c">
-                {$custom_attribute_list}
+            <select id="custom_attribute_type" name="custom_attribute_type" class="edit" accesskey="c">
+                {$custom_attribute_type_list}
             </select>
+            <u>V</u>alue
+            <input id="ca_value" name="ca_value" type="text" class="edit" size="15" accesskey="v" />
         </td>
     </tr>
 
