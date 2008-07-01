@@ -10,9 +10,12 @@ ALTER TABLE `custom_attribute_types`
 
 ALTER TABLE `custom_attributes` CHANGE `attribute` `value` LONGTEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
 
+ALTER TABLE `dns_server_domains`
+ CHANGE `authoritative` `role` VARCHAR(10) NOT NULL COMMENT 'What role does this server play for this domain? master, slave, forward?';
+
 ALTER TABLE `locations`  COMMENT = 'Stores basic location information for devices.';
 
--- SOMETHING is wrong with the ID in this table.. missing ona_sql maybe???
+-- SOMETHING is wrong with the ID in this table.. missing config_diff maybe???
 INSERT INTO `dcm_module_list` ( `id` , `name` , `description` , `file` ) VALUES
 ('59', 'location_add', 'Add a location record', 'ona/location.inc.php'),
 ('60', 'location_modify', 'Modify a location record', 'ona/location.inc.php'),
@@ -20,6 +23,7 @@ INSERT INTO `dcm_module_list` ( `id` , `name` , `description` , `file` ) VALUES
 ('62', 'custom_attribute_add', 'Add a custom attribute', 'ona/custom_attribute.inc.php'),
 ('63', 'custom_attribute_del', 'Delete a custom attribute', 'ona/custom_attribute.inc.php'),
 ('64', 'custom_attribute_modify', 'Modify a custom attribute', 'ona/custom_attribute.inc.php');
+---------('58', 'config_diff', 'Display unix diff of configs', 'ona/configuration.inc.php'),
 
 INSERT INTO `permissions` ( `id` , `name` , `description` ) VALUES
 ( '100019', 'location_del', 'Delete a location'),
