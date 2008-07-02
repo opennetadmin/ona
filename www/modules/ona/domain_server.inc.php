@@ -53,7 +53,7 @@ Assigns an existing domain record to a DNS server
   Required:
     domain=NAME or ID               domain name or ID
     server=NAME[.DOMAIN] or ID      server name or ID
-    auth=Y|N                        is this server master or slave
+    role=master|slave|forward       role of this server for this domain
 
 EOM
 
@@ -61,14 +61,14 @@ EOM
     }
 
 
-    if (is_numeric($options['domain'])) {
-        $domainsearch['id'] = $options['domain'];
-    } else {
-        $domainsearch['name'] = strtolower($options['domain']);
-    }
+//     if (is_numeric($options['domain'])) {
+//         $domainsearch['id'] = $options['domain'];
+//     } else {
+//         $domainsearch['name'] = strtolower($options['domain']);
+//     }
 
     // Determine the entry itself exists
-    list($status, $rows, $domain) = ona_get_domain_record($domainsearch);
+    list($status, $rows, $domain) = ona_find_domain($options['domain'],0);
 
     // Test to see that we were able to find the specified record
     if (!$domain['id']) {
@@ -88,13 +88,25 @@ EOM
         return(array(2, $self['error'] . "\n"));
     }
 
-    // set auth information and sanitize it
-    if ($options['auth']) {$auth = sanitize_YN($options['auth'], 'N');}
-    if ($auth == 'Y') $auth = 1;
-    if ($auth == 'N') $auth = 0;
+    // what is the build type for this server.
+    switch (strtolower($options['role'])) {
+        case "forward":
+            $role = "forward";
+            break;
+        case "master":
+            $role = "master";
+            break;
+        case "slave":
+            $role = "slave";
+            break;
+        default:
+            $role = "master";
+    }
+
+
 
     // Check permissions
-    if (!auth('advanced') or !authlvl($host['LVL']) or !authlvl($subnet['LVL'])) {
+    if (!auth('advanced')) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(12, $self['error'] . "\n"));
@@ -129,7 +141,8 @@ EOM
                 'id'                      => $id,
                 'host_id'                 => $host['id'],
                 'domain_id'               => $domain['id'],
-                'authoritative'           => $auth
+                'role'                    => $role
+
             )
         );
     if ($status or !$rows) {
@@ -152,7 +165,7 @@ EOM
     if (!$dnsrows) {
         printmsg("DEBUG => Auto adding a NS record for {$host['fqdn']}.", 0);
         // Run dns_record_add as a NS type
-        list($status, $output) = run_module('dns_record_add', array('name' => $domain['name'],'pointsto' => $host['fqdn'], 'type' => 'NS'));
+        list($status, $output) = run_module('dns_record_add', array('name' => $domain['fqdn'],'pointsto' => $host['fqdn'], 'type' => 'NS'));
         if ($status)
             return(array($status, $output));
         $add_to_error .= $output;

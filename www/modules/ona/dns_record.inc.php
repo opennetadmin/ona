@@ -209,11 +209,25 @@ but you still want to reverse lookup all the other interfaces to know they are o
         }
 
         // Find the dns record that it will point to
+
         list($status, $rows, $arecord) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'interface_id' => $interface['id'], 'type' => 'A'));
         if ($status or !$rows) {
             printmsg("ERROR => Unable to find DNS A record to point PTR entry to! Check that the IP you chose is associated with the name you chose.",3);
             $self['error'] = "ERROR => Unable to find DNS A record to point PTR entry to! Check that the IP you chose is associated with the name you chose.";
-            return(array(6, $self['error'] . "\n"));
+
+            // As a last resort just find a matching A record no matter the IP.  
+            // This is for PTRs that point to an A record that uses a different IP (loopback example)
+
+            // MP: since there could be multiple A records, I'm going to fail out if there is not JUST ONE A record. 
+            // this is limiting in a way but allows cleaner data.
+            list($status, $rows, $arecord) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'type' => 'A'));
+            if (($rows > 1) or (!$rows)) {
+                printmsg("ERROR => Unable to find a SINGLE DNS A record to point PTR entry to! In this case, you are only allowed to do this if there is one A record using this name",3);
+                $self['error'] = "ERROR => Unable to find a SINGLE DNS A record to point PTR entry to! In this case, you are only allowed to do this if there is one A record using this name";
+            }
+
+            if ($rows != 1)
+                return(array(66, $self['error'] . "\n"));
         }
 
 
@@ -222,8 +236,8 @@ but you still want to reverse lookup all the other interfaces to know they are o
         // Find a pointer zone for this record to associate with.
         list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
         if (!$ptrdomain['id']) {
-            printmsg("ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following domain: {$octets[3]}.in-addr.arpa",3);
-            $self['error'] = "ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following domain: {$octets[3]}.in-addr.arpa";
+            printmsg("ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
+            $self['error'] = "ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following DNS domain: {$octets[3]}.in-addr.arpa";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -247,6 +261,8 @@ such that if that A record is changed, or gets removed then I can cleanup/update
 The problem comes when there are multiple A records that use the same name but different IP addresses.
 I can only assoicate the CNAME with one of those A records.  This also means I need to provided
 the IP address as well when adding a CNAME so I can choose the correct A record.
+
+The same sort of issue applies to PTR records as well.
 
 In a similar (reverse) issue.  If I have those same multiple A records, the assumption is that
 they are all the same name and thus "tied" together in that if I was to change the name to something else
@@ -326,9 +342,8 @@ complex DNS messes for themselves.
     // NS is a domain_id that points to another dns_id A record
     // this will give you "mydomain.com    IN   NS   server.somedomain.com"
     else if ($options['type'] == 'NS') {
-        // ona_find_domain does not work if you pass it a domain and expect to get the same domain back
-        // We will request a new one here
-        list($status, $rows, $domain) = ona_get_domain_record(array('name' => $options['name']));
+        // find the domain
+        list($status, $rows, $domain) = ona_find_domain($options['name'],0);
         if (!$domain['id']) {
             printmsg("ERROR => Invalid domain name ({$options['name']})!", 3);
             $self['error'] = "ERROR => Invalid domain name ({$options['name']})!";
@@ -369,12 +384,12 @@ complex DNS messes for themselves.
         }
 
 
-        $add_name = $hostname;
+        $add_name = $options['name'];
         $add_domainid = $domain['id'];
         $add_interfaceid = $pointsto_record['interface_id'];
         $add_dnsid = $pointsto_record['id'];
 
-        $info_msg = "{$hostname}.{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+        $info_msg = "{$add_name} -> {$phostname}.{$pdomain['fqdn']}";
 
     }
     // Process MX record types

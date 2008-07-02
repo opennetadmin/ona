@@ -1508,6 +1508,10 @@ function ona_find_host($search="") {
     // It's an FQDN, do a bunch of stuff!
     //
 
+    // FIXME: MP this will currently "fail" if the fqdn of the server
+    // is the same as a valid domain name.  not sure why anyone would have this but
+    // never say never.  I'll leave this issue unfixed for now
+
     // Find the domain name piece of $search
     list($status, $rows, $domain) = ona_find_domain($search);
     printmsg("DEBUG => ona_find_domain({$search}) returned: {$domain['fqdn']}", 3);

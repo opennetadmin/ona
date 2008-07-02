@@ -109,7 +109,7 @@ EOL;
 
         $html .= <<<EOL
                         <td nowrap="true">
-                            <b>{$record['name']}</b>&nbsp;
+                            <b>{$record['fqdn']}</b>&nbsp;
                         </td></tr>
                     </table>
                 </div>
@@ -202,14 +202,10 @@ EOL;
 EOL;
 
     // Get a list of servers, and loop through them
-    list($status, $rows, $domainservers) = db_get_records($onadb, 'dns_server_domains', array('domain_id' => $record['id']),'authoritative DESC');
+    list($status, $rows, $domainservers) = db_get_records($onadb, 'dns_server_domains', array('domain_id' => $record['id']),'role');
     if ($rows) {
         foreach ($domainservers as $domainserver) {
-            // Adjust the text for the authoritative flag to mean something
-            if ($domainserver['authoritative'] == "1")
-                $domainserver['authoritative'] = "Master";
-            else
-                $domainserver['authoritative'] = "Slave";
+            $domainserver['role'] = strtoupper($domainserver['role']);
 
             list($status, $rows, $host) = ona_find_host($domainserver['host_id']);
             $host['fqdn'] = htmlentities($host['fqdn'], ENT_QUOTES);
@@ -223,8 +219,8 @@ EOL;
                            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain_server\', \'host_id=>{$host['id']}\', \'display\')');"
                         >{$host['fqdn']}</a>&nbsp;
                      </td>
-                     <td align="left" nowrap="true">
-                            {$domainserver['authoritative']}
+                     <td align="left" nowrap="true" style="border-left: 1px solid; border-left-color: #aaaaaa;padding-left: 3px;">
+                            {$domainserver['role']}
                     </td>
                      <td align="right" nowrap="true">
                         <form id="{$form['form_id']}_domain_serv_{$domainserver['id']}"

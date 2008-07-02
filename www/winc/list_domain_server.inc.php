@@ -61,8 +61,6 @@ function ws_display_list($window_name, $form='') {
         $filter = $and . 'name LIKE ' . $oracle->qstr('%'.$form['filter'].'%');
     }
 
-    // set results per page specific for this list
-    //$conf['search_results_per_page'] = 10;
 
     list ($status, $rows, $results) =
         db_get_records(
@@ -111,11 +109,12 @@ EOL;
         foreach($results as $record) {
             // Grab some info from the associated domain server record
             list($status, $rows, $domain_server) = ona_get_dns_server_domain_record(array('domain_id' => $record['id'],'host_id' => $form['server_id']));
-            list($status, $rows, $parent_zone) = ona_get_domain_record(array('ID' => $record['PARENT_DNS_ZONES_ID']));
+            list($status, $rows, $parent_zone) = ona_get_domain_record(array('id' => $record['parent_id']));
 
-            $record['authoritative'] = ($domain_server['authoritative'] == '1') ? 'Master' : 'Slave';
-            $record['PARENT_DNS_ZONE_ID'] = $parent_zone['ID'];
-            $record['PARENT_DNS_ZONE']    = $parent_zone['ZONE_NAME'];
+            $record['role'] = strtoupper($domain_server['role']);
+            $record['parent_dns_zone_id'] = $parent_zone['id'];
+            $record['parent_dns_zone']    = $parent_zone['fqdn'];
+            if($parent_zone['fqdn']) $parent_zone['fqdn'] = '.'.$parent_zone['fqdn'];
 
             // Escape data for display in html
             foreach(array_keys((array)$record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES);}
@@ -133,18 +132,18 @@ EOL;
                     <a title="View domain. ID: {$record['id']}"
                        class="domain"
                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['id']}\', \'display\')');"
-                    >{$record['name']}</a>
+                    >{$record['name']}{$parent_zone['fqdn']}</a>
                 </td>
 
                 <td class="list-row" align="left">
-                    <a title="View domain. ID: {$record['PARENT_DNS_ZONE_ID']}"
+                    <a title="View domain. ID: {$record['parent_dns_zone_id']}"
                        class="domain"
-                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['PARENT_DNS_ZONE_ID']}\', \'display\')');"
-                    >{$record['PARENT_DNS_ZONE']}</a>&nbsp;
+                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_zone\', \'zone_id=>{$record['parent_dns_zone_id']}\', \'display\')');"
+                    >{$record['parent_dns_zone']}</a>&nbsp;
                 </td>
 
                 <td class="list-row" align="left">
-                    {$record['authoritative']}&nbsp;
+                    {$record['role']}&nbsp;
                 </td>
 
                 <td class="list-row" align="center">
@@ -161,7 +160,7 @@ EOL;
                        onClick="xajax_window_submit('edit_domain', xajax.getFormValues('{$form['form_id']}_list_domain_server_{$record['id']}'), 'editor');"
                     ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 
-                    <a title="Remove domain. ID: {$domain_server['id']}"
+                    <a title="Remove domain assosiation. ID: {$domain_server['id']}"
                        class="act"
                        onClick="var doit=confirm('Are you sure you want to remove this domain from this DNS server?');
                             if (doit == true)

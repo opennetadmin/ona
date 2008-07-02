@@ -40,7 +40,7 @@ function ws_editor($window_name, $form='') {
     }
 
     if ($form['domain']) {
-        $domain['name'] = $form['domain'];
+        list($status, $rows, $domain) = ona_find_domain($form['domain']);
     }
     // Escape data for display in html
     foreach(array_keys((array)$host) as $key)  { $host[$key]  = htmlentities($host[$key],  ENT_QUOTES); }
@@ -109,7 +109,7 @@ EOL;
                     id="domain_server_edit"
                     name="domain"
                     alt="Domain name"
-                    value="{$domain['name']}"
+                    value="{$domain['fqdn']}"
                     class="edit"
                     type="text"
                     size="34" maxlength="255"
@@ -120,14 +120,14 @@ EOL;
 
         <tr>
             <td align="right" nowrap="true" style="font-weight: bold;">
-                Authoritative
+                Role
             </td>
             <td class="padding" align="left" width="100%" nowrap="true">
-                <input
-                    name="auth"
-                    alt="Authoritative"
-                    type="checkbox"
-                > Is the server a master or a slave
+                <select class="edit" name="role" alt="Role">
+                    <option value="forward">Forward</option>
+                    <option value="master" selected>Master</option>
+                    <option value="slave">Slave</option>
+                </select>
             </td>
         </tr>
 
@@ -201,12 +201,6 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
 
-    // Validate domain is valid
-    list($status, $rows, $subnet)  = ona_get_domain_record(array('name'  => $form['domain']));
-    if ($status or !$rows) {
-        $response->addScript("alert('Invalid domain!');");
-        return($response->getXML());
-    }
 
     // Decide if we're editing or adding
     $module = 'domain_server_add';

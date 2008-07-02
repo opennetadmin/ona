@@ -33,7 +33,7 @@ function updatednsinfo(window_name) {
         el('info_'+window_name).innerHTML = el('set_hostname_'+window_name).value + '.' + el('set_domain_'+window_name).value + ' ' + el('set_ttl').value + ' IN ' + el('record_type_select').value + ' ' + el('set_ip_'+window_name).value;
         // If it is a ptr update
         if (el('set_auto_ptr').checked==true) {
-            el('ptr_info_'+window_name).innerHTML = flipip(el('set_ip_'+window_name).value) +'IN-ADDR.ARPA ' + el('set_ttl').value + ' IN PTR ' + el('set_hostname_'+window_name).value + '.' + el('set_domain_'+window_name).value;}
+            el('ptr_info_'+window_name).innerHTML = flipip(el('set_ip_'+window_name).value) +'.in-addr.arpa ' + el('set_ttl').value + ' IN PTR ' + el('set_hostname_'+window_name).value + '.' + el('set_domain_'+window_name).value;}
         else { el('ptr_info_'+window_name).innerHTML = ''; }
     }
     if (el('record_type_select').value=='CNAME') {

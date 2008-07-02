@@ -2,7 +2,7 @@
 
 -- add primary_host_id to devices
 ALTER TABLE `devices`
- ADD `primary_host_id` INT( 10 ) UNSIGNED NOT NULL AFTER `location_id` COMMENT 'Tracks the host that references this device by name';
+ ADD `primary_host_id` INT( 10 ) NOT NULL COMMENT 'Tracks the host that references this device by name' AFTER `location_id` ;
 
 ALTER TABLE `custom_attribute_types` 
  ADD `field_validation_rule` TEXT NOT NULL COMMENT 'Use a regular expression to validate the data associated with this type',

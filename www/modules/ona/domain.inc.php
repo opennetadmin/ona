@@ -42,14 +42,14 @@ function domain_add($options="") {
     printmsg("DEBUG => domain_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
 
     // Return the usage summary if we need to
     if ($options['help'] or !(
-                                ($options['name'] and $options['server'])
+                                ($options['name'])
                                  or
                                 ($options['admin'] or $options['ptr'] or $options['primary'])
                               )
@@ -68,7 +68,6 @@ Adds a DNS domain into the database
   Required:
     name=STRING                             full name of new domain
                                             (i.e. name.something.com)
-    server=NAME[.DOMAIN] or ID              server identifier to add new domain to
 
   Optional:
     admin=STRING                            Default ({$conf['dns_admin_email']})
@@ -79,8 +78,7 @@ Adds a DNS domain into the database
     minimum=NUMBER                          Default ({$conf['dns_minimum']})
     parent=DOMAIN_NAME                      Default ({$conf['dns_parent']})
     ttl=NUMBER                              Default ({$conf['dns_default_ttl']})
-    auth=[Y|N]                              is server authoritative for domain
-                                            Default ({$conf['dns_auth']})
+
 
 EOM
 

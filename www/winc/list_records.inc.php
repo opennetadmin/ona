@@ -79,13 +79,10 @@ function ws_display_list($window_name, $form='') {
 
     // DOMAIN
     if ($form['domain']) {
-        // FIXME: does this clause work correctly?
-        printmsg("FIXME: => Does \$form['domain'] work correctly in list_records.inc.php, line 79?", 2);
-        // We do a sub-select to find interface id's that match
-        //$where .= $and . "domain_id IN ( SELECT id " .
-        //                                "  FROM dns " .
-        //                                "  WHERE name LIKE " . $onadb->qstr($form['domain'].'%') . " ) ";
-        $where .= $and . "name LIKE " . $onadb->qstr($form['domain'].'%') . " )  ";
+        // FIXME: MP test if this clause works correctly?  Not sure that anything even uses this?
+        list($status,$rows,$tmpdomain) = ona_find_domain($form['domain']);
+        $where .= $and . "domain_id = " . $onadb->qstr($tmpdomain['id']);
+        $orderby .= "name, domain_id";
         $and = " AND ";
     }
 
@@ -370,7 +367,7 @@ EOL;
         // Make record['domain'] have the right name in it
         if ($record['type'] != 'PTR') { $record['domain'] = $domain['fqdn']; }
         // clear out the $record['domain'] value so it shows properly in the list for NS records
-        if ($record['type'] == 'NS')  { $record['domain'] = $domain['name'].'.'; }
+        if ($record['type'] == 'NS')  { $record['domain'] = $domain['fqdn']; }
         // if the ttl is blank, use the one in the domain (minimum)
         if ($record['ttl'] == 0) {
             $record['ttl'] = $domain['default_ttl'];
@@ -394,7 +391,7 @@ EOL;
                     ><a title="View domain. ID: {$domain['id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$domain['id']}\', \'display\')');"
-                    >{$record['domain']}</a>
+                    >{$record['domain']}.</a>
                 </td>
 
                 <td class="list-row">
