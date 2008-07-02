@@ -15,15 +15,14 @@ ALTER TABLE `dns_server_domains`
 
 ALTER TABLE `locations`  COMMENT = 'Stores basic location information for devices.';
 
--- SOMETHING is wrong with the ID in this table.. missing config_diff maybe???
 INSERT INTO `dcm_module_list` ( `id` , `name` , `description` , `file` ) VALUES
+('58', 'config_diff', 'Display unix diff of configs', 'ona/configuration.inc.php'),
 ('59', 'location_add', 'Add a location record', 'ona/location.inc.php'),
 ('60', 'location_modify', 'Modify a location record', 'ona/location.inc.php'),
 ('61', 'location_del', 'Delete a location', 'ona/location.inc.php'),
 ('62', 'custom_attribute_add', 'Add a custom attribute', 'ona/custom_attribute.inc.php'),
 ('63', 'custom_attribute_del', 'Delete a custom attribute', 'ona/custom_attribute.inc.php'),
 ('64', 'custom_attribute_modify', 'Modify a custom attribute', 'ona/custom_attribute.inc.php');
----------('58', 'config_diff', 'Display unix diff of configs', 'ona/configuration.inc.php'),
 
 INSERT INTO `permissions` ( `id` , `name` , `description` ) VALUES
 ( '100019', 'location_del', 'Delete a location'),

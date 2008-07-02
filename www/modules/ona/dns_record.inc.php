@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -196,7 +196,7 @@ but you still want to reverse lookup all the other interfaces to know they are o
         if (!$rows) {
             printmsg("ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}",3);
             $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}\\nPTR records must point to existing IP addresses.\\nPlease add an interface with this IP address first.";
-            return(array(4, $self['error']));
+            return(array(4, $self['error'] . "\n"));
         }
 
 
@@ -213,18 +213,28 @@ but you still want to reverse lookup all the other interfaces to know they are o
         if ($status or !$rows) {
             printmsg("ERROR => Unable to find DNS A record to point PTR entry to! Check that the IP you chose is associated with the name you chose.",3);
             $self['error'] = "ERROR => Unable to find DNS A record to point PTR entry to! Check that the IP you chose is associated with the name you chose.";
-            return(array(5, $self['error'] . "\n"));
+            return(array(6, $self['error'] . "\n"));
         }
 
+
+        $ipflip = ip_mangle($interface['ip_addr'],'flip');
+        $octets = explode(".",$ipflip);
+        // Find a pointer zone for this record to associate with.
+        list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+        if (!$ptrdomain['id']) {
+            printmsg("ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following domain: {$octets[3]}.in-addr.arpa",3);
+            $self['error'] = "ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following domain: {$octets[3]}.in-addr.arpa";
+            return(array(5, $self['error'] . "\n"));
+        }
 
         // PTR records dont need a name set.
         $add_name = '';
         // PTR records should not have domain_ids
-        $add_domainid = '';
+        $add_domainid = $ptrdomain['id'];
         $add_interfaceid = $interface['id'];
         $add_dnsid = $arecord['id'];
 
-        $info_msg = ip_mangle($interface['ip_addr'],'flip').".IN-ADDR.ARPA -> {$hostname}.{$domain['fqdn']}";
+        $info_msg = "{$ipflip}.in-addr.arpa -> {$hostname}.{$domain['fqdn']}";
 
     }
 
@@ -583,7 +593,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -847,14 +857,17 @@ EOM
 
     // Update the host record if necessary
     if(count($SET) > 0) {
-        // If the interface id has changed, make sure any child records are updated first
-        if ($SET['interface_id'] != $current_int_id) {
-            printmsg("DEBUG = > dns_record_modify: Updating child interfaces to new interface.", 2);
-            list($status, $rows) = db_update_record($onadb, 'dns', array('dns_id' => $dns['id']), array('interface_id' => $SET['interface_id']));
-            if ($status or !$rows) {
-                $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record: " . $self['error'];
-                printmsg($self['error'], 0);
-                return(array(11, $self['error'] . "\n"));
+        // If we are changing the interface id as determined above, check using that value
+        if ($SET['interface_id']) {
+            // If the interface id has changed, make sure any child records are updated first
+            if ($SET['interface_id'] != $current_int_id) {
+                printmsg("DEBUG = > dns_record_modify() Updating child interfaces to new interface.", 2);
+                list($status, $rows) = db_update_record($onadb, 'dns', array('dns_id' => $dns['id']), array('interface_id' => $SET['interface_id']));
+                if ($status or !$rows) {
+                    $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record: " . $self['error'];
+                    printmsg($self['error'], 0);
+                    return(array(11, $self['error'] . "\n"));
+                }
             }
         }
 

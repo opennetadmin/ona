@@ -292,17 +292,23 @@ EOL;
         // Process PTR record
         if ($record['type'] == 'PTR') {
             list($status, $rows, $pointsto) = ona_get_dns_record(array('id' => $record['dns_id']), '');
-            // get the domain_id from the parent A record
-            $record['domain_id'] = $pointsto['domain_id'];
+            list($status, $rows, $pdomain)  = ona_get_domain_record(array('id' => $record['domain_id']), '');
+
             // Flip the IP address
-            $record['name'] = ip_mangle($record['ip_addr'],'flip').'.IN-ADDR.ARPA';
+            $record['name'] = ip_mangle($record['ip_addr'],'flip');
+            $record['domain'] = $pdomain['name'];
+
+            // strip down the IP to just the "host" part as it relates to the domain its in
+            $domain_part = preg_replace("/.in-addr.arpa$/", '', $pdomain['name']);
+            $record['name'] = preg_replace("/$domain_part$/", '', $record['name']);
+
             $data = <<<EOL
                     <a title="Edit DNS A record"
                        class="act"
                        onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
-                    >{$pointsto['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
+                    >{$pointsto['name']}</a>.<a title="View domain. ID: {$pointsto['domain_id']}"
                          class="domain"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$pointsto['domain_id']}\', \'display\')');"
                     >{$pointsto['domain_fqdn']}</a>.&nbsp;
 EOL;
         }

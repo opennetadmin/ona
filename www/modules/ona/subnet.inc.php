@@ -140,7 +140,7 @@ function subnet_add($options="") {
     printmsg('DEBUG => subnet_add('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -262,12 +262,23 @@ EOM
     $SET['ip_addr'] = $options['ip'];
     $SET['ip_mask'] = $options['netmask'];
 
+    // Before we go on, we must alert the user if this new subnet would require a new PTR zone.
+    $ipflip = ip_mangle($SET['ip_addr'],'flip');
+    $octets = explode(".",$ipflip);
+    // Find a pointer zone for this ip to associate with.
+    list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+    if (!$ptrdomain['id']) {
+        printmsg("ERROR => This subnet is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
+        $self['error'] = "ERROR => This subnet is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa";
+            return(array(9, $self['error'] . "\n"));
+    }
+
 
     // Find the type from $options[type]
     list($status, $rows, $subnet_type) = ona_find_subnet_type($options['type']);
     if ($status or $rows != 1) {
         $self['error'] = "ERROR => Invalid subnet type specified!";
-        return(array(9, $self['error'] . "\n"));
+        return(array(10, $self['error'] . "\n"));
     }
     printmsg("Subnet type selected: {$subnet_type['name']} ({$subnet_type['short_name']})", 1);
     $SET['subnet_type_id'] = $subnet_type['id'];

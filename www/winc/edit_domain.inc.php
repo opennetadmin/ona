@@ -50,6 +50,7 @@ function ws_editor($window_name, $form='') {
 
     }
 
+    if ($form['newptrdomainname']) $domain['name'] = $form['newptrdomainname'];
 
     // Escape data for display in html
     foreach(array_keys((array)$domain) as $key) {$domain[$key] = htmlentities($domain[$key], ENT_QUOTES);}
@@ -97,6 +98,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="domain_name"
                     name="name"
                     alt="Domain name"
                     value="{$domain['name']}"

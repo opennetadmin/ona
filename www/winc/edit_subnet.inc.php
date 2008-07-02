@@ -307,6 +307,17 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
 
+    // Before we go on, we must alert the user if this new subnet would require a new PTR zone.
+    $ipflip = ip_mangle($form['set_ip'],'flip');
+    $octets = explode(".",$ipflip);
+    // Find a pointer zone for this ip to associate with.
+    list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+    if (!$ptrdomain['id']) {
+        $self['error'] = "ERROR => This subnet is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa\\n\\nSelect OK to create new DNS domain now.";
+        $response->addScript("var doit=confirm('{$self['error']}');if (doit == true) {xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[3]}.in-addr.arpa', 'editor');} else {removeElement('{$window_name}');}");
+        return($response->getXML());
+    }
+
 
     // Decide if we're editing or adding
     $module = 'modify';
