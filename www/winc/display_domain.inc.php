@@ -249,6 +249,13 @@ EOL;
                 </tr>
 EOL;
         }
+    } else {
+            $html .= <<<EOL
+            <tr style="background-color: #FFDDDD;" title="There are no defined servers for this domain!">
+                <td colspan=10 nowrap="true">
+                    <img src='{$images}/silk/error.png' border='0'> Please add a server for this domain!
+                </td>
+EOL;
     }
 
     if (auth('advanced',$debug_val)) {
