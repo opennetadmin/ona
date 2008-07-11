@@ -73,7 +73,6 @@ EOL;
         </tr>
 EOL;
 
-    if (!$record['id']) {
         $window['html'] .= <<<EOL
         <tr>
             <td align="right" class="qf-search-line">
@@ -83,22 +82,7 @@ EOL;
                 <input name="reference" type="text" class="edit" size="32" accesskey="r" value="{$record['reference']}"/>
             </td>
         </tr>
-EOL;
-    } else {
-        $window['html'] .= <<<EOL
-        <tr>
-            <td align="right" class="qf-search-line">
-                Reference
-            </td>
-            <td align="left" class="qf-search-line">
-                <input name="reference" type="hidden" size="32" value="{$record['reference']}"/>
-                {$record['reference']}
-            </td>
-        </tr>
-EOL;
-    }
 
-    $window['html'] .= <<<EOL
         <tr>
             <td align="right" class="qf-search-line">
                 <u>N</u>ame
@@ -228,13 +212,14 @@ function ws_save($window_name, $form='') {
         $module = 'location_modify';
         $form['set_name'] = $form['name'];              unset($form['name']);
         $form['set_address'] = $form['address'];        unset($form['address']);
-    //    $form['set_reference'] = $form['reference'];
+        $form['set_reference'] = $form['reference'];
         $form['set_city'] = $form['city'];              unset($form['city']);
         $form['set_state'] = $form['state'];            unset($form['state']);
         $form['set_zip_code'] = $form['zip_code'];      unset($form['zip_code']);
         $form['set_longitude'] = $form['longitude'];    unset($form['longitude']);
         $form['set_latitude'] = $form['latitude'];      unset($form['latitude']);
         $form['set_misc'] = $form['misc'];              unset($form['misc']);
+        $form['reference'] = $form['location_id'];
     }
 
     // If there's no "refresh" javascript, add a command to view the new record

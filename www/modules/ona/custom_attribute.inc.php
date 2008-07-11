@@ -132,7 +132,7 @@ EOM
     }
 
     // validate the inpute value against the field_validation_rule.
-    if (!preg_match($catype['field_validation_rule'], $options['value'])) {
+    if ($catype['field_validation_rule'] and !preg_match($catype['field_validation_rule'], $options['value'])) {
         printmsg("DEBUG => The value '{$options['value']}' does not match field validation rule: {$catype['field_validation_rule']}",3);
         $self['error'] = "ERROR => The value '{$options['value']}' does not match field validation rule: {$catype['field_validation_rule']}";
         return(array(7, $self['error'] . "\n"));
@@ -146,7 +146,7 @@ EOM
             'table_name_ref'       => $table_name_ref,
             'table_id_ref'         => $table_id_ref,
             'custom_attribute_type_id' => $catype['id'],
-            'value'                => $options['value']
+            'value'                => trim($options['value'])
         )
     );
     if ($status or !$rows) {
@@ -328,6 +328,211 @@ EOL;
     return(array(6, $text));
 
 }
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: custom_attribute_modify (string $options='')
+//
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function (0 on success, non-zero on error)
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = custom_attribute_modify('host=test');
+//
+//  Exit codes:
+//    0  :: No error
+//    1  :: Help text printed - Insufficient or invalid input received
+//    4  :: SQL Query failed
+//
+//
+//  History:
+//
+//
+///////////////////////////////////////////////////////////////////////
+function custom_attribute_modify($options="") {
+
+    // The important globals
+    global $conf, $self, $onadb;
+
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+
+    printmsg("DEBUG => custom_attribute_modify({$options}) called", 3);
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Return the usage summary if we need to
+    if ($options['help'] or
+        !(
+            ($options['id'])
+            and
+            (
+                ($options['set_type'] and array_key_exists('set_value',$options))
+                or
+                (array_key_exists('set_value',$options))
+                or
+                (array_key_exists('set_type',$options))
+            )
+         )
+       )
+    {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+custom_attribute_modify-v{$version}
+Modifies the custom attribute specified
+
+  Synopsis: custom_attribute_modify
+
+  Where:
+    id=ID                     custom attribute ID
+
+  Options:
+    set_type=ID|STRING        the name or ID of the attribute type
+    set_value="STRING"        the value of the attribute
+
+  Notes:
+    If you specify a type, you must specify a value.
+\n
+EOM
+
+        ));
+    }
+
+
+    // Determine the entry itself exists
+    list($status, $rows, $entry) = ona_get_custom_attribute_record(array('id' => $options['id']));
+    if ($status or !$rows) {
+        printmsg("DEBUG => Invalid Custom Atribute record ID ({$options['id']})!",3);
+        $self['error'] = "ERROR => Invalid Custom Atribute record ID ({$options['id']})!";
+        return(array(2, $self['error']. "\n"));
+    }
+
+    printmsg("DEBUG => custom_attribute_modify(): Found entry, {$entry['name']} => {$entry['value']}", 3);
+    $desc='';
+
+    // If they provided a hostname / ID let's look it up
+    if ($entry['table_name_ref'] == "hosts") {
+        list($status, $rows, $host) = ona_find_host($entry['table_id_ref']);
+        $table_name_ref = 'hosts';
+        $table_id_ref = $host['id'];
+        $desc = $host['fqdn'];
+    }
+    if ($entry['table_name_ref'] == "subnets") {
+        list($status, $rows, $subnet) = ona_find_subnet($entry['table_id_ref']);
+        $table_name_ref = 'subnets';
+        $table_id_ref = $subnet['id'];
+        $desc = $subnet['name'];
+    }
+
+
+    // This variable will contain the updated info we'll insert into the DB
+    $SET = array();
+
+    $typesearch = 'id';
+    $typeval = $entry['custom_attribute_type_id'];
+
+    // determine the attribute type
+    if (array_key_exists('set_type', $options)) {
+        if (!is_numeric($options['set_type'])) {
+            $typesearch = 'name';
+        }
+        $typeval = $options['set_type'];
+    }
+
+    // Find the attribute type
+    list($status, $rows, $catype) = ona_get_custom_attribute_type_record(array($typesearch => $typeval));
+    if (!$rows) {
+        printmsg("DEBUG => Unable to find custom attribute type: {$typeval}",3);
+        $self['error'] = "ERROR => Unable to find custom attribute type: {$typeval}";
+        return(array(3, $self['error'] . "\n"));
+    }
+
+    // default to whatever was in the record you are editing
+    $SET['value'] = $entry['value'];
+
+    if (array_key_exists('set_value', $options)) {
+        // trim leading and trailing whitespace from 'value'
+        $SET['value'] = $valinfo = trim($options['set_value']);
+    }
+
+
+    // validate the inpute value against the field_validation_rule.
+    if ($catype['field_validation_rule'] and !preg_match($catype['field_validation_rule'], $SET['value'])) {
+        printmsg("DEBUG => The value '{$SET['value']}' does not match field validation rule: {$catype['field_validation_rule']}",3);
+        $self['error'] = "ERROR => The value '{$SET['value']}' does not match field validation rule: {$catype['field_validation_rule']}";
+        return(array(4, $self['error'] . "\n"));
+    }
+
+    // if the value has not changed, skip it
+    if ($SET['value'] == $entry['value']) { unset($SET['value']); $valinfo = "Value Not Changed";}
+
+    // if we change the type do a few things
+    if ($catype['id'] != $entry['custom_attribute_type_id']) {
+        // check for existing attributes like this that might already be assigned
+        list($status, $rows, $record) = ona_get_custom_attribute_record(array('table_name_ref' => $table_name_ref, 'table_id_ref' => $table_id_ref, 'custom_attribute_type_id' => $catype['id']));
+        if ($rows) {
+            printmsg("DEBUG => The type '{$catype['name']}' is already in use on {$desc}",3);
+            $self['error'] = "ERROR => The type '{$catype['name']}' is already in use on {$desc}";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+        // if we are good to go.. set the new type
+        $SET['custom_attribute_type_id'] = $catype['id'];
+    }
+
+
+
+    $msg = "INFO => Updated Custom Attribute type: {$catype['name']} => '{$valinfo}'.";
+
+    // If nothing at all changed up to this point, bail out
+    if (!$SET) {
+        $self['error'] = "ERROR => custom_attribute_modify() You didn't change anything. Make sure you have a new value.";
+        printmsg($self['error'], 0);
+        return(array(6, $self['error'] . "\n"));
+    }
+
+    // Update the record
+    list($status, $rows) = db_update_record($onadb, 'custom_attributes', array('id' => $entry['id']), $SET);
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => custom_attribute_modify() SQL Query failed: " . $self['error'];
+        printmsg($self['error'], 0);
+        return(array(7, $self['error'] . "\n"));
+    }
+
+
+    // Return the success notice
+    $self['error'] = $msg;
+    printmsg($self['error'], 0);
+    return(array(0, $self['error'] . "\n"));
+
+}
+
+
+
+
+
+
+
+
 
 
 

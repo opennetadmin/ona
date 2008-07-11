@@ -55,6 +55,32 @@ a:active     { color: {$color['alink']}; cursor: pointer; text-decoration: under
 a:hover      { cursor: pointer; text-decoration: underline; }
 
 
+
+.ws_plugin_content {
+  margin-bottom: 8px;
+  float: left;
+  padding-right: 4px;
+  padding-left: 4px;
+
+}
+
+.ws_plugin_title_right {
+    font-weight: bold;
+    padding: 2px 4px;
+    border: solid 1px {$color['border']};
+    background-color: {$color['window_content_bg']};
+    border-right: 0px;
+}
+
+.ws_plugin_title_left {
+    font-weight: bold;
+    padding: 2px 4px;
+    border: solid 1px {$color['border']};
+    background-color: {$color['window_content_bg']};
+    border-left: 0px;
+    text-align: right;
+}
+
 /* ---------------  Used in the Site ---------------- */
 
 /* Bar with Nav Links at the top */
@@ -389,7 +415,42 @@ div.wwTT_int_menu p
     margin: 0;
     text-align: left;
     -moz-opacity: 1;
+    -khtml-opacity: 1;
 }
+
+
+/* Custom Attribute info tooltips */
+div.wwTT_ca_info
+{
+    background-color: #F2F2F2;
+    font-size: 13px;
+    font-family: "Trebuchet MS", sans-serif;
+    left: 0;
+    top: 0;
+    padding: 4px;
+    position: absolute;
+    text-align: left;
+    z-index: 20;
+    -moz-border-radius: 4px;
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=87);
+    border: solid black 1px
+}
+div.wwTT_ca_info .contents
+{
+    margin: 0;
+    padding: 0 3px;
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=100);
+}
+div.wwTT_ca_info p
+{
+    color: #D17E62;
+    font-size: 9px;
+    padding: 3px 0 0 0;
+    margin: 0;
+    text-align: left;
+}
+
+
 
 
 .table-tab-active {

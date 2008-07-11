@@ -173,7 +173,7 @@ EOL;
     if($_SESSION['ona'][$window_name]['history']) { $history = end($_SESSION['ona'][$window_name]['history']); }
     $new_title = "Work Space: {$history['type']}: {$history['title']}";
     $new_buttons = <<<EOL
-    <span style="font-size: xx-small;vertical-align: middle;">&copy; {$year} OpenNetAdmin - {$conf['version']}</span>
+    <span style="font-size: xx-small;vertical-align: middle;">&copy; {$year} <a style="color: white;" href="http://opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}</span>
     <a style="cursor: pointer;" title="Open online help for: {$history['type']}" onClick="document.location = '{$_ENV['help_url']}{$history['type']}';"><img src="{$images}/silk/help.png" border="0" /></a>
 
     <a onclick="removeElement('work_space');" style="cursor: pointer;" title="Home"><img border="0" src="{$images}/silk/application_home.png"/></a>

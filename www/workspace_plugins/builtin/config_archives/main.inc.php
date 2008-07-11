@@ -42,7 +42,11 @@ EOL;
         {$row_html}
         </table>
 EOL;
+    } else {
+        // MP: FIXME: find a better way to just delete the div element outright.
+        $modjs = "el('config_archives_container').innerHTML='';";
     }
+
 } else {
     // MP: FIXME: find a better way to just delete the div element outright.
     $modjs = "el('config_archives_container').innerHTML='';";

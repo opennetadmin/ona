@@ -88,7 +88,7 @@ EOL;
     <form id="{$window_name}_form" onSubmit="return false;">
     <input type="hidden" name="host" value="{$host['id']}">
     <input type="hidden" name="subnet" value="{$subnet['id']}">
-    <input type="hidden" name="id" value="{$dhcp_entry['id']}">
+    <input type="hidden" name="id" value="{$ca['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
 

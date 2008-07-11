@@ -45,27 +45,17 @@ $modbodyhtml .= <<<EOL
                 </tr>
 
                 <tr>
-                    <td align="right" nowrap="true"><b>Serial Number</b>&nbsp;</td>
-                    <td nowrap="true" class="padding" align="left">{$record['serial_number']}</td>
-                </tr>
-
-                <tr>
-                    <td align="right" nowrap="true"><b>Asset Tag</b>&nbsp;</td>
-                    <td nowrap="true" class="padding" align="left">{$record['asset_tag']}</td>
-                </tr>
-EOL;
-
-if ($record['notes']) {
-    $modbodyhtml .= <<<EOL
-                <tr>
                     <td align="right" {$notes_valign} nowrap="true"><b>Notes</b>&nbsp;</td>
                     <td nowrap="true" class="padding" align="left" {$notes_width}><textarea size="256" cols=25 rows=3 class="display_notes">{$record['notes']}</textarea></td>
                 </tr>
 EOL;
-}
+
 
 $modbodyhtml .= <<<EOL
             </table>
 EOL;
+
+    $wspl = workspace_plugin_loader('location_detail',$record,$extravars);
+    $modbodyhtml .= $wspl[0]; $modbodyjs .= $wspl[1];
 
 ?>

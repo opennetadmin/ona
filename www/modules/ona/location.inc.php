@@ -312,6 +312,7 @@ Modifies an existing location entry in the database
     reference=STRING or ID         location reference or ID
 
   Update:
+    set_reference=NAME             change location reference
     set_name=NAME                  change location name
     set_address=STRING
     set_city=STRING
@@ -343,6 +344,10 @@ EOM
     // This variable will contain the updated info we'll insert into the DB
     $SET = array();
 
+    if ($loc['reference'] != $options['set_reference']) {
+        $SET['reference'] = $options['set_reference'];
+        $msg .= "INFO => Location UPDATED reference: {$loc['reference']} => {$options['set_reference']}\n";
+    }
 
     // If they are specifying a new name, process it.
     if ($loc['name'] != $options['set_name']) {

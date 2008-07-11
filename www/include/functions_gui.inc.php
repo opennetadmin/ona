@@ -137,11 +137,11 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     // Create a standard div container for the module
     $modhtml .= <<<EOL
             <!-- {$modulename} start -->
-            <div id="{$modulename}_container" style="margin-bottom: 8px;float: left; padding-right: 4px; padding-left: 4px;display:block;">
+            <div id="{$modulename}_container" class="ws_plugin_content">
                 <table  cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
                 <tr>
-                    <td style="{$style['label_box']} border-right: 0px;">{$title_left_html}</td>
-                    <td style="{$style['label_box']} border-left: 0px;" align="right">
+                    <td class="ws_plugin_title_right">{$title_left_html}</td>
+                    <td class="ws_plugin_title_left">
                     {$title_right_html}
                     <img  src="{$min_img}"
                           id="{$modulename}_dropdown"

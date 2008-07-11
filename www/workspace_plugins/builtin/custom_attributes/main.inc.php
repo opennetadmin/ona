@@ -33,10 +33,26 @@ if ($rows) {
             <tr onMouseOver="this.className='row-highlight';"
                 onMouseOut="this.className='row-normal';">
 
-                <td align="left" nowrap="true" title="{$ca_type['notes']}">
+                <td align="left" nowrap="true"
+                    onmouseover="wwTT(this, event,
+                                            'id', 'tt_cainfo_{$entry['id']}',
+                                            'type', 'velcro',
+                                            'styleClass', 'wwTT_ca_info',
+                                            'direction', 'south',
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>cainfo,id=>tt_cainfo_{$entry['id']},ca_id=>{$entry['id']}\');'
+                                           );"
+                >
                     {$ca_type['name']}&nbsp;&nbsp;
                 </td>
-                <td align="left" nowrap="true" style="border-left: 1px solid; border-left-color: #aaaaaa;padding-left: 3px;">
+                <td align="left" nowrap="true" style="border-left: 1px solid; border-left-color: #aaaaaa;padding-left: 3px;"
+                    onmouseover="wwTT(this, event,
+                                            'id', 'tt_cainfo_{$entry['id']}',
+                                            'type', 'velcro',
+                                            'styleClass', 'wwTT_ca_info',
+                                            'direction', 'south',
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>cainfo,id=>tt_cainfo_{$entry['id']},ca_id=>{$entry['id']}\');'
+                                           );"
+                >
                     {$ca_type['value']}&nbsp;
                 </td>
                 <td align="right" nowrap="true">

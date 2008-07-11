@@ -10,7 +10,7 @@
 //////////////////////////////////////////////////////////////////////////////
 function ws_display($window_name, $form='') {
     global $conf, $self, $onadb, $base;
-    global $images, $color, $style, $msgtype;
+    global $images, $color, $style;
     $html = '';
     $js = '';
     $debug_val = 3;  // used in the auth() calls to supress logging
@@ -56,7 +56,7 @@ function ws_display($window_name, $form='') {
     }
 
     // Subnet description
-    list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $interface['subnet_id']));
+    list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
     $record['subnet'] = $subnet['name'];
     $record['ip_subnet_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
     $record['ip_subnet_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
@@ -78,54 +78,19 @@ function ws_display($window_name, $form='') {
 
     // Get location_number from the location_id
     list($status, $rows, $location) = ona_get_location_record(array('id' => $record['location_id']));
+
     // extra stuff to pass to ws_plugins
     $extravars['refresh']=$refresh;
     $extravars['window_name']=$window_name;
 
-    $style['content_box'] = <<<EOL
-        margin: 10px 20px;
-        padding: 2px 4px;
-        background-color: #FFFFFF;
-        vertical-align: top;
-EOL;
-
-    $style['label_box'] = <<<EOL
-        font-weight: bold;
-        padding: 2px 4px;
-        border: solid 1px {$color['border']};
-        background-color: {$color['window_content_bg']};
-EOL;
-
     // Escape data for display in html
     foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
-        // force 300px width to Notes field if the length is longer than 50 characters and put Notes at the top of the td
-        $notes_width = "";
-        $notes_valign = "";
-        if(strlen($record['notes']) > 50) {
-            $notes_width =' style="width: 300px" ';
-            $notes_valign = ' valign="top" ';
-        }
 
-    $html .= <<<EOL
+    // Create a div for workspace plugins to live
+    $html .= "<div id='wsplugins' style='margin: 10px;'>";
 
-    <!-- FORMATTING TABLE -->
-    <div style="{$style['content_box']}">
-    <table cellspacing="0" border="0" cellpadding="0"><tr>
-
-        <!-- START OF FIRST COLUMN OF SMALL BOXES -->
-        <td nowrap="true" valign="top" style="padding-right: 15px;">
-
-            <form id="form_host_{$record['id']}"
-                ><input type="hidden" name="host_id" value="{$record['id']}"
-                ><input type="hidden" name="js" value="{$refresh}"
-            ></form>
-
-EOL;
-
+    // Start displaying all the ws plugins
     $wspl = workspace_plugin_loader('host_detail',$record,$extravars);
-    $html .= $wspl[0]; $js .= $wspl[1];
-
-    $wspl = workspace_plugin_loader('location_detail',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];
 
     $wspl = workspace_plugin_loader('host_services',$record);
@@ -134,158 +99,31 @@ EOL;
     $wspl = workspace_plugin_loader('custom_attributes',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];
 
-/* FIXME: MP this needs to be changed to custom attributes
-    // INFOBIT LIST (CLASSIFICATIONS)
-    $html .= <<<EOL
-            <!-- INFOBIT LIST -->
-            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-                <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">
-                    Roles
-                </td></tr>
-EOL;
-    // Get a list of infobits, and loop through them
-    list($status, $rows, $infobits) = db_get_records($onadb, 'roles', array('host_id' => $record['id']), '');
-    if ($rows) {
-        foreach ($infobits as $class) {
-            list($status, $rows, $infobit) = ona_get_infobit_record(array('ID' => $class['INFOBIT_ID']));
-            $class['COMMENTS'] = htmlentities($class['COMMENTS'], ENT_QUOTES);
-            $infobit['VALUE'] = htmlentities($infobit['VALUE'], ENT_QUOTES);
-            $infobit['NAME'] = htmlentities($infobit['NAME'], ENT_QUOTES);
-            $html .= <<<EOL
-                <tr onMouseOver="this.className='row-highlight';"
-                    onMouseOut="this.className='row-normal';">
-                    <td align="left" nowrap="true">
-                        <span title="{$class['COMMENTS']}">{$infobit['NAME']} &#040;{$infobit['VALUE']}&#041;</span>
-                    </td>
-                    <td align="right" nowrap="true">
-                        <form id="form_class_{$class['ID']}"
-                            ><input type="hidden" name="class" value="{$infobit['ID']}"
-                            ><input type="hidden" name="host_id" value="{$record['ID']}"
-                            ><input type="hidden" name="id" value="{$class['ID']}"
-                            ><input type="hidden" name="js" value="{$refresh}"
-                        ></form>
-EOL;
-            if (auth('advanced',$debug_val)) {
-            $html .= <<<EOL
-
-                        <a title="Edit Class. ID: {$class['ID']}"
-                           class="act"
-                           onClick="xajax_window_submit('edit_class', xajax.getFormValues('form_class_{$class['ID']}'), 'editor');"
-                        ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
-
-                        <a title="Delete Class. ID: {$class['ID']}"
-                           class="act"
-                           onClick="var doit=confirm('Are you sure you want to delete this role?');
-                                    if (doit == true)
-                                        xajax_window_submit('edit_class', xajax.getFormValues('form_class_{$class['ID']}'), 'delete');"
-                        ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
-EOL;
-            }
-            $html .= <<<EOL
-                    </td>
-                </tr>
-EOL;
-        }
-    }
-
-    if (auth('advanced',$debug_val)) {
-        $html .= <<<EOL
-                <tr>
-                    <td colspan="2" align="left" valign="middle" nowrap="true" class="act-box">
-                        <form id="form_class_{$record['ID']}"
-                            ><input type="hidden" name="host_id" value="{$record['ID']}"
-                            ><input type="hidden" name="js" value="{$refresh}"
-                        ></form>
-
-                        <a title="Add class"
-                           class="act"
-                           onClick="xajax_window_submit('edit_class', xajax.getFormValues('form_class_{$record['ID']}'), 'editor');"
-                        ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-
-                        <a title="Add class"
-                           class="act"
-                           onClick="xajax_window_submit('edit_class', xajax.getFormValues('form_class_{$record['ID']}'), 'editor');"
-                        >Add role</a>&nbsp;
-                    </td>
-                </tr>
-EOL;
-    }
-
-    $html .= "            </table>";
-
-    // END INFOBIT LIST (CLASSIFICATIONS)
-*/
-
-
-    $html .= <<<EOL
-        <!-- END OF FIRST COLUMN OF SMALL BOXES -->
-        </td>
-
-        <!-- START OF SECOND COLUMN OF SMALL BOXES -->
-        <td valign="top" style="padding-right: 15px;">
-EOL;
-
-
     $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];
 
-    // Check if there are configs.. if so. load the config archive plugin
-    // FIXME: MP: have the module check if it should be displayed or not and hide the workspace_plugin div
-    list($status, $total_configs, $tmp) = db_get_records($onadb, 'configurations', array('host_id' => $record['id']), '', 0);
-    if($total_configs>0) {
-        $wspl = workspace_plugin_loader('config_archives',$record);
-        $html .= $wspl[0]; $js .= $wspl[1];
-    }
-
-
-    $html .= <<<EOL
-        <!-- END OF SECOND COLUMN OF SMALL BOXES -->
-        </td>
-
-
-        <!-- START OF THIRD COLUMN OF SMALL BOXES -->
-        <td valign="top">
-EOL;
-
-
+    $wspl = workspace_plugin_loader('config_archives',$record);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
     // Display the host_action workspace_plugin
     $wspl = workspace_plugin_loader('host_actions',$record);
     $html .= $wspl[0]; $js .= $wspl[1];
 
-    // START MESSAGES BOX
-    // $tablename is a reference directly to the table that contains the item
-    // we are displaying to the user.
-    // It is possible that you can have the same ID in multiple tables, currently.
-    $tablename = 'hosts';
-    require_once('winc/tooltips.inc.php');
-    list($lineshtml, $linesjs) = get_message_lines_html("table_id_ref = {$record['id']} AND table_name_ref LIKE '{$tablename}'");
-    if ($lineshtml) {
-       $html .= <<<EOL
-            <!-- MESSAGES LIST -->
-            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-                <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">
-                    Messages
-                </td></tr>
-                <tr><td>
-EOL;
-        $html .= $lineshtml;
-        $js .= $linesjs;
-        $html .= "</td></tr></table>";
-    }
-    // END MESSAGES LIST
-
+    // Display messages
+    $wspl = workspace_plugin_loader('messages',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
     $html .= <<<EOL
-        </td>
-        <!-- END OF THIRD COLUMN OF SMALL BOXES -->
-    </tr></table>
+
     </div>
-    <!-- END OF TOP SECTION -->
+    <br style="clear:both;">
+
+    <form id="form_host_{$record['id']}"
+        ><input type="hidden" name="host_id" value="{$record['id']}"
+        ><input type="hidden" name="js" value="{$refresh}"
+    ></form>
 
 EOL;
-
-
 
 
 

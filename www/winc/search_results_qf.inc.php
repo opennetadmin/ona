@@ -413,7 +413,9 @@ function ws_location($window_name, $form='') {
         $and = " AND ";
     }
 
-
+    // Wild card .. if $while is still empty, add a 'ID > 0' to it so you see everything.
+    if ($where == '')
+        $where = 'id > 0';
 
 
     // Do the SQL Query

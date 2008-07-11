@@ -86,6 +86,10 @@ function ws_tooltips_submit($window_name, $form='') {
            list ($html, $js) = get_host_interface_list_html($form);
            break;
 
+        case 'cainfo':
+           list ($html, $js) = get_custom_attribute_info_html($form);
+           break;
+
         case 'interface_cluster_list':
            list ($html, $js) = get_interface_cluster_list_html($form);
            break;
@@ -302,7 +306,7 @@ function get_message_lines_html($where) {
         return(array($html, $js));
 
     $html .= <<<EOL
-        <div style="overflow: auto;height: 100px;max-height: 100px;">
+        <div style="overflow: auto;max-height: 100px;">
         <table style="cursor: pointer;" width="100%" cellspacing="0" border="0" cellpadding="0">
         <tbody style="max-height: 100px;overflow: auto;overflow-x: hidden;">
 EOL;
@@ -2174,6 +2178,90 @@ function ws_interface_move_save($window_name, $form='') {
 
 
 
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: get_custom_attribute_info_html($form)
+//
+// Description:
+//     Builds HTML for displaying info about custom attributes hosts
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function get_custom_attribute_info_html($form) {
+    global $conf, $self, $onadb;
+    global $font_family, $color, $style, $images;
+
+    $html = $js = '';
+
+    list($status, $rows, $ca) = ona_get_custom_attribute_record(array('id' => $form['ca_id']));
+    if ($rows == 0 or $status) return(array('', ''));
+
+
+
+
+    $html .= <<<EOL
+        <!-- Custom Attribute Info -->
+        <table cellspacing="0" border="0" cellpadding="0">
+
+        <tr>
+            <td align="left" nowrap="true" colspan="99"><b><u>Custom Attribute Info</u></b>&nbsp;</td>
+        </tr>
+
+        <tr>
+            <td align="right" nowrap="true" style="font-weight: bold;">
+                {$window['edit_type']}
+            </td>
+            <td class="padding" align="left" width="100%">
+                {$window['edit_type_value']}
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" nowrap="true" style="font-weight: bold;">
+                Type
+            </td>
+            <td class="padding" align="left" width="100%">
+                    {$ca['name']}
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" nowrap="true" style="font-weight: bold;">
+                Value
+            </td>
+            <td class="padding" align="left" width="100%">
+                <textarea
+                    name="value"
+                    alt="Value"
+                    class="edit"
+                    rows="5"
+                    cols="25"
+                >{$ca['value']}</textarea>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" nowrap="true" style="font-weight: bold;">
+                Notes
+            </td>
+            <td class="padding" align="left" width="100%">
+                <textarea
+                    name="value"
+                    alt="Value"
+                    class="edit"
+                    rows="5"
+                    cols="25"
+                >{$ca['notes']}</textarea>
+            </td>
+        </tr>
+
+EOL;
+
+    $html .= <<<EOL
+        </table>
+EOL;
+
+    return(array($html, $js));
+}
 
 
 
