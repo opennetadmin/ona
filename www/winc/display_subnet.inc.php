@@ -1,5 +1,5 @@
 <?
-// Include map portal functions
+// Include map portal functions for the subnet_map workspace plugin
 include('include/functions_network_map.inc.php');
 
 
@@ -52,8 +52,6 @@ function ws_display($window_name, $form='') {
     $record['ip_mask'] = ip_mangle($record['ip_mask'], 'dotted');
     $record['ip_subnet_mask_cidr'] = ip_mangle($record['ip_mask'], 'cidr');
 
-    // Calculate the percentage of the subnet that's used (total size - allocated hosts - dhcp pool size)
-    $usage_html = get_subnet_usage_html($record['id']);
 
     list($status, $rows, $type) = ona_get_subnet_type_record(array('id' => $record['subnet_type_id']));
     $record['type'] = $type['display_name'];
@@ -64,464 +62,44 @@ function ws_display($window_name, $form='') {
     $record['vlan_campus_id']   = $vlan['vlan_campus_id'];
     $record['vlan_campus_name'] = $vlan['vlan_campus_name'];
 
+    // extra stuff to pass to ws_plugins
+    $extravars['refresh']=$refresh;
+    $extravars['window_name']=$window_name;
 
-    $style['content_box'] = <<<EOL
-        margin: 10px 20px;
-        padding: 2px 4px;
-        background-color: #FFFFFF;
-EOL;
-
-    $style['label_box'] = <<<EOL
-        font-weight: bold;
-        padding: 2px 4px;
-        border: solid 1px {$color['border']};
-        background-color: {$color['window_content_bg']};
-EOL;
 
     // Escape data for display in html
     foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
 
+    // Create a div for workspace plugins to live
+    $html .= "<div id='wsplugins' style='margin: 10px;'>";
 
-    $html .= <<<EOL
-    <!-- FORMATTING TABLE -->
-    <div style="{$style['content_box']}">
-    <table cellspacing="0" border="0" cellpadding="0"><tr>
+    $wspl = workspace_plugin_loader('subnet_detail',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
-        <!-- START OF FIRST COLUMN OF SMALL BOXES -->
-        <td nowrap="true" valign="top" style="padding-right: 15px;">
-EOL;
+    $wspl = workspace_plugin_loader('dhcp_servers',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
-    // SUBNET INFORMATION BOX
-    $html .= <<<EOL
-            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-                <tr>
-                <td colspan="99" nowrap="true">
-                    <!-- LABEL -->
-                    <div style="{$style['label_box']}">
-                        <table cellspacing="0" border="0" cellpadding="0">
-                            <tr><td nowrap="true">
-                                <form id="form_subnet_{$record['id']}"
-                                    ><input type="hidden" name="subnet_id" value="{$record['id']}"
-                                    ><input type="hidden" name="js" value="{$refresh}"
-                                ></form>
-EOL;
-
-    if (auth('subnet_modify',$debug_val)) {
-        $html .= <<<EOL
-
-                                <a title="Edit subnet. ID: {$record['id']}"
-                                   class="act"
-                                   onClick="xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'editor');"
-                                ><img src="{$images}/silk/page_edit.png" border="0"></a>
-EOL;
-    }
-    if (auth('subnet_del',$debug_val)) {
-        $html .= <<<EOL
-                                <a title="Delete subnet. ID: {$record['id']}"
-                                   class="act"
-                                   onClick="xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'delete');"
-                                ><img src="{$images}/silk/delete.png" border="0"></a>
-EOL;
-    }
-    $html .= <<<EOL
-                            &nbsp;
-                            </td>
-                            <td nowrap="true">
-                                <b>{$record['name']}</b>&nbsp;
-                            </td></tr>
-                        </table>
-                    </div>
-                </td>
-                </tr>
-EOL;
-    // Display the vlan info line only if there is a vlan associated
-    if ($record['vlan_id']) {
-        $html .= <<<EOL
-                <tr>
-                    <td align="right" nowrap="true"><b>Vlan</b>&nbsp;</td>
-                    <td class="padding" align="left">
-                        <a title="View Vlan Campus"
-                           class="nav"
-                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_vlan_campus\', \'vlan_campus_id=>{$record['vlan_campus_id']}\', \'display\')');"
-                        >{$record['vlan_campus_name']}</a>&nbsp;&#047;&nbsp;<a title="View Vlan"
-                           class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_vlan\', \'vlan_id=>{$record['vlan_id']}\', \'display\')');"
-                        >{$record['vlan_name']}</a>
-                     </td>
-                </tr>
-EOL;
-    }
-    $html .= <<<EOL
-                <tr>
-                    <td align="right" nowrap="true"><b>IP Address</b>&nbsp;</td>
-                    <td class="padding" align="left">
-                        {$record['ip_addr']}&nbsp;
-                    </td>
-                </tr>
-
-                <tr>
-                    <td align="right" nowrap="true"><b>Netmask</b>&nbsp;</td>
-                    <td class="padding" align="left">{$record['ip_mask']} (/{$record['ip_subnet_mask_cidr']})&nbsp;</td>
-                </tr>
-
-                <tr>
-                    <td align="right" nowrap="true"><b>Usage</b>&nbsp;</td>
-                    <td class="padding" align="left" valign="middle">{$usage_html}</td>
-                </tr>
-
-                <tr>
-                    <td align="right" nowrap="true"><b>Type</b>&nbsp;</td>
-                    <td class="padding" align="left">{$record['type']}&nbsp;</td>
-                </tr>
-
-            </table>
-EOL;
-    // END SUBNET INFORMATION
-
-
-    // SMALL SUBNET MAP
-
-    // Get the numeric IP address of our subnet (we replace the last quad with a .0)
-    $ip = ip_mangle(preg_replace('/\.\d+$/', '.0', $record['ip_addr']), 'numeric');
-    $ip_subnet = ip_mangle($record['ip_addr'], 'numeric');
-
-    $html .= <<<EOL
-            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-                <tr><td colspan="99" nowrap="true">
-                    <!-- LABEL -->
-                    <div style="{$style['label_box']}">
-                        <a title="Display full sized subnet map"
-                           class="act"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_block_map\', \'ip_block_start=>{$record['ip_addr']}\', \'display\');');"
-                        ><img src="{$images}/silk/shape_align_left.png" border="0"></a>&nbsp;
-                        <a title="Highlight current subnet"
-                           class="act"
-                           onClick="
-                             var _el = el('{$ip_subnet}_block');
-                             if (_el) {
-                               if (_el.style.isHighlighted) {
-                                 _el.style.backgroundColor = '{$color['bgcolor_map_subnet']}';
-                                 _el.style.isHighlighted = false;
-                               }
-                               else {
-                                 _el.style.backgroundColor = '{$color['bgcolor_map_selected']}';
-                                 _el.style.isHighlighted = true;
-                               }
-                             }
-                           "
-                        ><img src="{$images}/silk/paintbrush.png" border="0"></a>&nbsp;
-                        <b>Subnet Map</b>
-                    </div>
-                </td></tr>
-
-                <tr><td colspan="99" nowrap="true" align="center">
-                    <input type="hidden" id="{$window_name}_zoom" name="zoom" value="7">
-                    <div id="{$window_name}_portal" onclick="el('dragmessage').style.display='';el('{$window_name}_portal').style.color = '#FFFFFF';el('{$window_name}_portal').style.height = '150px';el('{$window_name}_portal').myonmouseup('fake event');" style="text-align: center;color: #999999;position: relative; height: 19px; width: 355px;">
-                        Click here to show map
-                        <span id="{$window_name}_substrate"></span>
-                    </div>
-                    </td>
-                    <td>
-                        <span id="dragmessage" style="display: none;font-size:10px;position:fixed;margin-left: -11px;">&uarr;<br><br>D<br>R<br>A<br>G<br><br>&darr;<br></span>
-                    </td>
-                </tr>
-            </table>
-EOL;
-
-    // Get javascript to setup the map portal mouse handlers
-    // Force ip end to be less than ip start to prevent Block highlighting
-    $portal_js .= get_portal_js($window_name, $ip, $ip -1);
-
-    // END SMALL SUBNET MAP
-
-
-    $html .= <<<EOL
-        <!-- END OF FIRST COLUMN OF SMALL BOXES -->
-        </td>
-
-        <!-- START OF SECOND COLUMN OF SMALL BOXES -->
-        <td valign="top" style="padding-right: 15px;">
-
-        <!-- END OF SECOND COLUMN OF SMALL BOXES -->
-        </td>
-
-        <!-- START OF THIRD COLUMN OF SMALL BOXES -->
-        <td valign="top" style="padding-right: 15px;">
-EOL;
-
-
-    // DHCP SERVER LIST
-    $html .= <<<EOL
-        <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-            <tr>
-            <!-- maybe turn this option on later
-                <td>
-                    <form id="{$form['form_id']}_dhcp_serv_{$record['id']}"
-                            ><input type="hidden" name="server" value="{$record['id']}"
-                            ><input type="hidden" name="js" value="{$refresh}"
-                    ></form>
-
-                    <a title="Assign domain"
-                    class="act"
-                    onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('{$form['form_id']}_dhcp_serv_{$record['id']}'), 'editor');"
-                    ><img src="{$images}/silk/page_add.png" border="0"></a>
-                </td>
-            -->
-                <td colspan="99" nowrap="true" style="{$style['label_box']}">DHCP servers&nbsp;</td>
-            </tr>
-
-EOL;
-    // Get a list of servers
-    list($status, $rows, $dhcpservers) = db_get_records($onadb,
-                                                        'hosts',
-                                                        'id IN (SELECT host_id
-                                                                    FROM   dhcp_server_subnets
-                                                                    WHERE  subnet_id = '.$record['id'].'
-                                                                    UNION
-                                                                    SELECT primary_server_id
-                                                                    FROM  dhcp_failover_groups
-                                                                    WHERE id IN (SELECT dhcp_failover_group_id
-                                                                                                    FROM dhcp_pools
-                                                                                                    WHERE subnet_id = '.$record['id'].')
-                                                                    UNION
-                                                                    SELECT secondary_server_id
-                                                                    FROM  dhcp_failover_groups
-                                                                    WHERE id IN (SELECT dhcp_failover_group_id
-                                                                                                    FROM dhcp_pools
-                                                                                                    WHERE subnet_id = '.$record['id'].'))'
-                                                            );
-
-    if ($rows) {
-        foreach ($dhcpservers as $dhcphost) {
-
-            list($status, $rows, $host) = ona_find_host($dhcphost['id']);
-            list($dhcpsubnetstatus, $dhcpsubnetrows, $dhcpserver) = ona_get_dhcp_server_subnet_record(array('subnet_id' => $record['id'],'host_id' => $host['id']));
-            $host['fqdn'] = htmlentities($host['fqdn'], ENT_QUOTES);
-            $html .= <<<EOL
-                <tr onMouseOver="this.className='row-highlight';"
-                    onMouseOut="this.className='row-normal';">
-                    <td align="left" nowrap="true">
-                        <a title="View server. ID: {$host['id']}"
-                           class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$host['id']}\', \'display\')');"
-                        >{$host['fqdn']}</a>&nbsp;
-                    </td>
-                     <td align="right" nowrap="true">
-EOL;
-
-            if (auth('advanced',$debug_val) && $dhcpsubnetrows == 1) {
-                $html .= <<<EOL
-                        <form id="form_dhcp_serv_{$dhcpserver['id']}"
-                                ><input type="hidden" name="server_id" value="{$host['fqdn']}"
-                                ><input type="hidden" name="subnet_id" value="{$dhcpserver['subnet_id']}"
-                                ><input type="hidden" name="js" value="{$refresh}"
-                        ></form>
-
-                        <a title="Remove server assignment"
-                           class="act"
-                           onClick="var doit=confirm('Are you sure you want to remove this subnet from this DHCP server?');
-                           if (doit == true)
-                                xajax_window_submit('edit_dhcp_server', xajax.getFormValues('form_dhcp_serv_{$dhcpserver['id']}'), 'delete');"
-                        ><img src="{$images}/silk/page_delete.png" border="0"></a>
-EOL;
-            }
-            else {
-                $html .= <<<EOL
-                        <span title="You must change the failover group assignment on the pool to remove this entry."><img src="{$images}/silk/comment.png" border="0"></span>
-EOL;
-            }
-            $html .= <<<EOL
-                        &nbsp;
-                   </td>
-
-                </tr>
-EOL;
-        }
-    }
-
-    if (auth('advanced',$debug_val)) {
-        $html .= <<<EOL
-                <tr>
-                    <td colspan="3" align="left" valign="middle" nowrap="true" class="act-box">
-                        <form id="form_dhcp_server_{$record['id']}"
-                                ><input type="hidden" name="subnet" value="{$record['name']}"
-                                ><input type="hidden" name="js" value="{$refresh}"
-                        ></form>
-                        <!-- ADD SUBNET LINK -->
-                        <a title="Assign subnet to DHCP server"
-                        class="act"
-                        onClick="xajax_window_submit('edit_dhcp_server', xajax.getFormValues('form_dhcp_server_{$record['id']}'), 'editor');"
-                        ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-
-                        <a title="Assign subnet to DHCP server"
-                        class="act"
-                        onClick="xajax_window_submit('edit_dhcp_server', xajax.getFormValues('form_dhcp_server_{$record['id']}'), 'editor');"
-                        >Add DHCP Server</a>&nbsp;
-                    </td>
-                </tr>
-EOL;
-    }
-    $html .= "        </table>";
-
-    // END DHCP SERVER LIST
-
-
-    $extravars['refresh']=$refresh;
-
-
-    // DHCP POOL INFO
-    $haspool = 0;
-    $html .= <<<EOL
-            <!-- DHCP POOL INFORMATION -->
-            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-                <!-- LABEL -->
-                <tr><td colspan="2" nowrap="true" style="{$style['label_box']}">DHCP Pools</td></tr>
-EOL;
-    // get dhcp pool records
-    list($status, $rows, $dhcp_pool) = db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $record['id']));
-    if ($rows) {
-        $haspool = 1;
-
-        // Gather info about this subnet and if it is assigned to any dhcp servers.
-        list($status, $srows, $dhcp_servers) = db_get_records($onadb, 'dhcp_server_subnets', array('subnet_id' => $record['id']));
-
-        foreach ($dhcp_pool as $pool) {
-            // Test for a dhcp server subnet entry for the pool or that it is part of a failover group
-            $hasserver = $rowstyle = '';
-            if (!$srows and $pool['dhcp_failover_group_id'] == 0) {
-                $hasserver = "<img src='{$images}/silk/error.png' border='0'>";
-                $rowstyle = 'style="background-color: #FFDDDD;" title="There is no DHCP server defined for this subnet!"';
-            }
-
-            $pool['ip_addr_start']   = ip_mangle($pool['ip_addr_start'], 'dotted');
-            $pool['ip_addr_end']     = ip_mangle($pool['ip_addr_end'], 'dotted');
-
-            $html .= <<<EOL
-                <tr {$rowstyle}>
-                    <td align="left" nowrap="true">
-                       {$hasserver} {$pool['ip_addr_start']}&nbsp;Thru&nbsp;{$pool['ip_addr_end']}&nbsp;
-EOL;
-
-
-
-            // Display information about what pool group this pool is assigned to
-            // TODO: make this more efficient.  seems like there would be a better way to do this
-            if ($pool['dhcp_failover_group_id']) {
-                list($status, $rows, $failover_group) = ona_get_dhcp_failover_group_record(array('id' => $pool['dhcp_failover_group_id']));
-
-                list($status, $rows, $server_host1) = ona_get_host_record(array('id' => $failover_group['primary_server_id']));
-                list($status, $rows, $server_host2) = ona_get_host_record(array('id' => $failover_group['secondary_server_id']));
-
-                $html .= <<<EOL
-                        <a title="View DHCP server (Primary failover) - {$server_host1['fqdn']}"
-                           class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server_host1['id']}\', \'display\')');"
-                        >{$server_host1['name']}</a>&#047;
-                        <a title="View DHCP server (Secondary failover) - {$server_host2['fqdn']}"
-                           class="nav"
-                           onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_dhcp_server\', \'host_id=>{$server_host2['id']}\', \'display\')');"
-                        >{$server_host2['name']}</a>
-EOL;
-
-
-            }
-
-            $html .= <<<EOL
-                </td>
-                    <td align="right" nowrap="true">
-                        <form id="form_dhcp_pool_{$pool['id']}"
-                            ><input type="hidden" name="id" value="{$pool['id']}"
-                            ><input type="hidden" name="subnet" value="{$record['id']}"
-                            ><input type="hidden" name="js" value="{$refresh}"
-                        ></form>
-EOL;
-
-            if (auth('advanced',$debug_val)) {
-                $html .= <<<EOL
-                        <a title="Edit DHCP Pool. ID: {$pool['id']}"
-                           class="act"
-                           onClick="xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_dhcp_pool_{$pool['id']}'), 'editor');"
-                        ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
-
-                        <a title="Delete DHCP Pool. ID: {$pool['id']}"
-                           class="act"
-                           onClick="var doit=confirm('Are you sure you want to delete this DHCP pool?');
-                                    if (doit == true)
-                                        xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_dhcp_pool_{$pool['id']}'), 'delete');"
-                        ><img src="{$images}/silk/delete.png" border="0"></a>
-EOL;
-            }
-            $html .= <<<EOL
-                        &nbsp;
-                    </td>
-                </tr>
-EOL;
-
-        }
-    }
-
-    if (auth('advanced',$debug_val)) {
-        $html .= <<<EOL
-                <tr>
-                    <td colspan="2" align="left" valign="middle" nowrap="true" class="act-box">
-                        <form id="form_pool_add_{$pool['id']}"
-                            ><input type="hidden" name="subnet" value="{$record['id']}"
-                            ><input type="hidden" name="js" value="{$refresh}"
-                        ></form>
-                        <a title="Add DHCP Pool"
-                           class="act"
-                           onClick="xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_pool_add_{$pool['id']}'), 'editor');"
-                        ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-
-                        <a title="Add DHCP Pool"
-                           class="act"
-                           onClick="xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_pool_add_{$pool['id']}'), 'editor');"
-                        >Add DHCP Pool</a>&nbsp;
-                    </td>
-                </tr>
-                </td>
-EOL;
-    }
-
-    $html .= "        </table>";
-
-    // END DHCP POOL INFO
+    $wspl = workspace_plugin_loader('dhcp_pools',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
     $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];
 
-    // START MESSAGES BOX
-    // $tablename is a reference directly to the table that contains the item
-    // we are displaying to the user.
-    // It is possible that you can have the same id in multiple tables, currently.
-    $tablename = 'subnets';
-    require_once('winc/tooltips.inc.php');
-    list($lineshtml, $linesjs) = get_message_lines_html("table_id_ref = {$record['id']} AND table_name_ref LIKE '{$tablename}'");
-    if ($lineshtml) {
-       $html .= <<<EOL
-            <!-- MESSAGES LIST -->
-            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-                <tr><td colspan="99" nowrap="true" style="{$style['label_box']}">
-                    Messages
-                </td></tr>
-                <tr><td>
-EOL;
-        $html .= $lineshtml;
-        $js .= $linesjs;
-        $html .= "</td></tr></table>";
-    }
-    // END MESSAGES LIST
-
+    // Display messages
+    $wspl = workspace_plugin_loader('messages',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
     $html .= <<<EOL
-        </td>
-        <!-- END OF THIRD COLUMN OF SMALL BOXES -->
-    </tr></table>
+
     </div>
-    <!-- END OF TOP SECTION -->
+    <br style="clear:both;">
+
+    <form id="form_subnet_{$record['id']}"
+        ><input type="hidden" name="subnet_id" value="{$record['id']}"
+        ><input type="hidden" name="js" value="{$refresh}"
+    ></form>
+
 EOL;
-
-
 
 
 
@@ -731,7 +309,7 @@ EOL;
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     $response->addAssign("work_space_content", "innerHTML", $html);
-    if ($js) { $response->addScript($js . $portal_js); }
+    if ($js) { $response->addScript($js); }
     return($response->getXML());
 }
 

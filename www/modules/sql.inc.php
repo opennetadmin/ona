@@ -80,8 +80,8 @@ Runs the specified SQL query on the database and prints the result
   Notes:
     * Query is sent to the configured OpenNetAdmin database server.
     * The use of bind variables requires your options to match positionally.
-    * The SQL option will be tried first as a local file, then as a server.
-      file, then as a text SQL query.  Filenames are case sensitive.
+    * The SQL option will be tried first as a local file, then as a server
+      file, then as a raw text SQL query.  Filenames are case sensitive.
     * Server based SQL files are located in {$srvdir}
     * Use the show option to display contents of SQL files, this should contain
       a long description and any usage information that is needed.
@@ -95,7 +95,7 @@ EOM
 
     // List the sql files on the server side
     if ($options['list'] == 'Y') {
-        $text .= sprintf("%-25s%s\n",'FILE','DESCRIPTION');
+        $text .= sprintf("\n%-25s%s\n",'FILE','DESCRIPTION');
         $text .= sprintf("%'-80s\n",'');
         $files = array();
         // Get a list of the files
@@ -121,7 +121,7 @@ EOM
                     // Print the info
                     $text .= sprintf("%-25s%s\n",$file,$desc);
             }
-
+            $text .= "\n";
         }
 
         return(array(0, $text));
