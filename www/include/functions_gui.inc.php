@@ -206,7 +206,8 @@ function get_subnet_usage($subnet_id) {
         $pool_size += ($pool['ip_addr_end'] - $pool['ip_addr_start'] + 1);
     }
     $total_used = $hosts + $pool_size;
-    $percentage = sprintf('%d', ($total_used / $subnet['size']) * 100);
+    $percentage = 100;
+    if ($subnet['size']) $percentage = sprintf('%d', ($total_used / $subnet['size']) * 100);
     return(array($percentage, $total_used, $subnet['size']));
 }
 

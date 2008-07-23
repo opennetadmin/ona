@@ -1,0 +1,50 @@
+##########################################
+# This is the default .htaccess file for ONA.
+# 
+# It currently limits access to the dcm.pl command line tool only.
+# The default setting here is to allow anyone from localhost (this computer)
+# who is a defined user within the system.  No password is required.
+#
+# You will need to create an .htpasswd file that conforms to the standard
+# htaccess format, read the man page for htpasswd.  Change the 
+# AuthUserFile option below as needed to reference your .htpasswd file.
+# Keep in mind that this password is not necassarily the same password
+# that a particular user would use to access the web interface.  User
+# names, however, do need to be the same in both the .htpasswd and web
+# interface.
+#
+# The use of this file is not required to secure the ONA web interface.
+# The web interface already has its own authentication mechanizums.  You
+# should however enable only SSL (https) on your webserver to ensure
+# things are more secure.  For dcm.pl you need to make sure to install
+# the Net::SSleay and IO::Socket::SSL perl modules and that you are using
+# an https:// type url.  dcm.pl allows you to specify a user/password 
+# combination either on the command line or via dcm.conf.
+#
+##########################################
+
+# You can choose to use the IP filter, password or both for authentication.
+<Files dcm.php>
+
+    ###############################
+    # This section allows you to filter based on IP client addresses
+    ###############################
+    Order Deny,Allow
+    Deny from all
+    #Allow from 10.0.0.0/8
+    Allow from 127.0.0.1
+    ###############################
+
+
+
+    ###############################
+    # This section allows you to force a password
+    # Change the AuthUserFile path as needed
+    ###############################
+    #AuthUserFile /opt/ona/www/.htpasswd
+    #AuthName "dcm.pl access"
+    #AuthType basic
+    #Require valid-user
+    ###############################
+
+</Files>
