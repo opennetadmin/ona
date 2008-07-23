@@ -58,7 +58,7 @@ INSERT INTO `dcm_module_list` VALUES
 (23,'dhcp_entry_add','Add a DHCP option entry','ona/dhcp_entry.inc.php'),
 (24,'dhcp_entry_del','Delete a DHCP option entry','ona/dhcp_entry.inc.php'),
 (25,'dhcp_entry_modify','Modify DHCP option entry','ona/dhcp_entry.inc.php'),
-(26,'message_add','Allows you to add a message to a subnet or host that will so in a display page','ona/message.inc.php'),
+(26,'message_add','Add a message to a subnet or host that will show on a display page','ona/message.inc.php'),
 (27,'block_add','Add an ip block range','ona/block.inc.php'),
 (28,'block_del','Delete an ip block','ona/block.inc.php'),
 (29,'block_modify','Modify ip blocks','ona/block.inc.php'),
@@ -179,7 +179,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `groups` WRITE;
 /*!40000 ALTER TABLE `groups` DISABLE KEYS */;
-INSERT INTO `groups` VALUES (5,'dcm.pl','CLI Utility',80),(17,'Default','Default user group',1),(18,'Admin','Admin group',99);
+INSERT INTO `groups` VALUES (17,'Default','Default user group',1),(18,'Admin','Admin group',99);
 /*!40000 ALTER TABLE `groups` ENABLE KEYS */;
 UNLOCK TABLES;
 

@@ -12,18 +12,27 @@ if (!$extravars['tipstyle']) {
 $title_left_html = '';
 $title_right_html = '';
 
-$title_left_html .= <<<EOL
-                <a title="View map"
-                    class="act"
-                    onClick="window.open(
-                               'http://maps.google.com/maps?q={$location['address']},{$location['city']},{$location['state']},{$location['zip_code']} ({$location['name']})',
-                               'MapIT',
-                               'toolbar=0,location=1,menubar=0,scrollbars=0,status=0,resizable=1,width=985,height=700')"
-                ><img src="{$images}/silk/world_link.png" border="0"></a>
-                <b {$tip_style} >Location: {$location['reference']}</b>
+if (auth('location_add')) {
+    $title_left_html .= <<<EOL
+        <a class="row"
+            onMouseOver="this.className='hovered';"
+            onMouseOut="this.className='row';"
+            onClick="removeElement('start_menu'); xajax_window_submit('edit_location', 'id=>{$location['id']}', 'editor');"
+            title="Modify location"
+        ><img style="vertical-align: middle;" src="{$images}/silk/page_edit.png" border="0"/></a>
 EOL;
+    }
 
-
+$title_left_html .= <<<EOL
+        <a title="View map"
+            class="act"
+            onClick="window.open(
+                        'http://maps.google.com/maps?q={$location['address']},{$location['city']},{$location['state']},{$location['zip_code']} ({$location['name']})',
+                        'MapIT',
+                        'toolbar=0,location=1,menubar=0,scrollbars=0,status=0,resizable=1,width=985,height=700')"
+        ><img src="{$images}/silk/world_link.png" border="0"></a>
+        <b {$tip_style} >Location: {$location['reference']}</b>
+EOL;
 
 
 $modbodyhtml .= <<<EOL
