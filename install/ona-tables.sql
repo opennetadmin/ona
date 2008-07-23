@@ -53,6 +53,16 @@ CREATE TABLE `configurations` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores various types of text configurations';
 
+
+CREATE TABLE `contexts` (
+`id` INT( 10 ) NOT NULL ,
+`name` VARCHAR( 63 ) NOT NULL ,
+`description` VARCHAR( 127 ) NOT NULL ,
+`color` VARCHAR( 10 ) NOT NULL COMMENT 'define a color to visualy represent this context',
+PRIMARY KEY ( `id` )
+) ENGINE = innodb COMMENT = 'Allows for two sets of data with similar values.';
+
+
 --
 -- Table structure for table `custom_attribute_types`
 --
@@ -62,6 +72,8 @@ CREATE TABLE `custom_attribute_types` (
   `id` int(10) unsigned NOT NULL,
   `name` varchar(63) NOT NULL,
   `notes` varchar(127) NOT NULL,
+  `field_validation_rule` TEXT NOT NULL COMMENT 'Use a regular expression to validate the data associated with this type',
+  `failed_rule_text`      TEXT NOT NULL COMMENT 'The text that its presented when the field validation rule fails.',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Configuration types';
 
@@ -75,7 +87,7 @@ CREATE TABLE `custom_attributes` (
   `table_name_ref` varchar(40) NOT NULL COMMENT 'the name of the table conaining the associated record',
   `table_id_ref` int(10) unsigned NOT NULL default '0' COMMENT 'the id within the table_name_ref table to associate with',
   `custom_attribute_type_id` int(10) NOT NULL,
-  `attribute` longtext NOT NULL,
+  `value` longtext NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores general messages for ONA "display" pages';
 
@@ -129,6 +141,7 @@ CREATE TABLE `devices` (
   `id` int(10) NOT NULL,
   `device_type_id` int(10) NOT NULL,
   `location_id` int(10) NOT NULL,
+  `primary_host_id` INT(10) NOT NULL COMMENT 'Tracks the host that references this device by name',
   `asset_tag` varchar(255) default NULL,
   `serial_number` varchar(255) default NULL,
   PRIMARY KEY  (`id`),
@@ -243,7 +256,7 @@ CREATE TABLE `dns_server_domains` (
   `id` tinyint(10) unsigned NOT NULL,
   `host_id` tinyint(10) unsigned NOT NULL,
   `domain_id` tinyint(10) unsigned NOT NULL,
-  `authoritative` tinyint(1) NOT NULL,
+  `role` VARCHAR(10) NOT NULL COMMENT 'What role does this server play for this domain? master, slave, forward?',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores domain to DNS server relationships';
 
@@ -367,7 +380,7 @@ CREATE TABLE `locations` (
   `longitude` varchar(20) NOT NULL,
   `misc` varchar(256) NOT NULL COMMENT 'Misc info, site contacts, phone numbers etc.',
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='This table needs re-worked';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores basic location information for devices.';
 
 --
 -- Table structure for table `manufacturers`

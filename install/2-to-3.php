@@ -1,4 +1,9 @@
 <?php
+//
+// This script is to be used when upgrading from version 08.05.14.
+// It will help to create proper PTR zones for the subnets and DNS records you have
+//
+//
 /* -------------------- COMMON HEADER ---------------------- */
 $base = dirname(__FILE__)."/../www/";
 while ($base and (!is_dir($base.'/include'))) $base = preg_replace('+/[^/]*$+', '', $base);

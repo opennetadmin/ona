@@ -85,12 +85,20 @@ INSERT INTO `dcm_module_list` VALUES
 (50,'vlan_add','Add a VLAN','ona/vlan.inc.php'),
 (51,'vlan_del','Delete a VLAN','ona/vlan.inc.php'),
 (52,'vlan_modify','Modify a VLAN','ona/vlan.inc.php'),
-(53, 'dhcp_failover_group_add', 'Add servers to a DHCP failover group', 'ona/dhcp_failover.inc.php'),
-(54, 'dhcp_failover_group_modify', 'Modify a DHCP failover group', 'ona/dhcp_failover.inc.php'),
-(55, 'dhcp_failover_group_display', 'Display a DHCP failover group', 'ona/dhcp_failover.inc.php'),
-(56, 'config_diff', 'Display unix diff of configs', 'ona/configuration.inc.php'),
-(57, 'nat_add', 'Add external NAT IP to existing internal IP', 'ona/interface.inc.php'),
-(58, 'nat_del', 'Delete external NAT IP from existing internal IP', 'ona/interface.inc.php');
+(53,'dhcp_failover_group_add', 'Add servers to a DHCP failover group', 'ona/dhcp_failover.inc.php'),
+(54,'dhcp_failover_group_modify', 'Modify a DHCP failover group', 'ona/dhcp_failover.inc.php'),
+(55,'dhcp_failover_group_display', 'Display a DHCP failover group', 'ona/dhcp_failover.inc.php'),
+(56,'config_diff', 'Display unix diff of configs', 'ona/configuration.inc.php'),
+(57,'nat_add', 'Add external NAT IP to existing internal IP', 'ona/interface.inc.php'),
+(58,'nat_del', 'Delete external NAT IP from existing internal IP', 'ona/interface.inc.php'),
+(59,'location_add', 'Add a location record', 'ona/location.inc.php'),
+(60,'location_modify', 'Modify a location record', 'ona/location.inc.php'),
+(61,'location_del', 'Delete a location', 'ona/location.inc.php'),
+(62,'custom_attribute_add', 'Add a custom attribute', 'ona/custom_attribute.inc.php'),
+(63,'custom_attribute_del', 'Delete a custom attribute', 'ona/custom_attribute.inc.php'),
+(64,'custom_attribute_modify', 'Modify a custom attribute', 'ona/custom_attribute.inc.php'),
+(65,'ona_sql', 'Perform basic SQL operations on the database', 'sql.inc.php');
+
 /*!40000 ALTER TABLE `dcm_module_list` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -252,7 +260,14 @@ INSERT INTO `permissions` VALUES
 (15,'template_admin','Template system admin'),
 (16,'vlan_add','Add VLANs and VLAN Campuses'),
 (17,'vlan_del','Delete VLANs and VLAN Campuses'),
-(18,'vlan_modify','Modify VLANs and VLAN Campuses');
+(18,'vlan_modify','Modify VLANs and VLAN Campuses'),
+( '100019', 'location_del', 'Delete a location'),
+( '100020', 'location_add', 'Add a location'),
+( '100021', 'ona_sql', 'Perform SQL operations on the ONA tables'),
+( '100022', 'custom_attribute_add', 'Add custom attribute'),
+( '100023', 'custom_attribute_del', 'Delete custom attribute'),
+( '100024', 'custom_attribute_modify', 'Modify custom attribute');
+
 /*!40000 ALTER TABLE `permissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -262,7 +277,31 @@ UNLOCK TABLES;
 
 LOCK TABLES `permission_assignments` WRITE;
 /*!40000 ALTER TABLE `permission_assignments` DISABLE KEYS */;
-INSERT INTO `permission_assignments` VALUES (1,1,0,18),(2,2,0,18),(3,3,0,18),(4,4,0,18),(5,5,0,18),(6,6,0,18),(7,7,0,18),(8,8,0,18),(9,9,0,18),(10,10,0,18),(11,11,0,18),(12,12,0,18),(13,13,0,18),(14,14,0,18),(15,15,0,18),(16,16,0,18),(17,17,0,18),(18,18,0,18);
+INSERT INTO `permission_assignments` VALUES 
+(1,1,0,18),
+(2,2,0,18),
+(3,3,0,18),
+(4,4,0,18),
+(5,5,0,18),
+(6,6,0,18),
+(7,7,0,18),
+(8,8,0,18),
+(9,9,0,18),
+(10,10,0,18),
+(11,11,0,18),
+(12,12,0,18),
+(13,13,0,18),
+(14,14,0,18),
+(15,15,0,18),
+(16,16,0,18),
+(17,17,0,18),
+(18,18,0,18),
+('100001', '100019', '0', 18),
+('100002', '100020', '0', 18),
+('100003', '100021', '0', 18),
+('100004', '100022', '0', 18),
+('100005', '100023', '0', 18),
+('100006', '100024', '0', 18);
 /*!40000 ALTER TABLE `permission_assignments` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

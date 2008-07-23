@@ -24,7 +24,6 @@ ALTER TABLE `dns_server_domains`
 ALTER TABLE `locations`  COMMENT = 'Stores basic location information for devices.';
 
 INSERT INTO `dcm_module_list` ( `id` , `name` , `description` , `file` ) VALUES
-('58', 'config_diff', 'Display unix diff of configs', 'ona/configuration.inc.php'),
 ('59', 'location_add', 'Add a location record', 'ona/location.inc.php'),
 ('60', 'location_modify', 'Modify a location record', 'ona/location.inc.php'),
 ('61', 'location_del', 'Delete a location', 'ona/location.inc.php'),
