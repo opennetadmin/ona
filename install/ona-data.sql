@@ -224,7 +224,7 @@ INSERT INTO `sys_config` (`name`, `value`, `description`) VALUES
 ('suggest_max_results', '10', 'Limits the amount of rows returned by queries. (test impact of changing this first)'),
 ('syslog', '0', 'Log via syslog, only works if debug is set to 0'),
 ('version', 'not-set', 'Tracks current installed version, used to detect when upgrades should be done.'),
-('upgrade_index', '2', 'Tracks current upgrade index, used to perform database upgrades.');
+('upgrade_index', '3', 'Tracks current upgrade index, used to perform database upgrades.');
 
 --
 -- Dumping data for table `users`

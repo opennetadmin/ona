@@ -210,6 +210,7 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
             $upgrade_index = @mysql_result($result, 0);
         }
 
+        $script_text = '';
         if ($upgrade_index == '') {
             $text .= "<img src=\"{$images}/silk/error.png\" border=\"0\" /> Auto upgrades not yet supported. Please see docs/UPGRADES<br>";
         } else {
@@ -219,6 +220,11 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
                 $new_index = $upgrade_index + 1;
                 // Determine file name
                 $upgrade_sqlfile = "{$base}/{$upgrade_index}-to-{$new_index}.sql";
+                $upgrade_phpfile = "{$base}/{$upgrade_index}-to-{$new_index}.php";
+                // Check that the upgrade script exists
+                if (file_exists($upgrade_phpfile)) {
+                    $script_text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" />Please go to a command prompt and execute {$upgrade_phpfile} manually to complete the upgrade!<br>";
+                }
                 // Check that the upgrade file exists
                 if (file_exists($upgrade_sqlfile)) {
                     populate_db($db_context['mysqlt']['default']['primary']['db_database'],$DBPrefix,$upgrade_sqlfile);
@@ -248,6 +254,7 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
             $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to update version info in table 'sys_config'.<br>";
         }
 
+        $text .= $script_text;
         $text .= "You can now <a href='{$baseURL}'>CLICK HERE</a> to start using OpenNetAdmin! Enjoy!";
 
         if (!@unlink($runinstall)) {
