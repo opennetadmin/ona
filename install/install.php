@@ -223,7 +223,7 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
                 $upgrade_phpfile = "{$base}/{$upgrade_index}-to-{$new_index}.php";
                 // Check that the upgrade script exists
                 if (file_exists($upgrade_phpfile)) {
-                    $script_text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" />Please go to a command prompt and execute {$upgrade_phpfile} manually to complete the upgrade!<br>";
+                    $script_text .= "<img src=\"{$images}/silk/error.png\" border=\"0\" />Please go to a command prompt and execute 'php {$upgrade_phpfile}' manually to complete the upgrade!<br>";
                 }
                 // Check that the upgrade file exists
                 if (file_exists($upgrade_sqlfile)) {

@@ -48,8 +48,8 @@ EOL;
     }
 
 } else {
-    // MP: FIXME: find a better way to just delete the div element outright.
-    $modjs = "el('config_archives_container').innerHTML='';";
+    // dont display anything
+    $modbodyhtml = '';
 }
 // END CONFIG ARCHIVE LIST
 

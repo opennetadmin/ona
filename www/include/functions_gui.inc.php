@@ -167,6 +167,13 @@ EOL;
             <!-- {$modulename} end -->
 EOL;
 
+    // If the module returns no body, then lets blank out what we have
+    // and assume that the module determined it should not display itself
+    if (!$modbodyhtml) {
+        $modhtml = '';
+        $modjs = '';
+    }
+
     return(array($modhtml,$modjs));
 }
 

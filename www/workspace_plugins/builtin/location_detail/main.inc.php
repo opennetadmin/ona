@@ -31,7 +31,7 @@ $title_left_html .= <<<EOL
                         'MapIT',
                         'toolbar=0,location=1,menubar=0,scrollbars=0,status=0,resizable=1,width=985,height=700')"
         ><img src="{$images}/silk/world_link.png" border="0"></a>
-        <b {$tip_style} >Location: {$location['reference']}</b>
+        <b>Location: {$location['reference']}</b>
 EOL;
 
 
@@ -98,7 +98,7 @@ $modbodyhtml .= <<<EOL
 EOL;
 
 } else {
-    // MP: FIXME: find a better way to just delete the div element outright.
-    $modjs = "el('location_detail_container').innerHTML='';";
+    // dont display anything
+    $modbodyhtml = '';
 }
 ?>

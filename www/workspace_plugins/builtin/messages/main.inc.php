@@ -25,8 +25,8 @@ else {
 if ($lineshtml) {
     $modbodyhtml .= $lineshtml;
 } else {
-    // MP: FIXME: find a better way to just delete the div element outright.
-    $modjs = "el('messages_container').innerHTML='';";
+    // dont display anything
+    $modbodyhtml = '';
 }
 
 
