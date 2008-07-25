@@ -68,7 +68,7 @@ function ws_editor($window_name, $form='') {
     //$record_types = array('A','CNAME','TXT','NS','MX','AAAA','SRV');
     // FIXME: MP cool idea here-- support the loc record and have a google map popup to search for the location then have it populate the coords from that.
     // FIXME: MP it would probably be much better to use ajax to pull back the right form content than all this other javascript crap.
-    $record_types = array('A','CNAME','MX','TXT');
+    $record_types = array('A','CNAME','MX','NS','TXT');
     foreach (array_keys((array)$record_types) as $id) {
         $record_types[$id] = htmlentities($record_types[$id]);
         $selected = '';
@@ -83,10 +83,11 @@ function ws_editor($window_name, $form='') {
 
 
     // If its a CNAME, get the dns name for the A record it points to
-    if ($dns_record['type'] == 'CNAME') {
-        list($status, $rows, $cnamedata) = ona_get_dns_record(array('id' => $dns_record['dns_id']));
-        $dns_record['cnamedata'] = $cnamedata['fqdn'];
+    if ($dns_record['type'] == 'CNAME' or $dns_record['type'] == 'MX' or $dns_record['type'] == 'NS') {
+        list($status, $rows, $existinga_data) = ona_get_dns_record(array('id' => $dns_record['dns_id']));
+        $dns_record['existinga_data'] = $existinga_data['fqdn'];
     }
+
 
     // If its an A record,check to se if it has a PTR associated with it
     //FIXME: MP dont forget that if you change the ip of an A record that you must also update any PTR records reference to that interface
@@ -171,7 +172,8 @@ EOL;
                                 el('autoptr_container').style.display   = (selectBox.value == 'A') ? '' : 'none';
                                 el('mx_container').style.display   = (selectBox.value == 'MX') ? '' : 'none';
                                 el('txt_container').style.display   = (selectBox.value == 'TXT') ? '' : 'none';
-                                el('cname_container').style.display = (selectBox.value == 'MX' || selectBox.value == 'CNAME') ? '' : 'none';"
+                                el('name_container').style.display     = (selectBox.value == 'NS') ? 'none' : '';
+                                el('existing_a_container').style.display = (selectBox.value == 'MX' || selectBox.value == 'CNAME' || selectBox.value == 'NS') ? '' : 'none';"
                     >{$record_type_list}</select>
                 </td>
             </tr>
@@ -182,7 +184,7 @@ EOL;
     <!-- COMMON CONTAINER -->
     <div id="common_container" style="background-color: #F2F2F2;">
         <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
-            <tr>
+            <tr id="name_container">
                 <td align="right" nowrap="true">
                     Host Name
                 </td>
@@ -333,7 +335,7 @@ EOL;
             </tr>
 
             <!-- CNAME CONTAINER -->
-            <tr id="cname_container" style="display:none;">
+            <tr id="existing_a_container" style="display:none;">
                 <td align="right" nowrap="true">
                     Existing A record
                 </td>
@@ -342,7 +344,7 @@ EOL;
                         id="set_a_record_{$window_name}"
                         name="set_pointsto"
                         alt="Points to existing A record"
-                        value="{$dns_record['cnamedata']}"
+                        value="{$dns_record['existinga_data']}"
                         class="edit"
                         type="text"
                         size="25" maxlength="64"
@@ -470,9 +472,10 @@ function ws_save($window_name, $form='') {
     $response = new xajaxResponse();
     $js = '';
 
+
+
     // Validate input
-    if ($form['set_name'] == '' or
-        $form['set_domain'] == '' or
+    if ($form['set_domain'] == '' or
         $form['set_type'] == ''
        ) {
         $response->addScript("alert('Please complete all fields to continue!');");
@@ -483,17 +486,14 @@ function ws_save($window_name, $form='') {
     // have a good chance of working!
 
     // Validate the "set_name" name is valid
-    $form['set_name'] = sanitize_hostname($form['set_name']);
-    if (!$form['set_name']) {
-        $response->addScript("alert('Invalid hostname!');");
-        return($response->getXML());
+    if ($form['set_name'] and ($form['set_type'] != 'NS')) {
+        $form['set_name'] = sanitize_hostname($form['set_name']);
+        if (!$form['set_name']) {
+            $response->addScript("alert('Invalid hostname!');");
+            return($response->getXML());
+        }
     }
-    // Validate domain is valid
-//    list($status, $rows, $domain) = ona_get_domain_record(array('name' => $form['set_domain']));
-//    if ($status or !$rows) {
-//        $response->addScript("alert('Invalid domain!');");
-//        return($response->getXML());
-//    }
+
     // Make sure the IP address specified is valid
     if ($form['set_name'] != '.' and $form['set_ip']) {
         $form['set_ip'] = ip_mangle($form['set_ip'], 'dotted');
@@ -519,10 +519,13 @@ function ws_save($window_name, $form='') {
         $form['ttl'] = $form['set_ttl'];
         $form['addptr'] = $form['set_addptr'];
 
-        // if this is a cname. yhen set the pointsto option
-        if ($form['set_type'] == 'CNAME' or $form['set_type'] == 'MX') $form['pointsto'] = $form['set_pointsto'];
+        // if this is a cname. then set the pointsto option
+        if ($form['set_type'] == 'CNAME' or $form['set_type'] == 'MX' or $form['set_type'] == 'NS') $form['pointsto'] = $form['set_pointsto'];
         if ($form['set_type'] == 'MX') $form['mx_preference'] = $form['set_mx_preference'];
         if ($form['set_type'] == 'TXT') $form['txt'] = $form['set_txt'];
+
+        // If it is an NS record, blank the name out
+        if ($form['set_type'] == 'NS') $form['name'] = $form['set_domain'];
 
         // If there's no "refresh" javascript, add a command to view the new dns record
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['name']}\', \'display\')');";
@@ -532,7 +535,7 @@ function ws_save($window_name, $form='') {
         //FIXME: MP temporary kludge to get around not having a proper find_dns_record module.. ID is the only way to find a record now and it is done via the name field
         $form['name'] = $form['dns_id'];
 
-        // if this is a cname. yhen set the pointsto option
+        // if this is a cname. then set the pointsto option
         if ($form['set_type'] != 'CNAME') $form['set_pointsto'] == '';
     }
 

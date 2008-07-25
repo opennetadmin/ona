@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -608,7 +608,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -750,22 +750,25 @@ EOM
             }
         }
 
-        if ($dns['type'] == 'CNAME') {
-            // if it is a CNAME, make sure that name/pointsto combo doesnt already exist
-            list($status, $rows, $tmp) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'dns_id' => $dns['dns_id'], 'type' => 'CNAME'));
+        // make sure that name/pointsto combo doesnt already exist
+        if ($dns['type'] == 'CNAME' or $dns['type'] == 'MX' or $dns['type'] == 'NS') {
+            list($status, $rows, $tmp) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'dns_id' => $dns['dns_id'], 'type' => $dns['type']));
             if ($rows) {
                 if ($tmp['id'] != $dns['id'] or $rows > 1) {
-                    printmsg("ERROR => There is already a CNAME with that name pointing to that A record!",3);
-                    $self['error'] = "ERROR => There is already a CNAME with that name pointing to that A record!";
-                    return(array(5, $self['error'] . "\n"));
+                    printmsg("ERROR => There is already a {$dns['type']} with that name pointing to that A record!",3);
+                    $self['error'] = "ERROR => There is already a {$dns['type']} with that name pointing to that A record!";
+                    return(array(6, $self['error'] . "\n"));
                 }
             }
+        }
+
+        if ($dns['type'] == 'CNAME') {
             // if it is a CNAME, make sure the new name is not an A record name already
             list($status, $rows, $tmp) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'type' => 'A'));
             if ($status or $rows) {
                 printmsg("ERROR => There is already an A record with that name!",3);
                 $self['error'] = "ERROR => There is already an A record with that name!";
-                return(array(5, $self['error'] . "\n"));
+                return(array(7, $self['error'] . "\n"));
             }
         }
 
@@ -1038,21 +1041,22 @@ need to do a better delete of DNS records when deleting a host.. currently its a
 
         // Delete related PTR records
         // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'dns', array('dns_id' => $dns['id'], 'type' => 'PTR'));
+        list($status, $rows, $records) = db_get_records($onadb, 'dns', array('dns_id' => $dns['id']));
         // do the delete
-        list($status, $rows) = db_delete_records($onadb, 'dns', array('dns_id' => $dns['id'], 'type' => 'PTR'));
+        list($status, $rows) = db_delete_records($onadb, 'dns', array('dns_id' => $dns['id']));
         if ($status) {
-            $self['error'] = "ERROR => dns_record_del() PTR record delete SQL Query failed: {$self['error']}";
+            $self['error'] = "ERROR => dns_record_del() Child record delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0);
             return(array(5, $self['error'] . "\n"));
         }
         if ($rows) {
             // log deletions
-            printmsg("INFO => {$rows} child PTR record(s) DELETED from {$dns['fqdn']}",0);
-            $add_to_error .= "INFO => {$rows} child PTR record(s) DELETED from {$dns['fqdn']}\n";
+            // FIXME: do better logging here
+            printmsg("INFO => {$rows} child record(s) DELETED from {$dns['fqdn']}",0);
+            $add_to_error .= "INFO => {$rows} child record(s) DELETED from {$dns['fqdn']}\n";
         }
 
-
+/*
         // Delete related CNAME records
         // get list for logging
         list($status, $rows, $records) = db_get_records($onadb, 'dns', array('dns_id' => $dns['id'], 'type' => 'CNAME'));
@@ -1068,7 +1072,7 @@ need to do a better delete of DNS records when deleting a host.. currently its a
             list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']), '');
             printmsg("INFO => Child CNAME record DELETED: {$record['name']}.{$domain['fqdn']} from {$dns['name']}",0);
             $add_to_error .= "INFO => Child CNAME record DELETED: {$record['name']}.{$domain['fqdn']} from {$host['name']}\n";
-        }
+        }*/
 
 
 
@@ -1110,16 +1114,15 @@ need to do a better delete of DNS records when deleting a host.. currently its a
     list($status, $tmp) = dns_record_display("name={$dns['id']}&verbose=N");
     $text .= "\n" . $tmp;
 
-    // Display count of PTR records
-    list($status, $rows, $records) = db_get_records($onadb, 'dns', array('dns_id' => $dns['id'], 'type' => 'PTR'));
-    if ($rows) $text .= "\nASSOCIATED PTR RECORDS ({$rows}):\n";
-
-    // Display associated CNAME records
-    list($status, $rows, $records) = db_get_records($onadb, 'dns', array('dns_id' => $dns['id'], 'type' => 'CNAME'));
-    if ($rows) $text .= "\nASSOCIATED CNAME RECORDS ({$rows}):\n";
+    // Display associated Child records
+    list($status, $rows, $records) = db_get_records($onadb, 'dns', array('dns_id' => $dns['id']));
+    if ($rows) $text .= "\nASSOCIATED POINTS-TO RECORDS ({$rows}):\n";
     foreach ($records as $record) {
+        if ($record['type'] == 'NS') $record['name'] = '';
+        // FIXME:I could fix this but I'm lazy
+        if ($record['type'] == 'PTR') $record['name'] = '??';
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']), '');
-        $text .= "  {$record['name']}.{$domain['fqdn']} -> {$dns['fqdn']}\n";
+        $text .= " {$record['type']}: {$record['name']}.{$domain['fqdn']} -> {$dns['fqdn']}\n";
     }
 
 

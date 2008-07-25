@@ -454,15 +454,6 @@ EOL;
                     ><img src="{$images}/silk/comment.png" border="0"></a>&nbsp;
 EOL;
             }
-            // If it is a NS, adjust the comment to say you can only delete, not modify.
-            else if ($record['type'] == 'NS') {
-            $html .= <<<EOL
-
-                    <a title="You can not edit an NS record directly, you must edit the domain/server association."
-                       class="act"
-                    ><img src="{$images}/silk/comment.png" border="0"></a>&nbsp;
-EOL;
-            }
             else {
             $html .= <<<EOL
 
@@ -474,7 +465,7 @@ EOL;
             }
         }
 
-        if (auth('dns_record_del') and $record['type'] != 'NS') {
+        if (auth('dns_record_del')) {
             $html .= <<<EOL
 
                     <a title="Delete DNS record"
