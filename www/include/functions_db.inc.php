@@ -354,7 +354,7 @@ function acl_add($user_id, $perm_name) {
 ///////////////////////////////////////////////////////////////////////
 function db_insert_record($dbh=0, $table="", $insert="") {
     global $self;
-    $self['db_insert_record_count']++;
+    @$self['db_insert_record_count']++;
 
     // Debugging
     printmsg("DEBUG => db_insert_record(\$dbh, $table, \$insert) called", 3);
@@ -453,7 +453,7 @@ function db_insert_record($dbh=0, $table="", $insert="") {
 ///////////////////////////////////////////////////////////////////////
 function db_update_record($dbh=0, $table="", $where="", $insert="") {
     global $self;
-    $self['db_update_record_count']++;
+    @$self['db_update_record_count']++;
 
     // Debugging
     printmsg("DEBUG => db_update_record(\$dbh, $table, \$where, \$insert) called", 3);
@@ -561,7 +561,7 @@ function db_update_record($dbh=0, $table="", $where="", $insert="") {
 ///////////////////////////////////////////////////////////////////////
 function db_delete_records($dbh=0, $table="", $where="") {
     global $self;
-    $self['db_delete_records_count']++;
+    @$self['db_delete_records_count']++;
 
     // Debugging
     printmsg("DEBUG => db_delete_records(\$dbh, $table, \$where) called", 3);
@@ -687,7 +687,7 @@ function db_delete_records($dbh=0, $table="", $where="") {
 ///////////////////////////////////////////////////////////////////////
 function db_get_record($dbh=0, $table="", $where="", $order="") {
     global $self;
-    $self['db_get_record_count']++;
+    @$self['db_get_record_count']++;
 
     // Debugging
     printmsg("DEBUG => db_get_record(\$dbh, \$where, $table, $order) called", 3);
@@ -729,7 +729,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
     //      has more than 20 records, then cache it and use the
     //      cache for subsequent calls with the same query.
     $use_cache = 0;
-    if ($self['cache']["db_get_{$table}_record"]['q'] != $q) {
+    if (@$self['cache']["db_get_{$table}_record"]['q'] != $q) {
         // If it's a new query, or , reset row cache and don't use cache
         $self['cache']["db_get_{$table}_record"]['q'] = $q;
         $self['cache']["db_get_{$table}_record"]['row'] = 0;
@@ -870,7 +870,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 ///////////////////////////////////////////////////////////////////////
 function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offset=-1) {
     global $self;
-    $self['db_get_records_count']++;
+    @$self['db_get_records_count']++;
 
     // Debugging
     printmsg("DEBUG => db_get_records(\$dbh, \$where, $table, $order, $rows, $offset) called", 3);

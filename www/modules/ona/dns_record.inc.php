@@ -693,6 +693,9 @@ EOM
     $current_name = $dns['fqdn'];
     $current_int_id = $dns['interface_id'];
 
+    // Set status on if we are chaning IP addresses
+    $changingint = 0;
+
     //
     // Define the records we're updating
     //
@@ -711,7 +714,10 @@ EOM
         }
 
         // If they actually changed the ip address
-        if ($interface['id'] != $dns['interface_id']) $SET['interface_id'] = $interface['id'];
+        if ($interface['id'] != $dns['interface_id']) {
+            $changingint = 1;
+            $SET['interface_id'] = $interface['id'];
+        }
     }
 
     // Set options['set_name']?
@@ -739,7 +745,7 @@ EOM
         // if it is an a record and we are changing the name.. make sure there is not already an A with that name/ip combo
         if ($dns['type'] == 'A') {
             // If we are changing the interface id as determined above, check using that value
-            if ($SET['interface_id']) $dns['interface_id'] = $SET['interface_id'];
+            if ($changingint) $dns['interface_id'] = $SET['interface_id'];
             list($status, $rows, $tmp) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'interface_id' => $dns['interface_id'], 'type' => 'A'));
             if ($rows) {
                 if ($tmp['id'] != $dns['id'] or $rows > 1) {
@@ -782,8 +788,8 @@ EOM
 
 
 
-    // If we are modifying a CNAME pointsto option
-    if (array_key_exists('set_pointsto', $options) and $options['set_type'] == 'CNAME') {
+    // If we are modifying a pointsto option
+    if (array_key_exists('set_pointsto', $options) and ($options['set_type'] == 'CNAME' or $options['set_type'] == 'MX' or $options['set_type'] == 'NS')) {
         // Determine the host and domain name portions of the pointsto option
         // Find the domain name piece of $search
         list($status, $rows, $pdomain) = ona_find_domain($options['set_pointsto']);
@@ -806,17 +812,17 @@ EOM
         // Find the dns record that it will point to
         list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A'));
         if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point CNAME entry to!",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point CNAME entry to!";
+            printmsg("ERROR => Unable to find DNS A record to point {$options['set_type']} entry to!",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point {$options['set_type']} entry to!";
             return(array(5, $self['error'] . "\n"));
         }
 
 
-        // Validate that there are no CNAMES already pointed to the new A record
-        list($c_status, $c_rows, $c_record) = ona_get_dns_record(array('name' => $dns['name'], 'domain_id' => $dns['domain_id'], 'dns_id' => $pointsto_record['id'], 'type' => 'CNAME'));
-        if ($c_record['id'] != $dns['id'] and $rows) {
-            printmsg("ERROR => Another DNS CNAME record exists with the values you've selected!",3);
-            $self['error'] = "ERROR => Another DNS CNAME record exists with the values you've selected!";
+        // Validate that there are no entries already pointed to the new A record
+        list($c_status, $c_rows, $c_record) = ona_get_dns_record(array('name' => $dns['name'], 'domain_id' => $dns['domain_id'], 'dns_id' => $pointsto_record['id'], 'type' => $options['set_type']));
+        if ($c_record['id'] != $dns['id'] and $c_rows) {
+            printmsg("ERROR => Another DNS {$options['set_type']} record exists with the values you've selected!",3);
+            $self['error'] = "ERROR => Another DNS {$options['set_type']} record exists with the values you've selected!";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -876,7 +882,7 @@ EOM
     // Update the host record if necessary
     if(count($SET) > 0) {
         // If we are changing the interface id as determined above, check using that value
-        if ($SET['interface_id']) {
+        if ($changingint) {
             // If the interface id has changed, make sure any child records are updated first
             if ($SET['interface_id'] != $current_int_id) {
                 printmsg("DEBUG = > dns_record_modify() Updating child interfaces to new interface.", 2);

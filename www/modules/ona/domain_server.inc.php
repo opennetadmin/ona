@@ -28,7 +28,7 @@ function domain_server_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => domain_server_add({$options}) called", 3);
 
@@ -80,7 +80,10 @@ EOM
     printmsg("DEBUG => domain_server_add(): Found domain, {$domain['name']}", 3);
 
     // Determine the server is valid
-    list($status, $rows, $host) = ona_find_host($options['server']);
+    list($status, $rows, $ns_dns) = ona_find_dns_record($options['server']);
+    list($status, $rows, $interface) = ona_find_interface($ns_dns['interface_id']);
+
+    $host['id'] = $interface['host_id'];
 
     if (!$host['id']) {
         printmsg("DEBUG => The server ({$options['server']}) does not exist!",3);
@@ -88,7 +91,7 @@ EOM
         return(array(2, $self['error'] . "\n"));
     }
 
-    // what is the build type for this server.
+    // what is the role for this server.
     switch (strtolower($options['role'])) {
         case "forward":
             $role = "forward";
@@ -116,8 +119,8 @@ EOM
     // Test that this domain isnt already assigned to the server
     list($status, $rows, $domainserver) = ona_get_dns_server_domain_record(array('host_id' => $host['id'],'domain_id' => $domain['id']));
     if ($rows) {
-        printmsg("DEBUG => Domain {$domain['name']} already assigned to {$host['fqdn']}",3);
-        $self['error'] = "ERROR => Domain {$domain['name']} already assigned to {$host['fqdn']}";
+        printmsg("DEBUG => Domain {$domain['name']} already assigned to {$options['server']}",3);
+        $self['error'] = "ERROR => Domain {$domain['name']} already assigned to {$options['server']}";
         return(array(11, $self['error'] . "\n"));
     }
 
@@ -163,19 +166,19 @@ EOM
 
     // Auto add the NS record if there were none found already. the user can remove any NS records they dont want afterwards
     if (!$dnsrows) {
-        printmsg("DEBUG => Auto adding a NS record for {$host['fqdn']}.", 0);
+        printmsg("DEBUG => Auto adding a NS record for {$options['server']}.", 0);
         // Run dns_record_add as a NS type
-        list($status, $output) = run_module('dns_record_add', array('name' => $domain['fqdn'],'pointsto' => $host['fqdn'], 'type' => 'NS'));
+        list($status, $output) = run_module('dns_record_add', array('name' => $domain['fqdn'],'pointsto' => $options['server'], 'type' => 'NS'));
         if ($status)
             return(array($status, $output));
         $add_to_error .= $output;
     }
     else {
-        printmsg("DEBUG => Found existing NS record for {$host['fqdn']}. Skipping the auto add.", 0);
+        printmsg("DEBUG => Found existing NS record for {$options['server']}. Skipping the auto add.", 0);
     }
 
     // Return the success notice
-    $self['error'] = "INFO => DNS Domain/Server Pair ADDED: {$domain['name']}/{$host['fqdn']} ";
+    $self['error'] = "INFO => DNS Domain/Server Pair ADDED: {$domain['name']}/{$options['server']} ";
     printmsg($self['error'],0);
     return(array(0, $add_to_error . $self['error'] . "\n"));
 

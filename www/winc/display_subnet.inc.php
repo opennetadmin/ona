@@ -85,6 +85,9 @@ function ws_display($window_name, $form='') {
     $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];
 
+    $wspl = workspace_plugin_loader('custom_attributes',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
+
     // Display messages
     $wspl = workspace_plugin_loader('messages',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];

@@ -121,7 +121,10 @@ function logmsg($message, $logfile="") {
 
     // Get the hostname (and a few other things we don't use)
     // After this we can reference $uname['nodename'] which will have our hostname
-    $uname = posix_uname();
+    $uname['nodename'] = "UNKNOWN_SVR_NAME";
+    if (function_exists('posix_uname')) {
+        $uname = posix_uname();
+    }
 
     // Get a username or "anonymous"
     if (isset($_SESSION['ona']['auth']['user']['username'])) {

@@ -65,6 +65,12 @@ $conf = array (
 
     /* Settings for dcm.pl */
     "dcm_module_dir"         => "$base/modules",
+
+    /* Defaults for some user definable options normally in sys_config table */
+    "debug"                  => "2",
+    "syslog"                 => "0",
+    "stdout"                 => "0",
+    "logfile"                => "/var/log/ona.log",
 );
 
 // Read in the version file to our conf variable
@@ -196,7 +202,7 @@ ini_set("session.gc_maxlifetime", $conf['cookie_life']);
 
 // if search_results_per_page is in the session, set the $conf variable to it.  this fixes the /rows command
 // FIXME: MP -- find out why every (ajax) call re-runs config.inc.php.. I dont think it used to??!!
-if ($_SESSION['search_results_per_page']) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
+if (isset($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
 
 // DON'T put whitespace at the beginning or end of included files!!!
 ?>
