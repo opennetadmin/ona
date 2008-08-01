@@ -87,31 +87,24 @@ EOL;
                         ><input type="hidden" name="js" value="{$refresh}"
                     ></form>
                     <div style="{$style['label_box']}">
-                    <table cellspacing="0" border="0" cellpadding="0">
-                        <tr><td nowrap="true">
+
 EOL;
 
     if (auth('advanced',$debug_val)) {
         $html .= <<<EOL
                             <a title="Edit domain. ID: {$record['id']}"
-                               class="act"
                                onClick="xajax_window_submit('edit_domain', xajax.getFormValues('form_domain_{$record['id']}'), 'editor');"
-                            ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
+                            ><img src="{$images}/silk/page_edit.png" border="0"></a>
                             <a title="Delete domain. ID: {$record['id']}"
-                               class="act"
+                               class="linkact"
                                onClick="var doit=confirm('Are you sure you want to delete this domain?');
                                         if (doit == true)
                                             xajax_window_submit('edit_domain', xajax.getFormValues('form_domain_{$record['id']}'), 'delete');"
-                            ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
-                        </td>
+                            ><img src="{$images}/silk/delete.png"></a>{$record['fqdn']}
 EOL;
     }
 
         $html .= <<<EOL
-                        <td nowrap="true">
-                            <b>{$record['fqdn']}</b>&nbsp;
-                        </td></tr>
-                    </table>
                 </div>
             </td>
             </tr>
@@ -233,17 +226,16 @@ EOL;
             if (auth('advanced',$debug_val)) {
                 $html .= <<<EOL
 
-                        <a title="Remove domain assignment"
-                           class="act"
+                        &nbsp;<a title="Remove domain assignment"
+                           class="linkact"
                            onClick="var doit=confirm('Are you sure you want to remove this domain from this DNS server?');
                            if (doit == true)
                                 xajax_window_submit('edit_domain_server', xajax.getFormValues('{$form['form_id']}_domain_serv_{$domainserver['id']}'), 'delete');"
-                        ><img src="{$images}/silk/page_delete.png" border="0"></a>
+                        ><img src="{$images}/silk/page_delete.png"></a>
 EOL;
             }
 
             $html .= <<<EOL
-                        &nbsp;
                    </td>
 
                 </tr>
@@ -253,7 +245,7 @@ EOL;
             $html .= <<<EOL
             <tr style="background-color: #FFDDDD;" title="There are no defined servers for this domain!">
                 <td colspan=10 nowrap="true">
-                    <img src='{$images}/silk/error.png' border='0'> Please add a server for this domain!
+                    <img src="{$images}/silk/error.png"> Please add a server for this domain!
                 </td>
 EOL;
     }
@@ -269,14 +261,10 @@ EOL;
                         ></form>
 
                         <a title="Assign server"
-                           class="act"
+                           class="linkact"
                            onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('form_domain_server_{$record['id']}'), 'editor');"
-                        ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
+                        ><img src="{$images}/silk/page_add.png">Assign to server</a>
 
-                        <a title="Assign server"
-                           class="act"
-                           onClick="xajax_window_submit('edit_domain_server', xajax.getFormValues('form_domain_server_{$record['id']}'), 'editor');"
-                        >Assign to server</a>&nbsp;
                     </td>
                 </tr>
 EOL;
@@ -331,21 +319,8 @@ EOL;
                     <input id="{$form_id}_page" name="page" value="1" type="hidden">
                     <input name="content_id" value="{$content_id}" type="hidden">
                     <input name="form_id" value="{$form_id}" type="hidden">
-EOL;
-    if($record['POINTER_DOMAIN'] != 'Y') {
-        $html .= <<<EOL
                     <input name="domain_id" value="{$record['id']}" type="hidden">
-EOL;
-    } else {
-        // list IPs within the PTR domain
-        $end_ip = ip_complete($record['name'],255);
-        $html .= <<<EOL
-                    <input name="ip" value="{$record['name']}" type="hidden">
-                    <input name="ip_thru" value="{$end_ip}" type="hidden">
-EOL;
 
-    }
-    $html .= <<<EOL
                     <div id="{$form_id}_filter_overlay"
                          style="position: relative;
                                 display: inline;
@@ -384,20 +359,20 @@ EOL;
         </div>
 EOL;
 
-    if($record['POINTER_DOMAIN'] == 'Y') {
+    if (auth('dns_record_add',$debug_val)) {
         $html .= <<<EOL
 
         <!-- List by IP Address LINK -->
         <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}">
-        <a title="List Hosts by IP"
-               class="act"
-               onClick="xajax_window_submit('app_full_list',  xajax.getFormValues('{$form_id}'), 'display');"
-            ><img src="{$images}/silk/page_white_go.png" border="0"></a>&nbsp;
+            <form id="form_dns_add_{$record['id']}"
+                ><input type="hidden" name="js" value="{$refresh}"
+            ></form>
 
-            <a title="List Hosts by IP"
-               class="act"
-               onClick="xajax_window_submit('app_full_list',  xajax.getFormValues('{$form_id}'), 'display');"
-            >List Hosts by IP</a>&nbsp;
+            <a title="Add DNS Record"
+               class="linkact"
+               onClick="xajax_window_submit('edit_record', xajax.getFormValues('form_dns_add_{$record['id']}'), 'editor');"
+            ><img src="{$images}/silk/page_add.png">Add a new DNS record</a>&nbsp;
+
         </div>
 EOL;
     }

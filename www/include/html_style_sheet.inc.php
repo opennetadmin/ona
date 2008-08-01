@@ -249,6 +249,11 @@ a.act:hover    { color: {$color['link_act']};  cursor: pointer; text-decoration:
 a.domain       { color: {$color['link_domain']}; cursor: pointer; text-decoration: none; }
 a.domain:hover { color: {$color['link_domain']}; cursor: pointer; text-decoration: underline; }
 
+/* This is a new style action class that pads the images. */
+a.linkact          { color: #FF8000;  cursor: pointer; text-decoration: none; }
+a.linkact:hover    { color: #FF8000;  cursor: pointer; text-decoration: underline; }
+a.linkact img      { padding-right: 4px; }
+
 .row-normal    { background-color: #FFFFFF; }
 .row-highlight { background-color: #E8E9FD; }
 

@@ -228,7 +228,7 @@ EOL;
 EOL;
 
     // MP: This could be slow depending on the size of the database.  I'll leave it for now.. maybe make it a button
-    list($status, $output) = run_module('build_zone', array('zone' => $record['domain_fqdn']));
+    list($status, $output) = run_module('build_zone', array('server' => $record['name'].".".$record['domain_fqdn']));
     // If the module returned an error code display a popup warning
     if (!$status)
         $html .= "<div style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;'><pre style='font-family: monospace;'>{$output}</pre></div>";

@@ -110,7 +110,7 @@ primary name for a host should be unique in all cases I'm aware of
     //
     // Find the domain name piece of $search
     list($status, $rows, $domain) = ona_find_domain($options['name']);
-    //printmsg("DEBUG => ona_find_domain({$options['name']}) returned: {$domain['fqdn']}", 3);
+    printmsg("DEBUG => ona_find_domain({$options['name']}) returned: {$domain['fqdn']}", 3);
 
     // Now find what the host part of $search is
     $hostname = str_replace(".{$domain['fqdn']}", '', $options['name']);

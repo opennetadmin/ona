@@ -295,8 +295,15 @@ EOL;
             $record['name'] = ip_mangle($record['ip_addr'],'flip');
             $record['domain'] = $pdomain['name'];
 
+            if ($pdomain['parent_id']) {
+                list ($status, $rows, $parent) = ona_get_domain_record(array('id' => $pdomain['parent_id']));
+                $parent['name'] = ona_build_domain_name($parent['id']);
+                $record['domain'] = $pdomain['name'].'.'.$parent['name'];
+                unset($parent['name']);
+            }
+
             // strip down the IP to just the "host" part as it relates to the domain its in
-            $domain_part = preg_replace("/.in-addr.arpa$/", '', $pdomain['name']);
+            $domain_part = preg_replace("/.in-addr.arpa$/", '', $record['domain']);
             $record['name'] = preg_replace("/$domain_part$/", '', $record['name']);
 
             $data = <<<EOL

@@ -1563,6 +1563,7 @@ function ona_find_host($search="") {
 //  Example: list($status, $rows, $domain) = ona_find_domain('myhost.mydomain.com',1);
 ///////////////////////////////////////////////////////////////////////
 function ona_find_domain($fqdn="", $returndefault=1) {
+    global $conf;
     $status=1;
     $fqdn = strtolower($fqdn);
     printmsg("DEBUG => ona_find_domain({$fqdn}) called", 3);
@@ -1572,27 +1573,47 @@ function ona_find_domain($fqdn="", $returndefault=1) {
 
     // Find the domain name that best matches
     $name = '';
+    $foundone = 0;
     $domain = array();
     foreach ($parts as $part) {
-        if (!$rows) {
+        if (!$foundone) {
             if (!$name) $name = $part;
             else $name = "{$part}.{$name}";
-            list($status, $rows, $record) = ona_get_domain_record(array('name' => $name));
-            if ($rows)
+            list($status, $rowsa, $record) = ona_get_domain_record(array('name' => $name));
+            if ($rowsa) {
                 $domain = $record;
                 printmsg("DEBUG => ona_find_domain({$fqdn}) Found: {$domain['fqdn']}", 3);
+                $foundone = 1;
+            }
         }
         else {
-            list($status, $rows, $record) = ona_get_domain_record(array('name' => $part, 'parent_id' => $domain['id']));
-            if ($rows)
+            if (!$name) $name = $part;
+            else $name = preg_replace("/.{$domain['fqdn']}$/", '', "{$part}.{$name}");
+            list($status, $rowsb, $record) = ona_get_domain_record(array('name' => $name, 'parent_id' => $domain['id']));
+            if ($rowsb) {
                 $domain = $record;
-                printmsg("DEBUG => ona_find_domain({$fqdn}) Found parent: {$domain['fqdn']}", 3);
+                printmsg("DEBUG => ona_find_domain({$fqdn}) Found with parent: {$domain['fqdn']}", 3);
+                $foundone = 1;
+                $name = '';
+            } else {
+                // try it as a fqdn not with a parent
+                list($status, $rowsb, $record) = ona_get_domain_record(array('name' => "{$name}.{$domain['fqdn']}", 'parent_id' => 0));
+                if ($rowsb) {
+                    $domain = $record;
+                    printmsg("DEBUG => ona_find_domain({$fqdn}) Found with parent: {$domain['fqdn']}", 3);
+                    $foundone = 1;
+                    $name = '';
+                }
+            }
+
         }
     }
+
 
     if ($returndefault=1) {
         // If we don't have a domain yet, lets assume $fqdn is a basic hostname, and return the default domain
         if (!array_key_exists('id', $domain)) {
+            printmsg("DEBUG => ona_find_domain({$fqdn}) Using system default domain: {$conf['dns_defaultdomain']}", 3);
             list($status, $rows, $record) = ona_get_domain_record(array('name' => $conf['dns_defaultdomain']));
             if($rows)
                 $domain = $record;
