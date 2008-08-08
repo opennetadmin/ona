@@ -25,6 +25,7 @@ function ws_editor($window_name, $form='') {
     global $font_family, $color, $style, $images;
     $window = array();
     $window['js'] = '';
+    $typedisable = '';
 
     // Check permissions
     if (! (auth('dns_record_modify') and auth('dns_record_add')) ) {
@@ -68,7 +69,7 @@ function ws_editor($window_name, $form='') {
     //$record_types = array('A','CNAME','TXT','NS','MX','AAAA','SRV');
     // FIXME: MP cool idea here-- support the loc record and have a google map popup to search for the location then have it populate the coords from that.
     // FIXME: MP it would probably be much better to use ajax to pull back the right form content than all this other javascript crap.
-    $record_types = array('A','CNAME','MX','NS','TXT');
+    $record_types = array('A','CNAME','MX','NS','SRV','TXT');
     foreach (array_keys((array)$record_types) as $id) {
         $record_types[$id] = htmlentities($record_types[$id]);
         $selected = '';
@@ -83,7 +84,7 @@ function ws_editor($window_name, $form='') {
 
 
     // If its a CNAME, get the dns name for the A record it points to
-    if ($dns_record['type'] == 'CNAME' or $dns_record['type'] == 'MX' or $dns_record['type'] == 'NS') {
+    if ($dns_record['type'] == 'CNAME' or $dns_record['type'] == 'MX' or $dns_record['type'] == 'NS' or $dns_record['type'] == 'SRV') {
         list($status, $rows, $existinga_data) = ona_get_dns_record(array('id' => $dns_record['dns_id']));
         $dns_record['existinga_data'] = $existinga_data['fqdn'];
     }
@@ -104,14 +105,18 @@ function ws_editor($window_name, $form='') {
     $editdisplay = '';
 
     // Set the window title:
-    $window['title'] = "Add DNS Record";
     if ($dns_record['id']) {
+        $typedisable = 'disabled="1"';
         $window['title'] = "Edit DNS Record";
         $window['js'] .= "el('record_type_select').onchange('fake event');updatednsinfo('{$window_name}');";
         // If you are editing and there is no ttl set, use the one from the domain.
         if (!$dns_record['ttl']) {
             $ttl_style = 'style="font-style: italic;" title="Using TTL from domain"';
         }
+    } else {
+        $window['title'] = "Add DNS Record";
+        $dns_record['srv_pri'] = 0;
+        $dns_record['srv_weight'] = 0;
     }
 
     // Javascript to run after the window is built
@@ -160,7 +165,7 @@ EOL;
                     DNS record type
                 </td>
                 <td class="padding" align="left" width="100%">
-                    <select
+                    <select {$typedisable}
                         id="record_type_select"
                         name="set_type"
                         alt="Record type"
@@ -171,9 +176,10 @@ EOL;
                                 el('a_container').style.display     = (selectBox.value == 'A') ? '' : 'none';
                                 el('autoptr_container').style.display   = (selectBox.value == 'A') ? '' : 'none';
                                 el('mx_container').style.display   = (selectBox.value == 'MX') ? '' : 'none';
+                                el('srv_container').style.display   = (selectBox.value == 'SRV') ? '' : 'none';
                                 el('txt_container').style.display   = (selectBox.value == 'TXT') ? '' : 'none';
                                 el('name_container').style.display     = (selectBox.value == 'NS') ? 'none' : '';
-                                el('existing_a_container').style.display = (selectBox.value == 'MX' || selectBox.value == 'CNAME' || selectBox.value == 'NS') ? '' : 'none';"
+                                el('existing_a_container').style.display = (selectBox.value == 'MX' || selectBox.value == 'CNAME' || selectBox.value == 'NS' || selectBox.value == 'SRV') ? '' : 'none';"
                     >{$record_type_list}</select>
                 </td>
             </tr>
@@ -334,6 +340,47 @@ EOL;
                 </td>
             </tr>
 
+            <!-- SRV CONTAINER -->
+            <tr id="srv_container" style="display:none;">
+                <td align="right" nowrap="true">
+                    SRV
+                </td>
+                <td class="padding" align="left" width="100%">
+                    Priority <input
+                        style="margin-bottom:3px;"
+                        id="set_srv_pri_{$window_name}"
+                        name="set_srv_pri"
+                        alt="SRV Priority"
+                        value="{$dns_record['srv_pri']}"
+                        class="edit"
+                        type="text"
+                        size="5" maxlength="5"
+                        onblur="updatednsinfo('{$window_name}');"
+                    /><br>
+                    Weight <input
+                        style="margin-bottom:3px;"
+                        id="set_srv_weight_{$window_name}"
+                        name="set_srv_weight"
+                        alt="SRV Weight"
+                        value="{$dns_record['srv_weight']}"
+                        class="edit"
+                        type="text"
+                        size="5" maxlength="5"
+                        onblur="updatednsinfo('{$window_name}');"
+                    /><br>
+                    Port &nbsp;&nbsp;&nbsp;&nbsp;<input
+                        id="set_srv_port_{$window_name}"
+                        name="set_srv_port"
+                        alt="SRV Port"
+                        value="{$dns_record['srv_port']}"
+                        class="edit"
+                        type="text"
+                        size="5" maxlength="5"
+                        onblur="updatednsinfo('{$window_name}');"
+                    />
+                </td>
+            </tr>
+
             <!-- CNAME CONTAINER -->
             <tr id="existing_a_container" style="display:none;">
                 <td align="right" nowrap="true">
@@ -475,12 +522,12 @@ function ws_save($window_name, $form='') {
 
 
     // Validate input
-    if ($form['set_domain'] == '' or
-        $form['set_type'] == ''
-       ) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
-    }
+//     if ($form['set_domain'] == '' or
+//         $form['set_type'] == ''
+//        ) {
+//         $response->addScript("alert('Please complete all fields to continue!');");
+//         return($response->getXML());
+//     }
 
     // we need to do a little validation here to make sure things
     // have a good chance of working!
@@ -520,9 +567,13 @@ function ws_save($window_name, $form='') {
         $form['addptr'] = $form['set_addptr'];
 
         // if this is a cname. then set the pointsto option
-        if ($form['set_type'] == 'CNAME' or $form['set_type'] == 'MX' or $form['set_type'] == 'NS') $form['pointsto'] = $form['set_pointsto'];
+        if ($form['set_type'] == 'CNAME' or $form['set_type'] == 'MX' or $form['set_type'] == 'NS' or $form['set_type'] == 'SRV') $form['pointsto'] = $form['set_pointsto'];
         if ($form['set_type'] == 'MX') $form['mx_preference'] = $form['set_mx_preference'];
         if ($form['set_type'] == 'TXT') $form['txt'] = $form['set_txt'];
+
+        if ($form['set_type'] == 'SRV') $form['srv_pri'] = $form['set_srv_pri'];
+        if ($form['set_type'] == 'SRV') $form['srv_weight'] = $form['set_srv_weight'];
+        if ($form['set_type'] == 'SRV') $form['srv_port'] = $form['set_srv_port'];
 
         // If it is an NS record, blank the name out
         if ($form['set_type'] == 'NS') $form['name'] = $form['set_domain'];

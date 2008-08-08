@@ -363,6 +363,22 @@ EOL;
 EOL;
         }
 
+        // Process SRV record
+        if ($record['type'] == 'SRV') {
+            // show the preference value next to the type
+            $record['type'] = "{$record['type']} ({$record['srv_port']})";
+            list($status, $rows, $ns) = ona_get_dns_record(array('id' => $record['dns_id']), '');
+            $data = <<<EOL
+                    <a title="Edit DNS A record"
+                       class="act"
+                       onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
+                    >{$ns['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
+                         class="domain"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
+                    >{$ns['domain_fqdn']}</a>.&nbsp;
+EOL;
+        }
+
         // Process TXT record
         if ($record['type'] == 'TXT') {
             $data = $record['txt'];

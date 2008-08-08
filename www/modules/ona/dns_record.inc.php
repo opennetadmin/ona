@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -56,6 +56,9 @@ Add a new DNS record
     addptr                    auto add a PTR record when adding A records
     mx_preference=NUMBER      preference for the MX record
     txt=STRING                text value of a TXT record
+    srv_pri=NUMBER            SRV Priority
+    srv_weight=NUMBER         SRV Weight
+    srv_port=NUMBER           SRV Port
 
   Examples:
     dns_record_add name=newhost.something.com type=A ip=10.1.1.2 addptr
@@ -65,6 +68,8 @@ Add a new DNS record
     dns_record_add name=domain.com type=MX pointsto=mxhost.domain.com mx_preference=10
 
     DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
+
+
 EOM
         ));
     }
@@ -102,6 +107,9 @@ primary name for a host should be unique in all cases I'm aware of
     $options['type'] = strtoupper($options['type']);
     $add_txt = '';
     $add_mx_preference = '';
+    $add_srv_pri = '';
+    $add_srv_weight = '';
+    $add_srv_port = '';
 
     // Determine the real hostname and domain name to be used --
     // i.e. add .something.com, or find the part of the name provided
@@ -396,7 +404,7 @@ complex DNS messes for themselves.
     // MX is a domain_id or host/domain_id that points to another dns_id A record
     else if ($options['type'] == 'MX') {
         // If there is no mx_preference set then stop
-        if ($options['mx_preference'] < 0 and $options['mx_preference'] > 65536) {
+        if (!isset($options['mx_preference']) or ($options['mx_preference'] < 0 or $options['mx_preference'] > 65536)) {
             printmsg("ERROR => You must provide an MX preference value when creating MX records!", 3);
             $self['error'] = "ERROR => You must provide an MX preference value when creating MX records!";
             return(array(4, $self['error'] . "\n"));
@@ -461,6 +469,88 @@ complex DNS messes for themselves.
 
 
     }
+
+    // Process SRV record types
+    // SRV is a domain_id that points to another dns_id A record
+    // this will give you "_crap._tcp.mydomain.com    IN   SRV 0 2 80  server.somedomain.com"
+    else if ($options['type'] == 'SRV') {
+
+        // If there is no srv_pri set then stop
+        if (!isset($options['srv_pri']) or ($options['srv_pri'] < 0 or $options['srv_pri'] > 65536)) {
+            printmsg("ERROR => You must provide an SRV priority value between 0-65535 when creating SRV records!", 3);
+            $self['error'] = "ERROR => You must provide an SRV priority value between 0-65535 when creating SRV records!";
+            return(array(4, $self['error'] . "\n"));
+        }
+
+        // If there is no srv_weight set then stop
+        if (!isset($options['srv_weight']) or ($options['srv_weight'] < 0 or $options['srv_weight'] > 65536)) {
+            printmsg("ERROR => You must provide an SRV weight value between 0-65535 when creating SRV records!", 3);
+            $self['error'] = "ERROR => You must provide an SRV weight value between 0-65535 when creating SRV records!";
+            return(array(4, $self['error'] . "\n"));
+        }
+
+        // If there is no srv_port set then stop
+        if (!isset($options['srv_port']) or ($options['srv_port'] < 0 or $options['srv_port'] > 65536)) {
+            printmsg("ERROR => You must provide an SRV port value between 0-65535 when creating SRV records!", 3);
+            $self['error'] = "ERROR => You must provide an SRV port value between 0-65535 when creating SRV records!";
+            return(array(4, $self['error'] . "\n"));
+        }
+
+        // find the domain
+        list($status, $rows, $domain) = ona_find_domain($options['name'],0);
+        if (!$domain['id']) {
+            printmsg("ERROR => Invalid domain name ({$options['name']})!", 3);
+            $self['error'] = "ERROR => Invalid domain name ({$options['name']})!";
+            return(array(4, $self['error'] . "\n"));
+        }
+        // Determine the host and domain name portions of the pointsto option
+        // Find the domain name piece of $search
+        list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
+        printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$pdomain['fqdn']} for pointsto.", 3);
+
+        // Now find what the host part of $search is
+        $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
+
+        // Validate that the DNS name has only valid characters in it
+        $phostname = sanitize_hostname($phostname);
+        if (!$phostname) {
+            printmsg("ERROR => Invalid pointsto host name ({$options['pointsto']})!", 3);
+            $self['error'] = "ERROR => Invalid pointsto host name ({$options['pointsto']})!";
+            return(array(4, $self['error'] . "\n"));
+        }
+        // Debugging
+        printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
+
+        // Find the dns record that it will point to
+        list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A'));
+        if ($status or !$rows) {
+            printmsg("ERROR => Unable to find DNS A record to point SRV entry to!",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point SRV entry to!";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+        // Validate that there are no records already with this domain and host
+        list($status, $rows, $record) = ona_get_dns_record(array('dns_id' => $pointsto_record['id'], 'name' => $hostname, 'domain_id' => $domain['id'],'type' => 'SRV'));
+        if ($rows or $status) {
+            printmsg("ERROR => Another DNS SRV record for {$hostname}.{$domain['fqdn']} pointing to {$options['pointsto']} already exists!",3);
+            $self['error'] = "ERROR => Another DNS SRV record for {$hostname}.{$domain['fqdn']} pointing to {$options['pointsto']} already exists!";
+            return(array(5, $self['error'] . "\n"));
+        }
+
+
+        $add_name = $hostname;
+        $add_domainid = $domain['id'];
+        $add_interfaceid = $pointsto_record['interface_id'];
+        $add_dnsid = $pointsto_record['id'];
+        $add_srv_pri = $options['srv_pri'];
+        $add_srv_weight = $options['srv_weight'];
+        $add_srv_port = $options['srv_port'];
+
+        $info_msg = "{$add_name}.{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+
+    }
+
+
     // Process TXT record types
     else if ($options['type'] == 'TXT') {
         // Set interface id to zero by default, only needed if associating with an IP address
@@ -548,6 +638,9 @@ complex DNS messes for themselves.
             'name'                 => $add_name,
             'mx_preference'        => $add_mx_preference,
             'txt'                  => $add_txt,
+            'srv_pri'              => $add_srv_pri,
+            'srv_weight'           => $add_srv_weight,
+            'srv_port'             => $add_srv_port,
             'notes'                => $options['notes']
        )
     );
@@ -608,7 +701,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -621,6 +714,10 @@ function dns_record_modify($options="") {
         !$options['set_ip'] and
         !$options['set_ttl'] and
         !$options['set_pointsto'] and
+        !$options['set_srv_pri'] and
+        !$options['set_srv_weight'] and
+        !$options['set_srv_port'] and
+        !$options['set_mx_preference'] and
         !$options['set_notes']
        ) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
@@ -644,6 +741,9 @@ Modify a DNS record
     set_notes=NOTES             change the textual notes
     set_mx_preference=NUMBER    change the MX record preference value
     set_txt=STRING              change the value of the TXT record
+    set_srv_pri=NUMBER          change SRV Priority
+    set_srv_weight=NUMBER       change SRV Weight
+    set_srv_port=NUMBER         change SRV Port
 
   Note:
     * You are not allowed to change the type of the DNS record, to do that
@@ -757,7 +857,7 @@ EOM
         }
 
         // make sure that name/pointsto combo doesnt already exist
-        if ($dns['type'] == 'CNAME' or $dns['type'] == 'MX' or $dns['type'] == 'NS') {
+        if ($dns['type'] == 'CNAME' or $dns['type'] == 'MX' or $dns['type'] == 'NS' or $dns['type'] == 'SRV') {
             list($status, $rows, $tmp) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'dns_id' => $dns['dns_id'], 'type' => $dns['type']));
             if ($rows) {
                 if ($tmp['id'] != $dns['id'] or $rows > 1) {
@@ -789,7 +889,7 @@ EOM
 
 
     // If we are modifying a pointsto option
-    if (array_key_exists('set_pointsto', $options) and ($options['set_type'] == 'CNAME' or $options['set_type'] == 'MX' or $options['set_type'] == 'NS')) {
+    if (array_key_exists('set_pointsto', $options) and ($options['set_type'] == 'CNAME' or $options['set_type'] == 'MX' or $options['set_type'] == 'NS' or $options['set_type'] == 'SRV')) {
         // Determine the host and domain name portions of the pointsto option
         // Find the domain name piece of $search
         list($status, $rows, $pdomain) = ona_find_domain($options['set_pointsto']);
@@ -854,6 +954,10 @@ EOM
     $SET['ebegin'] = date('Y-m-j G:i:s');
 
     if (array_key_exists('set_mx_preference', $options)) $SET['mx_preference'] = $options['set_mx_preference'];
+
+    if (array_key_exists('set_srv_pri', $options)) $SET['srv_pri'] = $options['set_srv_pri'];
+    if (array_key_exists('set_srv_weight', $options)) $SET['srv_weight'] = $options['set_srv_weight'];
+    if (array_key_exists('set_srv_port', $options)) $SET['srv_port'] = $options['set_srv_port'];
 
     if (array_key_exists('set_txt', $options)) $SET['txt'] = $options['set_txt'];
 

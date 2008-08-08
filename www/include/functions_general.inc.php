@@ -881,7 +881,7 @@ function sanitize_hostname($string="") {
     $string = strtolower($string);
 
     // If it's valid, use it..
-    if (preg_match('/^([a-z0-9]([a-z0-9_\.\-]*))?[a-z0-9]$/', $string)) {
+    if (preg_match('/^([a-z0-9_\*]([a-z0-9_\.\-]*))?[a-z0-9]$/', $string)) {
         // Make sure it doesn't have more than one "." in a row
         if (stristr($string, '..')) { return(false); }
         // The syntax is ok, make sure it's not too long
