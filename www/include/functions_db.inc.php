@@ -1119,6 +1119,7 @@ function ona_get_domain_record($array='', $order='') {
 // Returns an additional "fqdn" field for some dns records
 function ona_get_dns_record($array='', $order='') {
     list($status, $rows, $record) = ona_get_record($array, 'dns', $order);
+
     if ($record['type'] == 'A') {
         $record['fqdn'] = $record['name'].'.'.ona_build_domain_name($record['domain_id']);
         $record['domain_fqdn'] = ona_build_domain_name($record['domain_id']);
@@ -1676,6 +1677,10 @@ function ona_find_dns_record($search="",$type='',$int_id=0) {
 
     // Now find what the host part of $search is
     $hostname = str_replace(".{$domain['fqdn']}", '', $search);
+
+    // If the hostname we came up with and the domain name are the same, then assume this is
+    // meant to be a domain specific record, like A, MX, NS type records.
+    if ($hostname == $domain['name']) $hostname = '';
 
     // Setup the search array
     $searcharray = array('domain_id' => $domain['id'], 'name' => $hostname);

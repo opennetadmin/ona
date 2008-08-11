@@ -324,9 +324,9 @@ EOL;
                     <a title="Edit DNS A record"
                        class="act"
                        onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
-                    >{$cname['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
+                    >{$cname['name']}</a>.<a title="View domain. ID: {$cname['domain_id']}"
                          class="domain"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$cname['domain_id']}\', \'display\')');"
                     >{$cname['domain_fqdn']}</a>.&nbsp;
 EOL;
         }
@@ -340,9 +340,9 @@ EOL;
                     <a title="Edit DNS A record"
                        class="act"
                        onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
-                    >{$ns['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
+                    >{$ns['name']}</a>.<a title="View domain. ID: {$ns['domain_id']}"
                          class="domain"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$ns['domain_id']}\', \'display\')');"
                     >{$ns['domain_fqdn']}</a>.&nbsp;
 EOL;
         }
@@ -351,15 +351,15 @@ EOL;
         if ($record['type'] == 'MX') {
             // show the preference value next to the type
             $record['type'] = "{$record['type']} ({$record['mx_preference']})";
-            list($status, $rows, $ns) = ona_get_dns_record(array('id' => $record['dns_id']), '');
+            list($status, $rows, $mx) = ona_get_dns_record(array('id' => $record['dns_id']), '');
             $data = <<<EOL
                     <a title="Edit DNS A record"
                        class="act"
                        onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
-                    >{$ns['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
+                    >{$mx['name']}</a>.<a title="View domain. ID: {$mx['domain_id']}"
                          class="domain"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
-                    >{$ns['domain_fqdn']}</a>.&nbsp;
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$mx['domain_id']}\', \'display\')');"
+                    >{$mx['domain_fqdn']}</a>.&nbsp;
 EOL;
         }
 
@@ -367,15 +367,15 @@ EOL;
         if ($record['type'] == 'SRV') {
             // show the preference value next to the type
             $record['type'] = "{$record['type']} ({$record['srv_port']})";
-            list($status, $rows, $ns) = ona_get_dns_record(array('id' => $record['dns_id']), '');
+            list($status, $rows, $srv) = ona_get_dns_record(array('id' => $record['dns_id']), '');
             $data = <<<EOL
                     <a title="Edit DNS A record"
                        class="act"
                        onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$record['dns_id']}', 'editor');"
-                    >{$ns['name']}</a>.<a title="View domain. ID: {$record['domain_id']}"
+                    >{$srv['name']}</a>.<a title="View domain. ID: {$srv['domain_id']}"
                          class="domain"
-                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$record['domain_id']}\', \'display\')');"
-                    >{$ns['domain_fqdn']}</a>.&nbsp;
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$srv['domain_id']}\', \'display\')');"
+                    >{$srv['domain_fqdn']}</a>.&nbsp;
 EOL;
         }
 
@@ -396,6 +396,9 @@ EOL;
             $record['ttl'] = $domain['default_ttl'];
             $ttl_style = 'style="font-style: italic;" title="Using TTL from domain"';
         }
+
+        // If we get this far and the name we have built has a leading . in it then remove the dot.
+        $record['name'] = preg_replace("/^\./", '', $record['name']);
 
         // Escape data for display in html
         foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }

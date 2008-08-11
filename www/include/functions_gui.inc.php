@@ -499,6 +499,14 @@ function suggest_qsearch($q, $el_input, $el_suggest) {
         $results = array_unique($results);
     }
 
+// FIXM: MP this does not come out correctly in the resulting record matches.. disabled for now.
+//     // Search the DB for domains
+//     if (count($results) < $conf['suggest_max_results']) {
+//         $array = get_domain_suggestions($q, $conf['suggest_max_results'] - count($results));
+//         foreach($array as $suggestion) { $results[] = $suggestion; }
+//         $results = array_unique($results);
+//     }
+
     // Search the DB for mac addressees
     if (count($results) < $conf['suggest_max_results']) {
         $array = get_mac_suggestions($q, $conf['suggest_max_results'] - count($results));

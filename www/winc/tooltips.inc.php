@@ -206,7 +206,18 @@ EOL;
 EOL;
     }
 
+    if (auth('dns_record_add')) {
+        $html .= <<<EOL
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="removeElement('start_menu'); toggle_window('app_domain_list');"
+     title="List DNS Domains"
+ ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ />&nbsp;List DNS Domains</div>
 
+EOL;
+    }
 
 
     // Get all the plugin menuitems

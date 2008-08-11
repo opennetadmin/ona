@@ -331,7 +331,7 @@ function ws_save($window_name, $form='') {
         $form['set_server']  = $form['server']; unset($form['server']);
         $form['set_admin']   = $form['admin']; unset($form['admin']);
         $form['set_ptr']     = $form['ptr']; unset($form['ptr']);
-        $form['set_primary'] = $form['primary']; unset($form['primary_master']);
+        $form['set_primary_master'] = $form['primary_master']; unset($form['primary_master']);
         $form['set_refresh'] = $form['refresh']; unset($form['refresh']);
         $form['set_retry']   = $form['retry']; unset($form['retry']);
         $form['set_expiry']  = $form['expiry']; unset($form['expiry']);
@@ -340,6 +340,9 @@ function ws_save($window_name, $form='') {
         $form['set_parent']  = $form['parent']; unset($form['parent']);
         $form['set_auth']    = $form['auth']; unset($form['auth']);
         $form['set_serial']  = $form['serial']; unset($form['serial']);
+
+        // force it to find the domain using the ID
+        $form['domain'] = $form['id'];
     }
     else {
         // use the primary master as the first master server

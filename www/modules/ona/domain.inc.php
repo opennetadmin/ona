@@ -42,7 +42,7 @@ function domain_add($options="") {
     printmsg("DEBUG => domain_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -51,7 +51,7 @@ function domain_add($options="") {
     if ($options['help'] or !(
                                 ($options['name'])
                                  or
-                                ($options['admin'] or $options['ptr'] or $options['primary'])
+                                ($options['admin'] or $options['ptr'] or $options['primary_master'])
                               )
         )
     {
@@ -71,7 +71,7 @@ Adds a DNS domain into the database
 
   Optional:
     admin=STRING                            Default ({$conf['dns_admin_email']})
-    primary=STRING                          Default ({$conf['dns_primary_master']})
+    primary_master=STRING                   Default ({$conf['dns_primary_master']})
     refresh=NUMBER                          Default ({$conf['dns_refresh']})
     retry=NUMBER                            Default ({$conf['dns_retry']})
     expiry=NUMBER                           Default ({$conf['dns_expiry']})
@@ -87,7 +87,7 @@ EOM
 
     // Use default if something was not passed on command line
     if ($options['admin'])   { $admin   = $options['admin'];  } else { $admin   = $conf['dns_admin_email'];   }
-    if ($options['primary']) { $primary = $options['primary'];} else { $primary = $conf['dns_primary_master'];  }
+    if ($options['primary_master']) { $primary = $options['primary_master'];} else { $primary = $conf['dns_primary_master'];  }
     if ($options['refresh']) { $refresh = $options['refresh'];} else { $refresh = $conf['dns_refresh']; }
     if ($options['retry'])   { $retry   = $options['retry'];  } else { $retry   = $conf['dns_retry'];   }
     if ($options['expiry'])  { $expiry  = $options['expiry']; } else { $expiry  = $conf['dns_expiry'];  }
@@ -147,17 +147,22 @@ EOM
 //             $parent_domain['id'] = '';
 //         }
     }
-    if ($primary) {
-        // Determine the primary master is a valid host
-        list($status, $rows, $ohost) = ona_find_host($primary);
 
-        if (!$ohost['id']) {
-            printmsg("DEBUG => The primary master host specified ({$primary}) does not exist!", 3);
-            $self['error'] = "ERROR => The primary master host specified ({$primary}) does not exist!";
-            return(array(2, $self['error'] . "\n"));
-        }
 
-    }
+// FIXME: MP for now this is removed.  it is a chicken/egg issue on setting this name
+//   Also it cant use find_host as the name is not always primary.
+
+//     if ($primary) {
+//         // Determine the primary master is a valid host
+//         list($status, $rows, $ohost) = ona_find_host($primary);
+// 
+//         if (!$ohost['id']) {
+//             printmsg("DEBUG => The primary master host specified ({$primary}) does not exist!", 3);
+//             $self['error'] = "ERROR => The primary master host specified ({$primary}) does not exist!";
+//             return(array(2, $self['error'] . "\n"));
+//         }
+// 
+//     }
 
 
     // Check permissions
@@ -436,7 +441,7 @@ function domain_modify($options="") {
                                  and
                                 ($options['set_admin'] or
                                  $options['set_name'] or
-                                 $options['set_primary'] or
+                                 $options['set_primary_master'] or
                                  $options['set_refresh'] or
                                  $options['set_retry'] or
                                  $options['set_expiry'] or
@@ -463,7 +468,7 @@ Modifies a DNS domain in the database
   Optional:
     set_name=STRING           new domain name
     set_admin=STRING          Default ({$conf['dns_admin_email']})
-    set_primary=STRING        Default ({$conf['dns_primary_master']})
+    set_primary_master=STRING Default ({$conf['dns_primary_master']})
     set_refresh=NUMBER        Default ({$conf['dns_refresh']})
     set_retry=NUMBER          Default ({$conf['dns_retry']})
     set_expiry=NUMBER         Default ({$conf['dns_expiry']})
@@ -543,15 +548,9 @@ EOM
     }
 
 
-// FIXME: (PK) Disabled this, since I'm not sure how we want to handle this yet.
-//    if ($options['set_ptr']) {
-//        $SET['POINTER_DOMAIN'] = sanitize_YN($options['set_ptr'], 'N');
-//        // force parent domain to be empty if this is a PTR domain
-//        if($SET['POINTER_DOMAIN'] == 'Y') $SET['parent_id'] = '';
-//   }
 
     // define the remaining entries
-    if ($options['set_primary']) $SET['primary_master'] = $options['set_primary'];
+    if ($options['set_primary_master']) $SET['primary_master'] = $options['set_primary_master'];
     if ($options['set_admin'])   $SET['admin_email'] = $options['set_admin'];
     if ($options['set_refresh']) $SET['refresh']     = $options['set_refresh'];
     if ($options['set_retry'])   $SET['retry']       = $options['set_retry'];
@@ -561,7 +560,10 @@ EOM
     if ($options['set_serial'])  $SET['serial']      = $options['set_serial'];
 
 
-    if ($SET['primary_master']) {
+// FIXME: MP for now this is removed.  it is a chicken/egg issue on setting this name
+//   Also it cant use find_host as the name is not always primary.
+
+/*    if ($SET['primary_master']) {
         // Determine if the primary master is a valid host
         list($status, $rows, $host) = ona_find_host($SET['primary_master']);
 
@@ -581,6 +583,7 @@ EOM
 //            return(array(5, $self['error'] . "\n"));
 //        }
     }
+*/
 
     // come up with a serial_number
     // Calculate a serial based on time

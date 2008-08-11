@@ -143,8 +143,14 @@ EOL;
     <input type="hidden" name="dns_id" value="{$dns_record['id']}">
     <input type="hidden" name="name" value="{$host['fqdn']}">
     <input type="hidden" name="js" value="{$form['js']}">
+EOL;
 
+    // If we are editing and thus disabling the type selector, we need to put a hidden input field
+    if ($typedisable) {
+        $window['html'] .= "<input type=\"hidden\" name=\"set_type\" value=\"{$dns_record['type']}\">";
+    }
 
+    $window['html'] .= <<<EOL
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']};padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
         <!-- DNS RECORD -->
         <tr>
@@ -531,6 +537,10 @@ function ws_save($window_name, $form='') {
 
     // we need to do a little validation here to make sure things
     // have a good chance of working!
+
+
+    // If the name we were passed has a leading . in it then remove the dot.
+    $form['set_name'] = preg_replace("/^\./", '', $form['set_name']);
 
     // Validate the "set_name" name is valid
     if ($form['set_name'] and ($form['set_type'] != 'NS')) {

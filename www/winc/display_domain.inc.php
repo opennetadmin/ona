@@ -32,7 +32,7 @@ function ws_display($window_name, $form='') {
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
     if ($history['title'] == $window_name) {
-        $history['title'] = $record['name']; //FIXME: does fqdn exist, or should we use name?
+        $history['title'] = $record['fqdn'];
         array_push($_SESSION['ona']['work_space']['history'], $history);
     }
 
@@ -364,9 +364,10 @@ EOL;
 
         <!-- List by IP Address LINK -->
         <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}">
-            <form id="form_dns_add_{$record['id']}"
-                ><input type="hidden" name="js" value="{$refresh}"
-            ></form>
+            <form id="form_dns_add_{$record['id']}">
+                <input type="hidden" name="js" value="{$refresh}">
+                <input type="hidden" name="domain_id" value="{$record['id']}">
+            </form>
 
             <a title="Add DNS Record"
                class="linkact"
@@ -392,7 +393,7 @@ EOL;
 
 
     // MP: This could be slow depending on the size of the database.  I'll leave it for now.. maybe make it a button
-    list($status, $output) = run_module('build_zone', array('zone' => $record['name']));
+    list($status, $output) = run_module('build_zone', array('zone' => $record['fqdn']));
     // If the module returned an error code display a popup warning
     if (!$status)
         $html .= "<div style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;'><pre style='font-family: monospace;'>{$output}</pre></div>";

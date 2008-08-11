@@ -52,7 +52,7 @@ Add a new DNS record
     notes=NOTES               textual notes
     ip=ADDRESS                ip address (numeric or dotted)
     ttl=NUMBER                time in seconds, defaults to ttl from domain
-    pointsto=NAME[.DOMAIN]    hostname that a CNAME or NS points to
+    pointsto=NAME[.DOMAIN]    hostname that a CNAME,NS,MX etc points to
     addptr                    auto add a PTR record when adding A records
     mx_preference=NUMBER      preference for the MX record
     txt=STRING                text value of a TXT record
@@ -66,6 +66,7 @@ Add a new DNS record
     dns_record_add name=cname.domain.com type=CNAME pointsto=host.domain.com
     dns_record_add name=host.something.com type=TXT txt="my text value"
     dns_record_add name=domain.com type=MX pointsto=mxhost.domain.com mx_preference=10
+    dns_record_add name=_foo._tcp.example.com type=SRV pointsto=host.domain.com srv_port=80
 
     DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
 
@@ -111,6 +112,9 @@ primary name for a host should be unique in all cases I'm aware of
     $add_srv_weight = '';
     $add_srv_port = '';
 
+    // If the name we were passed has a leading . in it then remove the dot.
+    $options['name'] = preg_replace("/^\./", '', $options['name']);
+
     // Determine the real hostname and domain name to be used --
     // i.e. add .something.com, or find the part of the name provided
     // that will be used as the "domain".  This means testing many
@@ -130,6 +134,11 @@ primary name for a host should be unique in all cases I'm aware of
         $self['error'] = "ERROR => Invalid host name ({$options['name']})!";
         return(array(4, $self['error'] . "\n"));
     }
+
+    // If the hostname we came up with and the domain name are the same, then assume this is
+    // meant to be a domain specific record, like A, MX, NS type records.
+    if ($hostname == $domain['name']) $hostname = '';
+
     // Debugging
     printmsg("DEBUG => Using hostname: {$hostname} Domainname: {$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
 
@@ -169,7 +178,10 @@ primary name for a host should be unique in all cases I'm aware of
         // A records should not have parent dns records
         $add_dnsid = '';
 
-        $info_msg = "{$hostname}.{$domain['fqdn']} -> " . ip_mangle($interface['ip_addr'],'dotted');
+        // Dont print a dot unless hostname has a value
+        if ($hostname) $hostname = $hostname.'.';
+
+        $info_msg = "{$hostname}{$domain['fqdn']} -> " . ip_mangle($interface['ip_addr'],'dotted');
 
         // Just to be paranoid, I'm doing the ptr checks here as well if addptr is set
         if ($options['addptr']) {
@@ -256,7 +268,10 @@ but you still want to reverse lookup all the other interfaces to know they are o
         $add_interfaceid = $interface['id'];
         $add_dnsid = $arecord['id'];
 
-        $info_msg = "{$ipflip}.in-addr.arpa -> {$hostname}.{$domain['fqdn']}";
+        // Dont print a dot unless hostname has a value
+        if ($hostname) $hostname = $hostname.'.';
+
+        $info_msg = "{$ipflip}.in-addr.arpa -> {$hostname}{$domain['fqdn']}";
 
     }
 
@@ -340,7 +355,10 @@ complex DNS messes for themselves.
         $add_interfaceid = $pointsto_record['interface_id'];
         $add_dnsid = $pointsto_record['id'];
 
-        $info_msg = "{$hostname}.{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+        // Dont print a dot unless hostname has a value
+        if ($hostname) $hostname = $hostname.'.';
+
+        $info_msg = "{$hostname}{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
 
     }
 
@@ -392,12 +410,12 @@ complex DNS messes for themselves.
         }
 
 
-        $add_name = $options['name'];
+        $add_name = ''; //$options['name'];
         $add_domainid = $domain['id'];
         $add_interfaceid = $pointsto_record['interface_id'];
         $add_dnsid = $pointsto_record['id'];
 
-        $info_msg = "{$add_name} -> {$phostname}.{$pdomain['fqdn']}";
+        $info_msg = "{$options['name']} -> {$phostname}.{$pdomain['fqdn']}";
 
     }
     // Process MX record types
@@ -465,7 +483,10 @@ complex DNS messes for themselves.
         $add_dnsid = $pointsto_record['id'];
         $add_mx_preference = $options['mx_preference'];
 
-        $info_msg = "{$hostname}.{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+        // Dont print a dot unless hostname has a value
+        if ($hostname) $hostname = $hostname.'.';
+
+        $info_msg = "{$hostname}{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
 
 
     }
@@ -546,7 +567,10 @@ complex DNS messes for themselves.
         $add_srv_weight = $options['srv_weight'];
         $add_srv_port = $options['srv_port'];
 
-        $info_msg = "{$add_name}.{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+        // Dont print a dot unless hostname has a value
+        if ($add_name) $add_name = $add_name.'.';
+
+        $info_msg = "{$add_name}{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
 
     }
 
@@ -585,7 +609,10 @@ complex DNS messes for themselves.
         $add_dnsid = '';
         $add_txt = $options['txt'];
 
-        $info_msg = "{$hostname}.{$domain['fqdn']}";
+        // Dont print a dot unless hostname has a value
+        if ($hostname) $hostname = $hostname.'.';
+
+        $info_msg = "{$hostname}{$domain['fqdn']}";
 
     }
     // If it is not a recognized record type, bail out!
@@ -770,6 +797,8 @@ EOM
     // Find the dns record we're modifying
     //
 
+    // If the name we were passed has a leading . in it then remove the dot.
+    $options['set_name'] = preg_replace("/^\./", '', $options['set_name']);
 
     // Find the DNS record from $options['name']
     list($status, $rows, $dns) = ona_find_dns_record($options['name']);
@@ -838,6 +867,11 @@ EOM
             $self['error'] = "ERROR => Invalid host name ({$options['set_name']})!";
             return(array(4, $self['error'] . "\n"));
         }
+
+        // If the hostname we came up with and the domain name are the same, then assume this is
+        // meant to be a domain specific record, like A, MX, NS type records.
+        if ($hostname == $domain['name']) $hostname = '';
+
         // Debugging
         printmsg("DEBUG => Using hostname: {$hostname}.{$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
 
@@ -1110,6 +1144,9 @@ need to do a better delete of DNS records when deleting a host.. currently its a
 
 */
 
+    // If the name we were passed has a leading . in it then remove the dot.
+    $options['name'] = preg_replace("/^\./", '', $options['name']);
+
     // FIXME: MP Fix this to use a find_dns_record function  ID only for now
     // Find the DNS record from $options['name']
     list($status, $rows, $dns) = ona_find_dns_record($options['name'], $options['type']);
@@ -1306,7 +1343,9 @@ EOM
         ));
     }
 
-// FIXME: MP This function is not at all working.. fix it up later.
+
+    // If the name we were passed has a leading . in it then remove the dot.
+    $options['name'] = preg_replace("/^\./", '', $options['name']);
 
     // Find the DNS record from $options['name']
     list($status, $rows, $record) = ona_find_dns_record($options['name']);
@@ -1345,7 +1384,7 @@ EOM
         } while ($i < $rows);
 
 
-// FIXME: MP like aliases below, show list of dns records associated
+// FIXME: MP display other types of records like NS,MX,SRV etc etc
 
 
     }
