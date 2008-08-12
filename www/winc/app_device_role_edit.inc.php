@@ -165,7 +165,7 @@ function ws_save($window_name, $form='') {
                 printmsg($self['error'], 0);
             }
             else {
-                // Get the infobit record after updating (logging)
+                // Get the record after updating (logging)
                 list($status, $rows, $new_role) = ona_get_role_record(array('id' => $form['id']));
     
                 // Return the success notice

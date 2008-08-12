@@ -486,7 +486,7 @@ function host_del($options="") {
     printmsg("DEBUG => host_del({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.16';
+    $version = '1.17';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -502,7 +502,7 @@ function host_del($options="") {
 <<<EOM
 
 host_del-v{$version}
-Deletes a host, up to one interface, and all aliases from the database
+Deletes a host, and all related records from the database
 
   Synopsis: host_del [KEY=VALUE] ...
 
@@ -550,7 +550,7 @@ EOM
         //   Delete Interfaces
         //   Delete interface cluster entries
         //   Delete dns records
-        //   Delete Infobits
+        //   Delete custom attributes
         //   Delete DHCP entries
         //   Delete device record if it is the last host associated with it.
         //
@@ -642,23 +642,6 @@ EOM
 
 
 
-        // FIXME: MP this needs some work.. deleting DNS records is much more complicated than this.!
-// I think this works due to each interface being deleted using interface_del module
-        // Delete DNS record
-//         list($status, $rows, $records) = db_get_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
-//         // do the delete
-//         list($status, $rows) = db_delete_records($onadb, 'dns', array('id' => $host['primary_dns_id']));
-//         if ($status) {
-//             $self['error'] = "ERROR => host_del() DNS record delete SQL Query failed: {$self['error']}";
-//             printmsg($self['error'],0);
-//             return(array(5, $add_to_error . $self['error'] . "\n"));
-//         }
-//         // log deletions
-//         foreach ($records as $record) {
-//             printmsg("INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}",0);
-//             $add_to_error .= "INFO => DNS record DELETED: {$record['id']} from {$host['fqdn']}\n";
-//         }
-
         foreach ($interfaces as $record) {
             // Run the module
             list($status, $output) = run_module('interface_del', array('interface' => $record['id'], 'commit' => 'on', 'delete_by_module' => 'Y'));
@@ -698,28 +681,33 @@ EOM
 
 
 
-        // Delete infobit entries
+        // Delete custom attribute entries
         // get list for logging
-/*PK        list($status, $rows, $records) = db_get_records($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
+        list($status, $rows, $records) = db_get_records($onadb, 'custom_attributes', array('table_name_ref' => 'hosts', 'table_id_ref' => $host['id']));
         $log=array(); $i=0;
         foreach ($records as $record) {
-            list($status, $rows, $infobit) = ona_get_host_infobit_record(array('ID' => $record['ID']));
-            $log[$i]= "INFO => Infobit DELETED: {$infobit['NAME']} ({$infobit['VALUE']}) from {$host['fqdn']}";
+            list($status, $rows, $ca) = ona_get_custom_attribute_record(array('id' => $record['id']));
+            $log[$i]= "INFO => Custom Attribute DELETED: {$ca['name']} ({$ca['value']}) from {$host['fqdn']}";
             $i++;
         }
-        // do the delete
-        list($status, $rows) = db_delete_records($onadb, 'HOST_INFOBITS_B', array('host_id' => $host['id']));
+
+        //do the delete
+        list($status, $rows) = db_delete_records($onadb, 'custom_attributes', array('table_name_ref' => 'hosts', 'table_id_ref' => $host['id']));
         if ($status) {
-            $self['error'] = "ERROR => host_del() infobit delete SQL Query failed: {$self['error']}";
+            $self['error'] = "ERROR => host_del() Custom attribute delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0);
             return(array(5, $add_to_error . $self['error'] . "\n"));
         }
-        // log deletions
+
+        //log deletions
         foreach($log as $log_msg) {
             printmsg($log_msg,0);
             $add_to_error .= $log_msg . "\n";
         }
-*/
+
+
+
+
         // Delete DHCP options
         // get list for logging
         list($status, $rows, $records) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => $host['id']));
@@ -762,11 +750,11 @@ EOM
     //
 
     // SUMMARY:
-    //   Display a warning if it has an entry in SERVER_B
+    //   Display a warning if it is a server
     //   Display a warning if it has config text entries
     //   Display Interfaces
-    //   Display Aliases
-    //   Display Infobits
+    //   Display dns records
+    //   Display custom attributes
     //   Display DHCP entries
 
     // Otherwise just display the host record for the host we would have deleted
@@ -834,6 +822,13 @@ EOM
         $text .= "  {$int['ip_addr_text']}\n";
     }
 
+    // Display associated custom attributes
+    list($status, $rows, $records) = db_get_records($onadb, 'custom_attributes', array('table_name_ref' => 'hosts', 'table_id_ref' => $host['id']));
+    if ($rows) $text .= "\nASSOCIATED CUSTOM ATTRIBUTE RECORDS ({$rows}):\n";
+    foreach ($records as $record) {
+        list($status, $rows, $ca) = ona_get_custom_attribute_record(array('id' => $record['id']));
+        $text .= "  {$ca['name']} => {$ca['value']}\n";
+    }
 
     // Display associated DHCP entries
     list($status, $rows, $records) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => $host['id']));

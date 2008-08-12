@@ -58,7 +58,6 @@ EOL;
 
 
     // Build tag type list
-    $infobit_type_list = '<option value="">&nbsp;</option>\n';
     while ($tag = current($type)) {
         $selected = "";
         // If this entry matches the record you are editing, set it to selected

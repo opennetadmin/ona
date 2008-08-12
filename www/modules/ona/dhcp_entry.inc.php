@@ -301,7 +301,7 @@ EOM
 
         list($status, $tmp_rows, $entry) = ona_get_dhcp_option_entry_record(array('id' => $options['id']));
 
-        // Test to see that we were able to find the specified host_infobit record
+        // Test to see that we were able to find the specified record
         if (!$entry['id']) {
             printmsg("DEBUG => Unable to find the DHCP entry record using ID {$options['id']}!",3);
             $self['error'] = "ERROR => Unable to find the DHCP entry record using ID {$options['id']}!";

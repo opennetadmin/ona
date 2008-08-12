@@ -661,7 +661,7 @@ function subnet_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.05';
 
     printmsg('DEBUG => subnet_del('.$options.') called', 3);
 
@@ -722,6 +722,7 @@ EOM
         //   Delete any interfaces belonging to hosts with more than one interface
         //   Delete any hosts (and all their associated info) that have only one interface
         //   Delete subnet Record
+        //   Delete custom attributes
         //
         //   FIXME: display a warning if there are no more subnets for the associated location?
         //   FIXME: display a warning if there are no more subnets that a dhcp server is serving dhcp for?
@@ -746,6 +747,32 @@ EOM
             $self['error'] = "ERROR => DHCP parameter delete failed: {$self['error']}";
             return(array(5, $self['error'] . "\n"));
         }
+
+
+        // Delete custom attribute entries
+        // get list for logging
+        list($status, $rows, $records) = db_get_records($onadb, 'custom_attributes', array('table_name_ref' => 'subnets', 'table_id_ref' => $subnet['id']));
+        $log=array(); $i=0;
+        foreach ($records as $record) {
+            list($status, $rows, $ca) = ona_get_custom_attribute_record(array('id' => $record['id']));
+            $log[$i]= "INFO => Custom Attribute DELETED: {$ca['name']} ({$ca['value']}) from {$subnet['name']}";
+            $i++;
+        }
+
+        //do the delete
+        list($status, $rows) = db_delete_records($onadb, 'custom_attributes', array('table_name_ref' => 'subnets', 'table_id_ref' => $subnet['id']));
+        if ($status) {
+            $self['error'] = "ERROR => subnet_del() Custom attribute delete SQL Query failed: {$self['error']}";
+            printmsg($self['error'],0);
+            return(array(5, $self['error'] . "\n"));
+        }
+
+        //log deletions
+        foreach($log as $log_msg) {
+            printmsg($log_msg,0);
+            //$add_to_error .= $log_msg . "\n";
+        }
+
 
 
         // Delete associated host / interface records that need to be deleted
@@ -789,7 +816,7 @@ EOM
         // Return the success notice
         $ip = ip_mangle($subnet['ip_addr'], 'dotted');
         $cidr = ip_mangle($subnet['ip_mask'], 'cidr');
-        $self['error'] = "NOTICE => Subnet DELETED: {$subnet['name']} IP: {$ip}/{$cidr}";
+        $self['error'] = "INFO => Subnet DELETED: {$subnet['name']} IP: {$ip}/{$cidr}";
         printmsg($self['error'], 0);
         return(array(0, $self['error'] . "\n"));
     }
@@ -805,6 +832,7 @@ EOM
     //   Display any DHCP parameters associated with this subnet
     //   Display subnet Record
     //   Display Host records (and all their sub-records)
+    //   Display custom attributes 
 
 
     // Otherwise just display the host record for the host we would have deleted
@@ -839,6 +867,13 @@ EOM
         $text .= "  {$dhcp['display_name']} => {$dhcp['value']}\n";
     }
 
+    // Display associated custom attributes
+    list($status, $rows, $records) = db_get_records($onadb, 'custom_attributes', array('table_name_ref' => 'subnets', 'table_id_ref' => $subnet['id']));
+    if ($rows) $text .= "\nASSOCIATED CUSTOM ATTRIBUTE RECORDS ({$rows}):\n";
+    foreach ($records as $record) {
+        list($status, $rows, $ca) = ona_get_custom_attribute_record(array('id' => $record['id']));
+        $text .= "  {$ca['name']} => {$ca['value']}\n";
+    }
 
     // Display associated host  / interface records that would be deleted
     // BUSINESS RULE: We delete hosts that have only one interface (and it's on this subnet)

@@ -1172,19 +1172,6 @@ function ona_get_custom_attribute_record($array) {
     return(array($status, $rows, $record));
 }
 
-// (PK) FIXME: need to get rid of all mentions of 'infobit'!
-function ona_get_host_infobit_record($array) {
-    list($status, $rows, $record) = ona_get_record($array, 'custom_attributes');
-
-    // Lets be nice and return a little associated info
-    list($status_tmp, $rows_tmp, $record_tmp) = ona_get_custom_attribute_record(array('id' => $record['custom_attributes']));
-    $status += $status_tmp;
-    $record['VALUE'] = $record_tmp['VALUE'];
-    $record['NAME']  = $record_tmp['name'];
-
-    return(array($status, $rows, $record));
-}
-
 function ona_get_model_record($array) {
     list($status, $rows, $record) = ona_get_record($array, 'models');
 
@@ -2239,7 +2226,7 @@ function ona_find_subnet_type($search="") {
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: ona_find_infobit(string $search)
+//  Function: ona_find_custom_attribute(string $search)
 //
 //  Input:
 //    $search = A string or ID that can uniquly identify a record
@@ -2255,7 +2242,7 @@ function ona_find_subnet_type($search="") {
 //      3. An array of a record from the custom_attributes table where
 //         $search matchs.
 //
-//  Example: list($status, $rows, $net_type) = ona_find_infobit('Status (Testing)');
+//  Example: list($status, $rows, $net_type) = ona_find_custom_attribute('Status (Testing)');
 ///////////////////////////////////////////////////////////////////////
 function ona_find_custom_attribute($search="") {
     global $self;
@@ -2271,12 +2258,12 @@ function ona_find_custom_attribute($search="") {
         list($status, $rows, $record) = ona_get_custom_attribute_record(array($field => $search));
         // If we got it, return it
         if ($status == 0 and $rows == 1) {
-            printmsg("DEBUG => ona_find_infobit() found infobit record by $field", 2);
+            printmsg("DEBUG => ona_find_custom_attribute() found custom attribute record by $field", 2);
             return(array(0, $rows, $record));
         }
     }
 
-    // Split the infobit description based on the () enclosed infobit type
+    // Split the description based on the () enclosed type
     list($ca_type, $ca_value) = preg_split("/\(|\)/",$search);
 
     printmsg("DEBUG => ona_find_custom_attribute(): Split is {$ca_type},{$ca_value}", 3);
@@ -2287,16 +2274,16 @@ function ona_find_custom_attribute($search="") {
 
     printmsg("DEBUG => ona_find_custom_attribute(): Found {$rows} custom attribute type record", 3);
 
-    // Find the infobit ID using the type id and value
-    list($status, $rows, $record) = ona_get_custom_attribute_record(array('VALUE' => $infobit_value,'INFOBIT_TYPE_ID' => $type['ID']));
+    // Find the ID using the type id and value
+    list($status, $rows, $record) = ona_get_custom_attribute_record(array('value' => $ca_value,'custom_attribute_type_id' => $type['id']));
     // If we got it, return it
     if ($status == 0 and $rows == 1) {
-        printmsg("DEBUG => ona_find_infobit(): Found infobit record by its full name", 2);
+        printmsg("DEBUG => ona_find_custom_attribute(): Found custom attribute record by its full name", 2);
         return(array(0, $rows, $record));
     }
 
     // We didn't find it - return and error code, 0 matches, and an empty record.
-    $self['error'] = "NOTICE => couldn't find a unique infobit record with specified search criteria";
+    $self['error'] = "NOTICE => couldn't find a unique custom attribute record with specified search criteria";
     printmsg($self['error'], 2);
     return(array(2, 0, array()));
 }
@@ -2360,7 +2347,7 @@ function ona_find_dhcp_option($search="") {
     }
 
     // We didn't find it - return and error code, 0 matches, and an empty record.
-    $self['error'] = "NOTICE => couldn't find a unique infobit record with specified search criteria";
+    $self['error'] = "NOTICE => couldn't find a unique DHCP option record with specified search criteria";
     printmsg($self['error'], 2);
     return(array(2, 0, array()));
 }
