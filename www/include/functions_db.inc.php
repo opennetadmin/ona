@@ -1501,7 +1501,12 @@ function ona_find_host($search="") {
     // never say never.  I'll leave this issue unfixed for now
 
     // Find the domain name piece of $search
-    list($status, $rows, $domain) = ona_find_domain($search);
+    list($status, $rows, $domain) = ona_find_domain($search,0);
+    if (!isset($domain['id'])) {
+        printmsg("ERROR => Unable to determine domain name portion of ({$search})!", 3);
+        $self['error'] = "ERROR => Unable to determine domain name portion of ({$search})!";
+        return(array(3, $self['error'] . "\n"));
+    }
     printmsg("DEBUG => ona_find_domain({$search}) returned: {$domain['fqdn']}", 3);
 
     // Now find what the host part of $search is
@@ -1550,7 +1555,7 @@ function ona_find_host($search="") {
 //
 //  Example: list($status, $rows, $domain) = ona_find_domain('myhost.mydomain.com',1);
 ///////////////////////////////////////////////////////////////////////
-function ona_find_domain($fqdn="", $returndefault=1) {
+function ona_find_domain($fqdn="", $returndefault=0) {
     global $conf;
     $status=1;
     $fqdn = strtolower($fqdn);
@@ -1597,18 +1602,18 @@ function ona_find_domain($fqdn="", $returndefault=1) {
         }
     }
 
-
-    if ($returndefault=1) {
-        // If we don't have a domain yet, lets assume $fqdn is a basic hostname, and return the default domain
-        if (!array_key_exists('id', $domain)) {
-            printmsg("DEBUG => ona_find_domain({$fqdn}) Using system default domain: {$conf['dns_defaultdomain']}", 3);
-            list($status, $rows, $record) = ona_get_domain_record(array('name' => $conf['dns_defaultdomain']));
-            if($rows)
-                $domain = $record;
-        }
-        // Set status to 0 (ok) since we are returning something
-        $status=0;
-    }
+// FIXME: MP removed since it caused problems when passing in things like rtr.example.comasdl  you would get rtrasdl.example.com back
+//     if ($returndefault=1) {
+//         // If we don't have a domain yet, lets assume $fqdn is a basic hostname, and return the default domain
+//         if (!array_key_exists('id', $domain)) {
+//             printmsg("DEBUG => ona_find_domain({$fqdn}) Using system default domain: {$conf['dns_defaultdomain']}", 3);
+//             list($status, $rows, $record) = ona_get_domain_record(array('name' => $conf['dns_defaultdomain']));
+//             if($rows)
+//                 $domain = $record;
+//         }
+//         // Set status to 0 (ok) since we are returning something
+//         $status=0;
+//     }
 
     return(array($status, $rows, $domain));
 }

@@ -112,16 +112,23 @@ primary name for a host should be unique in all cases I'm aware of
     $add_srv_weight = '';
     $add_srv_port = '';
 
-    // If the name we were passed has a leading . in it then remove the dot.
+    // If the name we were passed has a leading or trailing . in it then remove the dot.
     $options['name'] = preg_replace("/^\./", '', $options['name']);
+    $options['name'] = preg_replace("/\.$/", '', $options['name']);
 
     // Determine the real hostname and domain name to be used --
     // i.e. add .something.com, or find the part of the name provided
     // that will be used as the "domain".  This means testing many
     // domain names against the DB to see what's valid.
     //
-    // Find the domain name piece of $search
-    list($status, $rows, $domain) = ona_find_domain($options['name']);
+    // Find the domain name piece of $search.
+    list($status, $rows, $domain) = ona_find_domain($options['name'],0);
+    if (!isset($domain['id'])) {
+        printmsg("ERROR => Unable to determine domain name portion of ({$options['name']})!", 3);
+        $self['error'] = "ERROR => Unable to determine domain name portion of ({$options['name']})!";
+        return(array(3, $self['error'] . "\n"));
+    }
+
     printmsg("DEBUG => ona_find_domain({$options['name']}) returned: {$domain['fqdn']}", 3);
 
     // Now find what the host part of $search is
@@ -196,6 +203,7 @@ primary name for a host should be unique in all cases I'm aware of
 
     }
 
+// I think I fixed this.. more testing needed.. no GUI option yet either.
     // MP: FIXME: there is an issue that you cant have just a ptr record with no A record.  so you cant add something like:
 /*
 router.example.com  A  10.1.1.1
@@ -241,7 +249,7 @@ but you still want to reverse lookup all the other interfaces to know they are o
             // MP: since there could be multiple A records, I'm going to fail out if there is not JUST ONE A record. 
             // this is limiting in a way but allows cleaner data.
             list($status, $rows, $arecord) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'type' => 'A'));
-            if (($rows > 1) or (!$rows)) {
+            if (($rows > 1)) {
                 printmsg("ERROR => Unable to find a SINGLE DNS A record to point PTR entry to! In this case, you are only allowed to do this if there is one A record using this name",3);
                 $self['error'] = "ERROR => Unable to find a SINGLE DNS A record to point PTR entry to! In this case, you are only allowed to do this if there is one A record using this name";
             }
@@ -854,7 +862,12 @@ EOM
     if ($options['set_name']) {
 
         // Find the domain name piece of $search
-        list($status, $rows, $domain) = ona_find_domain($options['set_name']);
+        list($status, $rows, $domain) = ona_find_domain($options['set_name'],0);
+        if (!isset($domain['id'])) {
+            printmsg("ERROR => Unable to determine domain name portion of ({$options['set_name']})!", 3);
+            $self['error'] = "ERROR => Unable to determine domain name portion of ({$options['set_name']})!";
+            return(array(3, $self['error'] . "\n"));
+        }
         printmsg("DEBUG => ona_find_domain({$options['set_name']}) returned: {$domain['fqdn']} for new name.", 3);
 
         // Now find what the host part of $search is

@@ -538,7 +538,6 @@ function ws_save($window_name, $form='') {
     // we need to do a little validation here to make sure things
     // have a good chance of working!
 
-
     // If the name we were passed has a leading . in it then remove the dot.
     $form['set_name'] = preg_replace("/^\./", '', $form['set_name']);
 
@@ -569,24 +568,24 @@ function ws_save($window_name, $form='') {
         $module = 'add';
 
         // options
-        $form['name'] = $form['set_name'] . '.' . $form['set_domain'];
-        $form['type'] = $form['set_type'];
-        $form['notes'] = $form['set_notes'];
-        $form['ip'] = $form['set_ip'];
-        $form['ttl'] = $form['set_ttl'];
+        $form['name'] = $form['set_name'] . '.' . $form['set_domain']; unset($form['set_name']); unset($form['set_domain']);
+        $form['type'] = $form['set_type']; unset($form['set_type']);
+        $form['notes'] = $form['set_notes']; unset($form['set_notes']);
+        $form['ip'] = $form['set_ip']; unset($form['set_ip']);
+        $form['ttl'] = $form['set_ttl']; unset($form['set_ttl']);
         $form['addptr'] = $form['set_addptr'];
 
         // if this is a cname. then set the pointsto option
-        if ($form['set_type'] == 'CNAME' or $form['set_type'] == 'MX' or $form['set_type'] == 'NS' or $form['set_type'] == 'SRV') $form['pointsto'] = $form['set_pointsto'];
-        if ($form['set_type'] == 'MX') $form['mx_preference'] = $form['set_mx_preference'];
-        if ($form['set_type'] == 'TXT') $form['txt'] = $form['set_txt'];
+        if ($form['type'] == 'CNAME' or $form['type'] == 'MX' or $form['type'] == 'NS' or $form['type'] == 'SRV') $form['pointsto'] = $form['set_pointsto'];
+        if ($form['type'] == 'MX')  $form['mx_preference'] = $form['set_mx_preference'];
+        if ($form['type'] == 'TXT') $form['txt'] = $form['set_txt'];
 
-        if ($form['set_type'] == 'SRV') $form['srv_pri'] = $form['set_srv_pri'];
-        if ($form['set_type'] == 'SRV') $form['srv_weight'] = $form['set_srv_weight'];
-        if ($form['set_type'] == 'SRV') $form['srv_port'] = $form['set_srv_port'];
+        if ($form['type'] == 'SRV') $form['srv_pri'] = $form['set_srv_pri'];
+        if ($form['type'] == 'SRV') $form['srv_weight'] = $form['set_srv_weight'];
+        if ($form['type'] == 'SRV') $form['srv_port'] = $form['set_srv_port'];
 
         // If it is an NS record, blank the name out
-        if ($form['set_type'] == 'NS') $form['name'] = $form['set_domain'];
+        //if ($form['type'] == 'NS') $form['name'] = $form['set_domain'];
 
         // If there's no "refresh" javascript, add a command to view the new dns record
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['name']}\', \'display\')');";

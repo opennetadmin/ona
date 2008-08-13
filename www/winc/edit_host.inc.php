@@ -465,11 +465,11 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
     // Validate domain is valid
-    list($status, $rows, $domain) = ona_find_domain($form['set_domain']);
-    if ($status or !$rows) {
-        $response->addScript("alert('Invalid domain!');");
-        return($response->getXML());
-    }
+//     list($status, $rows, $domain) = ona_find_domain($form['set_domain'],0);
+//     if ($status or !$rows) {
+//         $response->addScript("alert('Invalid domain!');");
+//         return($response->getXML());
+//     }
     // Make sure the IP address specified is valid
     if ($form['host'] != '.' and $form['set_ip']) {
         $form['set_ip'] = ip_mangle($form['set_ip'], 'dotted');

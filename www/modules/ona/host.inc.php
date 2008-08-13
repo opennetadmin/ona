@@ -108,9 +108,37 @@ EOM
     // that will be used as the "domain".  This means testing many
     // domain names against the DB to see what's valid.
     //
-    list($status, $rows, $host) = ona_find_host($options['host']);
+    // Find the domain name piece of $search.
+    list($status, $rows, $domain) = ona_find_domain($options['host'],0);
+    if (!isset($domain['id'])) {
+        printmsg("ERROR => Unable to determine domain name portion of ({$options['host']})!", 3);
+        $self['error'] = "ERROR => Unable to determine domain name portion of ({$options['host']})!";
+        return(array(3, $self['error'] . "\n"));
+    }
+
+    printmsg("DEBUG => ona_find_domain({$options['host']}) returned: {$domain['fqdn']}", 3);
+
+    // Now find what the host part of $search is
+    $hostname = str_replace(".{$domain['fqdn']}", '', $options['host']);
+
+    // Validate that the DNS name has only valid characters in it
+    $hostname = sanitize_hostname($hostname);
+    if (!$hostname) {
+        printmsg("ERROR => Invalid host name ({$options['host']})!", 3);
+        $self['error'] = "ERROR => Invalid host name ({$options['host']})!";
+        return(array(4, $self['error'] . "\n"));
+    }
 
 
+    // Debugging
+    printmsg("DEBUG => Using hostname: {$hostname} Domainname: {$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
+
+
+
+
+    //list($status, $rows, $host) = ona_find_host($options['host']);
+
+/*
     // Validate that the DNS name has only valid characters in it
     $host['name'] = sanitize_hostname($host['name']);
     if (!$host['name']) {
@@ -119,15 +147,15 @@ EOM
         return(array(4, $self['error'] . "\n"));
     }
     // Debugging
-    printmsg("DEBUG => Host selected: {$host['name']}.{$host['domain_fqdn']} Domain ID: {$host['domain_id']}", 3);
+    printmsg("DEBUG => Host selected: {$host['name']}.{$host['domain_fqdn']} Domain ID: {$host['domain_id']}", 3);*/
 
     // Validate that there isn't already any dns record named $host['name'] in the domain $host_domain_id.
     $h_status = $h_rows = 0;
     // does the domain $host_domain_id even exist?
-    list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $host['name'], 'domain_id' => $host['domain_id']));
+    list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id']));
     if ($d_status or $d_rows) {
-        printmsg("DEBUG => The name {$host['name']}.{$host['domain_fqdn']} is already in use, the primary name for a host should be unique!",3);
-        $self['error'] = "ERROR => Another DNS record named {$host['name']}.{$host['domain_fqdn']} is already in use, the primary name for a host should be unique!";
+        printmsg("DEBUG => The name {$hostname}.{$domain['fqdn']} is already in use, the primary name for a host should be unique!",3);
+        $self['error'] = "ERROR => Another DNS record named {$hostname}.{$domain['fqdn']} is already in use, the primary name for a host should be unique!";
         return(array(5, $self['error'] . "\n"));
     }
 
@@ -199,7 +227,7 @@ EOM
     }
 
     // Else start an output message
-    $text = "INFO => Host ADDED: {$host['name']}.{$host['domain_fqdn']}";
+    $text = "INFO => Host ADDED: {$hostname}.{$domain['fqdn']}";
     printmsg($text,0);
     $text .= "\n";
 
@@ -209,7 +237,7 @@ EOM
         // since we have no name yet, we need to use the ID of the new host as the host option for the following module calls
         $options['host'] = $id;
 
-        printmsg("DEBUG => host_add() ({$host['name']}.{$host['domain_fqdn']}) calling interface_add() ({$options['ip']})", 3);
+        printmsg("DEBUG => host_add() ({$hostname}.{$domain['fqdn']}) calling interface_add() ({$options['ip']})", 3);
         list($status, $output) = run_module('interface_add', $options);
         if ($status)
             return(array($status, $output));
@@ -221,19 +249,19 @@ EOM
         // make the dns record type A
         $options['type'] = 'A';
         // FIXME: MP I had to force the name value here.  name is comming in as the interface name.  this is nasty!
-        $options['name'] = "{$host['name']}.{$host['domain_fqdn']}";
+        $options['name'] = "{$hostname}.{$domain['fqdn']}";
         // And we will go ahead and auto add the ptr.  the user can remove it later if they dont want it.  FIXME: maybe create a checkbox on the host edit
         $options['addptr'] = '1';
 
         // Add the DNS entry with the IP address etc
-        printmsg("DEBUG => host_add() ({$host['name']}.{$host['domain_fqdn']}) calling dns_record_add() ({$options['ip']})", 3);
+        printmsg("DEBUG => host_add() ({$hostname}.{$domain['fqdn']}) calling dns_record_add() ({$options['ip']})", 3);
         list($status, $output) = run_module('dns_record_add', $options);
         if ($status)
             return(array($status, $output));
         $text .= $output;
 
         // FIXME: MP this is a temp fix until ona_find_dns_record is written
-        list($status, $rows, $dnsrecord) = ona_get_dns_record(array('name' => $host['name'], 'domain_id' => $host['domain_id'], 'interface_id' => $int['id'], 'type' => 'A'));
+        list($status, $rows, $dnsrecord) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'interface_id' => $int['id'], 'type' => 'A'));
 
 
         // Set the primary_dns_id to the dns record that was just added
