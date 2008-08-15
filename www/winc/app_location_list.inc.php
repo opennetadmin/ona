@@ -152,6 +152,7 @@ function ws_display_list($window_name, $form) {
             <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
             <td class="list-header" align="center" style="{$style['borderR']};">City</td>
             <td class="list-header" align="center" style="{$style['borderR']};">State</td>
+            <td class="list-header" align="center" style="{$style['borderR']};">Usage</td>
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
 
@@ -181,8 +182,10 @@ EOL;
     $count = $rows;
 
 
-    // Loop through and display the users
+    // Loop through and display the records
     foreach ($records as $record) {
+
+        list($status, $usage, $devs) = db_get_records($onadb, 'devices', array('location_id' => $record['id']), '' ,0);
 
         // Escape data for display in html
         foreach(array_keys($record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES);}
@@ -207,6 +210,10 @@ EOL;
 
             <td class="list-row">
                 {$record['state']}&nbsp;
+            </td>
+
+            <td class="list-row">
+                {$usage}&nbsp;
             </td>
 
             <td align="right" class="list-row" nowrap="true">
@@ -288,20 +295,29 @@ function ws_delete($window_name, $form='') {
     $response = new xajaxResponse();
     $js = '';
 
-    // Delete the record
-    list($status, $output) = run_module('location_del', array('reference' => $form['id'], 'commit' => 'Y'));
-
-    // If the module returned an error code display a popup warning
-    if ($status != 0) {
-        $js .= "alert('Delete failed');";
-        $self['error'] = "ERROR => location delete ws_save() SQL Query failed: " . $self['error'];
-        printmsg($self['error'], 0);
+    // Get a list of devices that use this device type
+    list($status, $rows, $devices) = db_get_records($onadb, 'devices', array('location_id' => $form['id']), '', 0);
+    // Check that there are no parent records using this type
+    if ($rows > 0) {
+        $js .= "alert('Delete failed: There are {$rows} devices using this location.');";
     }
     else {
-        $self['error'] = "INFO => location DELETED: {$loc['reference']} ({$loc['name']})";
-        printmsg($self['error'], 0);
-        // Refresh the current list of users.. it's changed!
-        $js .= "xajax_window_submit('$window_name', xajax.getFormValues('{$window_name}_filter_form'), 'display_list');";
+
+        // Delete the record
+        list($status, $output) = run_module('location_del', array('reference' => $form['id'], 'commit' => 'Y'));
+    
+        // If the module returned an error code display a popup warning
+        if ($status != 0) {
+            $js .= "alert('Delete failed:" . trim($self['error']) . ");";
+            $self['error'] = "ERROR => location delete ws_save() SQL Query failed: " . $self['error'];
+            printmsg($self['error'], 0);
+        }
+        else {
+            $self['error'] = "INFO => location DELETED: {$loc['reference']} ({$loc['name']})";
+            printmsg($self['error'], 0);
+            // Refresh the current list.. it's changed!
+            $js .= "xajax_window_submit('$window_name', xajax.getFormValues('{$window_name}_filter_form'), 'display_list');";
+        }
     }
 
     // Send an XML response

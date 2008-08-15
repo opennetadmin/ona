@@ -349,10 +349,10 @@ EOL;
             <!-- SRV CONTAINER -->
             <tr id="srv_container" style="display:none;">
                 <td align="right" nowrap="true">
-                    SRV
+                    Priority<br>Weight<br>Port
                 </td>
                 <td class="padding" align="left" width="100%">
-                    Priority <input
+                    <input
                         style="margin-bottom:3px;"
                         id="set_srv_pri_{$window_name}"
                         name="set_srv_pri"
@@ -362,8 +362,8 @@ EOL;
                         type="text"
                         size="5" maxlength="5"
                         onblur="updatednsinfo('{$window_name}');"
-                    /><br>
-                    Weight <input
+                    /><br />
+                    <input
                         style="margin-bottom:3px;"
                         id="set_srv_weight_{$window_name}"
                         name="set_srv_weight"
@@ -373,8 +373,8 @@ EOL;
                         type="text"
                         size="5" maxlength="5"
                         onblur="updatednsinfo('{$window_name}');"
-                    /><br>
-                    Port &nbsp;&nbsp;&nbsp;&nbsp;<input
+                    /><br />
+                    <input
                         id="set_srv_port_{$window_name}"
                         name="set_srv_port"
                         alt="SRV Port"

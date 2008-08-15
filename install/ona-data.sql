@@ -167,7 +167,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `sequences` WRITE;
 /*!40000 ALTER TABLE `sequences` DISABLE KEYS */;
-INSERT INTO `sequences` VALUES ('blocks',4),('configurations',1),('custom_attribute_types',3),('devices',14),('device_types',7),('dhcp_options',14),('dhcp_option_entries',13),('dhcp_pools',3),('dhcp_server_subnets',6),('dns',62),('dns_server_domains',8),('domains',5),('hosts',22),('interfaces',28),('manufacturers',47),('models',11),('roles',14),('subnets',22),('subnet_types',14),('vlans',1),('vlan_campuses',5);
+INSERT INTO `sequences` VALUES ('blocks',4),('configurations',1),('custom_attribute_types',3),('devices',14),('device_types',7),('dhcp_options',14),('dhcp_option_entries',13),('dhcp_pools',3),('dhcp_server_subnets',6),('dns',62),('dns_server_domains',8),('domains',5),('hosts',22),('interfaces',28),('manufacturers',47),('models',11),('roles',14),('subnets',22),('subnet_types',14),('vlans',1),('vlan_campuses',5),('locations',1);
 /*!40000 ALTER TABLE `sequences` ENABLE KEYS */;
 UNLOCK TABLES;
 

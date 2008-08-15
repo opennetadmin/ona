@@ -162,7 +162,7 @@ function location_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => location_del({$options}) called", 3);
 
@@ -211,8 +211,7 @@ EOM
     if ($rows != 0) {
         printmsg("DEBUG => The location ({$loc['reference']}) is in use by {$rows} devices(s)!",3);
         $self['error'] = "ERROR => The location ({$loc['reference']}) is in use by {$rows} devices(s)!";
-        return(array(6, $self['error'] . "\n" .
-                        "INFO  => Please dis-associate those devices from this location before deleting.\n"));
+        return(array(6, $self['error']."\n"));
     }
 
     // If "commit" is yes, delete the record
