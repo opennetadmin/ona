@@ -381,6 +381,14 @@ EOL;
 
         // Process TXT record
         if ($record['type'] == 'TXT') {
+            // some records will have an interfaceid and dnsid when associated to another dns name
+            // some will just be un associated txt records or domain only records.  Determine that here and
+            // display appropriately.  This is to ensure associated DNS records match up if the name changes
+            if ($record['interface_id'] and $record['dns_id']) {
+                list($status, $rows, $txtmain) = ona_get_dns_record(array('id' => $record['dns_id']), '');
+                $record['name'] = $txtmain['name'].'.';
+            }
+
             $data = $record['txt'];
         }
 

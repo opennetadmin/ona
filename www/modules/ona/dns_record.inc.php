@@ -144,11 +144,10 @@ primary name for a host should be unique in all cases I'm aware of
 
     // If the hostname we came up with and the domain name are the same, then assume this is
     // meant to be a domain specific record, like A, MX, NS type records.
-    if ($hostname == $domain['name']) $hostname = '';
+    if ($hostname == $domain['fqdn']) $hostname = '';
 
     // Debugging
     printmsg("DEBUG => Using hostname: {$hostname} Domainname: {$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
-
 
 
     // Process A record types
@@ -585,8 +584,28 @@ complex DNS messes for themselves.
 
     // Process TXT record types
     else if ($options['type'] == 'TXT') {
+        // There are 3 types of txt record storage
+        // 1. txt that is associated to another A record.  So when that A name gets changed so does this TXT
+        // 2. txt associated to just a domain.  I.e. no hostname only a domain_id
+        // 3. txt that is arbitrary and not associated with another A record.  has name, domain_id but no dns_id
+
         // Set interface id to zero by default, only needed if associating with an IP address
         $add_interfaceid = 0;
+
+        // Blank dnsid first.. normally it wont get set, unless it does match up to another record
+        $add_dnsid = '';
+
+        // lets try and determine the interface record using the name passed in.   Only works if we get one record back
+        // this is all to help associate if it can so that when the A record is removed, so is this TXT record.
+        if ($hostname != '') {
+            list($status, $rows, $hostint) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'A'));
+            if ($rows == 1) {
+                $add_interfaceid = $hostint['interface_id'];
+                $add_dnsid = $hostint['id'];
+            }
+        }
+
+
         // If you want to associate a TXT record with a host you need to provide an IP.. otherwise it will just be associated with the domain its in.
         // I might also check here that if there is no $hostname, then dont use the IP address value even if it is passed
         if ($options['ip']) {
@@ -601,6 +620,7 @@ complex DNS messes for themselves.
             $add_interfaceid = $interface['id'];
         }
 
+
         // Validate that there are no TXT already with this domain and host
         list($status, $rows, $record) = ona_get_dns_record(array('txt' => $options['txt'], 'name' => $hostname, 'domain_id' => $domain['id'],'type' => 'TXT'));
         if ($rows or $status) {
@@ -614,7 +634,7 @@ complex DNS messes for themselves.
         $add_name = $hostname;
         $add_domainid = $domain['id'];
 
-        $add_dnsid = '';
+
         $add_txt = $options['txt'];
 
         // Dont print a dot unless hostname has a value
@@ -841,7 +861,7 @@ EOM
     $SET = array();
 
     // Checking the IP setting first to estabilish if we are changing the IP so I can check the new combo of A/ip later
-    if ($options['set_ip']) {
+    if ($options['set_ip'] and ($options['set_ip'] != '0.0.0.0')) {
         // find the IP interface record, to ensure it is valid
         list($status, $rows, $interface) = ona_find_interface($options['set_ip']);
         if (!$rows) {
@@ -883,7 +903,7 @@ EOM
 
         // If the hostname we came up with and the domain name are the same, then assume this is
         // meant to be a domain specific record, like A, MX, NS type records.
-        if ($hostname == $domain['name']) $hostname = '';
+        if ($hostname == $domain['fqdn']) $hostname = '';
 
         // Debugging
         printmsg("DEBUG => Using hostname: {$hostname}.{$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
@@ -924,6 +944,24 @@ EOM
                 return(array(7, $self['error'] . "\n"));
             }
         }
+
+        // lets try and determine the interface record using the name passed in.   Only works if we get one record back
+        // this is all to help associate if it can so that when the A record is removed, so is this TXT record.
+        if ($dns['type'] == 'TXT') {
+            // if we are dealing with a change to a domain only.. then blank the interface id and dns_id
+            if ($hostname == '') {
+                $SET['interface_id'] = '';
+                $SET['dns_id'] = '';
+            } else {
+                list($status, $rows, $hostint) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'A'));
+                if ($rows == 1) {
+                    $SET['interface_id'] = $hostint['interface_id'];
+                    $SET['dns_id'] = $hostint['id'];
+                    $SET['name']   = $hostname;
+                }
+            }
+        }
+
 
         // If you have actually changed the name from what it was, set the new variable $SET
         if($dns['name']      != $hostname)

@@ -1672,7 +1672,7 @@ function ona_find_dns_record($search="",$type='',$int_id=0) {
 
     // If the hostname we came up with and the domain name are the same, then assume this is
     // meant to be a domain specific record, like A, MX, NS type records.
-    if ($hostname == $domain['name']) $hostname = '';
+    if ($hostname == $domain['fqdn']) $hostname = '';
 
     // Setup the search array
     $searcharray = array('domain_id' => $domain['id'], 'name' => $hostname);
