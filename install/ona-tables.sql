@@ -244,6 +244,9 @@ CREATE TABLE `dns` (
   `notes` varchar(128) NOT NULL,
   `mx_preference` tinyint(5) unsigned NOT NULL,
   `txt` varchar(255) NOT NULL,
+  `srv_pri` SMALLINT UNSIGNED NOT NULL COMMENT 'SRV priority. RFC 2782',
+  `srv_weight` SMALLINT UNSIGNED NOT NULL COMMENT 'SRV weight. RFC 2782',
+  `srv_port` SMALLINT UNSIGNED NOT NULL COMMENT 'SRV port. RFC 2782',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='IP addr comes from interface_id';
 
@@ -360,6 +363,7 @@ CREATE TABLE `interfaces` (
   `mac_addr` varchar(12) NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` varchar(255) default NULL,
+  `last_response` TIMESTAMP NULL COMMENT 'Last time this IP was communicated with',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='IP addresses and other host interface data';
 
