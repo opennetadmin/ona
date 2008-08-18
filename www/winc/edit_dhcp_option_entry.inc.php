@@ -34,6 +34,15 @@ function ws_editor($window_name, $form='') {
         $window['title'] = "Add DHCP Entry";
     }
 
+    // If they are adding a global option
+    $global_id = 'N';
+    if (is_numeric($form['global_id'])) {
+        // Setup a title description for this edit type
+        $window['edit_type'] = "Global";
+        $window['edit_type_value'] = 'This will be a Global DHCP option';
+        $global_id = 'Y';
+    }
+
     // Load the subnet record and associated info.
     if (is_numeric($form['subnet_id'])) {
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
@@ -92,6 +101,7 @@ EOL;
     <input type="hidden" name="host" value="{$host['id']}">
     <input type="hidden" name="subnet" value="{$subnet['id']}">
     <input type="hidden" name="server" value="{$server['id']}">
+    <input type="hidden" name="global" value="{$global_id}">
     <input type="hidden" name="id" value="{$dhcp_entry['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">

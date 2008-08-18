@@ -43,23 +43,29 @@ function dhcp_entry_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => dhcp_entry_add({$options}) called", 3);
 
     // Parse incoming options string to an array
     $options = parse_options($options);
 
+    // if global is set to N then get rid of it entirely from the options array
+    $options['global'] = sanitize_YN($options['global'], 'N');
+    if ($options['global'] == 'N') { unset($options['global']); }
+
     // Return the usage summary if we need to
     if ($options['help'] or !(
                                 ($options['option'] and array_key_exists('value', $options))
                                  and
                                 (
-                                    ($options['server'] and !($options['host'] or $options['subnet']))
+                                    ($options['server'] and !($options['host'] or $options['subnet'] or $options['global']))
                                     or
-                                    ($options['host'] and !($options['server'] or $options['subnet']))
+                                    ($options['host'] and !($options['server'] or $options['subnet'] or $options['global']))
                                     or
-                                    ($options['subnet'] and !($options['host'] or $options['server']))
+                                    ($options['subnet'] and !($options['host'] or $options['server'] or $options['global']))
+                                    or
+                                    ($options['global'] and !($options['host'] or $options['server'] or $options['subnet']))
                                 )
                               )
         )
@@ -78,6 +84,7 @@ Adds a dhcp entry into the database pointing to the specified identifier
     host=HOSTNAME[.DOMAIN] or ID            host identifier to add to
     subnet=NAME or ID                       subnet identifier to add to
     server=NAME[.DOMAIN] or ID              server identifier to add to
+    global                                  global entry for all subnets/hosts etc
 
   Options (both required):
     option=DHCP option                      DHCP option name
@@ -90,6 +97,13 @@ EOM
     }
 
 
+    if ($options['global'] == 'Y') {
+        $anchor = 'global';
+        $desc = 'Global DHCP option';
+        $lvl = 0;
+        $subnet['id'] = 0;
+        $host['id'] = 0;
+    }
 
     if ($options['host']) {
         // Determine the host is valid
@@ -165,7 +179,7 @@ EOM
 
 
     // Make sure this isn't a duplicate
-    $search = array('dhcp_option_id' => $type['id']);
+    $search = array('dhcp_option_id' => $type['id'], 'host_id' => 0, 'subnet_id' => 0);
     if ($host['id']) $search['host_id'] = $host['id'];
     if ($subnet['id']) $search['subnet_id'] = $subnet['id'];
     if ($server['id']) $search['server_id'] = $server['id'];
@@ -429,7 +443,7 @@ function dhcp_entry_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => dhcp_entry_modify({$options}) called", 3);
 
@@ -545,7 +559,7 @@ EOM
 
         // Make sure this isn't a duplicate
         // TODO: this code seems a bit suspect of being nasty.. possibly fix it up
-        $search = array('dhcp_option_id' => $type['id']);
+        $search = array('dhcp_option_id' => $type['id'], 'host_id' => 0, 'subnet_id' => 0);
         if ($host['id']) $search['host_id'] = $host['id'];
         if ($subnet['id']) $search['subnet_id'] = $subnet['id'];
         if ($server['id']) $search['server_id'] = $server['id'];

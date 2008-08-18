@@ -45,6 +45,11 @@ function ws_display($window_name, $form='') {
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
 
 
+    // extra stuff to pass to ws_plugins
+    $extravars['refresh']=$refresh;
+    $extravars['window_name']=$window_name;
+
+
     $style['content_box'] = <<<EOL
         margin: 10px 20px;
         padding: 2px 4px;
@@ -96,101 +101,7 @@ EOL;
 
         <!-- START OF SECOND COLUMN OF SMALL BOXES -->
         <td valign="top" style="padding-right: 15px;">
-EOL;
 
-// FIXME:  MP.. well this is a nice thing to have but its off for now
-//         The reason is that there is no unique server table so I cant associate these records with the host_id because
-//         it would conflict with the existing host dhcp  entries.  maybe another field indicating it is server related???
-//
-//
-//     // DHCP ENTRIES BOX
-//     $html .= <<<EOL
-//             <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-//
-//                 <!-- LABEL -->
-//                 <tr><td colspan="2" nowrap="true" style="{$style['label_box']}">DHCP entries</td></tr>
-// EOL;
-//
-//
-//     list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => $record['id']), '');
-//     if ($rows) {
-//         foreach ($dhcp_entries as $entry) {
-//             list($status, $rows, $dhcp_type) = ona_get_dhcp_option_entry_record(array('id' => $entry['id']));
-//             foreach(array_keys($dhcp_type) as $key) { $dhcp_type[$key] = htmlentities($dhcp_type[$key], ENT_QUOTES); }
-//
-//             $html .= <<<EOL
-//                 <tr onMouseOver="this.className='row-highlight';"
-//                     onMouseOut="this.className='row-normal';">
-//
-//                     <td align="left" nowrap="true">
-//                         {$dhcp_type['display_name']}&nbsp;&#061;&#062;&nbsp;{$dhcp_type['value']}&nbsp;
-//                     </td>
-//                     <td align="right">
-//                         <form id="form_dhcp_entry_{$entry['id']}"
-//                             ><input type="hidden" name="id" value="{$entry['id']}"
-//                             ><input type="hidden" name="server_id" value="{$record['id']}"
-//                             ><input type="hidden" name="js" value="{$refresh}"
-//                         ></form>
-// EOL;
-//             if (auth('advanced',$debug_val)) {
-//                 $html .= <<<EOL
-//                         <a title="Edit DHCP Entry. ID: {$dhcp_type['id']}"
-//                            class="act"
-//                            onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_{$entry['id']}'), 'editor');"
-//                         ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
-//
-//                         <a title="Delete DHCP Entry. ID: {$dhcp_type['id']}"
-//                            class="act"
-//                            onClick="var doit=confirm('Are you sure you want to delete this DHCP entry?');
-//                                     if (doit == true)
-//                                         xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_{$entry['id']}'), 'delete');"
-//                         ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
-// EOL;
-//             }
-//             $html .= <<<EOL
-//                     </td>
-//                 </tr>
-//
-// EOL;
-//         }
-//     }
-//
-//     if (auth('advanced',$debug_val)) {
-//         $html .= <<<EOL
-//                 <tr>
-//                     <td colspan="2" align="left" valign="middle" nowrap="true" class="act-box">
-//
-//                         <form id="form_dhcp_entry_add_{$record['id']}"
-//                             ><input type="hidden" name="server_id" value="{$record['id']}"
-//                             ><input type="hidden" name="js" value="{$refresh}"
-//                         ></form>
-//
-//                         <a title="Add DHCP Entry"
-//                            class="act"
-//                            onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_add_{$record['id']}'), 'editor');"
-//                         ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-//
-//                         <a title="Add DHCP Entry"
-//                            class="act"
-//                            onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_add_{$record['id']}'), 'editor');"
-//                         >Add DHCP Entry</a>&nbsp;
-//                     </td>
-//                 </tr>
-// EOL;
-//     }
-//
-//     $html .= "            </table>";
-//
-//     // END DHCP ENTRIES LIST
-
-
-
-    $html .= <<<EOL
-        <!-- END OF SECOND COLUMN OF SMALL BOXES -->
-        </td>
-
-        <!-- START OF THIRD COLUMN OF SMALL BOXES -->
-        <td valign="top" style="padding-right: 15px;">
 EOL;
 
 
@@ -209,9 +120,7 @@ EOL;
 
         foreach ($failover_groups as $failover) {
             // Get DNS name for primary and secondary servers
-         //   list($status, $rows, $fail_pri_server) = ona_get_server_record(array('ID' => $failover['PRIMARY_SERVER_ID']));
             list($status, $rows, $fail_pri_host)   = ona_get_host_record(array('id' => $failover['primary_server_id']));
-         //   list($status, $rows, $fail_sec_server) = ona_get_server_record(array('ID' => $failover['SECONDARY_SERVER_ID']));
             list($status, $rows, $fail_sec_host)   = ona_get_host_record(array('id' => $failover['secondary_server_id']));
 
 
@@ -232,6 +141,17 @@ EOL;
     }
     // END FAILOVER GROUP INFO BOX
 
+    $html .= <<<EOL
+        <!-- END OF SECOND COLUMN OF SMALL BOXES -->
+        </td>
+
+        <!-- START OF THRID COLUMN OF SMALL BOXES -->
+        <td valign="top" style="padding-right: 15px;">
+
+EOL;
+    // Start displaying all the ws plugins
+    $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
 
     $html .= <<<EOL
         </td>
@@ -240,8 +160,6 @@ EOL;
     </div>
     <!-- END OF TOP SECTION -->
 EOL;
-
-
 
 
 
