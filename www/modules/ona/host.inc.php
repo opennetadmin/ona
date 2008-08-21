@@ -25,7 +25,7 @@ function host_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     printmsg("DEBUG => host_add({$options}) called", 3);
 
@@ -33,7 +33,7 @@ function host_add($options="") {
     $options = parse_options($options);
 
     // Return the usage summary if we need to
-    if ($options['help'] or !($options['host'] and $options['type']) ) {
+    if ($options['help'] or !($options['host'] and $options['type'] and $options['ip']) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
         $self['error'] = 'ERROR => Insufficient parameters';
         return(array(1,
@@ -47,13 +47,13 @@ Add a new host
   Required:
     host=NAME[.DOMAIN]        hostname for new DNS record
     type=TYPE or ID           device/model type or ID
+    ip=ADDRESS                ip address (numeric or dotted)
 
   Optional:
     notes=NOTES               textual notes
     location=REF              reference of location
 
   Optional, add an interface too:
-    ip=ADDRESS                ip address (numeric or dotted)
     mac=ADDRESS               mac address (most formats are ok)
     name=NAME                 interface name (i.e. "FastEthernet0/1.100")
     description=TEXT          brief description of the interface
@@ -64,14 +64,12 @@ EOM
     }
 
     // Validate that there isn't already another interface with the same IP address
-    if ($options['ip']) {
-        list($status, $rows, $interface) = ona_get_interface_record(array('ip_addr' => $options['ip']));
-        if ($rows) {
-            printmsg("DEBUG => host_add() IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!",3);
-            $self['error'] = "ERROR => host_add() IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!";
-            return(array(4, $self['error'] . "\n" .
-                            "INFO => Conflicting interface record ID: {$interface['id']}\n"));
-        }
+    list($status, $rows, $interface) = ona_get_interface_record(array('ip_addr' => $options['ip']));
+    if ($rows) {
+        printmsg("DEBUG => host_add() IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!",3);
+        $self['error'] = "ERROR => host_add() IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!";
+        return(array(4, $self['error'] . "\n" .
+                        "INFO => Conflicting interface record ID: {$interface['id']}\n"));
     }
 
     // Find the Location ID to use
@@ -132,22 +130,6 @@ EOM
 
     // Debugging
     printmsg("DEBUG => Using hostname: {$hostname} Domainname: {$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
-
-
-
-
-    //list($status, $rows, $host) = ona_find_host($options['host']);
-
-/*
-    // Validate that the DNS name has only valid characters in it
-    $host['name'] = sanitize_hostname($host['name']);
-    if (!$host['name']) {
-        printmsg("DEBUG => Invalid host name ({$host['name']})!", 3);
-        $self['error'] = "ERROR => Invalid host name ({$host['name']})!";
-        return(array(4, $self['error'] . "\n"));
-    }
-    // Debugging
-    printmsg("DEBUG => Host selected: {$host['name']}.{$host['domain_fqdn']} Domain ID: {$host['domain_id']}", 3);*/
 
     // Validate that there isn't already any dns record named $host['name'] in the domain $host_domain_id.
     $h_status = $h_rows = 0;
@@ -231,53 +213,47 @@ EOM
     printmsg($text,0);
     $text .= "\n";
 
-    // FIXME: MP, it seems to me that when adding a host you always need an IP so that the A record is added to it.
-    // If we are going to add an interface, call that module now:
-    if ($options['ip']) {
-        // since we have no name yet, we need to use the ID of the new host as the host option for the following module calls
-        $options['host'] = $id;
 
-        printmsg("DEBUG => host_add() ({$hostname}.{$domain['fqdn']}) calling interface_add() ({$options['ip']})", 3);
-        list($status, $output) = run_module('interface_add', $options);
-        if ($status)
-            return(array($status, $output));
-        $text .= $output;
+    // We must always have an IP now to add an interface, call that module now:
+    // since we have no name yet, we need to use the ID of the new host as the host option for the following module calls
+    $options['host'] = $id;
 
-        // Find the interface_id for the interface we just added
-        list($status, $rows, $int) = ona_find_interface($options['ip']);
+    printmsg("DEBUG => host_add() ({$hostname}.{$domain['fqdn']}) calling interface_add() ({$options['ip']})", 3);
+    list($status, $output) = run_module('interface_add', $options);
+    if ($status)
+        return(array($status, $output));
+    $text .= $output;
 
-        // make the dns record type A
-        $options['type'] = 'A';
-        // FIXME: MP I had to force the name value here.  name is comming in as the interface name.  this is nasty!
-        $options['name'] = "{$hostname}.{$domain['fqdn']}";
-        // And we will go ahead and auto add the ptr.  the user can remove it later if they dont want it.  FIXME: maybe create a checkbox on the host edit
-        $options['addptr'] = '1';
+    // Find the interface_id for the interface we just added
+    list($status, $rows, $int) = ona_find_interface($options['ip']);
 
-        // Add the DNS entry with the IP address etc
-        printmsg("DEBUG => host_add() ({$hostname}.{$domain['fqdn']}) calling dns_record_add() ({$options['ip']})", 3);
-        list($status, $output) = run_module('dns_record_add', $options);
-        if ($status)
-            return(array($status, $output));
-        $text .= $output;
+    // make the dns record type A
+    $options['type'] = 'A';
+    // FIXME: MP I had to force the name value here.  name is comming in as the interface name.  this is nasty!
+    $options['name'] = "{$hostname}.{$domain['fqdn']}";
+    // And we will go ahead and auto add the ptr.  the user can remove it later if they dont want it.  FIXME: maybe create a checkbox on the host edit
+    $options['addptr'] = '1';
 
-        // FIXME: MP this is a temp fix until ona_find_dns_record is written
-        list($status, $rows, $dnsrecord) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'interface_id' => $int['id'], 'type' => 'A'));
+    // Add the DNS entry with the IP address etc
+    printmsg("DEBUG => host_add() ({$hostname}.{$domain['fqdn']}) calling dns_record_add() ({$options['ip']})", 3);
+    list($status, $output) = run_module('dns_record_add', $options);
+    if ($status)
+        return(array($status, $output));
+    $text .= $output;
 
+    // find the dns record we just added so we can use its ID as the primary_dns_id for the host.
+    list($status, $rows, $dnsrecord) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'interface_id' => $int['id'], 'type' => 'A'));
 
-        // Set the primary_dns_id to the dns record that was just added
-        list($status, $rows) = db_update_record($onadb, 'hosts', array('id' => $id), array('primary_dns_id' => $dnsrecord['id']));
-        if ($status or !$rows) {
-            $self['error'] = "ERROR => host_add() SQL Query failed to update primary_dns_id for host: " . $self['error'];
-            printmsg($self['error'], 0);
-            return(array(8, $self['error'] . "\n"));
-        }
-
-        return(array(0, $text));
+    // Set the primary_dns_id to the dns record that was just added
+    list($status, $rows) = db_update_record($onadb, 'hosts', array('id' => $id), array('primary_dns_id' => $dnsrecord['id']));
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => host_add() SQL Query failed to update primary_dns_id for host: " . $self['error'];
+        printmsg($self['error'], 0);
+        return(array(8, $self['error'] . "\n"));
     }
 
-    // Return the success notice
-    $text .= "INFO => Please add an interface to the new host!\n";
     return(array(0, $text));
+
 }
 
 
