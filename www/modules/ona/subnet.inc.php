@@ -226,7 +226,7 @@ EOM
     if ($rows != 0) {
         $self['error'] = "ERROR => Subnet address conflict! New subnet starts inside an existing subnet.";
         return(array(6, $self['error'] . "\n" .
-                        "INFO  => Conflicting subnet record ID: {$subnet['id']}\n"));
+                        "ERROR  => Conflicting subnet record ID: {$subnet['id']}\n"));
     }
 
 
@@ -240,7 +240,7 @@ EOM
     if ($rows != 0) {
         $self['error'] = "ERROR => Subnet address conflict! New subnet ends inside an existing subnet.";
         return(array(7, $self['error'] . "\n" .
-                        "INFO  => Conflicting subnet record ID: {$subnet['id']}\n"));
+                        "ERROR  => Conflicting subnet record ID: {$subnet['id']}\n"));
     }
 
 
@@ -255,7 +255,7 @@ EOM
     if ($rows != 0) {
         $self['error'] = "ERROR => Subnet address conflict! New subnet would encompass an existing subnet.";
         return(array(8, $self['error'] . "\n" .
-                        "INFO  => Conflicting subnet record ID: {$subnet['id']}\n"));
+                        "ERROR  => Conflicting subnet record ID: {$subnet['id']}\n"));
     }
 
     // The IP/NETMASK look good, set them.
@@ -343,7 +343,7 @@ EOM
     $real_hosts = $num_hosts - 1;
 
     // Return the success notice
-    $self['error'] = "NOTICE => Subnet ADDED: {$net}/{$cidr} Bcast: {$bcast} Host addresses: {$real_hosts}";
+    $self['error'] = "INFO => Subnet ADDED: {$net}/{$cidr} Bcast: {$bcast} Host addresses: {$real_hosts}";
     printmsg($self['error'], 0);
     return(array(0, $self['error'] . "\n"));
 }
@@ -500,7 +500,7 @@ EOM
         if ($rows and $record['id'] != $subnet['id']) {
             $self['error'] = "ERROR => Subnet address conflict! New subnet starts inside an existing subnet.";
             return(array(7, $self['error'] . "\n" .
-                            "INFO  => Conflicting subnet record ID: {$record['id']}\n"));
+                            "ERROR  => Conflicting subnet record ID: {$record['id']}\n"));
         }
 
 
@@ -514,7 +514,7 @@ EOM
         if ($rows and $record['id'] != $subnet['id']) {
             $self['error'] = "ERROR => Subnet address conflict! New subnet ends inside an existing subnet.";
             return(array(8, $self['error'] . "\n" .
-                            "INFO  => Conflicting subnet record ID: {$record['id']}\n"));
+                            "ERROR  => Conflicting subnet record ID: {$record['id']}\n"));
         }
 
 
@@ -529,7 +529,7 @@ EOM
         if ( ($rows > 1) or ($rows == 1 and $record['id'] != $subnet['id']) ) {
             $self['error'] = "ERROR => Subnet address conflict! New subnet would encompass an existing subnet.";
             return(array(9, $self['error'] . "\n" .
-                            "INFO  => Conflicting subnet record ID: {$record['id']}\n"));
+                            "ERROR  => Conflicting subnet record ID: {$record['id']}\n"));
         }
 
         // Look for any hosts that are currently in our subnet that would be
@@ -626,7 +626,7 @@ EOM
 
     // Return the (human-readable) success notice
     $text = format_array($SET);
-    $self['error'] = "NOTICE => Subnet UPDATED";
+    $self['error'] = "INFO => Subnet UPDATED";
     return(array(0, $self['error'] . ":\n{$text}\n"));
 }
 
