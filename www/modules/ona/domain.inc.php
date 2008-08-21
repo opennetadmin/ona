@@ -42,7 +42,7 @@ function domain_add($options="") {
     printmsg("DEBUG => domain_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -94,25 +94,26 @@ EOM
     if ($options['minimum']) { $minimum = $options['minimum'];} else { $minimum = $conf['dns_minimum']; }
     if ($options['ttl'])     { $ttl     = $options['ttl'];}     else { $ttl     = $conf['dns_default_ttl']; }
 
-
+    // Setup array for searching existing domains
+    $exist_domain = array('name' => $options['name']);
 
     // get parent domain info
     if ($options['parent']) {
         list($status, $rows, $parent_domain)  = ona_find_domain($options['parent'],0);
-        if (!$rows) {
+        if (!isset($parent_domain['id'])) {
             printmsg("DEBUG => The parent domain specified ({$options['parent']}) does not exist!", 3);
             $self['error'] = "ERROR => The parent domain specified, {$options['parent']}, does not exist!";
             return(array(5, $self['error'] . "\n"));
         }
         // Set up the parent part of the search if there was one
-        $parentsearch = '.'.$parent_domain['fqdn'];
+        $exist_domain['parent_id'] = $parent_domain['id'];
     } else {
         $parent_domain['id'] = 0;
     }
 
 
     // Validate that this domain doesnt already exist
-    list($status, $rows, $record) = ona_get_domain_record(array('name' => $options['name'].$parentsearch));
+    list($status, $rows, $record) = ona_get_domain_record($exist_domain);
 
     if ($record['id']) {
         printmsg("DEBUG => The domain specified ({$record['name']}) already exists!", 3);
@@ -124,33 +125,18 @@ EOM
 
 
     if ($options['name']) {
-        // If NOT a PTR domain, make sure the domain name is a valid format
-//         if($ptr != 'Y'){
-// MP: probably not going to do ptr zones this way.. commented out for now
-            // FIXME: not sure if its needed but this was calling sanitize_domainname, which did not exist
-            $domain_name = sanitize_hostname($options['name']);
-            if (!$domain_name) {
-                printmsg("DEBUG => The domain name ({$options['name']}) is invalid!", 3);
-                $self['error'] = "ERROR => The domain name ({$options['name']}) is invalid!";
-                return(array(4, $self['error'] . "\n"));
-            }
-//         } else {
-//         // If a PTR domain, make sure the domain name is a valid IP address
-//             $valid_ptr_domain = ip_mangle($options['name'],1);
-//             if ($valid_ptr_domain == -1) {
-//                 printmsg("DEBUG => The PTR domain ({$options['name']}) is not a valid IP address!", 3);
-//                 $self['error'] = "ERROR => The PTR domain ({$options['name']}) is not a valid IP address!";
-//                 return(array(4, $self['error'] . "\n"));
-//             }
-//             $domain_name = $options['name'];
-//             // force parent domain to be empty if this is a valid PTR domain
-//             $parent_domain['id'] = '';
-//         }
+        // FIXME: not sure if its needed but this was calling sanitize_domainname, which did not exist
+        $domain_name = sanitize_hostname($options['name']);
+        if (!$domain_name) {
+            printmsg("DEBUG => The domain name ({$options['name']}) is invalid!", 3);
+            $self['error'] = "ERROR => The domain name ({$options['name']}) is invalid!";
+            return(array(4, $self['error'] . "\n"));
+        }
     }
 
 
 // FIXME: MP for now this is removed.  it is a chicken/egg issue on setting this name
-//   Also it cant use find_host as the name is not always primary.
+//   Also it cant use find_host as the name is not always primary dns name.
 
 //     if ($primary) {
 //         // Determine the primary master is a valid host
@@ -220,7 +206,7 @@ EOM
 
 
     // Return the success notice
-    $self['error'] = "INFO => Domain ADDED: {$domain_name} to {$host['fqdn']}";
+    $self['error'] = "INFO => Domain ADDED: {$domain_name}";
     printmsg($self['error'],0);
     return(array(0, $self['error'] . "\n"));
 }
@@ -260,7 +246,7 @@ function domain_del($options="") {
     printmsg("DEBUG => domain_del({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -309,7 +295,7 @@ EOM
 
     // Debugging
     list($status, $tmp_rows, $tmp_parent) = ona_get_domain_record(array('id'=>$entry['parent_id']));
-    printmsg("DEBUG => Zone selected: {$entry['name']}.{$tmp_parent['name']}", 3);
+    printmsg("DEBUG => Domain selected: {$entry['name']}.{$tmp_parent['name']}", 3);
 
 
     // Display an error if DNS records are using this domain
@@ -334,9 +320,6 @@ EOM
 
 
 
-
-
-
     // If "commit" is yes, delete the record
     if ($options['commit'] == 'Y') {
 
@@ -347,14 +330,13 @@ EOM
             return(array(10, $self['error'] . "\n"));
         }
 
-// FIXME: (PK) not supported yet
-//        // Delete association with any servers
-//        list($status, $rows) = db_delete_record($onadb, 'DOMAIN_SERVERS_B', //array('DNS_DOMAINS_ID' => $entry['ID']));
-//        if ($status) {
-//            $self['error'] = "ERROR => domain_del() SQL Query (Zone_Servers_b) failed: {$self['error']}";
-//            printmsg($self['error'],0);
-//            return(array(8, $self['error'] . "\n"));
-//        }
+       // Delete association with any servers
+       list($status, $rows) = db_delete_records($onadb, 'dns_server_domains', array('domain_id' => $entry['id']));
+       if ($status) {
+           $self['error'] = "ERROR => domain_del() SQL Query (dns_server_domains) failed: {$self['error']}";
+           printmsg($self['error'],0);
+           return(array(8, $self['error'] . "\n"));
+       }
 
         // Delete actual domain
         list($status, $rows) = db_delete_records($onadb, 'domains', array('id' => $entry['id']));
@@ -573,15 +555,6 @@ EOM
             return(array(2, $self['error'] . "\n"));
         }
 
-// FIXME: (PK) Not supported yet
-        // Determine the host that was found is actually a server
-//        list($status, $rows, $server) = ona_get_server_record(array('HOST_ID' => $host['ID']));
-
-//        if (!$server['ID']) {
-//            printmsg("DEBUG => The origin host specified ({$host['FQDN']}) is not a server!",3);
-//            $self['error'] = "ERROR => The host specified ({$host['FQDN']}) is not a server!";
-//            return(array(5, $self['error'] . "\n"));
-//        }
     }
 */
 
@@ -640,348 +613,6 @@ EOM
     return(array(0, $self['error'] . "\n"));
 }
 
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////
-//  Function: domain_server_add (string $options='')
-//
-//  Input Options:
-//    $options = key=value pairs of options for this function.
-//               multiple sets of key=value pairs should be separated
-//               by an "&" symbol.
-//
-//  Output:
-//    Returns a two part list:
-//      1. The exit status of the function.  0 on success, non-zero on
-//         error.  All errors messages are stored in $self['error'].
-//      2. A textual message for display on the console or web interface.
-//
-//  Example: list($status, $result) = domain_server_add('domain=test&server=cool.something.com');
-///////////////////////////////////////////////////////////////////////
-function domain_server_add($options="") {
-
-    // The important globals
-    global $conf, $self, $onadb;
-
-    // Version - UPDATE on every edit!
-    $version = '1.02';
-
-    printmsg("DEBUG => domain_server_add({$options}) called", 3);
-return(array(1, "FIXME: domain servers are not yet supported!")); /* FIXME: temp code */
-
-
-    // Parse incoming options string to an array
-    $options = parse_options($options);
-
-    // Return the usage summary if we need to
-    if ($options['help'] or !($options['domain'] and $options['server']) ) {
-        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
-        $self['error'] = 'ERROR => Insufficient parameters';
-        return(array(1,
-<<<EOM
-
-domain_server_add-v{$version}
-Assigns a domain record to a server
-
-  Synopsis: domain_server_add [KEY=VALUE] ...
-
-  Required:
-    domain=NAME or ID    domain name or ID
-    server=NAME or ID    server name or ID
-    auth=[Y|N]           is server authoritative for domain ({$conf['dns_auth']})
-
-
-EOM
-
-        ));
-    }
-
-
-    $domainsearch = array();
-    // setup a domain search based on name or id
-    if (is_numeric($options['domain'])) {
-        $domainsearch['id'] = $options['domain'];
-    } else {
-        $domainsearch['name'] = $options['domain'];
-    }
-
-    // Determine the entry itself exists
-    list($status, $rows, $domain) = ona_get_domain_record($domainsearch);
-
-    // Test to see that we were able to find the specified record
-    if (!$domain['id']) {
-        printmsg("DEBUG => Unable to find a domain record using ID {$options['domain']}!",3);
-        $self['error'] = "ERROR => Unable to find the domain record using {$options['domain']}!";
-        return(array(4, $self['error']. "\n"));
-    }
-
-    printmsg("DEBUG => domain_server_add(): Found domain, {$entry['name']}", 3);
-
-    if ($options['server']) {
-        $add_to_error = "";
-        // Determine the server is valid
-        list($status, $rows, $host) = ona_find_host($options['server']);
-
-        if (!$host['id']) {
-            printmsg("DEBUG => The server specified ({$options['server']}) does not exist!",3);
-            $self['error'] = "ERROR => The server specified, {$options['server']}, does not exist!";
-            return(array(2, $self['error'] . "\n"));
-        }
-
-        // Determine the host that was found is actually a server
-        list($status, $rows, $server) = ona_get_server_record(array('HOST_ID' => $host['ID']));
-
-        if (!$server['ID']) {
-            // Get the next ID
-            $id = ona_get_next_id();
-            if (!$id) {
-                $self['error'] = "ERROR => The ona_get_next_id() call failed!";
-                printmsg($self['error'], 0);
-               return(array(6, $self['error'] . "\n"));
-            }
-            printmsg("DEBUG => domain_server_add(): Creating new server ({$host['FQDN']}) with ID: $id", 3);
-
-            // Add new record to servers_b
-            list($status, $rows) =
-                db_insert_record(
-                    $oracle,
-                    'SERVER_B',
-                    array(
-                        'ID'                      => $id,
-                        'SERVER_TYPE'             => 'ISC',
-                        'DHCP_SERVER'             => 'N',
-                        'DNS_SERVER'              => 'N',
-                        'HOST_ID'                 => $host['ID']
-                    )
-                );
-            if ($status or !$rows) {
-                $self['error'] = "ERROR => domain_server_add() SQL Query failed: {$self['error']}";
-                printmsg($self['error'],0);
-                return(array(8, $self['error'] . "\n"));
-            } else {
-                printmsg("INFO => DNS Zone Server ADDED: {$host['FQDN']}", 0);
-                $add_to_error = "INFO => DNS Zone Server ADDED: {$host['FQDN']}";
-            }
-            // set the server['ID'] value to new ID just created
-            $server['ID'] = $id;
-            unset($id);
-        }
-    }
-
-    printmsg("DEBUG => domain_server_add(): Found server, {$host['FQDN']}", 3);
-
-    // Test that this domain isnt already assigned to the server
-    list($status, $rows, $domainserver) = ona_get_domain_server_record(array('SERVER_ID' => $server['ID'],'DNS_DOMAINS_ID' => $domain['ID']));
-    if ($rows) {
-        printmsg("DEBUG => Zone {$domain['DOMAIN_NAME']} already assigned to {$host['FQDN']}", 0);
-        $self['error'] = "ERROR => Zone {$domain['DOMAIN_NAME']} already assigned to {$host['FQDN']}";
-        return(array(11, $self['error'] . "\n"));
-    }
-
-
-    // set auth information and sanitize it
-    if ($options['auth']) {$auth = sanitize_YN($options['auth'], 'N');}
-    else {$auth = sanitize_YN($conf['dns_auth'], 'N');}
-
-    // Get the next ID
-    $id = ona_get_next_id();
-    if (!$id) {
-        $self['error'] = "ERROR => The ona_get_next_id() call failed!";
-        printmsg($self['error'],0);
-        return(array(6, $add_to_error . $self['error'] . "\n"));
-    }
-    printmsg("DEBUG => domain_server_add(): New domain server ID: $id", 3);
-
-    // Add new record to domain_servers_b
-    list($status, $rows) =
-        db_insert_record(
-            $oracle,
-            'DOMAIN_SERVERS_B',
-            array(
-                'DOMAIN_SERVERS_ID'           => $id,
-                'DNS_DOMAINS_ID'              => $domain['ID'],
-                'SERVER_ID'                 => $server['ID'],
-                'AUTHORITATIVE_FLAG'        => $auth
-            )
-        );
-    if ($status or !$rows) {
-        $self['error'] = "ERROR => domain_server_add() SQL Query failed: {$self['error']}";
-        printmsg($self['error'],0);
-        return(array(8, $add_to_error . $self['error'] . "\n"));
-    }
-
-
-    // Return the success notice
-    $self['error'] = "INFO => Zone/Server pair ADDED: {$domain['DOMAIN_NAME']}/{$host['FQDN']}";
-    printmsg($self['error'],0);
-    return(array(0, $add_to_error . $self['error'] . "\n"));
-
-
-}
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////
-//  Function: domain_server_del (string $options='')
-//
-//  Input Options:
-//    $options = key=value pairs of options for this function.
-//               multiple sets of key=value pairs should be separated
-//               by an "&" symbol.
-//
-//  Output:
-//    Returns a two part list:
-//      1. The exit status of the function.  0 on success, non-zero on
-//         error.  All errors messages are stored in $self['error'].
-//      2. A textual message for display on the console or web interface.
-//
-//  Example: list($status, $result) = domain_server_del('domain=test&server=cool.something.com');
-///////////////////////////////////////////////////////////////////////
-function domain_server_del($options="") {
-
-    // The important globals
-    global $conf, $self, $oracle;
-
-    // Version - UPDATE on every edit!
-    $version = '1.00';
-
-    printmsg("DEBUG => domain_server_del({$options}) called", 3);
-return(array(1, "FIXME: domain servers are not yet supported!")); /* FIXME: temp code */
-
-
-    // Parse incoming options string to an array
-    $options = parse_options($options);
-
-    // Sanitize options[commit] (default is yes)
-    $options['commit'] = sanitize_YN($options['commit'], 'N');
-
-
-    // Return the usage summary if we need to
-    if ($options['help'] or !($options['domain'] and $options['server']) ) {
-        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
-        $self['error'] = 'ERROR => Insufficient parameters';
-        return(array(1,
-<<<EOM
-
-domain_server_del-v{$version}
-Removes a domain record from a server
-
-  Synopsis: domain_server_del [KEY=VALUE] ...
-
-  Required:
-    domain=NAME or ID      domain name or ID
-    server=NAME or ID    server name or ID
-
-  Optional:
-    commit=[Y|N]            commit db transaction (no)
-
-
-EOM
-
-        ));
-    }
-
-
-    $domainsearch = array();
-    // setup a domain search based on name or id
-    if (is_numeric($options['domain'])) {
-        $domainsearch['ID'] = $options['domain'];
-    } else {
-        $domainsearch['DOMAIN_NAME'] = $options['domain'];
-    }
-
-    // Determine the entry itself exists
-    list($status, $rows, $domain) = ona_get_domain_record($domainsearch);
-
-    // Test to see that we were able to find the specified record
-    if (!$domain['ID']) {
-        printmsg("DEBUG => Unable to find a domain record using ID {$options['domain']}!",3);
-        $self['error'] = "ERROR => Unable to find the domain record using {$options['domain']}!";
-        return(array(4, $self['error']. "\n"));
-    }
-
-    printmsg("DEBUG => domain_server_del(): Found domain, {$entry['DOMAIN_NAME']}", 3);
-
-    if ($options['server']) {
-        // Determine the server is valid
-        list($host, $tmp) = ona_find_host($options['server']);
-
-        if (!$host['ID']) {
-            printmsg("DEBUG => The server specified ({$options['server']}) does not exist!",3);
-            $self['error'] = "ERROR => The server specified, {$options['server']}, does not exist!";
-            return(array(2, $self['error'] . "\n"));
-        }
-
-        // Determine the host that was found is actually a server
-        list($status, $rows, $server) = ona_get_server_record(array('HOST_ID' => $host['ID']));
-
-        if (!$server['ID']) {
-            printmsg("DEBUG => The host specified ({$host['FQDN']}) is not a server!",3);
-            $self['error'] = "ERROR => The host specified, {$host['FQDN']}, is not a server!";
-            return(array(5, $self['error'] . "\n"));
-        }
-    }
-
-    printmsg("DEBUG => domain_server_del(): Found server, {$host['FQDN']}", 3);
-
-    // Test that this domain is even assigned to the server
-    list($status, $rows, $domainserver) = ona_get_domain_server_record(array('SERVER_ID' => $server['ID'],'DNS_DOMAINS_ID' => $domain['ID']));
-    if (!$rows) {
-        printmsg("DEBUG => The domain specified ({$domain['DOMAIN_NAME']}) is not assigned to the server ({$host['FQDN']})!",3);
-        $self['error'] = "ERROR => The domain specified {$domain['DOMAIN_NAME']} is not assigned to the server {$host['FQDN']}";
-        return(array(11, $self['error'] . "\n"));
-    }
-
-
-    // If "commit" is yes, delete the record
-    if ($options['commit'] == 'Y') {
-
-        // Check permissions
-        if (!auth('advanced')) {
-            $self['error'] = "Permission denied!";
-            printmsg($self['error'], 0);
-            return(array(10, $self['error'] . "\n"));
-        }
-
-
-        // delete record from domain_servers_b
-        list($status, $rows) = db_delete_record($oracle, 'DOMAIN_SERVERS_B', array('DOMAIN_SERVERS_ID' => $domainserver['DOMAIN_SERVERS_ID']));
-        if ($status) {
-            $self['error'] = "ERROR => domain_server_del() SQL Query failed: {$self['error']}";
-            printmsg($self['error'],0);
-            return(array(9, $self['error'] . "\n"));
-        }
-
-
-        // Return the success notice
-
-        $self['error'] = "INFO => Zone/Server pair DELETED: {$domain['DOMAIN_NAME']}/{$host['FQDN']}";
-        printmsg($self['error'],0);
-        return(array(0, $self['error'] . "\n"));
-    }
-
-    // Otherwise display the record that would have been deleted
-    $text = <<<EOL
-Record(s) NOT DELETED (see "commit" option)
-Displaying record(s) that would have been removed:
-
-{$domain['DOMAIN_NAME']} from: {$host['FQDN']}
-
-EOL;
-
-    return(array(6, $text));
-
-
-}
 
 
 
@@ -1076,7 +707,6 @@ EOM
 DOMAIN RECORD ({$domain['name']})
 
     PARENT:     {$domain['parent_id']}
-(FIXME:)    POINTER:    {$domain['POINTER_DOMAIN']}
     PRIMARY:    {$domain['primary_master']}
     ADMIN:      {$domain['admin_email']}
     SERIAL#:    {$domain['serial']}

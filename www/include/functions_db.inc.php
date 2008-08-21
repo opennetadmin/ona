@@ -1615,6 +1615,7 @@ function ona_find_domain($fqdn="", $returndefault=0) {
 //         $status=0;
 //     }
 
+    // FIXME: MP  rows is not right here..  need to look at fixing it.. rowsa/rowsb above doesnt translate.. do I even need that?
     return(array($status, $rows, $domain));
 }
 
