@@ -1,4 +1,4 @@
-<?
+<?php
 
 //
 // GUI Specific Functions

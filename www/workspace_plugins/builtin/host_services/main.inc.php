@@ -1,4 +1,4 @@
-<?
+<?php
 
 $title_left_html = 'Managed services on this host';
 

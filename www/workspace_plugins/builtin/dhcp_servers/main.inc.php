@@ -1,4 +1,4 @@
-<?
+<?php
 
 // This module displays DHCP servers associated with a subnet
 

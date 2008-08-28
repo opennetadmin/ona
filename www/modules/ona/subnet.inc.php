@@ -1,4 +1,4 @@
-<?
+<?php
 
 // Make sure we have necessary functions & DB connectivity
 require_once($conf['inc_functions_db']);

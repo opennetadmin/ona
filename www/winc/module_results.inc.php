@@ -1,4 +1,4 @@
-<?
+<?php
 //
 // This is not really a window at all.
 // It is intended to be "included" by other code to build the html

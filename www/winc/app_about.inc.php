@@ -1,4 +1,4 @@
-<?
+<?php
 
 $window['title'] = "About ONA";
 

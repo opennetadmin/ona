@@ -1,4 +1,4 @@
-<?
+<?php
 // Include map portal functions for the subnet_map workspace plugin
 include('include/functions_network_map.inc.php');
 

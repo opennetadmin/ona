@@ -1,4 +1,4 @@
-<?
+<?php
 
 // Do some HTML headers before printing anything
 header("Cache-control: private");

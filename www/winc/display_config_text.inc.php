@@ -1,4 +1,4 @@
-<?
+<?php
 
 // If we get called directly (via launch_app.php), call work_space, and tell it to call us back.
 // Yes, it's more of Brandon's black magic ;)

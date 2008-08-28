@@ -1,4 +1,4 @@
-<?
+<?php
 // This is to be included in files that need a subnet block map
 // Brandon Zehm
 

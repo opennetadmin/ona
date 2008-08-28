@@ -1,4 +1,4 @@
-<?
+<?php
 
 $title_left_html = 'Messages';
 $title_right_html = '';

@@ -1,4 +1,4 @@
-<?
+<?php
 
 //
 // So, the basic flow of this script is like this:

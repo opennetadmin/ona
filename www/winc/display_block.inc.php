@@ -1,4 +1,4 @@
-<?
+<?php
 // Include map portal functions
 include('include/functions_network_map.inc.php');
 

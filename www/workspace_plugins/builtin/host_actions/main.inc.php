@@ -1,4 +1,4 @@
-<?
+<?php
 
 // Load any user specific entries and add them to the list
 // If you re-define an existing entry, it will override the default

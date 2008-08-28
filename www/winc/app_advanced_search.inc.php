@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 // We need to build the html drop-down boxes for the

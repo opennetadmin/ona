@@ -1,4 +1,4 @@
-<?
+<?php
 
 // This module will display a small dragable subnet map.  It is required that you place the following statement
 // at the top of your display page that calls this function:

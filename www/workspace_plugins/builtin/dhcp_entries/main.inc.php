@@ -1,4 +1,4 @@
-<?
+<?php
 
 $rec_content = print_r($record, true);
 $debug_display = 0;  // Set this to 1 to see contents of the $record array

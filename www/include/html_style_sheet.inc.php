@@ -1,4 +1,4 @@
-<?
+<?php
 /* -------------------- COMMON HEADER ---------------------- */
 $base = dirname(__FILE__);
 while ($base and (!is_dir($base.'/include'))) $base = preg_replace('+/[^/]*$+', '', $base);

@@ -1,4 +1,4 @@
-<?
+<?php
 
 global $conf, $self, $onadb ;
 global $font_family, $color, $style, $images;

@@ -1,4 +1,4 @@
-<?
+<?php
 
 list($status, $rows, $location) = ona_get_location_record(array('id' => $record['location_id']));
 if ($rows) {
