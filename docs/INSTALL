@@ -35,6 +35,7 @@ INSTALL:
 5. chmod 666 /var/log/ona.log
 6. chown www-data /opt/ona/www/local/config (or whatever your web server user is)
 7. Point your broswer to http://<servername>/ona
+8. You can log in as "admin" with a password of "admin"
 
 
 MISC:

@@ -219,6 +219,31 @@ EOL;
 EOL;
     }
 
+    if (auth('dns_record_add')) {
+        $html .= <<<EOL
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="removeElement('start_menu'); toggle_window('app_domain_servers_list');"
+     title="List DNS Domain Servers"
+ ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ />&nbsp;List DNS Domain Servers</div>
+
+EOL;
+    }
+
+    if (auth('advanced')) {
+        $html .= <<<EOL
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="removeElement('start_menu'); toggle_window('app_dhcp_servers_list');"
+     title="List DHCP Servers"
+ ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ />&nbsp;List DHCP Servers</div>
+
+EOL;
+    }
 
     // Get all the plugin menuitems
     $pluginlist = plugin_list('menuitem');

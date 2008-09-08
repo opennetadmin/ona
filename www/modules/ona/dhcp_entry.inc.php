@@ -61,11 +61,11 @@ function dhcp_entry_add($options="") {
                                 (
                                     ($options['server'] and !($options['host'] or $options['subnet'] or $options['global']))
                                     or
-                                    ($options['host'] and !($options['server'] or $options['subnet'] or $options['global']))
+                                    ($options['host']   and !($options['server'] or $options['subnet'] or $options['global']))
                                     or
                                     ($options['subnet'] and !($options['host'] or $options['server'] or $options['global']))
                                     or
-                                    ($options['global'] and !($options['host'] or $options['server'] or $options['subnet']))
+                                    (array_key_exists('global', $options) and !($options['host'] or $options['server'] or $options['subnet']))
                                 )
                               )
         )
@@ -83,7 +83,7 @@ Adds a dhcp entry into the database pointing to the specified identifier
   Identifier (pick one):
     host=HOSTNAME[.DOMAIN] or ID            host identifier to add to
     subnet=NAME or ID                       subnet identifier to add to
-    server=NAME[.DOMAIN] or ID              server identifier to add to
+    server=NAME[.DOMAIN] or ID              server identifier to add to -DISABLED OPTION-
     global                                  global entry for all subnets/hosts etc
 
   Options (both required):
@@ -103,9 +103,7 @@ EOM
         $lvl = 0;
         $subnet['id'] = 0;
         $host['id'] = 0;
-    }
-
-    if ($options['host']) {
+    } elseif ($options['host']) {
         // Determine the host is valid
         list($status, $rows, $host) = ona_find_host($options['host']);
 
