@@ -140,7 +140,7 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
             <div id="{$modulename}_container" class="ws_plugin_content">
                 <table  cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
                 <tr>
-                    <td class="ws_plugin_title_right">{$title_left_html}</td>
+                    <td class="ws_plugin_title_right" title="{$title_description}">{$title_left_html}</td>
                     <td class="ws_plugin_title_left">
                     {$title_right_html}
                     <img  src="{$min_img}"

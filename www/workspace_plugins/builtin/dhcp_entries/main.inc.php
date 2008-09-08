@@ -9,18 +9,21 @@ $hasgateway = 0;
 // Default kind will be global settings.  This means host and subnet ids are 0 in the option_entries table
 $kind = 'global';
 list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => 0, 'subnet_id' => 0), '');
+$title_description = "These settings are global for all DHCP configurations";
 
 // Determine if this is a host or a subnet we are dealing with
 if (is_numeric($record['subnet_type_id'])) {
     $kind = 'subnet';
     list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'dhcp_option_entries', array('subnet_id' => $record['id']), '');
     $title_left_html = 'DHCP Entries';
+    $title_description = "";
 }
 // determining host type using devicefull is kinda crappy.. works for now
 if (isset($record['devicefull'])) {
     $kind = 'host';
     list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => $record['id']), '');
     $title_left_html = 'DHCP Entries';
+    unset($title_description);
 }
 // DHCP ENTRIES LIST
 $modbodyhtml .= <<<EOL
