@@ -97,11 +97,9 @@ CREATE TABLE `custom_attributes` (
 
 DROP TABLE IF EXISTS `dcm_module_list`;
 CREATE TABLE `dcm_module_list` (
-  `id` int(10) unsigned NOT NULL default '0',
   `name` varchar(128) NOT NULL default '',
   `description` text NOT NULL,
   `file` varchar(128) NOT NULL default '',
-  PRIMARY KEY  (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
