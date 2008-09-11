@@ -205,6 +205,12 @@ input.button:hover {
     white-space: nowrap;
 }
 
+input[disabled], textarea[disabled], option[disabled], optgroup[disabled], select[disabled] {
+    -moz-user-focus:ignore;
+    -moz-user-input:disabled;
+    background-color:threedface;
+}
+
 a.button {
     border: 1px solid {$color['border']};
     background-color: white;

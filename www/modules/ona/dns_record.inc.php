@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -59,6 +59,7 @@ Add a new DNS record
     srv_pri=NUMBER            SRV Priority
     srv_weight=NUMBER         SRV Weight
     srv_port=NUMBER           SRV Port
+    ebegin=date               Set the begin date for record, 0 disables, default now
 
   Examples:
     dns_record_add name=newhost.something.com type=A ip=10.1.1.2 addptr
@@ -90,7 +91,6 @@ cname records:
     name/domain and dns_id columns must be unique---< implied by the previous check of no cnames using this name
     do I need interface_id??????, yes its used to assoicate it with the host.  this will come via the A record it points to via a lookup
 ptr records:
-    will not have a domain_id, blank it out
     must be unique in interface_id column, ie. one PTR per interface/ip
 
 
@@ -103,6 +103,15 @@ multiple A records that have the same name is ok, its not really a good thing to
 primary name for a host should be unique in all cases I'm aware of
 
 */
+
+    // Check the date formatting etc
+    if (isset($options['ebegin'])) {
+        // format the time that was passed in for the database, leave it as 0 if they pass it as 0
+        $options['ebegin']=($options['ebegin'] == '0' ? 0 : date('Y-m-j G-i-s',strtotime($options['ebegin'])) );
+    } else {
+        // If I got no date, use right now as the date/time
+        $options['ebegin'] = date('Y-m-j G:i:s');
+    }
 
     // Switch the type setting to uppercase
     $options['type'] = strtoupper($options['type']);
@@ -696,6 +705,7 @@ complex DNS messes for themselves.
             'srv_pri'              => $add_srv_pri,
             'srv_weight'           => $add_srv_weight,
             'srv_port'             => $add_srv_port,
+            'ebegin'               => $options['ebegin'],
             'notes'                => $options['notes']
        )
     );
@@ -711,7 +721,7 @@ complex DNS messes for themselves.
     if ($options['addptr'] and $options['type'] == 'A') {
         printmsg("DEBUG => Auto adding a PTR record for {$options['name']}.", 0);
         // Run dns_record_add as a PTR type
-        list($status, $output) = run_module('dns_record_add', array('name' => $options['name'],'ip' => $options['ip'], 'type' => 'PTR'));
+        list($status, $output) = run_module('dns_record_add', array('name' => $options['name'],'ip' => $options['ip'],'ebegin' => $options['ebegin'],'type' => 'PTR'));
         if ($status)
             return(array($status, $output));
         $text .= $output;
@@ -756,7 +766,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -799,6 +809,7 @@ Modify a DNS record
     set_srv_pri=NUMBER          change SRV Priority
     set_srv_weight=NUMBER       change SRV Weight
     set_srv_port=NUMBER         change SRV Port
+    set_ebegin                  change the begin date for record, 0 disables
 
   Note:
     * You are not allowed to change the type of the DNS record, to do that
@@ -852,6 +863,7 @@ EOM
 
     // Set status on if we are chaning IP addresses
     $changingint = 0;
+
 
     //
     // Define the records we're updating
@@ -1031,12 +1043,18 @@ EOM
             $SET['notes'] = $options['set_notes'];
     }
 
+    // Check the date formatting etc
+    if (isset($options['set_ebegin'])) {
+        // format the time that was passed in for the database, leave it as 0 if they pass it as 0
+        $SET['ebegin']=($options['set_ebegin'] == '0' ? 0 : date('Y-m-j G-i-s',strtotime($options['set_ebegin'])) );
+    } else {
+        // If I got no date, use right now as the date/time
+        $SET['ebegin'] = date('Y-m-j G:i:s');
+    }
+
     // Add the remaining items to the $SET variable
     // if there is a ttl setting and it is not the same as the existing record
     if (array_key_exists('set_ttl', $options) and $options['set_ttl'] != $dns['ttl']) $SET['ttl'] = $options['set_ttl'];
-
-    //FIXME: MP For now, update the effective begin timestamp when a record is changed.  in the future, we can allow future dating on ebegin values.
-    $SET['ebegin'] = date('Y-m-j G:i:s');
 
     if (array_key_exists('set_mx_preference', $options)) $SET['mx_preference'] = $options['set_mx_preference'];
 
@@ -1051,7 +1069,7 @@ EOM
         printmsg("DEBUG => Auto adding a PTR record for {$options['set_name']}.", 0);
         // Run dns_record_add as a PTR type
         // Always use the $current_name variable as the name might change during the update
-        list($status, $output) = run_module('dns_record_add', array('name' => $current_name,'ip' => $options['set_ip'], 'type' => 'PTR'));
+        list($status, $output) = run_module('dns_record_add', array('name' => $current_name,'ip' => $options['set_ip'],'ebegin' => $options['ebegin'],'type' => 'PTR'));
         if ($status)
             return(array($status, $output));
         $text .= $output;

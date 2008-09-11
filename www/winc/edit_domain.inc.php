@@ -158,32 +158,7 @@ EOL;
                 >
             </td>
         </tr>
-EOL;
-    // if we are editing an existing domain
-    // FIXME: need to ensure serial is converted from 32-bit binary
-    // (MP)commented out for now since it is NOT yet converted from binary
-//     if($form['id']) {
-//
-//         $window['html'] .= <<<EOL
-//         <tr>
-//             <td align="right" nowrap="true">
-//                 Serial Number
-//             </td>
-//             <td class="padding" align="left" width="100%">
-//                 <input
-//                     name="serial"
-//                     alt="Serial Number"
-//                     value="{$domain['serial']}"
-//                     class="edit"
-//                     type="text"
-//                     size="17" maxlength="255"
-//                 >
-//             </td>
-//         </tr>
-// EOL;
-//     }
 
-    $window['html'] .= <<<EOL
         <tr>
             <td align="right" nowrap="true">
                 Refresh
@@ -339,7 +314,6 @@ function ws_save($window_name, $form='') {
         $form['set_ttl']     = $form['default_ttl']; unset($form['default_ttl']);
         $form['set_parent']  = $form['parent']; unset($form['parent']);
         $form['set_auth']    = $form['auth']; unset($form['auth']);
-        $form['set_serial']  = $form['serial']; unset($form['serial']);
 
         // force it to find the domain using the ID
         $form['domain'] = $form['id'];

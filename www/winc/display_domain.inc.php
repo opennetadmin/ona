@@ -100,11 +100,12 @@ EOL;
                                onClick="var doit=confirm('Are you sure you want to delete this domain?');
                                         if (doit == true)
                                             xajax_window_submit('edit_domain', xajax.getFormValues('form_domain_{$record['id']}'), 'delete');"
-                            ><img src="{$images}/silk/delete.png"></a>{$record['fqdn']}
+                            ><img src="{$images}/silk/delete.png"></a>
 EOL;
     }
 
         $html .= <<<EOL
+                {$record['fqdn']}
                 </div>
             </td>
             </tr>
@@ -130,13 +131,30 @@ EOL;
                 <td colspan="2" align="left" nowrap="true"><b><u>Domain SOA Parameters</u></b>&nbsp;</td>
             </tr>
 
+EOL;
+
+    if ($record['primary_master']) {
+        $html .= <<<EOL
             <tr>
-                <td align="right" nowrap="true"><b>Serial Number</b>&nbsp;</td>
+                <td align="right" nowrap="true"><b>Primary Master</b>&nbsp;</td>
                 <td class="padding" align="left">
-                    {$record['serial']}&nbsp;
+                    {$record['primary_master']}&nbsp;
                 </td>
             </tr>
+EOL;
+    } else {
+        $html .= <<<EOL
+            <tr style="background-color: #FFDDDD;" title="There is no defined primary master server!">
+                <td align="right" nowrap="true"><b>Primary Master</b>&nbsp;</td>
+                <td nowrap="true">
+                    <img src='{$images}/silk/error.png' border='0'> Please assign a Primary Master server!
+                </td>
+            </tr>
+EOL;
+    }
 
+
+    $html .= <<<EOL
             <tr>
                 <td align="right" nowrap="true"><b>Refresh</b>&nbsp;</td>
                 <td class="padding" align="left">

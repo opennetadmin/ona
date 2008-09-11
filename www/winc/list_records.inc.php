@@ -222,6 +222,7 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Time to Live</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Data</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Effective</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
                 <td class="list-header" align="center">&nbsp;</td>
             </tr>
@@ -405,6 +406,23 @@ EOL;
             $ttl_style = 'style="font-style: italic;" title="Using TTL from domain"';
         }
 
+        // format the ebegin using the configured date format
+        $ebegin = '';
+        // If it is in the future, print the time
+        if (strtotime($record['ebegin']) > time()) $ebegin = '<span title="Active in DNS on: '.$record['ebegin'].'">' . date($conf['date_format'],strtotime($record['ebegin'])) . '</span>';
+        // If it is 0 then show as disabled
+        if (strtotime($record['ebegin']) < 0) {
+            $ebegin = <<<EOL
+                <span
+                    style="background-color:#FFFF99;"
+                    title="Disabled: Won't build in DNS"
+                    onClick="var doit=confirm('Are you sure you want to enable this DNS record?');
+                                if (doit == true)
+                                    xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}_list_record_{$record['id']}'), 'enablerecord');"
+                >Disabled</span>
+EOL;
+        }
+
         // If we get this far and the name we have built has a leading . in it then remove the dot.
         $record['name'] = preg_replace("/^\./", '', $record['name']);
 
@@ -449,7 +467,9 @@ EOL;
         $html .= <<<EOL
                 </td>
 
-<!--                <td class="list-row">{$record['device']}&nbsp;</td> -->
+                <td class="list-row" align="center">
+                    {$ebegin}&nbsp;
+                </td>
 
                 <td class="list-row">
                     <span title="{$record['notes']}">{$record['notes_short']}</span>&nbsp;
@@ -479,16 +499,6 @@ EOL;
         }
 
         if (auth('dns_record_modify')) {
-            // If it is a PTR, adjust the comment to say you can only delete, not modify.
-            if ($record['type'] == 'PTR') {
-            $html .= <<<EOL
-
-                    <a title="You can not edit a PTR record directly, you must edit the A record."
-                       class="act"
-                    ><img src="{$images}/silk/comment.png" border="0"></a>&nbsp;
-EOL;
-            }
-            else {
             $html .= <<<EOL
 
                     <a title="Edit DNS record"
@@ -496,7 +506,6 @@ EOL;
                        onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}_list_record_{$record['id']}'), 'editor');"
                     ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
 EOL;
-            }
         }
 
         if (auth('dns_record_del')) {

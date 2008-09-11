@@ -176,6 +176,8 @@ EOM
     // FIXME: MP this needs more work to be more accurate.  maybe not use date.. pretty limiting at 10 characters as suggested here: http://www.zytrax.com/books/dns/ch8/soa.html
     // for now I'm going with non zero padded(zp) month,zp day, zp hour, zp minute, zp second.  The only issue I can see at this point with this is when it rolls to january..
     // will that be too much of an increment for it to properly zone xfer?  i.e.  1209230515 = 12/09 23:05:15 in time format
+
+    // MP: FOR NOW SERIAL WONT EVER GET USED...  LEFT IT IN HERE FOR AWHILE THOUGH
     $serial_number = date('njHis');
 
 
@@ -429,7 +431,6 @@ function domain_modify($options="") {
                                  $options['set_expiry'] or
                                  $options['set_minimum'] or
                                  $options['set_ttl'] or
-                                 $options['set_serial'] or
                                  $options['set_parent'])
                               )
         )
@@ -457,7 +458,6 @@ Modifies a DNS domain in the database
     set_minimum=NUMBER        Default ({$conf['dns_minimum']})
     set_ttl=NUMBER            Default ({$conf['dns_default_ttl']})
     set_parent=DOMAIN_NAME    Default ({$conf['dns_parent']})
-    set_serial=NUMBER
 
 
 EOM
@@ -539,7 +539,6 @@ EOM
     if ($options['set_expiry'])  $SET['expiry']      = $options['set_expiry'];
     if ($options['set_minimum']) $SET['minimum']     = $options['set_minimum'];
     if ($options['set_ttl'])     $SET['default_ttl'] = $options['set_ttl'];
-    if ($options['set_serial'])  $SET['serial']      = $options['set_serial'];
 
 
 // FIXME: MP for now this is removed.  it is a chicken/egg issue on setting this name
@@ -564,6 +563,8 @@ EOM
     // FIXME: MP this needs more work to be more accurate.  maybe not use date.. pretty limiting at 10 characters as suggested here: http://www.zytrax.com/books/dns/ch8/soa.html
     // for now I'm going with non zero padded(zp) month,zp day, zp hour, zp minute, zp second.  The only issue I can see at this point with this is when it rolls to january..
     // will that be too much of an increment for it to properly zone xfer?  i.e.  1209230515 = 12/09 23:05:15 in time format
+
+    // MP: FOR NOW SERIAL WONT EVER GET USED...  LEFT IT IN HERE FOR AWHILE THOUGH
     $SET['serial'] = date('njHis');
 
 
@@ -709,7 +710,6 @@ DOMAIN RECORD ({$domain['name']})
     PARENT:     {$domain['parent_id']}
     PRIMARY:    {$domain['primary_master']}
     ADMIN:      {$domain['admin_email']}
-    SERIAL#:    {$domain['serial']}
     REFRESH:    {$domain['refresh']}
     RETRY:      {$domain['retry']}
     EXPIRY:     {$domain['expiry']}
