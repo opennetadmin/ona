@@ -219,9 +219,9 @@ CREATE TABLE `dhcp_pools` (
 
 DROP TABLE IF EXISTS `dhcp_server_subnets`;
 CREATE TABLE `dhcp_server_subnets` (
-  `id` tinyint(10) unsigned NOT NULL,
-  `host_id` tinyint(10) unsigned NOT NULL,
-  `subnet_id` tinyint(10) unsigned NOT NULL,
+  `id` int(10) unsigned NOT NULL,
+  `host_id` int(10) unsigned NOT NULL,
+  `subnet_id` int(10) unsigned NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='stores subnet to dhcp server relationships';
 
@@ -254,9 +254,9 @@ CREATE TABLE `dns` (
 
 DROP TABLE IF EXISTS `dns_server_domains`;
 CREATE TABLE `dns_server_domains` (
-  `id` tinyint(10) unsigned NOT NULL,
-  `host_id` tinyint(10) unsigned NOT NULL,
-  `domain_id` tinyint(10) unsigned NOT NULL,
+  `id` int(10) unsigned NOT NULL,
+  `host_id` int(10) unsigned NOT NULL,
+  `domain_id` int(10) unsigned NOT NULL,
   `role` VARCHAR(10) NOT NULL COMMENT 'What role does this server play for this domain? master, slave, forward?',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores domain to DNS server relationships';
