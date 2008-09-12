@@ -417,12 +417,22 @@ EOL;
 EOL;
 
 
-    // MP: This could be slow depending on the size of the database.  I'll leave it for now.. maybe make it a button
-    list($status, $output) = run_module('build_zone', array('zone' => $record['fqdn']));
-    // If the module returned an error code display a popup warning
-    if (!$status)
-        $html .= "<div style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;'><pre style='font-family: monospace;'>{$output}</pre></div>";
-
+    // MP: This could be slow depending on the size of the database.  maybe make it a button.. having no build_dns_type turns it off
+    // It expects to be passed the domain name as domain= to the module
+    if ($conf['build_dns_type']) {
+        switch (strtolower($conf['build_dns_type'])) {
+            case "bind":
+                $dns_module_name = 'build_bind_domain';
+                break;
+            case "tinydns":
+                $dns_module_name = 'build_tinydns';
+                break;
+        }
+        list($status, $output) = run_module("{$dns_module_name}", array('domain' => $record['fqdn']));
+        // If the module returned an error code display a warning
+        if (!$status)
+            $html .= "<div style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;'><pre style='font-family: monospace;'>{$output}</pre></div>";
+    }
 
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
