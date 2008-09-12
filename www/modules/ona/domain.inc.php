@@ -529,10 +529,8 @@ EOM
 
     }
 
-
-
     // define the remaining entries
-    if ($options['set_primary_master']) $SET['primary_master'] = $options['set_primary_master'];
+    if ($entry['primary_master'] != $options['set_primary_master']) $SET['primary_master'] = $options['set_primary_master'];
     if ($options['set_admin'])   $SET['admin_email'] = $options['set_admin'];
     if ($options['set_refresh']) $SET['refresh']     = $options['set_refresh'];
     if ($options['set_retry'])   $SET['retry']       = $options['set_retry'];
