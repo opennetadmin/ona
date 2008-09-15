@@ -100,7 +100,6 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Domain Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Parent Domain</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Role</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Serial Number</td>
                 <td class="list-header" align="center">&nbsp;</td>
             </tr>
 EOL;
@@ -146,9 +145,6 @@ EOL;
                     {$record['role']}&nbsp;
                 </td>
 
-                <td class="list-row" align="center">
-                    {$record['serial']}&nbsp;
-                </td>
                 <td class="list-row" align="right">
 EOL;
 

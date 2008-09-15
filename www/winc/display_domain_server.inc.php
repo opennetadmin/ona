@@ -229,13 +229,13 @@ EOL;
 
     // MP: This could be slow depending on the size of the database.  maybe make it a button.. having no build_dns_type turns it off
     // It expects to be passed the domain name as domain= to the module
-    if ($conf['build_dns_type']) {
+    if ($conf['build_dns_type'] && auth('dns_record_add',$debug_val)) {
         switch (strtolower($conf['build_dns_type'])) {
             case "bind":
                 $dns_module_name = 'build_bind_conf';
                 break;
             case "tinydns":
-                $dns_module_name = 'build_tinydns';
+                $dns_module_name = 'build_tinydns_conf';
                 break;
         }
         list($status, $output) = run_module("{$dns_module_name}", array('server' => $record['fqdn'],'path' => 'GUI-only-path'));
@@ -243,14 +243,6 @@ EOL;
         if (!$status)
             $html .= "<div style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;'><pre style='font-family: monospace;'>{$output}</pre></div>";
     }
-
-/*
-    // MP: This could be slow depending on the size of the database.  I'll leave it for now.. maybe make it a button
-    list($status, $output) = run_module('build_zone', array('server' => $record['name'].".".$record['domain_fqdn']));
-    // If the module returned an error code display a popup warning
-    if (!$status)
-        $html .= "<div style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;'><pre style='font-family: monospace;'>{$output}</pre></div>";
-*/
 
 
     // Insert the new html into the window

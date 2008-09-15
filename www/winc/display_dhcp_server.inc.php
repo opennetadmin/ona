@@ -257,11 +257,23 @@ EOL;
         xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display_list');
 EOL;
 
-    // MP: This could be slow depending on the size of the database.  I'll leave it for now.. maybe make it a button
-    list($status, $output) = run_module('dhcp_build_conf', array('host' => $record['fqdn']));
-    // If the module returned an error code display a popup warning
-    if (!$status)
-        $html .= "<div style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;'><pre style='font-family: monospace;'>{$output}</pre></div>";
+
+    // MP: This could be slow depending on the size of the database.  maybe make it a button.. having no build_dns_type turns it off
+    if ($conf['build_dhcp_type'] && auth('advanced',$debug_val)) {
+        switch (strtolower($conf['build_dhcp_type'])) {
+            case "isc":
+                $dhcp_module_name = 'build_dhcpd_conf';
+                break;
+            case "dhcpd":
+                $dhcp_module_name = 'build_dhcpd_conf';
+                break;
+        }
+        list($status, $output) = run_module("{$dhcp_module_name}", array('server' => $record['fqdn']));
+        // If the module returned an error code display a warning
+        if (!$status)
+            $html .= "<div style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;'><pre style='font-family: monospace;'>{$output}</pre></div>";
+    }
+
 
 
     // Insert the new html into the window
