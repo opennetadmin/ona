@@ -643,7 +643,8 @@ complex DNS messes for themselves.
         $add_name = $hostname;
         $add_domainid = $domain['id'];
 
-
+        $options['txt'] = str_replace('\\=','=',$options['txt']);
+        $options['txt'] = str_replace('\\&','&',$options['txt']);
         $add_txt = $options['txt'];
 
         // Dont print a dot unless hostname has a value
@@ -1062,7 +1063,14 @@ EOM
     if (array_key_exists('set_srv_weight', $options)) $SET['srv_weight'] = $options['set_srv_weight'];
     if (array_key_exists('set_srv_port', $options)) $SET['srv_port'] = $options['set_srv_port'];
 
-    if (array_key_exists('set_txt', $options)) $SET['txt'] = $options['set_txt'];
+    if (array_key_exists('set_txt', $options)) {
+        // There is an issue with escaping '=' and '&'.  We need to avoid adding escape characters
+        $options['set_txt'] = str_replace('\\=','=',$options['set_txt']);
+        $options['set_txt'] = str_replace('\\&','&',$options['set_txt']);
+        // If it changed...
+        if ($dns['txt'] != $options['set_txt'])
+            $SET['txt'] = $options['set_txt'];
+    }
 
     // If it is an A record and they have specified to auto add the PTR record for it.
     if ($options['set_addptr'] and $options['set_type'] == 'A') {

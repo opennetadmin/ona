@@ -393,7 +393,7 @@ EOM
 
     if (array_key_exists('set_location', $options)) {
         if (!$options['set_location'])
-            $SET_DEV['location_id'] = '';
+            unset($SET_DEV['location_id']);
         else {
             list($status, $rows, $loc) = ona_find_location($options['set_location']);
             if (!$rows) {

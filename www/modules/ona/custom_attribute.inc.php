@@ -131,10 +131,12 @@ EOM
         return(array(6, $self['error'] . "\n"));
     }
 
+    if (!$catype['failed_rule_text']) $catype['failed_rule_text'] = "Not specified.";
+
     // validate the inpute value against the field_validation_rule.
     if ($catype['field_validation_rule'] and !preg_match($catype['field_validation_rule'], $options['value'])) {
         printmsg("DEBUG => The value '{$options['value']}' does not match field validation rule: {$catype['field_validation_rule']}",3);
-        $self['error'] = "ERROR => The value '{$options['value']}' does not match field validation rule: {$catype['field_validation_rule']}";
+        $self['error'] = "ERROR => The value: '{$options['value']}', does not match field validation rule: {$catype['field_validation_rule']}\\nReason: {$catype['failed_rule_text']}";
         return(array(7, $self['error'] . "\n"));
     }
 
@@ -474,11 +476,12 @@ EOM
         $SET['value'] = $valinfo = trim($options['set_value']);
     }
 
+    if (!$catype['failed_rule_text']) $catype['failed_rule_text'] = "Not specified.";
 
     // validate the inpute value against the field_validation_rule.
     if ($catype['field_validation_rule'] and !preg_match($catype['field_validation_rule'], $SET['value'])) {
         printmsg("DEBUG => The value '{$SET['value']}' does not match field validation rule: {$catype['field_validation_rule']}",3);
-        $self['error'] = "ERROR => The value '{$SET['value']}' does not match field validation rule: {$catype['field_validation_rule']}";
+        $self['error'] = "ERROR => The value: '{$SET['value']}', does not match field validation rule: {$catype['field_validation_rule']}\\nReason: {$catype['failed_rule_text']}";
         return(array(4, $self['error'] . "\n"));
     }
 
