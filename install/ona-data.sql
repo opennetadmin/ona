@@ -199,24 +199,24 @@ UNLOCK TABLES;
 -- 
 
 INSERT INTO `sys_config` (`name`, `value`, `description`, `field_validation_rule`, `failed_rule_text`, `editable`, `deleteable`) VALUES
-('cookie_life', '172800', 'Sets the length of the session cookie.  It is in seconds', '', 1, 0, ''),
-('date_format', 'M jS, g:ia', 'PHP text format for date values', '', 1, 0, ''),
-('debug', '0', 'Debug output level, the higher the number the more it logs', '', 1, 0, ''),
-('dns_admin_email', 'hostmaster', 'per RFC 2412, defaults to hostmaster within the domain origin', '', 1, 0, ''),
-('dns_defaultdomain', 'example.com', 'Default DNS domain name', '', 1, 0, ''),
-('dns_default_ttl', '86400', 'this is the value of $TTL for the zone, used as the default value', '', 1, 0, ''),
-('dns_expiry', '3600', 'DNS expire time used in SOA', '', 1, 0, ''),
-('dns_minimum', '3600', 'DNS minimum TTL time, used as the negative caching value per RFC 2308', '', 1, 0, ''),
-('dns_primary_master', '', 'The fqdn of your default primary master DNS server, leave blank if not required', '', 1, 0, ''),
-('dns_refresh', '86400', 'DNS refresh time used in SOA', '', 1, 0, ''),
-('dns_retry', '3600', 'DNS retry time used in SOA', '', 1, 0, ''),
-('logfile', '/var/log/ona.log', 'Local filesystem path to log messages', '', 1, 0, ''),
-('search_results_per_page', '10', 'Sets the amount of rows per page in list items', '', 1, 0, ''),
-('stdout', '0', 'Flag to allow logging via STDOUT.. This is extreme debugging, not recomended.', '', 0, 0, ''),
-('suggest_max_results', '10', 'Limits the amount of rows returned by queries. (test impact of changing this first)', '', 1, 0, ''),
-('syslog', '0', 'Log via syslog, only works if debug is set to 0', '', 0, 0, ''),
-('version', 'not-set', 'Tracks current installed version, used to detect when upgrades should be done.', '', 0, 0, ''),
-('upgrade_index', '5', 'Tracks current upgrade index, used to perform database upgrades.', '', 0, 0, '');
+('cookie_life', '172800', 'Sets the length of the session cookie.  It is in seconds', '', '', 1, 0),
+('date_format', 'M jS, g:ia', 'PHP text format for date values', '', '', 1, 0),
+('debug', '0', 'Debug output level, the higher the number the more it logs', '', '', 1, 0),
+('dns_admin_email', 'hostmaster', 'per RFC 2412, defaults to hostmaster within the domain origin', '', '', 1, 0),
+('dns_defaultdomain', 'example.com', 'Default DNS domain name', '', '', 1, 0),
+('dns_default_ttl', '86400', 'this is the value of $TTL for the zone, used as the default value', '', '', 1, 0),
+('dns_expiry', '3600', 'DNS expire time used in SOA', '', '', 1, 0),
+('dns_minimum', '3600', 'DNS minimum TTL time, used as the negative caching value per RFC 2308', '', '', 1, 0),
+('dns_primary_master', '', 'The fqdn of your default primary master DNS server, leave blank if not required', '', '', 1, 0),
+('dns_refresh', '86400', 'DNS refresh time used in SOA', '', '', 1, 0),
+('dns_retry', '3600', 'DNS retry time used in SOA', '', '', 1, 0),
+('logfile', '/var/log/ona.log', 'Local filesystem path to log messages', '', '', 1, 0),
+('search_results_per_page', '10', 'Sets the amount of rows per page in list items', '', '', 1, 0),
+('stdout', '0', 'Flag to allow logging via STDOUT.. This is extreme debugging, not recomended.', '', '', 0, 0),
+('suggest_max_results', '10', 'Limits the amount of rows returned by queries. (test impact of changing this first)', '', '', 1, 0),
+('syslog', '0', 'Log via syslog, only works if debug is set to 0', '', '', 0, 0),
+('version', 'not-set', 'Tracks current installed version, used to detect when upgrades should be done.', '', '', 0, 0),
+('upgrade_index', '5', 'Tracks current upgrade index, used to perform database upgrades.', '', '', 0, 0);
 
 --
 -- Dumping data for table `users`
