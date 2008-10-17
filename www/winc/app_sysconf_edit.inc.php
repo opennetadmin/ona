@@ -231,7 +231,7 @@ function ws_save($window_name, $form='') {
 //             }
 // 
 //         }
-    }
+//    }
 
     // If the module returned an error code display a popup warning
     if ($status) {
