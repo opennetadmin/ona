@@ -525,6 +525,10 @@ CREATE TABLE `sys_config` (
   `name` varchar(128) NOT NULL,
   `value` varchar(256) NOT NULL,
   `description` varchar(512) NOT NULL,
+  `field_validation_rule` TEXT NOT NULL COMMENT 'Regular expression to validate content of the value column',
+  `failed_rule_text` TEXT NOT NULL COMMENT 'Text presented when the field_validation_rule fails',
+  `editable` TINYINT(1) NOT NULL COMMENT 'Can this record be edited?',
+  `deleteable` TINYINT(1) NOT NULL COMMENT 'Can this record be deleted?',
   PRIMARY KEY  (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

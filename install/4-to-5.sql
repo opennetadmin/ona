@@ -13,7 +13,15 @@ VALUES ('add_module', 'Register a new DCM module', 'get_module_list.inc.php');
 
 -- this is subject to change.. may not want to deploy this part yet
 ALTER TABLE `sys_config` ADD `field_validation_rule` TEXT NOT NULL COMMENT 'Regular expression to validate content of the value column';
+ALTER TABLE `sys_config` ADD `failed_rule_text` TEXT NOT NULL COMMENT 'Text presented when the field_validation_rule fails';
 ALTER TABLE `sys_config` ADD `editable` TINYINT( 1 ) NOT NULL COMMENT 'Can this record be edited?';
 ALTER TABLE `sys_config` ADD `deleteable` TINYINT( 1 ) NOT NULL COMMENT 'Can this record be deleted?';
 
--- set up the  new sys_config user
+DELETE FROM `sys_config` WHERE `name` = 'db' LIMIT 1;
+UPDATE `sys_config` SET `editable` = '1' WHERE `name` = 'debug' LIMIT 1 ;
+UPDATE `sys_config` SET `editable` = '1' WHERE `name` = 'date_format' LIMIT 1 ;
+UPDATE `sys_config` SET `editable` = '1' WHERE `name` = 'cookie_life' LIMIT 1 ;
+UPDATE `sys_config` SET `editable` = '1' WHERE `name` = 'logfile' LIMIT 1 ;
+UPDATE `sys_config` SET `editable` = '1' WHERE `name` = 'search_results_per_page' LIMIT 1 ;
+UPDATE `sys_config` SET `editable` = '1' WHERE `name` = 'suggest_max_results' LIMIT 1 ;
+UPDATE `sys_config` SET `editable` = '1' WHERE `name` like 'dns%' ;

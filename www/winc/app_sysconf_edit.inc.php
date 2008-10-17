@@ -149,7 +149,7 @@ EOL;
 //     Save Form
 //
 // Description:
-//     Creates/updates an role type with the info from the submitted form.
+//     Creates/updates an sys config entry with the info from the submitted form.
 //////////////////////////////////////////////////////////////////////////////
 function ws_save($window_name, $form='') {
     global $conf, $self, $onadb;
@@ -168,15 +168,15 @@ function ws_save($window_name, $form='') {
 
     // Strip whitespace
     // FIXME: (PK) What about SQL injection attacks?  This is a user-entered string...
-    $form['role_name'] = trim($form['role_name']);
+    $form['value'] = trim($form['value']);
     
     // Don't insert a string of all white space!
-    if(trim($form['role_name']) == "") {
-        $self['error'] = "ERROR => Blank names not allowed.";
-        printmsg($self['error'], 0);
-        $response->addScript("alert('{$self['error']}');");
-        return($response->getXML());
-    }
+//     if(trim($form['name']) == "") {
+//         $self['error'] = "ERROR => Blank names not allowed.";
+//         printmsg($self['error'], 0);
+//         $response->addScript("alert('{$self['error']}');");
+//         return($response->getXML());
+//     }
 
 
     // If you get a numeric in $form, update the record
@@ -184,15 +184,15 @@ function ws_save($window_name, $form='') {
         // Get the role record before updating (logging)
         list($status, $rows, $original_role) = ona_get_role_record(array('id' => $form['id']));
 
-        if($form['role_name'] !== $original_role['name']) {
+        if($form['value'] !== $original_role['value']) {
             list($status, $rows) = db_update_record(
                                          $onadb,
                                          'roles',
                                          array('id' => $form['id']),
-                                         array('name' => $form['role_name'])
+                                         array('value' => $form['value'])
                                      );
             if ($status or !$rows) {
-                $self['error'] = "ERROR => role_edit update ws_save() failed: " . $self['error'];
+                $self['error'] = "ERROR => sys_config_edit update ws_save() failed: " . $self['error'];
                 printmsg($self['error'], 0);
             }
             else {
@@ -200,46 +200,46 @@ function ws_save($window_name, $form='') {
                 list($status, $rows, $new_role) = ona_get_role_record(array('id' => $form['id']));
     
                 // Return the success notice
-                $self['error'] = "INFO => Role UPDATED:{$new_role['id']}: {$new_role['name']}";
+                $self['error'] = "INFO => Sys_config UPDATED:{$new_role['id']}: {$new_role['value']}";
                 printmsg($self['error'], 0);
-                $log_msg = "INFO => Role UPDATED:{$new_role['id']}: name[{$original_role['name']}=>{$new_role['name']}]";
+                $log_msg = "INFO => Sys_config UPDATED:{$new_role['id']} NAME[{$original_role['name']}]{$original_role['value']}=>{$new_role['value']}";
                 printmsg($log_msg, 0);
             }
         }
     }
     // If you get nothing in $form, create a new record
-    else {
-        $id = ona_get_next_id('roles');
-        if (!$id) {
-            $self['error'] = "ERROR => The ona_get_next_id() call failed!";
-            printmsg($self['error'], 0);
-        }
-        else {
-            printmsg("DEBUG => id for new role record: $id", 3);
-            list($status, $rows) = db_insert_record($onadb, 
-                                            "roles", 
-                                            array('id' => $id, 
-                                            'name' => $form['role_name']));
-
-            if ($status or !$rows) {
-                $self['error'] = "ERROR => role_edit add ws_save() failed: " . $self['error'];
-                printmsg($self['error'], 0);
-            }
-            else {
-                $self['error'] = "INFO => Role ADDED: {$form['role_name']} ";
-                printmsg($self['error'], 0);
-            }
-
-        }
+//     else {
+//         $id = ona_get_next_id('roles');
+//         if (!$id) {
+//             $self['error'] = "ERROR => The ona_get_next_id() call failed!";
+//             printmsg($self['error'], 0);
+//         }
+//         else {
+//             printmsg("DEBUG => id for new role record: $id", 3);
+//             list($status, $rows) = db_insert_record($onadb, 
+//                                             "roles", 
+//                                             array('id' => $id, 
+//                                             'name' => $form['role_name']));
+// 
+//             if ($status or !$rows) {
+//                 $self['error'] = "ERROR => role_edit add ws_save() failed: " . $self['error'];
+//                 printmsg($self['error'], 0);
+//             }
+//             else {
+//                 $self['error'] = "INFO => Role ADDED: {$form['role_name']} ";
+//                 printmsg($self['error'], 0);
+//             }
+// 
+//         }
     }
 
     // If the module returned an error code display a popup warning
     if ($status) {
-        $js .= "alert(\"Save failed. ". trim($self['error']) . " (Hint: Does the name you're trying to insert already exist?)\");";
+        $js .= "alert(\"Save failed. ". trim($self['error']) . "\");";
     }
     else {
         $js .= "removeElement('{$window_name}');";
-        $js .= "xajax_window_submit('app_device_role_list', xajax.getFormValues('app_device_role_list_filter_form'), 'display_list');";
+        $js .= "xajax_window_submit('app_sysconf_list', xajax.getFormValues('app_sysconf_list_filter_form'), 'display_list');";
     }
 
     // Return some javascript to the browser
