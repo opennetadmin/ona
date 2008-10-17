@@ -198,7 +198,7 @@ UNLOCK TABLES;
 -- Dumping data for table `sys_config`
 -- 
 
-INSERT INTO `sys_config` (`name`, `value`, `description`) VALUES 
+INSERT INTO `sys_config` (`name`, `value`, `description`, `field_validation_rule`, `failed_rule_text`, `editable`, `deleteable`) VALUES
 ('cookie_life', '172800', 'Sets the length of the session cookie.  It is in seconds', '', 1, 0, ''),
 ('date_format', 'M jS, g:ia', 'PHP text format for date values', '', 1, 0, ''),
 ('debug', '0', 'Debug output level, the higher the number the more it logs', '', 1, 0, ''),
