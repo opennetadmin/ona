@@ -20,7 +20,7 @@ function ona_sql($options="") {
     global $conf, $onadb, $base;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     // TODO: Maybe make this into a sys_config option
     $srvdir = dirname($base)."/sql";
@@ -34,6 +34,9 @@ function ona_sql($options="") {
     if (!$options['delimiter']) {
         $options['delimiter'] = ':';
     }
+
+    // fix up the escaped ' marks.  may need the = and & stuff too????
+    $options['sql'] = str_replace('\\\'','\'',$options['sql']);
 
     // Set "options[commit] to no if it's not set
     if (!array_key_exists('commit', $options)) {
@@ -143,7 +146,7 @@ EOM
     // Sort the options array so we get our numerical bind variables in the right order
     ksort($options);
 
-    // After the array is sorted, get just the positional bind varialbe options.
+    // After the array is sorted, get just the positional bind variable options.
     // The number to shift in the slice is variable but 5 works for now unless I add more things.
     $sqlopts = array_slice($options,5);
 
