@@ -37,6 +37,7 @@ function ona_sql($options="") {
 
     // fix up the escaped ' marks.  may need the = and & stuff too????
     $options['sql'] = str_replace('\\\'','\'',$options['sql']);
+    $options['sql'] = str_replace('\\=','=',$options['sql']);
 
     // Set "options[commit] to no if it's not set
     if (!array_key_exists('commit', $options)) {
