@@ -25,3 +25,7 @@ UPDATE `sys_config` SET `editable` = '1' WHERE `name` = 'logfile' LIMIT 1 ;
 UPDATE `sys_config` SET `editable` = '1' WHERE `name` = 'search_results_per_page' LIMIT 1 ;
 UPDATE `sys_config` SET `editable` = '1' WHERE `name` = 'suggest_max_results' LIMIT 1 ;
 UPDATE `sys_config` SET `editable` = '1' WHERE `name` like 'dns%' ;
+
+DELETE FROM `dcm_module_list` WHERE `name` = 'dhcp_build_conf' LIMIT 1;
+DELETE FROM `dcm_module_list` WHERE `name` = 'build_zone' LIMIT 1;
+DELETE FROM `dcm_module_list` WHERE `name` = 'mysql_purge_logs' LIMIT 1;
