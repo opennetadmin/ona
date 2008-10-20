@@ -584,9 +584,9 @@ complex DNS messes for themselves.
         $add_srv_port = $options['srv_port'];
 
         // Dont print a dot unless hostname has a value
-        if ($add_name) $add_name = $add_name.'.';
+        if ($hostname) $hostname = $hostname.'.';
 
-        $info_msg = "{$add_name}{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+        $info_msg = "{$hostname}{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
 
     }
 
