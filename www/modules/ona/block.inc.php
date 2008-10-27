@@ -75,6 +75,10 @@ EOM
     $options['start'] = ip_mangle($options['start'], 1);
     $options['end']  = ip_mangle($options['end'], 1);
 
+    // There is an issue with escaping '=' and '&'.  We need to avoid adding escape characters
+    $options['notes'] = str_replace('\\=','=',$options['notes']);
+    $options['notes'] = str_replace('\\&','&',$options['notes']);
+
     // check to see if the campus already exists
     list($status, $rows, $block) = ona_get_block_record(array('name' => $options['name']));
 
