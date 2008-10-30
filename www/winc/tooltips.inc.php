@@ -2232,8 +2232,6 @@ function get_custom_attribute_info_html($form) {
     if ($rows == 0 or $status) return(array('', ''));
 
 
-
-
     $html .= <<<EOL
         <!-- Custom Attribute Info -->
         <table cellspacing="0" border="0" cellpadding="0">
@@ -2265,13 +2263,13 @@ function get_custom_attribute_info_html($form) {
                 Value
             </td>
             <td class="padding" align="left" width="100%">
-                <textarea
+                <pre
                     name="value"
                     alt="Value"
-                    class="edit"
+                    style="font-family: inherit;background-color: white;"
                     rows="5"
                     cols="25"
-                >{$ca['value']}</textarea>
+                >{$ca['value']}</pre>
             </td>
         </tr>
 
@@ -2280,13 +2278,13 @@ function get_custom_attribute_info_html($form) {
                 Notes
             </td>
             <td class="padding" align="left" width="100%">
-                <textarea
+                <pre
                     name="value"
                     alt="Value"
-                    class="edit"
+                    style="font-family: inherit;background-color: white;"
                     rows="5"
                     cols="25"
-                >{$ca['notes']}</textarea>
+                >{$ca['notes']}</pre>
             </td>
         </tr>
 

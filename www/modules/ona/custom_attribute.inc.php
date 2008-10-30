@@ -140,6 +140,10 @@ EOM
         return(array(7, $self['error'] . "\n"));
     }
 
+    // There is an issue with escaping '=' and '&'.  We need to avoid adding escape characters
+    $options['value'] = str_replace('\\=','=',$options['value']);
+    $options['value'] = str_replace('\\&','&',$options['value']);
+
     // add it
     list($status, $rows) = db_insert_record(
         $onadb,
@@ -472,6 +476,10 @@ EOM
     $SET['value'] = $entry['value'];
 
     if (array_key_exists('set_value', $options)) {
+        // There is an issue with escaping '=' and '&'.  We need to avoid adding escape characters
+        $options['set_value'] = str_replace('\\=','=',$options['set_value']);
+        $options['set_value'] = str_replace('\\&','&',$options['set_value']);
+
         // trim leading and trailing whitespace from 'value'
         $SET['value'] = $valinfo = trim($options['set_value']);
     }

@@ -4,7 +4,6 @@ $title_left_html = 'Custom Attributes';
 
 
 
-
 // Determine if this is a host or a subnet we are dealing with
 if (is_numeric($record['subnet_type_id'])) {
     $kind = 'subnet';
@@ -26,9 +25,7 @@ EOL;
 if ($rows) {
     foreach ($attributes as $entry) {
         list($status, $rows, $ca_type) = ona_get_custom_attribute_record(array('id' => $entry['id']));
-        foreach(array_keys($ca_type) as $key) { $ca_type[$key] = htmlentities($ca_type[$key], ENT_QUOTES); }
 
-        $ca_type['value'] = truncate($ca_type['value'],20);
         $modbodyhtml .= <<<EOL
             <tr onMouseOver="this.className='row-highlight';"
                 onMouseOut="this.className='row-normal';">
@@ -53,7 +50,7 @@ if ($rows) {
                                             'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>cainfo,id=>tt_cainfo_{$entry['id']},ca_id=>{$entry['id']}\');'
                                            );"
                 >
-                    {$ca_type['value']}&nbsp;
+                    <div style="width: 110px;overflow: hidden;">{$ca_type['value']}&nbsp;</div>
                 </td>
                 <td align="right" nowrap="true">
                     <form id="form_custom_attribute_{$entry['id']}"
