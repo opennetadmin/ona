@@ -1166,8 +1166,16 @@ function startSession() {
     // Set the name of the cookie (nicer than default name)
     session_name("ONA_SESSION_ID");
 
-    // Set cookie to expire at end of session
-    session_set_cookie_params(0, '/');
+   // Set cookie to expire at end of session
+   // secure cookie
+   if (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS']) {
+
+       session_set_cookie_params(0, '/', $_SERVER["SERVER_NAME"], 1);
+   }
+   // normal cookie
+   else {
+       session_set_cookie_params(0, '/');
+   }
 
     // (Re)start the session
     session_start();
