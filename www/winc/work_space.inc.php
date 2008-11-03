@@ -154,7 +154,12 @@ function ws_rewrite_history($window_name, $null='', $return_html=0) {
 
     $html = $js = '';
 
-    $html .= "&nbsp;Trace: ";
+    // clear the trace history if they have cliked the word "trace"
+    if ($null == 'clear') {
+        $_SESSION['ona']['work_space']['history'] = '';
+    }
+
+    $html .= "<span title=\"Click to clear history\" onclick=\"xajax_window_submit('work_space', 'clear', 'rewrite_history');\">&nbsp;Trace: </span>";
     $and = '';
     foreach((array)$_SESSION['ona'][$window_name]['history'] as $history) {
         $history['title'] = htmlentities($history['title'], ENT_QUOTES);
