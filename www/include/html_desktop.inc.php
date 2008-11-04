@@ -17,6 +17,7 @@ list ($status, $subnet_count, $records)     = db_get_records($onadb, 'subnets', 
 list ($status, $pool_count, $records)       = db_get_records($onadb, 'dhcp_pools', $where, "", 0);
 list ($status, $block_count, $records)      = db_get_records($onadb, 'blocks', $where, "", 0);
 list ($status, $vlan_campus_count, $records) = db_get_records($onadb, 'vlan_campuses', $where, "", 0);
+list ($status, $config_archive_count, $records) = db_get_records($onadb, 'configurations', $where, "", 0);
 
 
 // The following checks with the opennetadmin server to see what the most current version is.
@@ -287,6 +288,7 @@ print <<<EOL
                     <tr onmouseover="record_counts_pie(5)"><td>DHCP Pools</td><td>{$pool_count}</td>
                     <tr onmouseover="record_counts_pie(6)"><td><a title="List Blocks" onClick="xajax_window_submit('search_results', 'search_form_id=>block_search_form');"> Blocks</a></td><td>{$block_count}</td>
                     <tr onmouseover="record_counts_pie(7)"><td><a title="List VLAN Campuses" onClick="xajax_window_submit('search_results', 'search_form_id=>vlan_campus_search_form');">VLAN Campuses</a></td><td>{$vlan_campus_count}</td>
+                    <tr onmouseover="record_counts_pie(8)"><td>Config Archives</td><td>{$config_archive_count}</td>
                 </table>
 
             <!-- END OF FIRST COLUMN OF SMALL BOXES -->
