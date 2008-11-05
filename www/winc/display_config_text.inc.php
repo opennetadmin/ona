@@ -186,7 +186,7 @@ EOL;
                             code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
                                    '    {$form_id}_last_search = el(\'{$form_id}_filter\').value;' +
                                    '    document.getElementById(\'{$form_id}_page\').value = 1;' +
-                                   '    xajax_window_submit(\'{$submit_window}\', xajax.getFormValues(\'{$form_id}\'), \'display\');' +
+                                   '    xajax_window_submit(\'{$submit_window}\', xajax.getFormValues(\'{$form_id}\'), \'display_list\');' +
                                    '}';
                             timer = setTimeout(code, 700);"
                     >
@@ -234,7 +234,7 @@ EOL;
         {$form_id}_last_search = '';
 
         /* Tell the browser to load/display the list */
-        xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display');
+        xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display_list');
 EOL;
 
     // If they have selected to display the config, show it

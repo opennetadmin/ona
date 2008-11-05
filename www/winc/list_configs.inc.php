@@ -9,7 +9,7 @@
 //   Displays A list of configs based on search criteria.
 //   Input:  An array from xajaxGetFormValues() from a quick filter form.
 //////////////////////////////////////////////////////////////////////////////
-function ws_display($window_name, $form='') {
+function ws_display_list($window_name, $form='') {
     global $conf, $self, $onadb, $baseURL;
     global $images, $color, $style;
     $html = '';
@@ -23,7 +23,7 @@ function ws_display($window_name, $form='') {
     $tab = $_SESSION['ona'][$form['form_id']]['tab'];
 
     // Build js to refresh this list
-    $refresh = "xajax_window_submit('{$window_name}', xajax.getFormValues('{$form['form_id']}'), 'display');";
+    $refresh = "xajax_window_submit('{$window_name}', xajax.getFormValues('{$form['form_id']}'), 'display_list');";
 
     // If it's not a new query, load the previous query from the session
     // into $form and save the current page and filter in the session.
