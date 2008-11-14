@@ -105,7 +105,7 @@ EOM
     }
 
     // Since the IP seems available, let's double check and make sure it's not in a DHCP address pool
-    list($status, $rows, $pool) = ona_get_dhcp_pool_record("ip_addr_start < '{$options['ip']}' AND ip_addr_end > '{$options['ip']}'");
+    list($status, $rows, $pool) = ona_get_dhcp_pool_record("ip_addr_start <= '{$options['ip']}' AND ip_addr_end >= '{$options['ip']}'");
     if ($status or $rows) {
         printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") falls within a DHCP address pool!",3);
         $self['error'] = "ERROR => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") falls within a DHCP address pool!";
@@ -341,7 +341,7 @@ EOM
         }
 
         // Since the IP seems available, let's double check and make sure it's not in a DHCP address pool
-        list($status, $rows, $pool) = ona_get_dhcp_pool_record("ip_addr_start < '{$options['set_ip']}' AND ip_addr_end > '{$options['set_ip']}'");
+        list($status, $rows, $pool) = ona_get_dhcp_pool_record("ip_addr_start <= '{$options['set_ip']}' AND ip_addr_end >= '{$options['set_ip']}'");
         if ($status or $rows) {
             printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") falls within a DHCP address pool!",3);
             $self['error'] = "ERROR => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") falls within a DHCP address pool!";

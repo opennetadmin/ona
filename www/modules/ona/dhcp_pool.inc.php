@@ -45,7 +45,7 @@ function dhcp_pool_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => dhcp_pool_add({$options}) called", 3);
 
@@ -102,29 +102,6 @@ EOM
     }
 
 
-//     if ($options['server']) {
-//         // Determine the server is valid
-//         list($host, $zone) = ona_find_host($options['server']);
-//
-//         if (!$host['id']) {
-//             printmsg("DEBUG => The server ({$options['server']}) does not exist!",3);
-//             $self['error'] = "ERROR => The server specified, {$options['server']}, does not exist!";
-//             return(array(2, $self['error'] . "\n"));
-//         }
-//
-//         // Determine the host that was found is actually a server
-//         list($status, $rows, $server) = ona_get_server_record(array('HOST_ID' => $host['id']));
-//
-//         if (!$server['id']) {
-//             printmsg("DEBUG => The host ({$host['FQDN']}) is not a server!",3);
-//             $self['error'] = "ERROR => The host ({$host['FQDN']}) is not a server!";
-//             return(array(3, $self['error'] . "\n"));
-//         }
-//
-//         $desc = $host['FQDN'];
-//         $serverid = $server['id'];
-//         $failovergroupid = '';
-//     }
 
     if ($options['failover_group']) {
         list($status, $rows, $fg) = ona_get_dhcp_failover_group_record(array('id' => $options['failover_group']));
@@ -237,67 +214,6 @@ EOM
         return(array(8, $self['error'] . "\n"));
     }
 
-    // check to see that the server_id(s) you are adding the pool to are already
-    // associated with this subnet in dhcp_server_subnets_b, add them to the makeserver array if they are not there
-//     if ($serverid) {
-//         list($status, $rows, $serversubnets) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('SERVER_ID' => $serverid, 'subnet_id' => $subnet['id']));
-//         if ($rows == 0) {
-//             $makeserver[1] = $serverid;
-//         }
-//     }
-
-//     if ($fg['primary_server_id']) {
-//         list($status, $rows, $serversubnets) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('server_id' => $fg['primary_server_id'], 'subnet_id' => $subnet['id']));
-//         if ($rows == 0) {
-//             $makeserver[2] = $fg['primary_server_id'];
-//         }
-//     }
-// 
-//     if ($fg['secondary_server_id']) {
-//         list($status, $rows, $serversubnets) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('server_id' => $fg['secondary_server_id'], 'subnet_id' => $subnet['id']));
-//         if ($rows == 0) {
-//             $makeserver[3] = $fg['secondary_server_id'];
-//         }
-//     }
-
-
-//     $add_to_error = "";
-//     // loop through all of the server ids in the makeserver array and build a dhcp_server_subnet_b entry
-//     if (is_array($makeserver)) {
-//         printmsg("DEBUG => dhcp_pool_add(): Need to make the server(s) DHCP server(s) for this subnet", 3);
-//         foreach($makeserver as $server_id) {
-//             // Get the next id
-//             $serversubnets_id = ona_get_next_id();
-//             if (!$serversubnets_id) {
-//                 $self['error'] = "ERROR => The ona_get_next_id() call failed!";
-//                 printmsg($self['error'], 0);
-//                 return(array(9, $self['error'] . "\n"));
-//             }
-//             printmsg("DEBUG => dhcp_pool_add(): New dhcp server subnets ID: $serversubnets_id", 3);
-//
-//             // Add the dhcp server subnets record
-//             list($status, $rows) =
-//                 db_insert_record(
-//                     $onadb,
-//                     'DHCP_SERVER_NETWORKS_B',
-//                     array(
-//                         'id'                  => $serversubnets_id,
-//                         'SERVER_id'           => $server_id,
-//                         'subnet_id'          => $subnet['id']
-//                     )
-//                 );
-//             if ($status or !$rows) {
-//                 $self['error'] = "ERROR => dhcp_pool_add() SQL Query failed: " . $self['error'];
-//                 printmsg($self['error'],0);
-//                 return(array(10, $self['error'] . "\n"));
-//             }
-//             list($host,$zone) = ona_find_host($server_id);
-//             list($status, $rows, $subnet) = ona_find_subnet($subnet['id']);
-//             printmsg("INFO => DHCP Network/Server Pair ADDED: {$subnet['DESCRIPTION']}/{$host['FQDN']} ", 0);
-//             $add_to_error .= "INFO => DHCP Network/Server Pair ADDED: {$subnet['DESCRIPTION']}/{$host['FQDN']}\n";
-//             unset($serversubnets_id);
-//         }
-//     }
 
 
 
@@ -517,7 +433,7 @@ function dhcp_pool_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => dhcp_pool_modify({$options}) called", 3);
 
@@ -750,67 +666,6 @@ EOM
     $SET['ip_addr_start'] = $start_dec;
     $SET['ip_addr_end']   = $end_dec;
 
-    // check to see that the server_id(s) you are adding the pool to are already
-    // associated with this subnet in dhcp_server_subnets_b, add them to the makeserver array if they are not there
-//     if ($server['id']) {
-//         list($status, $rows, $serversubnets) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('SERVER_id' => $server['id'], 'subnet_id' => $subnet['id']));
-//         if ($rows == 0) {
-//             $makeserver[1] = $server['id'];
-//         }
-//     }
-//
-//     if ($fg['PRIMARY_SERVER_id']) {
-//         list($status, $rows, $serversubnets) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('SERVER_id' => $fg['PRIMARY_SERVER_id'], 'subnet_id' => $subnet['id']));
-//         if ($rows == 0) {
-//             $makeserver[2] = $fg['PRIMARY_SERVER_id'];
-//         }
-//     }
-//
-//     if ($fg['SECONDARY_SERVER_id']) {
-//         list($status, $rows, $serversubnets) = db_get_record($onadb, 'DHCP_SERVER_NETWORKS_B', array('SERVER_id' => $fg['SECONDARY_SERVER_id'], 'subnet_id' => $subnet['id']));
-//         if ($rows == 0) {
-//             $makeserver[3] = $fg['SECONDARY_SERVER_id'];
-//         }
-//     }
-
-
-//     $add_to_error = "";
-//     // loop through all of the server ids in the makeserver array and build a dhcp_server_subnet_b entry
-//     if (is_array($makeserver)) {
-//         printmsg("DEBUG => dhcp_pool_add(): Need to make the server(s) DHCP server(s) for this subnet", 3);
-//         foreach($makeserver as $server_id) {
-//             // Get the next id
-//             $serversubnets_id = ona_get_next_id();
-//             if (!$serversubnets_id) {
-//                 $self['error'] = "ERROR => The ona_get_next_id() call failed!";
-//                 printmsg($self['error'], 0);
-//                 return(array(9, $self['error'] . "\n"));
-//             }
-//             printmsg("DEBUG => dhcp_pool_modify(): New dhcp server subnets ID: $serversubnets_id", 3);
-//
-//             // Add the dhcp server subnets record
-//             list($status, $rows) =
-//                 db_insert_record(
-//                     $onadb,
-//                     'DHCP_SERVER_NETWORKS_B',
-//                     array(
-//                         'id'                  => $serversubnets_id,
-//                         'SERVER_id'           => $server_id,
-//                         'subnet_id'          => $subnet['id']
-//                     )
-//                 );
-//             if ($status or !$rows) {
-//                 $self['error'] = "ERROR => dhcp_pool_modify() SQL Query failed: " . $self['error'];
-//                 printmsg($self['error'],0);
-//                 return(array(10, $self['error'] . "\n"));
-//             }
-//             list($host,$zone) = ona_find_host($server_id);
-//             list($status, $rows, $subnet) = ona_find_subnet($subnet['id']);
-//             printmsg("INFO => DHCP Network/Server Pair ADDED: {$subnet['DESCRIPTION']}/{$host['FQDN']} ", 0);
-//             $add_to_error .= "INFO => DHCP Network/Server Pair ADDED: {$subnet['DESCRIPTION']}/{$host['FQDN']}\n";
-//             unset($serversubnets_id);
-//         }
-//     }
 
     // Get the DHCP pool record before updating (logging)
     list($status, $rows, $original_pool) = ona_get_dhcp_pool_record(array('id' => $SET['id']));

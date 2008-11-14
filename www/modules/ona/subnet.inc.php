@@ -548,6 +548,25 @@ EOM
             $self['error'] = "ERROR => Changes would abandon {$num} hosts in an unallocated ip space";
             return(array(10, $self['error'] . "\n"));
         }
+
+
+        // Look for any dhcp pools that are currently in our subnet that would be
+        // abandoned if we were to make the proposed changes.
+        // Look for existin pools with start/end values outside of new subnet range
+        //            [--- new subnet ---]
+        //                      [--cur pool--]
+        //       [------- old subnet --------]
+        //
+        $where1 = "subnet_id = {$subnet['id']} AND ip_addr_start < {$options['set_ip']}";
+        $where2 = "subnet_id = {$subnet['id']} AND ip_addr_end > {$last_host}";
+        list($status, $rows1, $record) = ona_get_dhcp_pool_record($where1);
+        list($status, $rows2, $record) = ona_get_dhcp_pool_record($where2);
+        if ($rows1 or $rows2) {
+            $num = $rows1 + $rows2;
+            $self['error'] = "ERROR => Changes would abandon a DHCP pool in an unallocated ip space, adjust pool sizes first";
+            return(array(10, $self['error'] . "\n"));
+        }
+
     }
 
     //
