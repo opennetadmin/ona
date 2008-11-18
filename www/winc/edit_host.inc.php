@@ -498,7 +498,8 @@ function ws_save($window_name, $form='') {
 
         // Host options
         $form['host'] = $form['set_host'] . '.' . $form['set_domain'];          unset($form['set_host']); unset($form['set_domain']);
-        $form['notes'] = $form['set_notes'];            unset($form['set_notes']);
+        $form['notes'] = $form['set_notes'];                                    unset($form['set_notes']);
+        $form['description'] = $form['set_description'];                        unset($form['set_description']);
 
         // Interface options
         $form['ip'] = $form['set_ip'];                  unset($form['set_ip']);

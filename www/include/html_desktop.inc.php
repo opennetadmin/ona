@@ -155,7 +155,7 @@ print <<<EOL
                     value="{$_SESSION['ona']['auth']['user']['username']}"
                     name="login_userid"
                     size="12"
-                    onkeypress="if (event.keyCode == 9 || event.keyCode == 13) { el('getpass').focus(); }"
+                    onkeypress="if ((event.keyCode|event.which) == 9|(event.keyCode|event.which) == 13) { setTimeout('el(\'getpass\').focus()',10) }"
                     onclick="wwTT(this, event,
                                         'id', 'tt_loginform',
                                         'type', 'static',
