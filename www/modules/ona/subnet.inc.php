@@ -380,7 +380,7 @@ function subnet_modify($options="") {
     printmsg('DEBUG => subnet_modify('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -591,17 +591,16 @@ EOM
 
     // Set options['set_name']?
     if ($options['set_name']) {
-        // We require subnet names to be in upper case and spaces are converted to -'s.
+        // BUSINESS RULE: We require subnet names to be in upper case and spaces are converted to -'s.
         $options['set_name'] = trim($options['set_name']);
         $options['set_name'] = preg_replace('/\s+/', '-', $options['set_name']);
+        $options['set_name'] = strtoupper($options['set_name']);
         // Make sure there's not another subnet with this name
         list($status, $rows, $tmp) = ona_get_subnet_record(array('name' => $options['set_name']));
         if ($status or $rows > 1 or ($rows == 1 and $tmp['id'] != $subnet['id'])) {
             $self['error'] = "ERROR => That name is already used by another subnet!";
             return(array(12, $self['error'] . "\n"));
         }
-        // BUSINESS RULE: subnet names are stored in all upper case
-        $SET['name'] = strtoupper($options['set_name']);
     }
 
 

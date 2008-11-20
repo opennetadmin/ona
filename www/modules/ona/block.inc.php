@@ -303,7 +303,7 @@ function block_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => block_modify({$options}) called", 3);
 
@@ -342,8 +342,11 @@ EOM
         ));
     }
 
-    // The formatting rule on block campus names is all upper and trim it
-    $options['set_name'] = strtoupper(trim($options['set_name']));
+    // The formatting rule on block names is all upper and trim it
+    $options['set_name'] = trim($options['set_name']);
+    $options['set_name'] = preg_replace('/\s+/', '-', $options['set_name']);
+    $options['set_name'] = strtoupper($options['set_name']);
+
 
     // If the block provided is numeric, check to see if it's an block
     if (is_numeric($options['block'])) {
