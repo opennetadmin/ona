@@ -811,6 +811,7 @@ Modify a DNS record
     set_srv_weight=NUMBER       change SRV Weight
     set_srv_port=NUMBER         change SRV Port
     set_ebegin                  change the begin date for record, 0 disables
+    set_domain=DOMAIN           use if you need to explicitly set domain
 
   Note:
     * You are not allowed to change the type of the DNS record, to do that
@@ -894,8 +895,16 @@ EOM
     // Validate that the DNS name has only valid characters in it
     if ($options['set_name']) {
 
+        // If we are specifically passing in a domain, use its value.  If we dont have a domain
+        // then try to find it in the name that we are setting.
+        if($options['set_domain']) {
+            // Find the domain name piece of $search
+            list($status, $rows, $domain) = ona_find_domain($options['set_domain'],0);
+        } else {
+            list($status, $rows, $domain) = ona_find_domain($options['set_name'],0);
+        }
+
         // Find the domain name piece of $search
-        list($status, $rows, $domain) = ona_find_domain($options['set_name'],0);
         if (!isset($domain['id'])) {
             printmsg("ERROR => Unable to determine domain name portion of ({$options['set_name']})!", 3);
             $self['error'] = "ERROR => Unable to determine domain name portion of ({$options['set_name']})!";
