@@ -667,6 +667,7 @@ function ws_save($window_name, $form='') {
         $module = 'add';
 
         // options
+        $form['domain'] = $form['set_domain'];
         $form['name'] = $form['set_name'] . '.' . $form['set_domain']; unset($form['set_name']); unset($form['set_domain']);
         $form['type'] = $form['set_type']; unset($form['set_type']);
         $form['ebegin'] = $form['set_ebegin']; unset($form['set_ebegin']);

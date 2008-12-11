@@ -60,6 +60,7 @@ Add a new DNS record
     srv_weight=NUMBER         SRV Weight
     srv_port=NUMBER           SRV Port
     ebegin=date               Set the begin date for record, 0 disables, default now
+    domain=DOMAIN             use only if you need to explicitly set a parent domain
 
   Examples:
     dns_record_add name=newhost.something.com type=A ip=10.1.1.2 addptr
@@ -69,7 +70,7 @@ Add a new DNS record
     dns_record_add name=domain.com type=MX pointsto=mxhost.domain.com mx_preference=10
     dns_record_add name=_foo._tcp.example.com type=SRV pointsto=host.domain.com srv_port=80
 
-    DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
+    DOMAIN will default to {$conf['dns_defaultdomain']} if not specified.
 
 
 EOM
@@ -130,8 +131,17 @@ primary name for a host should be unique in all cases I'm aware of
     // that will be used as the "domain".  This means testing many
     // domain names against the DB to see what's valid.
     //
+
+    // If we are specifically passing in a domain, use its value.  If we dont have a domain
+    // then try to find it in the name that we are setting.
+    if($options['domain']) {
+        // Find the domain name piece of $search
+        list($status, $rows, $domain) = ona_find_domain($options['domain'],0);
+    } else {
+        list($status, $rows, $domain) = ona_find_domain($options['name'],0);
+    }
+
     // Find the domain name piece of $search.
-    list($status, $rows, $domain) = ona_find_domain($options['name'],0);
     if (!isset($domain['id'])) {
         printmsg("ERROR => Unable to determine domain name portion of ({$options['name']})!", 3);
         $self['error'] = "ERROR => Unable to determine domain name portion of ({$options['name']})!";
