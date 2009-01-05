@@ -11,7 +11,8 @@ $title_left_html = '';
 // Get the numeric IP address of our subnet (we replace the last quad with a .0)
 $ip = ip_mangle(preg_replace('/\.\d+$/', '.0', $record['ip_addr']), 'numeric');
 $ip_subnet = ip_mangle($record['ip_addr'], 'numeric');
-
+$ip_netmask = ip_mangle($record['ip_mask'], 'numeric');
+$net_end = ((4294967295 - $ip_netmask) + $ip_subnet);
 
 $title_left_html .= <<<EOL
     <a title="Display full sized subnet map"
@@ -33,11 +34,15 @@ $title_left_html .= <<<EOL
             }
             }
         "
-    ><img src="{$images}/silk/paintbrush.png" border="0"></a>&nbsp;&nbsp;Subnet Map
+    ><img src="{$images}/silk/paintbrush.png" border="0"></a>&nbsp;&nbsp;Subnet Allocation Map
 EOL;
 
 
 $title_right_html = '';
+
+
+
+
 
 
 $modbodyhtml .= <<<EOL
@@ -56,6 +61,29 @@ $modbodyhtml .= <<<EOL
             </tr>
         </table>
 EOL;
+
+// Get a list of blocks that touches this subnet
+list($status, $rows, $blocks) = db_get_records($onadb, 'blocks', "{$ip_subnet} BETWEEN ip_addr_start AND ip_addr_end OR {$net_end} BETWEEN ip_addr_start AND ip_addr_end OR ip_addr_start BETWEEN {$ip_subnet} and {$net_end}");
+if ($rows) {
+    $modbodyhtml .= <<<EOL
+        <div style="border: 1px solid; border-bottom: none">
+            <div class="list-header">This subnet is related to following block(s):</div>
+EOL;
+
+    foreach($blocks as $block) {
+        $block['ip_addr_start_text'] = ip_mangle($block['ip_addr_start'], 'dotted');
+        $block['ip_addr_end_text'] = ip_mangle($block['ip_addr_end'], 'dotted');
+        $modbodyhtml .= <<<EOL
+            <div class="list-row"><a title="View block. ID: {$block['id']}"
+                         class="nav"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_block\', \'block_id=>{$block['id']}\', \'display\')');"
+                    >{$block['name']}</a> ({$block['ip_addr_start_text']} - {$block['ip_addr_end_text']})</div>
+EOL;
+    }
+    $modbodyhtml .= <<<EOL
+        </div>
+EOL;
+}
 
 // Get javascript to setup the map portal mouse handlers
 // Force ip end to be less than ip start to prevent Block highlighting

@@ -245,7 +245,7 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -257,6 +257,7 @@ function interface_modify($options="") {
         !$options['set_mac'] and
         !$options['set_description'] and
         !$options['set_create_ptr'] and
+        !$options['set_last_response'] and
         !$options['set_name']
        ) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
@@ -279,6 +280,7 @@ Modify an interface record
     set_mac=ADDRESS               change the mac address (most formats ok)
     set_name=NAME                 interface name (i.e. "FastEthernet0/1.100")
     set_description=TEXT          description (i.e. "VPN link to building 3")
+    set_last_response=DATE        date ip was last seen
 \n
 EOM
         ));
@@ -440,17 +442,11 @@ EOM
             $SET['mac_addr'] = $options['set_mac'];
     }
 
-    // Set options[create_a]?
-//    if (array_key_exists('set_create_a', $options)) {
-//        $SET['CREATE_DNS_ENTRY'] = sanitize_YN($options['set_create_a'], 'Y');
-//    }
-
-    // Set options[create_ptr]?
-//    if (array_key_exists('set_create_ptr', $options)) {
-//        // FIXME: what if the host already has another interface with create_ptr enabled?
-//        $SET['CREATE_REVERSE_DNS_ENTRY'] = sanitize_YN($options['set_create_ptr'], 'Y');
-//    }
-
+    // Check the date formatting etc
+    if (isset($options['set_last_response'])) {
+        // format the time that was passed in for the database
+        $SET['last_response']=date('Y-m-j G-i-s',strtotime($options['set_last_response']));
+    }
 
     // Set options[set_name]?
     if (array_key_exists('set_name', $options) && $interface['name'] != $options['set_name']) {

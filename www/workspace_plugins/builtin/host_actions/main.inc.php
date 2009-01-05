@@ -1,7 +1,7 @@
 <?php
 
 $rec_content = print_r($record, true);
-$debug_display = 1;  // Set this to 1 to see contents of the $record array
+$debug_display = 0;  // Set this to 1 to see contents of the $record array
 
 
 // Load any user specific entries and add them to the list

@@ -100,6 +100,7 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">MAC</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Description</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Last Response</td>
                 <td class="list-header" align="center">&nbsp;</td>
             </tr>
 EOL;
@@ -142,6 +143,14 @@ EOL;
             // Escape data for display in html
             foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
 
+
+            // Format the date and colorize if its older than 2 months
+            if ($record['last_response']) {
+                $record['last_response_fmt'] = date($conf['date_format'],strtotime($record['last_response']));
+                if (strtotime($record['last_response']) < strtotime('-2 month')) {
+                    $record['last_response_fmt'] = "<span style=\"color: red;\">".$record['last_response_fmt']."</style>";
+                }
+            }
 
             $html .= <<<EOL
             <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
@@ -212,6 +221,10 @@ EOL;
                     {$record['description_short']}&nbsp;
                 </td>
 
+                <td class="list-row" align="left" title="{$record['last_response']}">
+                    {$record['last_response_fmt']}&nbsp;
+                </td>
+
                 <td class="list-row" align="right">
                     <form id="{$form['form_id']}_list_interface_{$record['id']}"
                         ><input type="hidden" name="interface_id" value="{$record['id']}"
@@ -232,7 +245,7 @@ EOL;
                                             'styleClass', 'wwTT_int_menu',
                                             'lifetime', 1000,
                                             'direction', 'west',
-                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_menu,id=>tt_quick_interface_menu_{$record['id']},interface_id=>{$record['id']},ip_addr=>{$record['ip_addr']},orig_host=>{$record['host_id']},form_id=>{$form['form_id']}_list_interface_{$record['id']},natip=>{$record['nat_interface_id']}\');'
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>quick_interface_menu,id=>tt_quick_interface_menu_{$record['id']},interface_id=>{$record['id']},ip_addr=>{$record['ip_addr']},orig_host=>{$record['host_id']},form_id=>{$form['form_id']}_list_interface_{$record['id']},subnet_id=>{$subnet['id']},natip=>{$record['nat_interface_id']}\');'
                                            );"
                     ><img src="{$images}/silk/add.png" border="0"></a>&nbsp;
 EOL;
