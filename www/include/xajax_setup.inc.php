@@ -71,7 +71,7 @@ function parse_options_string($input) {
     if (is_string($input) and preg_match('/=>/', $input)) {
         $parts = split(',', $input);
         foreach ($parts as $part) {
-            $part = split('=>', $part);
+            $part = split('=>', $part, 2);
             $array[trim($part[0])] = trim($part[1]);
         }
         return($array);
