@@ -54,7 +54,12 @@ a:visited    { color: {$color['vlink']}; cursor: pointer; text-decoration: under
 a:active     { color: {$color['alink']}; cursor: pointer; text-decoration: underline; }
 a:hover      { cursor: pointer; text-decoration: underline; }
 
-
+.content_box {
+    margin: 10px 20px;
+    padding: 2px 4px;
+    background-color: #FFFFFF;
+    vertical-align: top;
+}
 
 .ws_plugin_content {
   margin-bottom: 8px;

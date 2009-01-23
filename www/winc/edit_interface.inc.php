@@ -59,13 +59,15 @@ function ws_editor($window_name, $form='') {
         if (is_numeric($form['host_id'])) $interface['host_id'] = $form['host_id'];
         if (is_numeric($form['subnet_id'])) list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
 
+        // allow various default items to be set during an add that are passed in from the form
+        if (isset($form['ip_addr'])) $interface['ip_addr'] = $form['ip_addr'];
+        if (isset($form['name'])) $interface['name'] = $form['name'];
+        if (isset($form['description'])) $interface['description'] = $form['description'];
+
     }
 
     // Load the host record for display
     if($interface['host_id']) list($status, $rows, $host) = ona_find_host($interface['host_id']);
-
-    // Prepare some stuff for displaying checkboxes
-    if ($interface['CREATE_REVERSE_DNS_ENTRY'] != 'N') { $interface['CREATE_REVERSE_DNS_ENTRY'] = 'CHECKED'; }
 
 
     // Escape data for display in html
@@ -76,7 +78,7 @@ function ws_editor($window_name, $form='') {
 
     // Set the window title:
     $window['title'] = "Add Interface";
-    if ($interface['ID'])
+    if ($interface['id'])
         $window['title'] = "Edit Interface";
 
     // Javascript to run after the window is built
@@ -336,7 +338,8 @@ function ws_save($window_name, $form='') {
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
     }
-
+    // If an array in a string was provided, build the array and store it in $form
+    $form = parse_options_string($form);
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     $js = '';

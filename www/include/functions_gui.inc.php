@@ -12,6 +12,54 @@
 
 
 
+
+
+/////////////////////////////////////////////
+// Function:
+//     get_report_include ($name)
+//
+// Description:
+//     Internally used function that searches several places for an include
+//     file containing information about a "report" named $name.
+//     Returns the filename if one is found.
+//
+/////////////////////////////////////////////
+function get_report_include($name){
+    if (!$name) { return(FALSE); }
+
+    $file = '';
+
+    // Check the usual directories, now inlucdes the local reports as well.
+    // local plugins should override the builtin stuff if they are named the same.
+    $directories = array('.',
+                         './local/reports/',
+                         './reports',
+                        );
+
+    // Scan the directories to find the report include file
+    foreach ($directories as $directory) {
+        $file = "{$directory}/{$name}.inc.php";
+        if (is_file($file)) {
+            printmsg("DEBUG => get_report_include() Report: {$name}", 0);
+            require_once($file);
+            return(TRUE);
+        }
+    }
+
+    // If we still have not found it, lets just try the report name as the file itself
+    if (is_file('.'.$name)) {
+        require_once('.'.$name);
+        return(TRUE);
+    }
+
+    // Couldn't find it :|
+    return(FALSE);
+}
+
+
+
+
+
 /////////////////////////////////////////////
 // Returns a list of available local plugins of given type
 //
