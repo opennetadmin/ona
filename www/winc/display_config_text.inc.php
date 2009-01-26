@@ -110,10 +110,21 @@ EOL;
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$host['domain_id']}\', \'display\')');"
                     >{$host['domain_fqdn']}</a>
+
 EOL;
 
+// TODO: fix this so it actually looks for a report list item like other reports do
         $html .= <<<EOL
                 </td></tr>
+
+                <tr>
+                    <td class="padding" align="left">
+                        <b>Cisco Config report:</b>&nbsp;
+                        <a title="View report"
+                        class="act"
+                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_report\', \'report=>cisco_cfg_audit,config=>{$host['fqdn']}\', \'display\')');"
+                        >View Report</a></td>
+                </tr>
 
             </table>
 EOL;

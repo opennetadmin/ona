@@ -49,6 +49,11 @@ function ws_editor($window_name, $form='') {
                 $interface['mac_addr'] = mac_mangle($interface['mac_addr'], 2); //FIXME: (PK) should not use numeric format specifier here!
         }
     }
+    // If there is no hostid in the form
+    else {
+        $interface['ip_addr'] = $form['ip_addr'];
+        $host['name'] = $form['hostname'];
+    }
 
     // Set the default security level if there isn't one
     if (!array_key_exists('lvl', $host)) $host['lvl'] = $conf['ona_lvl'];

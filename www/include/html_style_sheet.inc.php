@@ -575,5 +575,9 @@ span.diffchange { color: red; }
 
 .display_notes { border: none; }
 
+/* ---- set the trace history so other imbeded junk wont change how it looks --- */
+#trace_history a { color: {$color['link']};  cursor: pointer; text-decoration: underline; font-family: {$style['font-family']}; }
+
+
 EOL;
 ?>

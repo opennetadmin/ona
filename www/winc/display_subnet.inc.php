@@ -92,6 +92,10 @@ function ws_display($window_name, $form='') {
     $wspl = workspace_plugin_loader('messages',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];
 
+    // Display messages
+    $wspl = workspace_plugin_loader('reports',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
+
     $html .= <<<EOL
 
     </div>
