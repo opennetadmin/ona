@@ -58,6 +58,7 @@ function ws_display($window_name, $form='') {
     // Subnet description
     list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
     $record['subnet'] = $subnet['name'];
+    $record['subnet_id'] = $subnet['id'];
     $record['ip_subnet_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
     $record['ip_subnet_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
 

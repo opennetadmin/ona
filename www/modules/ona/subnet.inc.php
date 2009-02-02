@@ -380,7 +380,7 @@ function subnet_modify($options="") {
     printmsg('DEBUG => subnet_modify('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -601,6 +601,7 @@ EOM
             $self['error'] = "ERROR => That name is already used by another subnet!";
             return(array(12, $self['error'] . "\n"));
         }
+        $SET['name'] = $options['set_name'];
     }
 
 
