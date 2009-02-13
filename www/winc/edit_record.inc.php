@@ -118,12 +118,18 @@ function ws_editor($window_name, $form='') {
         }
         // add PTR type as an editable option to the record_types array
         array_push($record_types, "PTR");
+        // if we are passing in default values for a record, set them here from form data.
+        if (strlen($form['ip_addr']) > 1) $interface['ip_addr'] = ip_mangle($form['ip_addr'], 'dotted');
+        if (strlen($form['hostname']) > 1) $dns_record['name'] = $form['hostname'];
     } else {
         $window['title'] = "Add DNS Record";
         $dns_record['srv_pri'] = 0;
         $dns_record['srv_weight'] = 0;
         $dns_record['ebegin']=date('Y-m-j G:i:s',time());
         $window['js'] .= "el('record_type_select').onchange('fake event');updatednsinfo('{$window_name}');el('set_hostname_{$window_name}').focus();";
+        // if we are passing in default values for a new record, set them here from form data.
+        if (strlen($form['ip_addr']) > 1) $interface['ip_addr'] = ip_mangle($form['ip_addr'], 'dotted');
+        if (strlen($form['hostname']) > 1) $dns_record['name'] = $form['hostname'];
     }
 
     // Set up the types of records we can edit with this form

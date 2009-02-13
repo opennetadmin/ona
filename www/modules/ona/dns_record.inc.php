@@ -777,7 +777,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -1121,7 +1121,7 @@ EOM
             if ($SET['interface_id'] != $current_int_id) {
                 printmsg("DEBUG = > dns_record_modify() Updating child interfaces to new interface.", 2);
                 list($status, $rows) = db_update_record($onadb, 'dns', array('dns_id' => $dns['id']), array('interface_id' => $SET['interface_id']));
-                if ($status or !$rows) {
+                if ($status) {
                     $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record: " . $self['error'];
                     printmsg($self['error'], 0);
                     return(array(11, $self['error'] . "\n"));

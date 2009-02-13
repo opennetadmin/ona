@@ -31,7 +31,7 @@ function ws_editor($window_name, $form='') {
 
     // Load an existing record (and associated info) if $form is an id
     if (is_numeric($form['subnet_id'])) {
-        list($status, $rows, $subnet) = ona_get_subnet_record(array('ID' => $form['subnet_id']));
+        list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
         if ($rows) {
             $subnet['ip_addr'] = ip_mangle($subnet['ip_addr'], 'dotted');
             $subnet['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
@@ -42,8 +42,11 @@ function ws_editor($window_name, $form='') {
             $subnet['vlan_desc'] = $vlan['vlan_campus_name'] . ' / ' . $vlan['name'];
         }
     }
+    // If there is no subnet id in the form
     else {
-         if (strlen($form['ip_addr']) > 1) $subnet['ip_addr'] = ip_mangle($form['ip_addr'], 'dotted');
+        if (strlen($form['ip_addr']) > 1) $subnet['ip_addr'] = ip_mangle($form['ip_addr'], 'dotted');
+        if (strlen($form['ip_mask']) > 1) $subnet['ip_mask'] = ip_mangle($form['ip_mask'], 'dotted');
+        if (strlen($form['name']) > 1) $subnet['name'] = $form['name'];
     }
 
     if (!$subnet['vlan_id']) $subnet['vlan_desc'] = 'None';
@@ -106,7 +109,9 @@ function ws_editor($window_name, $form='') {
             );
         };
 
-        suggest_setup('masks_{$window_name}', 'suggest_masks_{$window_name}');
+    suggest_setup('masks_{$window_name}', 'suggest_masks_{$window_name}');
+
+    el('set_name').focus();
 
 EOL;
 
@@ -115,7 +120,7 @@ EOL;
 
     <!-- Subnet Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
-    <input type="hidden" name="subnet" value="{$subnet['name']}">
+    <input type="hidden" name="subnet" value="{$subnet['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
 
@@ -151,6 +156,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="set_name"
                     name="set_name"
                     alt="Subnet name"
                     value="{$subnet['name']}"
@@ -322,7 +328,7 @@ function ws_save($window_name, $form='') {
     // Decide if we're editing or adding
     $module = 'modify';
     // If we're adding, re-map some the array names to match what the "add" module wants
-    if ($form['subnet'] == '') {
+    if (!$form['subnet']) {
         $module = 'add';
 
         // If there's no "refresh" javascript, add a command to view the new subnet
@@ -351,6 +357,7 @@ function ws_save($window_name, $form='') {
             $js .= "removeElement('{$window_name}');";
         
         // If there is "refresh" javascript, send it to the browser to execute
+        // MP: FIXME.. there is an issue that if you add a new subnet, then imidiately modify its IP the JS refresh uses the old ip and fails.  find out why
         if ($form['js']) $js .= $form['js'];
     }
 
