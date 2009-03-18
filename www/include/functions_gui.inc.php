@@ -40,7 +40,7 @@ function get_report_include($name){
     foreach ($directories as $directory) {
         $file = "{$directory}/{$name}.inc.php";
         if (is_file($file)) {
-            printmsg("DEBUG => get_report_include() Report: {$name}", 0);
+            printmsg("DEBUG => get_report_include() Report: {$name}", 2);
             require_once($file);
             return(TRUE);
         }

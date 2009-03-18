@@ -880,6 +880,9 @@ function sanitize_hostname($string="") {
     // We lower case all dns names
     $string = strtolower($string);
 
+    // If it is a wildcard, let it through
+    if ($string == "*") { return($string); }
+
     // If it's valid, use it..
     if (preg_match('/^([a-z0-9_\*]([a-z0-9_\.\-]*))?[a-z0-9]$/', $string)) {
         // Make sure it doesn't have more than one "." in a row
