@@ -777,7 +777,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -1125,6 +1125,20 @@ EOM
                     $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record: " . $self['error'];
                     printmsg($self['error'], 0);
                     return(array(11, $self['error'] . "\n"));
+                }
+            }
+
+            // Check the PTR record has the proper domain still
+            $ipflip = ip_mangle($interface['ip_addr_text'],'flip');
+            // Find a pointer zone for this record to associate with.
+            list($status, $prows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+            list($status, $rows, $dnsrec) = ona_get_dns_record(array('type' => 'PTR','interface_id' => $SET['interface_id']));
+            if (isset($ptrdomain['id']) and $rows>0 and $dnsrec['domain_id'] != $ptrdomain['id']) {
+                list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $dnsrec['id']), array('domain_id' => $ptrdomain['id'], 'ebegin' => $SET['ebegin']));
+                if ($status or !$rows) {
+                    $self['error'] = "ERROR => dns_record_modify() Child PTR record domain update failed: " . $self['error'];
+                    printmsg($self['error'], 0);
+                    return(array(14, $self['error'] . "\n"));
                 }
             }
         }

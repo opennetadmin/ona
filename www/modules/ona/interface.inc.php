@@ -245,7 +245,7 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -256,7 +256,6 @@ function interface_modify($options="") {
        (!$options['set_ip'] and
         !$options['set_mac'] and
         !$options['set_description'] and
-        !$options['set_create_ptr'] and
         !$options['set_last_response'] and
         !$options['set_name']
        ) ) {
@@ -371,19 +370,11 @@ EOM
             return(array(9, $self['error'] . "\n"));
         }
 
-        // Validate that the specified host doesn't have any other interfaces on the
-        // same subnet as the new ip address.  Allow an override though.
+        // Allow some overrides.
         if ($options['force'] != 'Y') {
             // Search for any existing interfaces on the same subnet
-            list($status, $rows, $record) = ona_get_interface_record(array('subnet_id' => $subnet['id'],
-                                                                            'host_id'    => $interface['host_id']));
-//             if (($rows and $record['id'] != $interface['id']) or $rows > 1) {
-//                 printmsg("DEBUG => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").",3);
-//                 $self['error'] = "ERROR => The specified host already has another interface on the same subnet as the new IP address (" . ip_mangle($orig_ip,'dotted') . ").";
-//                 return(array(10, $self['error'] . "\n" .
-//                                   "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n" .
-//                                   "INFO => Conflicting interface record ID: {$record['id']}\n"));
-//             }
+//            list($status, $rows, $record) = ona_get_interface_record(array('subnet_id' => $subnet['id'],
+//                                                                            'host_id'    => $interface['host_id']));
 
             // Check to be sure we don't exceed maximum lengths
             if(strlen($options['name']) > 255) {
@@ -396,6 +387,25 @@ EOM
                 $self['error'] = "ERROR => 'description' exceeds maximum length of 255 characters.";
                 return(array(2, $self['error'] . "\n" .
                     "NOTICE => You may ignore this error and add the interface anyway with the \"force=yes\" option.\n"));
+            }
+        }
+
+        // Make sure we update the ptr record domain if needed.
+        // MP: TODO: would it be better to run the dns_modify module vs doing a direct db_update_record???
+        $ipflip = ip_mangle($options['set_ip'],'flip');
+        // Find a pointer zone for this record to associate with.
+        list($status, $prows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+        if (isset($ptrdomain['id'])) {
+            list($status, $rows, $dnsrec) = ona_get_dns_record(array('type' => 'PTR','interface_id' => $interface['id']));
+
+            // If the new ptrdomain does not match an existing ptr records domain then we need to change it.
+            if ($rows>0 and $dnsrec['domain_id'] != $ptrdomain['id']) {
+                list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $dnsrec['id']), array('domain_id' => $ptrdomain['id'], 'ebegin' => date('Y-m-j G:i:s')));
+                if ($status or !$rows) {
+                    $self['error'] = "ERROR => interface_modify() PTR record domain update failed: " . $self['error'];
+                    printmsg($self['error'], 0);
+                    return(array(14, $self['error'] . "\n"));
+                }
             }
         }
 
