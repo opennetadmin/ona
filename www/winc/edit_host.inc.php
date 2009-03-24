@@ -51,8 +51,8 @@ function ws_editor($window_name, $form='') {
     }
     // If there is no hostid in the form
     else {
-        $interface['ip_addr'] = $form['ip_addr'];
-        $host['name'] = $form['hostname'];
+        if (strlen($form['ip_addr']) > 1) $interface['ip_addr'] = $form['ip_addr'];
+        if (strlen($form['hostname']) > 1) $host['name'] = $form['hostname'];
     }
 
     // Set the default security level if there isn't one
@@ -139,9 +139,9 @@ function ws_editor($window_name, $form='') {
                          "id=>tt_qf_location_{$window_name}," +
                          "input_id=>set_location_{$window_name}');"
                 );
-            }; 
+            };
 
-
+    el('set_host').focus();
 EOL;
 
     // If we are modifying do not allow them to edit/change dns names.  this should only be done when creating a new host
@@ -174,6 +174,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="set_host"
                     name="set_host"
                     alt="Hostname"
                     value="{$host['name']}"
@@ -204,12 +205,12 @@ EOL;
 
         <tr>
             <td align="right" nowrap="true">
-                Device model
+                Device type
             </td>
             <td class="padding" align="left" width="100%">
                 <select
                     name="set_type"
-                    alt="Device model"
+                    alt="Device type"
                     class="edit"
                 >{$device_model_list}</select>
             </td>

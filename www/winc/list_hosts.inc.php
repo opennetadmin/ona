@@ -394,7 +394,7 @@ order by b.ip_addr) hosts";
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Interface</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Device Model</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Device Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Location</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
                 <td class="list-header" align="center">&nbsp;</td>
