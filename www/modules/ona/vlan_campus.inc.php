@@ -388,6 +388,117 @@ EOM
 
 
 
+///////////////////////////////////////////////////////////////////////
+//  Function: vlan_campus_display (string $options='')
+//
+//  $options = key=value pairs of options for this function.
+//             multiple sets of key=value pairs should be separated
+//             by an "&" symbol.
+//
+//  Input Options:
+//    campus=NAME or ID
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function.  0 on success, non-zero on
+//         error.  All errors messages are stored in $self['error'].
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = vlan_campus_display('campus=test');
+///////////////////////////////////////////////////////////////////////
+function vlan_campus_display($options="") {
+    global $conf, $self, $onadb;
+
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+
+    printmsg("DEBUG => vlan_campus_display({$options}) called", 3);
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Sanitize options[verbose] (default is yes)
+    $options['verbose'] = sanitize_YN($options['verbose'], 'Y');
+
+    // Return the usage summary if we need to
+    if ($options['help'] or !$options['campus'] ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+vlan_campus_display-v{$version}
+Displays a vlan campus record from the database
+
+  Synopsis: vlan_campus_display [KEY=VALUE] ...
+
+  Required:
+    campus=NAME or ID      Campus name or ID of the campus display
+
+  Optional:
+    verbose=[yes|no]       Display additional info (DEFAULT: yes)
+
+
+EOM
+
+        ));
+    }
+
+    // The formatting rule on campus names is all upper and trim it
+    $options['campus'] = strtoupper(trim($options['campus']));
+
+
+    // If the campus provided is numeric, check to see if it's valid
+    if (is_numeric($options['campus'])) {
+
+        // See if it's an vlan_campus_id
+        list($status, $rows, $campus) = ona_get_vlan_campus_record(array('id' => $options['campus']));
+
+        if (!$campus['id']) {
+            printmsg("DEBUG => Unable to find campus using the ID {$options['campus']}!",3);
+            $self['error'] = "ERROR => Unable to find campus using the ID {$options['campus']}!";
+            return(array(2, $self['error'] . "\n"));
+        }
+    }
+    else {
+        list($status, $rows, $campus) = ona_get_vlan_campus_record(array('name' => $options['campus']));
+        if (!$campus['id']) {
+            $self['error'] = "ERROR => Unable to find campus using the name {$options['campus']}!";
+            printmsg("DEBUG => Unable to find campus using the name {$options['campus']}!",3);
+            return(array(2, $self['error'] . "\n"));
+        }
+    }
+
+    printmsg("DEBUG => Found campus: {$campus['name']}", 3);
+
+    // Build text to return
+    $text  = "VLAN CAMPUS RECORD\n";
+    $text .= format_array($campus);
+
+    // If 'verbose' is enabled, grab some additional info to display
+    if ($options['verbose'] == 'Y') {
+
+        // vlan record(s)
+        $i = 0;
+        do {
+            list($status, $rows, $vlan) = ona_get_vlan_record(array('vlan_campus_id' => $campus['id']));
+            if ($rows == 0) { break; }
+            $i++;
+            $text .= "\nASSOCIATED VLAN RECORD ({$i} of {$rows})\n";
+            $text .= format_array($vlan);
+        } while ($i < $rows);
+
+
+    }
+
+    // Return the success notice
+    return(array(0, $text));
+
+}
+
+
+
+
 
 
 

@@ -456,6 +456,116 @@ EOM
 
 
 
+///////////////////////////////////////////////////////////////////////
+//  Function: block_display (string $options='')
+//
+//  $options = key=value pairs of options for this function.
+//             multiple sets of key=value pairs should be separated
+//             by an "&" symbol.
+//
+//  Input Options:
+//    block=NAME or ID
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function.  0 on success, non-zero on
+//         error.  All errors messages are stored in $self['error'].
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = block_display('block=test');
+///////////////////////////////////////////////////////////////////////
+function block_display($options="") {
+    global $conf, $self, $onadb;
+
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+
+    printmsg("DEBUG => block_display({$options}) called", 3);
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Sanitize options[verbose] (default is yes)
+    $options['verbose'] = sanitize_YN($options['verbose'], 'Y');
+
+    // Return the usage summary if we need to
+    if ($options['help'] or !$options['block'] ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+block_display-v{$version}
+Displays a block record from the database
+
+  Synopsis: block_display [KEY=VALUE] ...
+
+  Required:
+    block=NAME or ID      Block name or ID of the block display
+
+  Optional:
+    verbose=[yes|no]      Display additional info (DEFAULT: yes)
+
+
+EOM
+
+        ));
+    }
+
+    // The formatting rule on block names is all upper and trim it
+    $options['block'] = trim($options['block']);
+    $options['block'] = preg_replace('/\s+/', '-', $options['block']);
+    $options['block'] = strtoupper($options['block']);
+
+
+    // If the block provided is numeric, check to see if it's an block
+    if (is_numeric($options['block'])) {
+
+        // See if it's an block_id
+        list($status, $rows, $block) = ona_get_block_record(array('id' => $options['block']));
+
+        if (!$block['id']) {
+            printmsg("DEBUG => Unable to find block using the ID {$options['block']}!",3);
+            $self['error'] = "ERROR => Unable to find block using the ID {$options['block']}!";
+            return(array(2, $self['error'] . "\n"));
+        }
+    }
+    else {
+        list($status, $rows, $block) = ona_get_block_record(array('name' => $options['block']));
+        if (!$block['id']) {
+            $self['error'] = "ERROR => Unable to find block using the name {$options['block']}!";
+            printmsg("DEBUG => Unable to find block using the name {$options['block']}!",3);
+            return(array(2, $self['error'] . "\n"));
+        }
+    }
+
+    printmsg("DEBUG => Found block: {$block['name']}", 3);
+
+    // Build text to return
+    $text  = "BLOCK RECORD\n";
+    $text .= format_array($block);
+
+    // If 'verbose' is enabled, grab some additional info to display
+    if ($options['verbose'] == 'Y') {
+        $where .=  " ip_addr >= " . $block['ip_addr_start'] . " AND ip_addr <= " . $block['ip_addr_end'];
+        list ($status, $netrows, $nets) = db_get_records($onadb, 'subnets', $where, "ip_addr");
+
+        // subnet record(s)
+        $i = 0;
+        foreach($nets as $record) {
+            list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $record['id']));
+            if ($rows == 0) { break; }
+            $i++;
+            $text .= "\nASSOCIATED SUBNET RECORD ({$i} of {$netrows})\n";
+            $text .= format_array($subnet);
+        }
+
+    }
+
+    // Return the success notice
+    return(array(0, $text));
+
+}
 
 
 
