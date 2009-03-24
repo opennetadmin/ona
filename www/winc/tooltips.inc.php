@@ -1384,7 +1384,8 @@ function get_host_interface_list_html($form) {
     $html = $js = '';
 
     // Interface Record
-    list($status, $introws, $interfaces) = db_get_records($onadb, 'interfaces', "host_id = {$form['host_id']}", 'ip_addr ASC');
+    list($status, $introws, $interfaces) = db_get_records($onadb, 'interfaces', "host_id = {$form['host_id']} or id in (select interface_id from interface_clusters where host_id ={$form['host_id']})", 'ip_addr ASC');
+
     if ($introws == 0 or $status) return(array('', ''));
 
     $style['content_box'] = <<<EOL
@@ -1408,7 +1409,7 @@ EOL;
 
             <!-- LABEL -->
             <tr>
-                <td colspan=2 style="{$style['label_box']}">{$introws} interface(s)</td>
+                <td colspan=5 style="{$style['label_box']}">{$introws} interface(s)</td>
             </tr>
 EOL;
 
@@ -1420,8 +1421,12 @@ EOL;
         foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
         $ip = ip_mangle($interface['ip_addr'],'dotted');
 
+        $clusticon = '';
+        if ($interface['host_id'] != $form['host_id']) $clusticon = "<img src=\"{$images}/silk/sitemap.png\" border=\"0\">";
+
         $html .= <<<EOL
             <tr>
+                <td align="left" style="color: #FFFFFF;" nowrap="true">{$clusticon}&nbsp;</td>
                 <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">{$ip}</td>
                 <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">
                     <a title="View subnet. ID: {$subnet['id']}"

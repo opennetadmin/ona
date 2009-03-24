@@ -217,7 +217,7 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Interface</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Device Model</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Device Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Location</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
             </tr>
@@ -259,7 +259,24 @@ EOL;
             // Interface (and find out how many there are)
             list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $host['id']), 'ip_addr');
         }
-        
+
+        // get interface cluster info
+        $clusterhtml = '';
+        list ($status, $intclusterrows, $intcluster) = db_get_records($onadb, 'interface_clusters', "interface_id = {$record['id']}");
+        if ($intclusterrows>0) {
+            $clusterscript= "onMouseOver=\"wwTT(this, event,
+                    'id', 'tt_interface_cluster_list_{$record['id']}',
+                    'type', 'velcro',
+                    'styleClass', 'wwTT_niceTitle',
+                    'direction', 'south',
+                    'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>interface_cluster_list,id=>tt_interface_cluster_list_{$record['id']},interface_id=>{$record['id']}\');'
+                    );\"";
+            $clusterhtml .= <<<EOL
+                <img src="{$images}/silk/sitemap.png" {$clusterscript} />
+EOL;
+        }
+
+
         $record['ip_addr'] = ip_mangle($record['ip_addr'], 'dotted');
         $interface_style = '';
         if ($interfaces > 1) {
@@ -270,7 +287,7 @@ EOL;
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $record['subnet_id']));
         $record['subnet'] = $subnet['name'];
         $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
-        $record['IP_SUBNET_MASK_CIDR'] = ip_mangle($subnet['ip_mask'], 'cidr');
+        $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
         
         // Device Description
         list($status, $rows, $device) = ona_find_device($host['device_id']);
@@ -284,21 +301,7 @@ EOL;
         $record['NOTES_SHORT'] = truncate($host['notes'], 40);
 
 
-        // get interface cluster info
-        $clusterhtml = '';
-        list ($status, $intclusterrows, $intcluster) = db_get_records($onadb, 'interface_clusters', "interface_id = {$interface['id']}");
-        if ($intclusterrows>0) {
-            $clusterscript= "onMouseOver=\"wwTT(this, event,
-                    'id', 'tt_interface_cluster_list_{$record['id']}',
-                    'type', 'velcro',
-                    'styleClass', 'wwTT_niceTitle',
-                    'direction', 'south',
-                    'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>interface_cluster_list,id=>tt_interface_cluster_list_{$record['id']},interface_id=>{$interface['id']}\');'
-                    );\"";
-            $clusterhtml .= <<<EOL
-                <img src="{$images}/silk/sitemap.png" {$clusterscript} />
-EOL;
-        }
+
         
         // Get location info
         list($status, $rows, $loc) = ona_get_location_record(array('id' => $device['location_id']));
@@ -346,7 +349,7 @@ EOL;
 }                    
         $html .= <<<EOL
                     >{$record['ip_addr']}</span>&nbsp;
-                    <span title="{$record['ip_mask']}">/{$record['IP_SUBNET_MASK_CIDR']}</span>
+                    <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>
                     <span>{$clusterhtml}</span>
                 </td>
                 
