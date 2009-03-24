@@ -30,7 +30,7 @@ EOL;
 
 
 $title_right_html .= <<<EOL
-                <a href="?work_space={$extravars['window_name']}&subnet_id={$record['id']}"><img title="Direct link to {$record['name']}" src="{$images}/silk/application_link.png" border="0"></a>
+                <a href="?work_space={$extravars['window_name']}&subnet={$record['name']}"><img title="Direct link to {$record['name']}" src="{$images}/silk/application_link.png" border="0"></a>
 EOL;
 
 
