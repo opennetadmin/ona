@@ -100,7 +100,10 @@ EOL;
     }
         $html .= <<<EOL
                     {$record['name']}
-                </td></tr>
+
+                    &nbsp;&nbsp;<a href="?work_space={$window_name}&block_id={$record['id']}"><img title="Direct link to {$record['name']}" src="{$images}/silk/application_link.png" border="0"></a>
+                </td>
+                </tr>
                 <tr>
                     <td align="right" nowrap="true"><b>Name</b>&nbsp;</td>
                     <td class="padding" align="left">{$record['name']}&nbsp;</td>

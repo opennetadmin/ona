@@ -105,6 +105,9 @@ EOL;
     }
 
         $html .= <<<EOL
+
+
+                    &nbsp;&nbsp;<a href="?work_space={$window_name}&vlan_campus_id={$record['id']}"><img title="Direct link to {$record['name']}" src="{$images}/silk/application_link.png" border="0"></a>
                 </td></tr>
 
                 <tr>

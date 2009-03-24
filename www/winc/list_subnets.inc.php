@@ -182,7 +182,6 @@ function ws_display_list($window_name, $form='') {
             <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Usage</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
-            <td class="list-header" align="center" style="{$style['borderR']};">Lvl</td>
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
 EOL;
@@ -228,10 +227,6 @@ EOL;
 
             <td class="list-row" align="left">
                 {$record['type']}&nbsp;
-            </td>
-
-            <td class="list-row" align="right">
-                {$record['level']}&nbsp;
             </td>
 
             <td class="list-row" align="right">
