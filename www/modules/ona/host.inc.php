@@ -25,7 +25,7 @@ function host_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.06';
+    $version = '1.07';
 
     printmsg("DEBUG => host_add({$options}) called", 3);
 
@@ -107,7 +107,14 @@ EOM
     // domain names against the DB to see what's valid.
     //
     // Find the domain name piece of $search.
-    list($status, $rows, $domain) = ona_find_domain($options['host'],0);
+    // If we are specifically passing in a domain, use its value.  If we dont have a domain
+    // then try to find it in the name that we are setting.
+    if($options['domain']) {
+        // Find the domain name piece of $search
+        list($status, $rows, $domain) = ona_find_domain($options['domain'],0);
+    } else {
+        list($status, $rows, $domain) = ona_find_domain($options['host'],0);
+    }
     if (!isset($domain['id'])) {
         printmsg("ERROR => Unable to determine domain name portion of ({$options['host']})!", 3);
         $self['error'] = "ERROR => Unable to determine domain name portion of ({$options['host']})!";
@@ -231,6 +238,7 @@ EOM
     $options['type'] = 'A';
     // FIXME: MP I had to force the name value here.  name is comming in as the interface name.  this is nasty!
     $options['name'] = "{$hostname}.{$domain['fqdn']}";
+    $options['domain'] = $domain['fqdn'];
     // And we will go ahead and auto add the ptr.  the user can remove it later if they dont want it.  FIXME: maybe create a checkbox on the host edit
     $options['addptr'] = '1';
 

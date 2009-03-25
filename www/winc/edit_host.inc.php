@@ -503,6 +503,7 @@ function ws_save($window_name, $form='') {
         $form['location'] = $form['set_location'];      unset($form['set_location']);
 
         // Host options
+        $form['domain'] = $form['set_domain'];
         $form['host'] = $form['set_host'] . '.' . $form['set_domain'];          unset($form['set_host']); unset($form['set_domain']);
         $form['notes'] = $form['set_notes'];                                    unset($form['set_notes']);
         $form['description'] = $form['set_description'];                        unset($form['set_description']);

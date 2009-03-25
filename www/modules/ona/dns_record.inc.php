@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -732,10 +732,11 @@ complex DNS messes for themselves.
     if ($options['addptr'] and $options['type'] == 'A') {
         printmsg("DEBUG => Auto adding a PTR record for {$options['name']}.", 0);
         // Run dns_record_add as a PTR type
-        list($status, $output) = run_module('dns_record_add', array('name' => $options['name'],'ip' => $options['ip'],'ebegin' => $options['ebegin'],'type' => 'PTR'));
+        list($status, $output) = run_module('dns_record_add', array('name' => $options['name'],'domain' => $domain['fqdn'],'ip' => $options['ip'],'ebegin' => $options['ebegin'],'type' => 'PTR'));
         if ($status)
             return(array($status, $output));
-        $text .= $output;
+        //$text .= $output;
+        printmsg($text,0);
     }
 
     // Else start an output message

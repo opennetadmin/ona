@@ -1500,7 +1500,7 @@ function ona_find_host($search="") {
     // is the same as a valid domain name.  not sure why anyone would have this but
     // never say never.  I'll leave this issue unfixed for now
 
-    // Find the domain name piece of $search
+    // Find the 'first', domain name piece of $search
     list($status, $rows, $domain) = ona_find_domain($search,0);
     if (!isset($domain['id'])) {
         printmsg("ERROR => Unable to determine domain name portion of ({$search})!", 3);
@@ -1512,11 +1512,23 @@ function ona_find_host($search="") {
     // Now find what the host part of $search is
     $hostname = str_replace(".{$domain['fqdn']}", '', $search);
 
+
     // Let's see if that hostname is valid or not in $domain['id']
-    list($status, $rows, $dns) = ona_get_dns_record(array('domain_id' => $domain['id'], 'name' => $hostname));
+    $domain_parts = explode('.', $domain['fqdn']);
+    foreach ($domain_parts as $part) {
+        // Loop through the parts of the domain to find host.sub domain.com type entries..
+        list($status, $rows, $dns) = ona_get_dns_record(array('domain_id' => $domain['id'], 'name' => $hostname));
+        // If we didnt just find a dns record.. lets move the period over and try a deeper domain/host pair.
+        if (!$dns['id']) {
+            $hostname = $hostname.'.'.$part;
+            $name = str_replace("{$part}.", '', $domain['fqdn']);
+            list($status, $rows, $domain) = ona_get_domain_record(array('name' => $name));
+        }
+    }
+
 
     // If we got a valid dns record, lookup the associated host record, and return it
-    if ($rows)
+    if ($dns['id'])
         return(ona_get_host_record(array('primary_dns_id' => $dns['id'])));
 
     // Otherwise, build a fake host record with only a few entries in it and return that
