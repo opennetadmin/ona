@@ -1388,12 +1388,6 @@ function get_host_interface_list_html($form) {
 
     if ($introws == 0 or $status) return(array('', ''));
 
-    $style['content_box'] = <<<EOL
-        margin: 10px 20px;
-        padding: 2px 4px;
-        background-color: #FFFFFF;
-        vertical-align: top;
-EOL;
 
     $style['label_box'] = <<<EOL
         font-weight: bold;
@@ -1422,7 +1416,8 @@ EOL;
         $ip = ip_mangle($interface['ip_addr'],'dotted');
 
         $clusticon = '';
-        if ($interface['host_id'] != $form['host_id']) $clusticon = "<img src=\"{$images}/silk/sitemap.png\" border=\"0\">";
+        list($status, $clustrows, $clustrecord) = ona_get_record(array('interface_id' => $interface['id']), 'interface_clusters');
+        if ($interface['host_id'] != $form['host_id'] or $clustrows>0) $clusticon = "<img title=\"This interface is shared with another host.\" src=\"{$images}/silk/sitemap.png\" border=\"0\">";
 
         $html .= <<<EOL
             <tr>
@@ -1497,13 +1492,6 @@ function get_interface_cluster_list_html($form) {
 
     // add one for primary host
     $introws=$introws+1;
-
-    $style['content_box'] = <<<EOL
-        margin: 10px 20px;
-        padding: 2px 4px;
-        background-color: #FFFFFF;
-        vertical-align: top;
-EOL;
 
     $style['label_box'] = <<<EOL
         font-weight: bold;
