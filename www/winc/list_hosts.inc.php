@@ -125,6 +125,10 @@ function ws_display_list($window_name, $form='') {
             $commait = ',';
         }
 
+        // Just look for the host itself
+        list($status, $rows, $r) = ona_find_host($form['hostname']);
+        if ($rows) $hostids  .= ','.$r['id'];
+
         // MP: this is the old, slow query for reference.
         //
         // TODO: MP this seems to be kinda slow (gee I wonder why).. look into speeding things up somehow.
@@ -133,6 +137,8 @@ function ws_display_list($window_name, $form='') {
         //                                "  FROM dns " .
         //                                "  WHERE name LIKE '%{$hostname}%' {$withdomain} ))";
 
+        // Trim off extra commas
+        $hostids = trim($hostids, ",");
         // If we got a list of hostids from interfaces then use them
         if ($hostids) {
             $idqry = "id IN ($hostids)";

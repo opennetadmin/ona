@@ -108,7 +108,7 @@ primary name for a host should be unique in all cases I'm aware of
     // Check the date formatting etc
     if (isset($options['ebegin'])) {
         // format the time that was passed in for the database, leave it as 0 if they pass it as 0
-        $options['ebegin']=($options['ebegin'] == '0' ? 0 : date('Y-m-j G-i-s',strtotime($options['ebegin'])) );
+        $options['ebegin']=($options['ebegin'] == '0' ? 0 : date('Y-m-j G:i:s',strtotime($options['ebegin'])) );
     } else {
         // If I got no date, use right now as the date/time
         $options['ebegin'] = date('Y-m-j G:i:s');
@@ -1067,21 +1067,28 @@ EOM
     // Check the date formatting etc
     if (isset($options['set_ebegin'])) {
         // format the time that was passed in for the database, leave it as 0 if they pass it as 0
-        $SET['ebegin']=($options['set_ebegin'] == '0' ? 0 : date('Y-m-j G-i-s',strtotime($options['set_ebegin'])) );
+        $options['set_ebegin'] = ($options['set_ebegin'] == '0' ? 0 : date('Y-m-j G:i:s',strtotime($options['set_ebegin'])) );
+        // Force the SET variable
+        $SET['ebegin'] = $options['set_ebegin'];
     } else {
         // If I got no date, use right now as the date/time
-        $SET['ebegin'] = date('Y-m-j G:i:s');
+        $options['set_ebegin'] = date('Y-m-j G:i:s');
     }
 
     // Add the remaining items to the $SET variable
     // if there is a ttl setting and it is not the same as the existing record
-    if (array_key_exists('set_ttl', $options) and $options['set_ttl'] != $dns['ttl']) $SET['ttl'] = $options['set_ttl'];
+    if (array_key_exists('set_ttl', $options) and $options['set_ttl'] != $dns['ttl'])
+        $SET['ttl'] = $options['set_ttl'];
 
-    if (array_key_exists('set_mx_preference', $options)) $SET['mx_preference'] = $options['set_mx_preference'];
+    if (array_key_exists('set_mx_preference', $options) and $options['set_mx_preference'] != $dns['mx_preference'])
+        $SET['mx_preference'] = $options['set_mx_preference'];
 
-    if (array_key_exists('set_srv_pri', $options)) $SET['srv_pri'] = $options['set_srv_pri'];
-    if (array_key_exists('set_srv_weight', $options)) $SET['srv_weight'] = $options['set_srv_weight'];
-    if (array_key_exists('set_srv_port', $options)) $SET['srv_port'] = $options['set_srv_port'];
+    if (array_key_exists('set_srv_pri', $options) and $options['set_srv_pri'] != $dns['srv_pri'])
+        $SET['srv_pri'] = $options['set_srv_pri'];
+    if (array_key_exists('set_srv_weight', $options) and $options['set_srv_weight'] != $dns['srv_weight'])
+        $SET['srv_weight'] = $options['set_srv_weight'];
+    if (array_key_exists('set_srv_port', $options) and $options['set_srv_port'] != $dns['srv_port'])
+        $SET['srv_port'] = $options['set_srv_port'];
 
     if (array_key_exists('set_txt', $options)) {
         // There is an issue with escaping '=' and '&'.  We need to avoid adding escape characters
@@ -1092,17 +1099,6 @@ EOM
             $SET['txt'] = $options['set_txt'];
     }
 
-    // If it is an A record and they have specified to auto add the PTR record for it.
-    if ($options['set_addptr'] and $options['set_type'] == 'A') {
-        printmsg("DEBUG => Auto adding a PTR record for {$options['set_name']}.", 0);
-        // Run dns_record_add as a PTR type
-        // Always use the $current_name variable as the name might change during the update
-        list($status, $output) = run_module('dns_record_add', array('name' => $current_name,'ip' => $options['set_ip'],'ebegin' => $options['ebegin'],'type' => 'PTR'));
-        if ($status)
-            return(array($status, $output));
-        $text .= $output;
-    }
-
 
     // Check permissions
     if (!auth('host_modify')) {
@@ -1111,11 +1107,28 @@ EOM
         return(array(10, $self['error'] . "\n"));
     }
 
+
+    // If it is an A record and they have specified to auto add the PTR record for it.
+    if ($options['set_addptr'] and $options['set_type'] == 'A') {
+        printmsg("DEBUG => Auto adding a PTR record for {$options['set_name']}.", 0);
+        // Run dns_record_add as a PTR type
+        // Always use the $current_name variable as the name might change during the update
+        list($status, $output) = run_module('dns_record_add', array('name' => $current_name, 'domain' => $domain['fqdn'], 'ip' => $options['set_ip'],'ebegin' => $options['set_ebegin'],'type' => 'PTR'));
+        if ($status)
+            return(array($status, $output));
+            printmsg($text);
+    }
+
+
     // Get the dns record before updating (logging)
     $original_record = $dns;
 
     // Update the host record if necessary
-    if(count($SET) > 0) {
+    if(count($SET) > 0 and $options['set_ebegin'] != $dns['ebegin']) {
+
+        // Use the ebegin value set above
+        $SET['ebegin'] = $options['set_ebegin'];
+
         // If we are changing the interface id as determined above, check using that value
         if ($changingint) {
             // If the interface id has changed, make sure any child records are updated first
@@ -1313,25 +1326,6 @@ need to do a better delete of DNS records when deleting a host.. currently its a
             printmsg("INFO => {$rows} child record(s) DELETED from {$dns['fqdn']}",0);
             $add_to_error .= "INFO => {$rows} child record(s) DELETED from {$dns['fqdn']}\n";
         }
-
-/*
-        // Delete related CNAME records
-        // get list for logging
-        list($status, $rows, $records) = db_get_records($onadb, 'dns', array('dns_id' => $dns['id'], 'type' => 'CNAME'));
-        // do the delete
-        list($status, $rows) = db_delete_records($onadb, 'dns', array('dns_id' => $dns['id'], 'type' => 'CNAME'));
-        if ($status) {
-            $self['error'] = "ERROR => dns_record_del() CNAME record delete SQL Query failed: {$self['error']}";
-            printmsg($self['error'],0);
-            return(array(5, $self['error'] . "\n"));
-        }
-        // log deletions
-        foreach ($records as $record) {
-            list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']), '');
-            printmsg("INFO => Child CNAME record DELETED: {$record['name']}.{$domain['fqdn']} from {$dns['name']}",0);
-            $add_to_error .= "INFO => Child CNAME record DELETED: {$record['name']}.{$domain['fqdn']} from {$host['name']}\n";
-        }*/
-
 
 
         // Delete the DNS record

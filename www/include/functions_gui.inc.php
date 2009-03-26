@@ -320,8 +320,13 @@ function get_host_suggestions($q, $max_results=10) {
     if ($status) { $results[] = "Internal Error: {$self['error']}"; }
 
     foreach ($records as $record) {
-        list($status, $rows, $domain) = db_get_record($onadb, 'domains', array('id' => $record['domain_id']));
-        $results[] = $record[$field].".".$domain['name'];
+        // NS records dont need to show their domain.
+        if ($record['type'] == 'NS') {
+            $results[] = $record[$field];
+        } else {
+            list($status, $rows, $domain) = db_get_record($onadb, 'domains', array('id' => $record['domain_id']));
+            $results[] = $record[$field].".".$domain['name'];
+        }
     }
 
     // Return the records
