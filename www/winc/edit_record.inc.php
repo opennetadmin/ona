@@ -160,6 +160,8 @@ function ws_editor($window_name, $form='') {
 
         suggest_setup('set_domain_{$window_name}',    'suggest_set_domain_{$window_name}');
         suggest_setup('set_a_record_{$window_name}',  'suggest_set_a_record_{$window_name}');
+
+        el('set_hostname_{$window_name}').focus();
 EOL;
 
     // Define the window's inner html

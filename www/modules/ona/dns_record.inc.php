@@ -169,6 +169,13 @@ primary name for a host should be unique in all cases I'm aware of
     printmsg("DEBUG => Using hostname: {$hostname} Domainname: {$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
 
 
+    // If we are using anything but in-addr.arpa for PTR records, fail out!
+    if (strpos($domain['fqdn'], "in-addr.arpa") and $options['type'] != 'PTR') {
+        printmsg("ERROR => Only PTR records should use in-addr.arpa domains!", 3);
+        $self['error'] = "ERROR => Only PTR records should use in-addr.arpa domains!";
+        return(array(4, $self['error'] . "\n"));
+    }
+
     // Process A record types
     if ($options['type'] == 'A') {
         // find the IP interface record,
