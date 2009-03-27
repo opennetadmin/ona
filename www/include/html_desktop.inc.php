@@ -82,7 +82,7 @@ print <<<EOL
 
     <!-- Top (Task) Bar -->
     <div class="bar" id="bar_top">
-        
+
         <!-- Left Side -->
         <div class="bar-left">
 
@@ -91,6 +91,13 @@ print <<<EOL
                 <a id="menu-apps-button"
                    class="button"
                 ><img style="vertical-align: middle;" src="{$images}/silk/house.png" border="0" />&nbsp;Tools&nbsp;</a>
+            </span>
+
+            <!-- Button to open the "search dialog" -->
+            <span class="topmenu-item" id="search-item" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form'); return false;">
+                <a id="search-button"
+                   class="button"
+                ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0" />&nbsp;Search&nbsp;</a>
             </span>
 
             <!-- Quick Search -->
@@ -115,16 +122,11 @@ print <<<EOL
                            class="act"
                            style="vertical-align: middle;"
                     >
-
-                    <!-- Advanced Search Link -->
-                    <a title="Advanced search" class="act"
-                       onClick="toggle_window('app_advanced_search');"
-                    ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0" /></a>
                 </form>
             </span>
 
             <!-- Task Bar (i.e. Window List) -->
-            <span class="topmenu-item" style="border-right: 1px solid {$color['border']};">&nbsp;</span>
+            <span class="topmenu-item" style="border-right: 1px solid {$color['border']};"></span>
             <span class="topmenu-item" id="menu-window-list">&nbsp;</span>
 
         </div>
@@ -171,7 +173,7 @@ print <<<EOL
                 <img style="vertical-align: middle;" title="Global help index" src="{$images}/silk/help.png" border="0" />
             </span>
             <span class="topmenu-item" style="cursor: pointer;" title="Logout" onClick="var doit=confirm('Are you sure you want to logout?'); if (doit == true) document.location = 'logout.php';">
-                <img style="vertical-align: middle;" title="Logout" src="{$images}/silk/door_out.png" border="0" />
+                <img style="vertical-align: middle;" title="Switch to Guest user (Logout)" src="{$images}/silk/door_out.png" border="0" />
             </span>
 
             &nbsp;

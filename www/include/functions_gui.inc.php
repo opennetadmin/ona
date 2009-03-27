@@ -1208,7 +1208,10 @@ function suggest_location_qf($q, $el_input, $el_suggest) {
 function suggest_location_number_subnet($q, $el_input, $el_suggest) {
     return(suggest_location($q, $el_input, $el_suggest));
 }
-
+// Used in all QF (tool-tip based) search boxes
+function suggest_set_location_edit_host($q, $el_input, $el_suggest) {
+    return(suggest_location($q, $el_input, $el_suggest));
+}
 
 
 

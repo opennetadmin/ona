@@ -13,7 +13,7 @@
 //     array of key=>value pairs from the web form.
 //////////////////////////////////////////////////////////////////////////////
 function ws_search_results_submit($window_name, $form='') {
-    global $conf, $self;
+    global $conf, $self, $onadb;
     global $font_family, $color, $style, $images;
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -25,6 +25,17 @@ function ws_search_results_submit($window_name, $form='') {
         'html'  => "",
         'js'    => "",
     );
+    $max_img = "{$images}/silk/bullet_arrow_down.png";
+    $min_img = "{$images}/silk/bullet_arrow_up.png";
+
+    // Build subnet type list
+    list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', 'id >= 1', 'display_name');
+    $subnet_type_list = '<option value="">&nbsp;</option>\n';
+    $record['display_name'] = htmlentities($record['display_name']);
+    foreach ($records as $record) {
+        $subnet_type_list .= "<option value=\"{$record['id']}\">{$record['display_name']}</option>\n";
+    }
+
 
     // Load some html into $window['html']
     $form_id = "{$window_name}_filter_form";
@@ -32,7 +43,7 @@ function ws_search_results_submit($window_name, $form='') {
     $window['html'] .= <<<EOL
 
     <!-- Tabs & Quick Filter -->
-    <table id="{$form_id}_table" width="100%" cellspacing="0" border="0" cellpadding="0" style="margin-top: 0.2em; {$style['borderT']}">
+    <table id="{$form_id}_table" width="100%" cellspacing="0" border="0" cellpadding="0" style="{$style['borderT']} {$style['borderB']}">
         <tr>
             <td id="{$form_id}_blocks_tab" class="table-tab-inactive" onClick="xajax_window_submit('{$window_name}', 'form_id=>{$form_id},tab=>blocks', 'change_tab');">
                 Blocks <span id="{$form_id}_blocks_count"></span>
@@ -48,6 +59,23 @@ function ws_search_results_submit($window_name, $form='') {
 
             <td id="{$form_id}_hosts_tab" class="table-tab-inactive" onClick="xajax_window_submit('{$window_name}', 'form_id=>{$form_id},tab=>hosts', 'change_tab');">
                 Hosts <span id="{$form_id}_hosts_count"></span>
+            </td>
+
+            <td style="vertical-align: middle;" class="padding" nowrap="true">
+                <img id="adv_search_img" src="{$min_img}" />
+                <span id="adv_search_div_toggle"
+                    style="text-align: right;"
+                    title="Min/Max"
+                    onclick="if (el('adv_search_div').style.display=='none') {
+                                el('adv_search_div').style.display='';
+                                el('toggle_text').innerHTML='Hide search form';
+                                el('adv_search_img').src='{$min_img}';
+                            } else {
+                                el('adv_search_div').style.display='none';
+                                el('toggle_text').innerHTML='Show search form';
+                                el('adv_search_img').src='{$max_img}';}" >
+                <span id="toggle_text" style="font-size: xx-small;">Hide search form</span>
+                </span>
             </td>
 
             <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
@@ -88,6 +116,226 @@ function ws_search_results_submit($window_name, $form='') {
 
         </tr>
     </table>
+
+    <div id="adv_search_div" style="background-color: {$color['window_content_bg']};padding-top: 5px;">
+    <!-- Block Search Tab -->
+    <form id="block_search_form">
+    <input type="hidden" name="search_form_id" value="block_search_form">
+    <table id="blocks_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
+
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>B</u>lock name
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="blocks_field1" name="blockname" type="text" class="edit" size="35" accesskey="b" />
+            <div id="suggest_hostname" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="asearch-line">
+            &nbsp;
+        </td>
+        <td align="right" class="asearch-line">
+            <input class="button" type="reset" name="reset" value="Clear">
+            <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('block_search_form'));">
+        </td>
+    </tr>
+
+    </table>
+    </form>
+
+
+    <!-- Vlan Campus Search Tab -->
+    <form id="vlan_campus_search_form">
+    <input type="hidden" name="search_form_id" value="vlan_campus_search_form">
+    <table id="vlan_campus_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
+
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>C</u>ampus name
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="vlan_campus_field1" name="campusname" type="text" class="edit" size="35" accesskey="c" />
+            <div id="suggest_hostname" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="asearch-line">
+            &nbsp;
+        </td>
+        <td align="right" class="asearch-line">
+            <input class="button" type="reset" name="reset" value="Clear">
+            <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('vlan_campus_search_form'));">
+        </td>
+    </tr>
+
+    </table>
+    </form>
+
+
+
+    <!-- Host Search Tab -->
+    <form id="host_search_form">
+    <input type="hidden" name="search_form_id" value="host_search_form">
+    <table id="hosts_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
+
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>H</u>ostname
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="hosts_field1" name="hostname" type="text" class="edit" size="35" accesskey="h" />
+            <div id="suggest_hostname" class="suggest"></div>
+        </td>
+    </tr>
+    
+    <tr>
+        <td align="right" class="asearch-line">
+            Subdomain (<u>z</u>one)
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="domain" name="domain" type="text" class="edit" size="35" accesskey="z" />
+            <div id="suggest_domain" class="suggest"></div>
+        </td>
+    </tr>
+    
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>M</u>AC
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="mac" name="mac" type="text" class="edit" size="17" accesskey="m" />
+            <div id="suggest_mac" class="suggest"></div>
+        </td>
+    </tr>
+    
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>I</u>P Address
+        </td>
+        <td align="left" class="asearch-line" nowrap="true">
+            <input id="ip" name="ip" type="text" class="edit" size="15" accesskey="i" />
+            <div id="suggest_ip" class="suggest"></div>
+            thru
+            <input id="ip_thru" name="ip_thru" class="edit" type="text" size="15">
+            <div id="suggest_ip_thru" class="suggest"></div>
+        </td>
+    </tr>
+    
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>N</u>otes
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="notes" name="notes" type="text" class="edit" size="17" accesskey="n" />
+            <div id="suggest_notes" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>L</u>ocation Ref
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="location" class="edit" type="text" name="location" size="8" accesskey="l" />
+            <span id="qf_location_{$window_name}"><img src="{$images}/silk/find.png" border="0"/></span>
+            <div id="suggest_location" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr id='more_options_link'>
+        <td align="right" class="asearch-line">
+            <a class="nav" onClick="xajax_window_submit('{$window_name}', 'show more', 'more_host_options');">More &gt;&gt;</a>
+        </td>
+        <td align="left" class="asearch-line">
+            &nbsp;
+        </td>
+    </tr>
+    
+    <tr>
+        <td align="left" colspan="2" id="more_host_options"></td>
+    </tr>
+    
+    <tr>
+        <td align="right" class="asearch-line">
+            &nbsp;
+        </td>
+        <td align="right" class="asearch-line">
+            <input class="button" type="reset" name="reset" value="Clear">
+            <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('host_search_form'));">
+        </td>
+    </tr>
+    
+    </table>
+    </form>
+
+
+
+    <!-- subnet Search Tab -->
+    <form id="subnet_search_form">
+    <input type="hidden" name="search_form_id" value="subnet_search_form">
+    <table id="subnets_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
+
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>V</u>lan
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="subnets_field1" name="vlandesc" type="text" class="edit" size="32" accesskey="v" />
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="asearch-line">
+            Subnet <u>T</u>ype
+        </td>
+        <td align="left" class="asearch-line">
+            <select id="nettype" name="nettype" class="edit" accesskey="u" accesskey="t" >
+                {$subnet_type_list}
+            </select>
+        </td>
+    </tr>
+    
+    <tr>
+        <td align="right" class="asearch-line">
+            Subnet <u>N</u>ame
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="subnet" name="subnetname" type="text" class="edit" size="32" accesskey="n" />
+            <div id="suggest_subnet" class="suggest"></div>
+        </td>
+    </tr>
+    
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>I</u>P Address
+        </td>
+        <td align="left" class="asearch-line" nowrap="true">
+            <input id="ip_subnet" name="ip_subnet" class="edit" type="text" size="15" accesskey="i" />
+            <div id="suggest_ip_subnet" class="suggest"></div>
+            thru
+            <input id="ip_subnet_thru" name="ip_subnet_thru" class="edit" type="text" size="15">
+            <div id="suggest_ip_subnet_thru" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="asearch-line">
+            &nbsp;
+        </td>
+        <td align="right" class="asearch-line">
+            <input class="button" type="reset" name="reset" value="Clear">
+            <input class="button" type="submit" name="search" value="Search" accesskey="s" onClick="toggle_window('{$window_name}'); xajax_window_submit('search_results', xajax.getFormValues('subnet_search_form'));">
+        </td>
+    </tr>
+
+    </table>
+    </form>
+
+    </div>
 
     <!-- Item List -->
     <div id="{$content_id}">{$conf['loading_icon']}</div>
@@ -149,6 +397,44 @@ EOL;
         /* Save the new tab and make it look active */
         el('{$form_id}_tab').value = '{$tab}';
         el('{$form_id}_{$tab}_tab').className = 'table-tab-active';
+        el('{$tab}_search').style.display = 'block';
+
+        /* make the first field have focus */
+        el('{$tab}_field1').focus();
+
+        suggest_setup('hosts_field1', 'suggest_hostname');
+        suggest_setup('domain',     'suggest_domain');
+        suggest_setup('mac',      'suggest_mac');
+        suggest_setup('ip',       'suggest_ip');
+        suggest_setup('ip_thru',  'suggest_ip_thru');
+        suggest_setup('notes',    'suggest_notes');
+        suggest_setup('ip_subnet', 'suggest_ip_subnet');
+        suggest_setup('ip_subnet_thru',  'suggest_ip_subnet_thru');
+        suggest_setup('subnet', 'suggest_subnet');
+        suggest_setup('location', 'suggest_location');
+        el('host_search_form').onsubmit = function() { return false; };
+        el('subnet_search_form').onsubmit = function() { return false; };
+
+        /* Setup the Quick Find location icon */
+        var _button = el('qf_location_{$window_name}');
+        _button.style.cursor = 'pointer';
+        _button.onclick =
+            function(ev) {
+                if (!ev) ev = event;
+                /* Create the popup div */
+                wwTT(this, ev,
+                     'id', 'tt_qf_location_{$window_name}',
+                     'type', 'static',
+                     'direction', 'south',
+                     'delay', 0,
+                     'styleClass', 'wwTT_qf',
+                     'javascript',
+                     "xajax_window_submit('tooltips', '" +
+                         "tooltip=>qf_location," +
+                         "id=>tt_qf_location_{$window_name}," +
+                         "input_id=>qf_location_{$window_name}');"
+                );
+            };
 
         /* Display the list of results */
         xajax_window_submit('list_' + el('{$form_id}_tab').value, xajax.getFormValues('{$form_id}'), 'display_list');
@@ -318,10 +604,10 @@ function ws_change_tab($window_name, $form, $display_list=1, $return_text=0) {
     $_SESSION['ona'][$form_id]['tab'] = $tab;
 
     // Make the old tab look inactive
-    $js .= "_el = el('{$form_id}_{$old_tab}_tab'); if (_el) _el.className = 'table-tab-inactive';";
+    $js .= "_el = el('{$form_id}_{$old_tab}_tab'); if (_el) _el.className = 'table-tab-inactive'; el('{$old_tab}_search').style.display = 'none';";
 
     // Make the new tab look active
-    $js .= "el('{$form_id}_{$tab}_tab').className = 'table-tab-active';";
+    $js .= "el('{$form_id}_{$tab}_tab').className = 'table-tab-active'; el('{$tab}_search').style.display = 'block';";
 
     // Set the "filter" to the correct value
     $js .= "el('{$form_id}_filter').value = '{$_SESSION['ona'][$form_id][$tab]['filter']}';";
@@ -329,6 +615,9 @@ function ws_change_tab($window_name, $form, $display_list=1, $return_text=0) {
     // Set the "page" and "tab" to the correct value
     $js .= "el('{$form_id}_page').value = '{$_SESSION['ona'][$form_id][$tab]['page']}';";
     $js .= "el('{$form_id}_tab').value = '{$tab}';";
+
+    // Put the cursor in the first field
+    $js .= "_el = el('{$tab}_field1'); if (_el) el('{$tab}_field1').focus();";
 
     // Hide/show the filter overlay
     $js .= "el('{$form_id}_filter_overlay').style.display = (el('{$form_id}_filter').value == '') ? 'inline' : 'none';";

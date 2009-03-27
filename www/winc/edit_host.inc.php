@@ -118,6 +118,7 @@ function ws_editor($window_name, $form='') {
             el('{$window_name}_title_r').innerHTML;
 
         suggest_setup('set_domain_{$window_name}',    'suggest_set_domain_{$window_name}');
+        suggest_setup('set_location_{$window_name}',  'suggest_set_location_{$window_name}');
 
         /* Setup the Quick Find location icon */
 
@@ -238,6 +239,7 @@ EOL;
                     type="text"
                     size="7" maxlength="10"
                 >
+                <div id="suggest_set_location_{$window_name}" class="suggest"></div>
                 <span id="qf_location_{$window_name}" title="Location Quick Search"><img src="{$images}/silk/find.png" border="0"/></span>
             </td>
         </tr>

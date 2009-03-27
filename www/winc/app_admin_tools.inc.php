@@ -63,15 +63,13 @@ $window['html'] .= <<<EOL
      ><img style="vertical-align: middle;" src="{$images}/silk/plugin.png" border="0"
      />&nbsp;Template administration</div>
 
- <!-- Decided not to use this option.. left it here for now
     <div class="row"
          onMouseOver="this.className='hovered';"
          onMouseOut="this.className='row';"
-         onClick="toggle_window('app_system_default_list');"
-         title="Manage system defaults"
+         onClick="toggle_window('app_sysconf_list');"
+         title="Manage system config"
     ><img style="vertical-align: middle;" src="{$images}/silk/page_edit.png" border="0"
-     />&nbsp;Manage system defaults</div>
-  -->
+     />&nbsp;Manage system config</div>
 
     <div class="row"
          onMouseOver="this.className='hovered';"
@@ -100,14 +98,6 @@ $window['html'] .= <<<EOL
     <div class="row"
          onMouseOver="this.className='hovered';"
          onMouseOut="this.className='row';"
-         onClick="toggle_window('app_device_type_list');"
-         title="Manage device types"
-    ><img style="vertical-align: middle;" src="{$images}/silk/drive_edit.png" border="0"
-     />&nbsp;Manage device types</div>
-
-    <div class="row"
-         onMouseOver="this.className='hovered';"
-         onMouseOut="this.className='row';"
          onClick="toggle_window('app_device_role_list');"
          title="Manage device roles"
     ><img style="vertical-align: middle;" src="{$images}/silk/drive_edit.png" border="0"
@@ -120,6 +110,14 @@ $window['html'] .= <<<EOL
          title="Manage device models"
     ><img style="vertical-align: middle;" src="{$images}/silk/drive_edit.png" border="0"
      />&nbsp;Manage device models</div>
+
+    <div class="row"
+         onMouseOver="this.className='hovered';"
+         onMouseOut="this.className='row';"
+         onClick="toggle_window('app_device_type_list');"
+         title="Manage device types"
+    ><img style="vertical-align: middle;" src="{$images}/silk/drive_edit.png" border="0"
+     />&nbsp;Manage device types</div>
 
     <div class="row"
          onMouseOver="this.className='hovered';"

@@ -53,9 +53,15 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
-    // BLOCK ID
+    // CAMPUS ID
     if ($form['id']) {
         $where .= $and . "id = " . $onadb->qstr($form['id']);
+        $and = " AND ";
+    }
+
+    // CAMPUS NAME
+    if ($form['campusname']) {
+        $where .= $and . " name LIKE " . $onadb->qstr('%'.$form['campusname'].'%');
         $and = " AND ";
     }
 
