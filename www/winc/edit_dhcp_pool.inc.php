@@ -135,8 +135,8 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
-                Subnet
+            <td align="right" nowrap="true">
+                Subnet:
             </td>
             <td class="padding" align="left" width="100%">
                 {$subnet['name']}
@@ -145,7 +145,7 @@ EOL;
 
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td align="right" nowrap="true">
                 Failover Group
             </td>
             <td class="padding" align="left" width="100%" nowrap="true">
@@ -170,7 +170,7 @@ EOL;
 
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td class="input_required" align="right" nowrap="true">
                 IP Start
             </td>
             <td class="padding" align="left" width="100%">
@@ -186,7 +186,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td class="input_required" align="right" nowrap="true">
                 IP End
             </td>
             <td class="padding" align="left" width="100%">
@@ -202,7 +202,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td align="right" nowrap="true">
                 Lease Length
             </td>
             <td class="padding" align="left" width="100%">
@@ -218,7 +218,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td align="right" nowrap="true">
                 Lease Grace
             </td>
             <td class="padding" align="left" width="100%">
@@ -234,7 +234,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td align="right" nowrap="true">
                 Lease Renewal
             </td>
             <td class="padding" align="left" width="100%">
@@ -251,7 +251,7 @@ EOL;
 
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td align="right" nowrap="true">
                 Lease Rebind
             </td>
             <td class="padding" align="left" width="100%">

@@ -69,7 +69,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Block Name
             </td>
             <td class="padding" align="left" width="100%">
@@ -85,7 +85,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 IP Block Start
             </td>
             <td class="padding" align="left" width="100%">
@@ -101,7 +101,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 IP Block End
             </td>
             <td class="padding" align="left" width="100%">

@@ -93,7 +93,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Domain Name
             </td>
             <td class="padding" align="left" width="100%">

@@ -83,7 +83,7 @@ EOL;
 
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Vlan Campus
             </td>
             <td class="padding" align="left" width="100%">
@@ -101,7 +101,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Vlan Name
             </td>
             <td class="padding" align="left" width="100%">
@@ -117,7 +117,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Vlan Number
             </td>
             <td class="padding" align="left" width="100%">

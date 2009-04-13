@@ -100,7 +100,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Primary Server
             </td>
             <td class="padding" align="left" width="100%">
@@ -118,7 +118,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Secondary Server
             </td>
             <td class="padding" align="left" width="100%">

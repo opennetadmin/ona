@@ -113,8 +113,8 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
-                {$window['edit_type']}
+            <td align="right" nowrap="true">
+                {$window['edit_type']}:
             </td>
             <td class="padding" align="left" width="100%">
                 {$window['edit_type_value']}
@@ -122,7 +122,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td class="input_required" align="right" nowrap="true" >
                 DHCP Option
             </td>
             <td class="padding" align="left" width="100%">
@@ -133,7 +133,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td class="input_required" align="right" nowrap="true">
                 Value
             </td>
             <td class="padding" align="left" width="100%">

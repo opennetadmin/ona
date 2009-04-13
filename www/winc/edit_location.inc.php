@@ -75,7 +75,7 @@ EOL;
 
         $window['html'] .= <<<EOL
         <tr>
-            <td align="right" class="qf-search-line">
+            <td class="input_required" align="right">
                 <u>R</u>eference
             </td>
             <td align="left" class="qf-search-line">
@@ -84,7 +84,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" class="qf-search-line">
+            <td class="input_required" align="right">
                 <u>N</u>ame
             </td>
             <td align="left" class="qf-search-line">
@@ -93,7 +93,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" class="qf-search-line">
+            <td class="input_required" align="right">
                 <u>A</u>ddress
             </td>
             <td align="left" class="qf-search-line">
@@ -102,17 +102,17 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" class="qf-search-line">
+            <td class="input_required" align="right">
                 <u>C</u>ity
             </td>
             <td align="left" class="qf-search-line" nowrap="true">
                 <input name="city" class="edit" type="text" size="20" accesskey="c" value="{$record['city']}"/>&nbsp;
-                State: <input name="state" class="edit" type="text" size="2" maxlength="2" value="{$record['state']}"/>
+                <span class="input_required">State</span> <input name="state" class="edit" type="text" size="2" maxlength="2" value="{$record['state']}"/>
             </td>
         </tr>
 
         <tr>
-            <td align="right" class="qf-search-line">
+            <td class="input_required" align="right">
                 <u>Z</u>ip
             </td>
             <td align="left" class="qf-search-line" nowrap="true">
@@ -121,8 +121,8 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" class="qf-search-line">
-                <u>L</u>atitude
+            <td align="right">
+                Latitude
             </td>
             <td align="left" class="qf-search-line" nowrap="true">
                 <input name="latitude" class="edit" type="text" size="10" maxlength="10" accesskey="l" value="{$record['latitude']}"/>
@@ -130,8 +130,8 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" class="qf-search-line">
-                L<u>o</u>ngitude
+            <td align="right">
+                Longitude
             </td>
             <td align="left" class="qf-search-line" nowrap="true">
                 <input name="longitude" class="edit" type="text" size="10" maxlength="10" accesskey="o" value="{$record['longitude']}"/>
@@ -139,8 +139,8 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" class="qf-search-line">
-                <u>M</u>isc info
+            <td align="right">
+                Misc info
             </td>
             <td align="left" class="qf-search-line">
                 <textarea name="misc" class="edit" rows="3" cols="20" size="256" accesskey="m">{$record['misc']}</textarea>

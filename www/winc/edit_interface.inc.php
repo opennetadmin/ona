@@ -147,7 +147,7 @@ EOL;
     if($host['fqdn']) {
         $window['html'] .= <<<EOL
             <td align="right" nowrap="true">
-                Host
+                Host:
             </td>
             <td class="padding" align="left" width="100%">
                 {$host['fqdn']}&nbsp;
@@ -156,7 +156,7 @@ EOL;
     }
     else {
         $window['html'] .= <<<EOL
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Existing Host
             </td>
             <td class="padding" align="left" width="100%">
@@ -176,7 +176,7 @@ EOL;
 
         <tr>
             <td align="right" nowrap="true">
-                Subnet
+                Subnet:
             </td>
             <td class="padding" align="left" width="100%" nowrap="true">
                 <span id="associated_subnet_{$window_name}"
@@ -185,7 +185,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 IP Address
             </td>
             <td class="padding" align="left" width="100%" nowrap="true">

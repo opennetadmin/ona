@@ -82,7 +82,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td class="input_required" align="right" nowrap="true">
                 Server
             </td>
             <td class="padding" align="left" width="100%">
@@ -101,7 +101,7 @@ EOL;
 
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td class="input_required" align="right" nowrap="true">
                 Domain
             </td>
             <td class="padding" align="left" width="100%">
@@ -119,7 +119,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
+            <td class="input_required" align="right" nowrap="true">
                 Role
             </td>
             <td class="padding" align="left" width="100%" nowrap="true">

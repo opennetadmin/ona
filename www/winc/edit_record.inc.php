@@ -196,7 +196,7 @@ EOL;
     <div id="type_container">
         <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']};padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;" width="100%">
             <tr>
-                <td align="right" nowrap="true">
+                <td class="input_required" align="right" nowrap="true">
                     DNS record type
                 </td>
                 <td class="padding" align="left" width="100%">
@@ -226,7 +226,7 @@ EOL;
     <div id="common_container" style="background-color: #F2F2F2;">
         <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
             <tr id="name_container">
-                <td align="right" nowrap="true">
+                <td class="input_required" align="right" nowrap="true">
                     Host Name
                 </td>
                 <td class="padding" align="left" width="100%">
@@ -244,7 +244,7 @@ EOL;
             </tr>
 
             <tr>
-                <td align="right" nowrap="true">
+                <td class="input_required" align="right" nowrap="true">
                     Domain
                 </td>
                 <td class="padding" align="left" width="100%">
@@ -380,7 +380,7 @@ EOL;
 
             <!-- A RECORD CONTAINER -->
             <tr id="a_container">
-                <td align="right" nowrap="true">
+                <td class="input_required" align="right" nowrap="true">
                     IP Address
                 </td>
                 <td class="padding" align="left" width="100%" nowrap="true">
@@ -416,7 +416,7 @@ EOL;
 
             <!-- TXT CONTAINER -->
             <tr id="txt_container" style="display:none;">
-                <td align="right" nowrap="true">
+                <td class="input_required" align="right" nowrap="true">
                     TXT value
                 </td>
                 <td class="padding" align="left" width="100%">
@@ -435,7 +435,7 @@ EOL;
 
             <!-- MX CONTAINER -->
             <tr id="mx_container" style="display:none;">
-                <td align="right" nowrap="true">
+                <td class="input_required" align="right" nowrap="true">
                     MX Preference
                 </td>
                 <td class="padding" align="left" width="100%">
@@ -454,7 +454,7 @@ EOL;
 
             <!-- SRV CONTAINER -->
             <tr id="srv_container" style="display:none;">
-                <td align="right" nowrap="true">
+                <td class="input_required" align="right" nowrap="true">
                     Priority<br>Weight<br>Port
                 </td>
                 <td class="padding" align="left" width="100%">
@@ -495,7 +495,7 @@ EOL;
 
             <!-- CNAME CONTAINER -->
             <tr id="existing_a_container" style="display:none;">
-                <td align="right" nowrap="true">
+                <td class="input_required" align="right" nowrap="true">
                     Existing A record
                 </td>
                 <td class="padding" align="left" width="100%">

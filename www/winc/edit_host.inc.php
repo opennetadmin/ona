@@ -170,7 +170,7 @@ EOL;
         </tr>
 
         <tr {$hideit}>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 DNS Name
             </td>
             <td class="padding" align="left" width="100%">
@@ -187,7 +187,7 @@ EOL;
         </tr>
 
         <tr {$hideit}>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Domain
             </td>
             <td class="padding" align="left" width="100%">
@@ -205,7 +205,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Device type
             </td>
             <td class="padding" align="left" width="100%">
@@ -297,7 +297,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 IP Address
             </td>
             <td class="padding" align="left" width="100%">

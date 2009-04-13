@@ -151,7 +151,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Name
             </td>
             <td class="padding" align="left" width="100%">
@@ -168,7 +168,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Subnet type
             </td>
             <td class="padding" align="left" width="100%">
@@ -179,7 +179,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 IP Address
             </td>
             <td class="padding" align="left" width="100%">
@@ -195,7 +195,7 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right" nowrap="true">
+            <td class="input_required" align="right" nowrap="true">
                 Netmask
             </td>
             <td class="padding" align="left" width="100%">
