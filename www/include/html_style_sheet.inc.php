@@ -136,6 +136,16 @@ a:hover      { cursor: pointer; text-decoration: underline; }
 
 /* ---------------- forms ------------------------ */
 
+.input_required {
+    font-style: italic;
+    text-decoration: underline;
+}
+
+.input_optional {
+    font-style: normal;
+    text-decoration: none;
+}
+
 form {
     border: none;
     margin: 0;
