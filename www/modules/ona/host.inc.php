@@ -25,7 +25,7 @@ function host_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.07';
+    $version = '1.08';
 
     printmsg("DEBUG => host_add({$options}) called", 3);
 
@@ -77,7 +77,8 @@ EOM
         list($status, $rows, $loc) = ona_find_location($options['location']);
         if ($status or !$rows) {
             printmsg("DEBUG => The location specified, {$options['location']}, does not exist!", 3);
-            return(array(2, "ERROR => The location specified, {$options['location']}, does not exist!\n"));
+            $self['error'] = "ERROR => The location specified, {$options['location']}, does not exist!";
+            return(array(2, "{$self['error']}\n"));
         }
         printmsg("DEBUG => Location selected: {$loc['reference']}, location name: {$loc['name']}", 3);
     } else {
