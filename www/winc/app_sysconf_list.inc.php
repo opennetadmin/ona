@@ -195,12 +195,10 @@ EOL;
         }
 
         $html .= <<<EOL
-        <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
+        <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'" title="{$record['description']}">
 
             <td class="list-row" title="{$record['description']}">
-                <a class="act"
-                   onClick="xajax_window_submit('app_sysconf_edit', '{$record['name']}', 'editor');"
-                >{$record['name']}</a>&nbsp;
+                {$record['name']}&nbsp;
             </td>
 
             <td class="list-row">
@@ -210,18 +208,18 @@ EOL;
             <td align="right" class="list-row" nowrap="true">
 EOL;
 
-//     if ($record['editable'] > 0) {
-//         $html .= <<<EOL
-//                 <a title="Edit entry."
-//                     class="act"
-//                     onClick="xajax_window_submit('app_sysconf_edit', '{$record['name']}', 'editor');"
-//                 ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
-// EOL;
-//     } else {
-//         $html .= <<<EOL
-//                 <img src="{$images}/silk/lock.png" border="0" title="Locked system record, you can not edit it.">&nbsp;
-// EOL;
-//     }
+    if ($record['editable'] > 0) {
+        $html .= <<<EOL
+                <a title="Edit entry."
+                    class="act"
+                    onClick="xajax_window_submit('app_sysconf_edit', '{$record['name']}', 'editor');"
+                ><img src="{$images}/silk/page_edit.png" border="0"></a>&nbsp;
+EOL;
+    } else {
+        $html .= <<<EOL
+                <img src="{$images}/silk/lock.png" border="0" title="Locked system record, you can not edit it.">&nbsp;
+EOL;
+    }
 
     if ($record['deleteable'] > 0) {
         $html .= <<<EOL
@@ -250,7 +248,7 @@ EOL;
 
     <!-- Add a new record -->
     <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}; border-bottom: 1px solid {$color['border']};">
-        <!-- ADD LINK 
+        <!-- ADD LINK -->
         <a title="New config option"
             class="act"
             onClick="xajax_window_submit('app_sysconf_edit', ' ', 'editor');"
@@ -260,7 +258,7 @@ EOL;
             class="act"
             onClick="xajax_window_submit('app_sysconf_edit', ' ', 'editor');"
         >Add config option</a>&nbsp;
--->
+
     </div>
 EOL;
 

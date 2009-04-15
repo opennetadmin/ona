@@ -44,11 +44,15 @@ EOL;
 
     // If we got a class type, load it for display
     $overwrite = 'no';
+    $edit=0;
 
-    list($status, $rows, $record) = db_get_record($onadb,
-                                            'sys_config',
-                                            array('name' => $form));
-    if (!$status and $rows) { $overwrite = 'yes'; }
+    list($status, $rows, $record) = db_get_record($onadb, 'sys_config', array('name' => $form));
+
+
+    if (!$status and $rows) {
+        $overwrite = 'yes';
+        $edit=1;
+    }
 
 
 
@@ -62,12 +66,18 @@ EOL;
 
     <!-- Simple class types Edit Form -->
     <form id="sysconf_edit_form" onSubmit="return false;">
-    <input name="id" type="hidden" value="{$record['id']}">
+    <input name="id" type="hidden" value="{$record['name']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
+
         <tr>
-            <td align="right">
+            <td class="input_required" align="right">
                 Name
             </td>
+EOL;
+
+    if (!$edit) {
+    $window['html'] .= <<<EOL
+
             <td class="padding" align="left" width="100%">
                 <input
                     name="name"
@@ -78,10 +88,20 @@ EOL;
                     size="30" maxlength="30"
                 >
             </td>
+
+EOL;
+    } else {
+    $window['html'] .= <<<EOL
+            <td class="padding" align="left" width="100%">
+                <input name="name" type="hidden" value="{$record['name']}">{$record['name']}</td>
+EOL;
+    }
+
+    $window['html'] .= <<<EOL
         </tr>
 
         <tr>
-            <td align="right">
+            <td class="input_required" align="right">
                 Value
             </td>
             <td class="padding" align="left" width="100%">
@@ -97,18 +117,11 @@ EOL;
         </tr>
 
         <tr>
-            <td align="right">
+            <td class="input_required" align="right">
                 Description
             </td>
             <td class="padding" align="left" width="100%">
-                <input
-                    name="description"
-                    alt="Description"
-                    value="{$record['description']}"
-                    class="edit"
-                    type="text"
-                    size="30" maxlength="30"
-                >
+                <textarea name="description" class="edit" cols="40" rows="2">{$record['description']}</textarea>
             </td>
         </tr>
 
@@ -169,27 +182,37 @@ function ws_save($window_name, $form='') {
     // Strip whitespace
     // FIXME: (PK) What about SQL injection attacks?  This is a user-entered string...
     $form['value'] = trim($form['value']);
-    
+    $form['name']  = trim($form['name']);
+
     // Don't insert a string of all white space!
-//     if(trim($form['name']) == "") {
-//         $self['error'] = "ERROR => Blank names not allowed.";
-//         printmsg($self['error'], 0);
-//         $response->addScript("alert('{$self['error']}');");
-//         return($response->getXML());
-//     }
+    if(trim($form['name']) == "") {
+        $self['error'] = "ERROR => Blank names not allowed.";
+        printmsg($self['error'], 0);
+        $response->addScript("alert('{$self['error']}');");
+        return($response->getXML());
+    }
 
 
     // If you get a numeric in $form, update the record
-    if (is_numeric($form['id'])) {
-        // Get the role record before updating (logging)
-        list($status, $rows, $original_role) = ona_get_role_record(array('id' => $form['id']));
+    if ($form['id']) {
 
-        if($form['value'] !== $original_role['value']) {
+        // Get the record before updating (logging)
+        list($status, $rows, $original_sysconf) = ona_get_record(array('name' => $form['id']), 'sys_config');
+
+        // Bail if it is a non editable entry
+        if ($original_sysconf['editable'] == 0) {
+            $self['error'] = "ERROR => This system config entry is not editable.";
+            printmsg($self['error'], 0);
+            $response->addScript("alert('{$self['error']}');");
+            return($response->getXML());
+        }
+
+        if($form['value'] !== $original_sysconf['value'] or $form['description'] !== $original_sysconf['description']) {
             list($status, $rows) = db_update_record(
                                          $onadb,
-                                         'roles',
-                                         array('id' => $form['id']),
-                                         array('value' => $form['value'])
+                                         'sys_config',
+                                         array('name' => $form['name']),
+                                         array('value' => $form['value'],'description' => $form['description'])
                                      );
             if ($status or !$rows) {
                 $self['error'] = "ERROR => sys_config_edit update ws_save() failed: " . $self['error'];
@@ -197,41 +220,50 @@ function ws_save($window_name, $form='') {
             }
             else {
                 // Get the record after updating (logging)
-                list($status, $rows, $new_role) = ona_get_role_record(array('id' => $form['id']));
-    
+                list($status, $rows, $new_sysconf) = ona_get_record(array('name' => $form['id']), 'sys_config');
+
                 // Return the success notice
-                $self['error'] = "INFO => Sys_config UPDATED:{$new_role['id']}: {$new_role['value']}";
+                $self['error'] = "INFO => Sys_config UPDATED:{$new_sysconf['name']}: {$new_sysconf['value']}";
                 printmsg($self['error'], 0);
-                $log_msg = "INFO => Sys_config UPDATED:{$new_role['id']} NAME[{$original_role['name']}]{$original_role['value']}=>{$new_role['value']}";
+                $log_msg = "INFO => Sys_config UPDATED:{$new_sysconf['name']} NAME[{$original_sysconf['name']}]{$original_sysconf['value']}=>{$new_sysconf['value']}";
                 printmsg($log_msg, 0);
             }
+        } else {
+            $self['error'] = "INFO => You have not made a change to the value or description.";
+            printmsg($self['error'], 0);
+            $response->addScript("alert('{$self['error']}');");
+            return($response->getXML());
         }
     }
     // If you get nothing in $form, create a new record
-//     else {
-//         $id = ona_get_next_id('roles');
-//         if (!$id) {
-//             $self['error'] = "ERROR => The ona_get_next_id() call failed!";
-//             printmsg($self['error'], 0);
-//         }
-//         else {
-//             printmsg("DEBUG => id for new role record: $id", 3);
-//             list($status, $rows) = db_insert_record($onadb, 
-//                                             "roles", 
-//                                             array('id' => $id, 
-//                                             'name' => $form['role_name']));
-// 
-//             if ($status or !$rows) {
-//                 $self['error'] = "ERROR => role_edit add ws_save() failed: " . $self['error'];
-//                 printmsg($self['error'], 0);
-//             }
-//             else {
-//                 $self['error'] = "INFO => Role ADDED: {$form['role_name']} ";
-//                 printmsg($self['error'], 0);
-//             }
-// 
-//         }
-//    }
+    else {
+            // check for an existing entry like this
+            list($status, $rows, $test) = ona_get_record(array('name' => $form['name']), 'sys_config');
+            if ($rows) {
+                $self['error'] = "ERROR => The name you are trying to use already exists.";
+                printmsg($self['error'], 0);
+                $response->addScript("alert('{$self['error']}');");
+                return($response->getXML());
+            }
+
+            list($status, $rows) = db_insert_record($onadb,
+                                            "sys_config",
+                                            array('name' => $form['name'],
+                                                  'value' => $form['value'],
+                                                  'description' => $form['description'],
+                                                  'editable' => 1,
+                                                  'deleteable' => 1)
+                                            );
+
+            if ($status or !$rows) {
+                $self['error'] = "ERROR => Sys_config_edit add ws_save() failed: " . $self['error'];
+                printmsg($self['error'], 0);
+            }
+            else {
+                $self['error'] = "INFO => Sys_config ADDED: {$form['name']} ";
+                printmsg($self['error'], 0);
+            }
+   }
 
     // If the module returned an error code display a popup warning
     if ($status) {
