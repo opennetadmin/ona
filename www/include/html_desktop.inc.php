@@ -94,7 +94,7 @@ print <<<EOL
             </span>
 
             <!-- Button to open the "search dialog" -->
-            <span class="topmenu-item" id="search-item" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form'); return false;">
+            <span class="topmenu-item" title="Advanced search" id="search-item" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form'); return false;">
                 <a id="search-button"
                    class="button"
                 ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0" />&nbsp;Search&nbsp;</a>

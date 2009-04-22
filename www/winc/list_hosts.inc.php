@@ -253,11 +253,16 @@ function ws_display_list($window_name, $form='') {
 
 
     // DEVICE MODEL
-    if ($form['model']) {
-        $where .= $and . "device_id in (select id from devices where device_type_id in (select id from device_types
-                        where model_id = {$form['model']}))";
+    if ($form['model_id']) {
+        $where .= $and . "device_id in (select id from devices where device_type_id in (select id from device_types where model_id = {$form['model_id']}))";
         $and = " AND ";
     }
+
+    if ($form['model']) {
+        $where .= $and . "device_id in (select id from devices where device_type_id in (select id from device_types where model_id in (select id from models where name like '{$form['model']}')))";
+        $and = " AND ";
+    }
+
 
 
     // DEVICE TYPE
@@ -266,7 +271,7 @@ function ws_display_list($window_name, $form='') {
         list($status, $rows, $records) =
             db_get_records($onadb,
                            'roles',
-                           array('id' => $form['role'])
+                           array('name' => $form['role'])
                           );
         // If there were results, add each one to the $where clause
         if ($rows > 0) {
@@ -287,11 +292,13 @@ function ws_display_list($window_name, $form='') {
     // DEVICE MANUFACTURER
     if ($form['manufacturer']) {
         // Find model_id's that have a device_type_id of $form['manufacturer']
-        list($status, $rows, $records) =
-            db_get_records($onadb,
-                           'models',
-                           array('manufacturer_id' => $form['manufacturer'])
-                          );
+        if (is_numeric($form['manufacturer'])) {
+            list($status, $rows, $records) = db_get_records($onadb, 'models', array('manufacturer_id' => $form['manufacturer']));
+        } else {
+            list($status, $rows, $manu) = db_get_record($onadb, 'manufacturers', array('name' => $form['manufacturer']));
+            list($status, $rows, $records) = db_get_records($onadb, 'models', array('manufacturer_id' => $manu['id']));
+        }
+
         // If there were results, add each one to the $where clause
         if ($rows > 0) {
             $where .= $and . " ( ";

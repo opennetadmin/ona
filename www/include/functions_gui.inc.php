@@ -371,10 +371,6 @@ function get_host_notes_suggestions($q, $max_results=10) {
     return(get_text_suggestions($q . '%', 'hosts', 'notes', $max_results));
 }
 
-function get_alias_suggestions($q, $max_results=10) {
-    return(get_text_suggestions($q . '%', 'HOST_ALIASES_B', 'ALIAS', $max_results));
-}
-
 function get_domain_suggestions($q, $max_results=10) {
     global $self, $conf, $onadb;
     $results = array();
@@ -491,10 +487,53 @@ function get_ip_suggestions($q, $max_results=10) {
     return($formatted);
 }
 
+function get_model_suggestions($q, $max_results=10) {
+//     global $self, $conf, $onadb;
+//     $results = array();
+// 
+//     // wildcard the query before searching
+//     $q = $q . '%';
+// 
+//     $table = 'models';
+//     $field = 'name';
+//     $where  = "{$field} LIKE " . $onadb->qstr($q);
+//     $order  = "{$field} ASC";
+// 
+//     // Search the db for results
+//     list ($status, $rows, $records) = db_get_records(
+//                                         $onadb,
+//                                         $table,
+//                                         $where,
+//                                         $order,
+//                                         $max_results
+//                                       );
+// 
+//     // If the query didn't work return the error message
+//     if ($status) { $results[] = "Internal Error: {$self['error']}"; }
+// 
+//     foreach ($records as $record) {
+//         list($status, $rows, $manu) = db_get_record($onadb, 'manufacturers', array('id' => $record['manufacturer_id']));
+//         $results[] = $manu['name'].", ".$record[$field];
+//     }
+//     sort($results);
+//     // Return the records
+//     return($results);
 
 
+   return(get_text_suggestions($q . '%', 'models', 'name', $max_results));
+}
 
+function get_custom_attribute_type_suggestions($q, $max_results=10) {
+    return(get_text_suggestions($q . '%', 'custom_attribute_types', 'name', $max_results));
+}
 
+function get_role_suggestions($q, $max_results=10) {
+    return(get_text_suggestions($q . '%', 'roles', 'name', $max_results));
+}
+
+function get_manufacturer_suggestions($q, $max_results=10) {
+    return(get_text_suggestions($q . '%', 'manufacturers', 'name', $max_results));
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // xajax server for suggest_qsearch()
@@ -968,8 +1007,140 @@ function suggest_vlan_campus_qf($q, $el_input, $el_suggest) {
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_custom_attribute_type($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_custom_attribute_type_suggestions($q);
+    $results = array_merge($results, get_custom_attribute_type_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
 
 
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_manufacturer($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_manufacturer_suggestions($q);
+    $results = array_merge($results, get_manufacturer_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_model($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_model_suggestions($q);
+    $results = array_merge($results, get_model_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_role($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_role_suggestions($q);
+    $results = array_merge($results, get_role_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
 
 
 //////////////////////////////////////////////////////////////////////////////

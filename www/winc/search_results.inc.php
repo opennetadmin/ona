@@ -183,92 +183,134 @@ function ws_search_results_submit($window_name, $form='') {
     <table id="hosts_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
 
     <tr>
-        <td align="right" class="asearch-line">
-            <u>H</u>ostname
-        </td>
-        <td align="left" class="asearch-line">
-            <input id="hosts_field1" name="hostname" type="text" class="edit" size="35" accesskey="h" />
-            <div id="suggest_hostname" class="suggest"></div>
-        </td>
-    </tr>
-    
-    <tr>
-        <td align="right" class="asearch-line">
-            Subdomain (<u>z</u>one)
-        </td>
-        <td align="left" class="asearch-line">
-            <input id="domain" name="domain" type="text" class="edit" size="35" accesskey="z" />
-            <div id="suggest_domain" class="suggest"></div>
-        </td>
-    </tr>
-    
-    <tr>
-        <td align="right" class="asearch-line">
-            <u>M</u>AC
-        </td>
-        <td align="left" class="asearch-line">
-            <input id="mac" name="mac" type="text" class="edit" size="17" accesskey="m" />
-            <div id="suggest_mac" class="suggest"></div>
-        </td>
-    </tr>
-    
-    <tr>
-        <td align="right" class="asearch-line">
-            <u>I</u>P Address
-        </td>
-        <td align="left" class="asearch-line" nowrap="true">
-            <input id="ip" name="ip" type="text" class="edit" size="15" accesskey="i" />
-            <div id="suggest_ip" class="suggest"></div>
-            thru
-            <input id="ip_thru" name="ip_thru" class="edit" type="text" size="15">
-            <div id="suggest_ip_thru" class="suggest"></div>
-        </td>
-    </tr>
-    
-    <tr>
-        <td align="right" class="asearch-line">
-            <u>N</u>otes
-        </td>
-        <td align="left" class="asearch-line">
-            <input id="notes" name="notes" type="text" class="edit" size="17" accesskey="n" />
-            <div id="suggest_notes" class="suggest"></div>
-        </td>
+     <td>
+      <table cellspacing="0" border="0" cellpadding="0">
+        <tr>
+            <td align="right" class="asearch-line">
+                <u>H</u>ostname
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="hosts_field1" name="hostname" type="text" class="edit" size="35" accesskey="h" value="{$form['hostname']}" />
+                <div id="suggest_hostname" class="suggest"></div>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" class="asearch-line">
+                Subdomain (<u>z</u>one)
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="domain" name="domain" type="text" class="edit" size="35" accesskey="z" value="{$form['domain']}" />
+                <div id="suggest_domain" class="suggest"></div>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" class="asearch-line">
+                <u>M</u>AC
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="mac" name="mac" type="text" class="edit" size="17" accesskey="m" value="{$form['mac']}" />
+                <div id="suggest_mac" class="suggest"></div>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" class="asearch-line">
+                <u>I</u>P Address
+            </td>
+            <td align="left" class="asearch-line" nowrap="true">
+                <input id="ip" name="ip" type="text" class="edit" size="15" accesskey="i" value="{$form['ip']}" />
+                <div id="suggest_ip" class="suggest"></div>
+                thru
+                <input id="ip_thru" name="ip_thru" class="edit" type="text" size="15" value="{$form['ip_thru']}">
+                <div id="suggest_ip_thru" class="suggest"></div>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" class="asearch-line">
+                <u>N</u>otes
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="notes" name="notes" type="text" class="edit" size="17" accesskey="n" value="{$form['notes']}" />
+                <div id="suggest_notes" class="suggest"></div>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" class="asearch-line">
+                <u>L</u>ocation Ref
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="location" class="edit" type="text" name="location" size="8" accesskey="l" value="{$form['location']}" />
+                <span id="qf_location_{$window_name}"><img src="{$images}/silk/find.png" border="0"/></span>
+                <div id="suggest_location" class="suggest"></div>
+            </td>
+        </tr>
+
+      </table>
+
+    </td>
+    <td>
+
+      <table cellspacing="0" border="0" cellpadding="0">
+
+        <tr>
+            <td align="right" class="asearch-line">
+                <u>C</u>ustom attribute
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="custom_attribute_type" type="text" name="custom_attribute_type" size="20" class="edit" accesskey="c" value="{$form['custom_attribute_type']}">
+                <div id="suggest_custom_attribute_type" class="suggest"></div>
+                <u>V</u>alue
+                <input id="ca_value" name="ca_value" type="text" class="edit" size="15" accesskey="v" value="{$form['ca_value']}"/>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" class="asearch-line">
+                Device mode<u>l</u>
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="model" type="text" name="model" class="edit" size="20" accesskey="l" value="{$form['model']}">
+                <div id="suggest_model" class="suggest"></div>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" class="asearch-line">
+                Device <u>t</u>ype Role
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="role" type="text" name="role" class="edit" size="20" accesskey="t" value="{$form['role']}">
+                <div id="suggest_role" class="suggest"></div>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" class="asearch-line">
+                Device man<u>u</u>facturer
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="manufacturer" type="text" name="manufacturer" class="edit" size="20" accesskey="u" value="{$form['manufacturer']}">
+                <div id="suggest_manufacturer" class="suggest"></div>
+            </td>
+        </tr>
+
+      </table>
+
+    </td>
     </tr>
 
-    <tr>
-        <td align="right" class="asearch-line">
-            <u>L</u>ocation Ref
-        </td>
-        <td align="left" class="asearch-line">
-            <input id="location" class="edit" type="text" name="location" size="8" accesskey="l" />
-            <span id="qf_location_{$window_name}"><img src="{$images}/silk/find.png" border="0"/></span>
-            <div id="suggest_location" class="suggest"></div>
-        </td>
-    </tr>
 
-    <tr id='more_options_link'>
-        <td align="right" class="asearch-line">
-            <a class="nav" onClick="xajax_window_submit('{$window_name}', 'show more', 'more_host_options');">More &gt;&gt;</a>
-        </td>
-        <td align="left" class="asearch-line">
-            &nbsp;
-        </td>
-    </tr>
-    
     <tr>
-        <td align="left" colspan="2" id="more_host_options"></td>
-    </tr>
-    
-    <tr>
-        <td align="right" class="asearch-line">
-            &nbsp;
-        </td>
-        <td align="right" class="asearch-line">
+        <td colspan=4 align="right" class="asearch-line">
             <input class="button" type="reset" name="reset" value="Clear">
             <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('host_search_form'));">
         </td>
     </tr>
-    
+
     </table>
     </form>
 
@@ -341,6 +383,8 @@ function ws_search_results_submit($window_name, $form='') {
     <div id="{$content_id}">{$conf['loading_icon']}</div>
 EOL;
 
+//TODO: this is a test I did on having a click focus bring up the full list of entries.. kinda like a dropdown dialog.. 
+//onfocus="suggest_display('role', 'suggest_role');searchKeyDown('37', el('role'), 'suggest_role');"
 
     // Before we can let the browser call "display_list"
     // we need to make sure we know what type of list we'll be displaying
@@ -412,6 +456,12 @@ EOL;
         suggest_setup('ip_subnet_thru',  'suggest_ip_subnet_thru');
         suggest_setup('subnet', 'suggest_subnet');
         suggest_setup('location', 'suggest_location');
+        suggest_setup('custom_attribute_type', 'suggest_custom_attribute_type');
+        suggest_setup('role', 'suggest_role');
+        suggest_setup('model', 'suggest_model');
+        suggest_setup('manufacturer', 'suggest_manufacturer');
+
+
         el('host_search_form').onsubmit = function() { return false; };
         el('subnet_search_form').onsubmit = function() { return false; };
 
