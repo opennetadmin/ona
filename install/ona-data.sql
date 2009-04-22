@@ -158,7 +158,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `sequences` WRITE;
 /*!40000 ALTER TABLE `sequences` DISABLE KEYS */;
-INSERT INTO `sequences` VALUES ('blocks',4),('configurations',1),('custom_attribute_types',3),('devices',14),('device_types',7),('dhcp_options',14),('dhcp_option_entries',13),('dhcp_pools',3),('dhcp_server_subnets',6),('dns',62),('dns_server_domains',8),('domains',5),('hosts',22),('interfaces',28),('manufacturers',47),('models',11),('roles',14),('subnets',22),('subnet_types',14),('vlans',1),('vlan_campuses',5),('locations',1);
+INSERT INTO `sequences` VALUES ('blocks',4),('configurations',1),('configuration_types',5),('custom_attribute_types',3),('devices',14),('device_types',7),('dhcp_options',14),('dhcp_option_entries',13),('dhcp_pools',3),('dhcp_server_subnets',6),('dns',62),('dns_server_domains',8),('domains',5),('hosts',22),('interfaces',28),('manufacturers',47),('models',11),('roles',14),('subnets',22),('subnet_types',14),('vlans',1),('vlan_campuses',5),('locations',1);
 /*!40000 ALTER TABLE `sequences` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -214,7 +214,7 @@ INSERT INTO `sys_config` (`name`, `value`, `description`, `field_validation_rule
 ('suggest_max_results', '10', 'Limits the amount of rows returned by queries. (test impact of changing this first)', '', '', 1, 0),
 ('syslog', '0', 'Log via syslog, only works if debug is set to 0', '', '', 0, 0),
 ('version', 'not-set', 'Tracks current installed version, used to detect when upgrades should be done.', '', '', 0, 0),
-('upgrade_index', '5', 'Tracks current upgrade index, used to perform database upgrades.', '', '', 0, 0);
+('upgrade_index', '6', 'Tracks current upgrade index, used to perform database upgrades.', '', '', 0, 0);
 
 --
 -- Dumping data for table `users`
