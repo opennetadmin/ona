@@ -429,7 +429,7 @@ function config_diff($options="") {
     global $onadb;
     
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
     
     printmsg('DEBUG => config_diff('.$options.') called', 3);
     
@@ -445,7 +445,7 @@ function config_diff($options="") {
 config_diff-v{$version}
 Displays the difference between selected archive entries
   
-  Synopsis: config_display [KEY=VALUE] ...
+  Synopsis: config_diff [KEY=VALUE] ...
   
   Required:
     host=ID or NAME[.DOMAIN]    display most recent config for specified host

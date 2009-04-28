@@ -251,6 +251,10 @@ EOL;
     // If they have selected to display the config, show it
     if ($form['displayconf']) {
         list($status, $rows, $config) = ona_get_config_record(array('id' => $form['displayconf']));
+
+        // Remove characters that will not display properly in a browser.. specifically CTRL-C chars
+        $config['config_body'] = str_replace(chr(03), "", $config['config_body']);
+
         $html .= <<<EOL
         <div style="margin: 10px 20px; float: left; width: 96%; background-color: {$color['bar_bg']}; border: 1px solid;">
 
@@ -312,6 +316,9 @@ EOL;
     $history['title'] = "Config diff ({$form['old_id']} / {$form['new_id']})";
     array_push($_SESSION['ona']['work_space']['history'], $history);
 
+    // Remove characters that will not display properly in a browser.. specifically CTRL-C chars
+    $old['config_body'] = str_replace(chr(03), "", $old['config_body']);
+    $new['config_body'] = str_replace(chr(03), "", $new['config_body']);
 
     // Display the config text diff
     $html .= <<<EOL
