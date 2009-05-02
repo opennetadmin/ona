@@ -1664,6 +1664,11 @@ function format_array($array=array()) {
             list($status, $rows, $interface) = ona_get_interface_record(array('id' => $array[$key]));
             $array[$key] = str_pad($array[$key], 20) . '(' .ip_mangle($interface['ip_addr'], 'dotted') . ')';
         }
+        else if ($key == 'custom_attribute_type_id') {
+            list($status, $rows, $ca) = ona_get_custom_attribute_type_record(array('id' => $array[$key]));
+            if ($ca['id'])
+                $array[$key] = str_pad($array[$key], 20) . "({$ca['name']})";
+        }
 
         // Align columns
         if ($array[$key]) { $text .= str_pad("  {$key}", 30) . $array[$key] . "\n"; }

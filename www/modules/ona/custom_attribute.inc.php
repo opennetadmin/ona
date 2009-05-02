@@ -543,11 +543,161 @@ EOM
 
 
 
+///////////////////////////////////////////////////////////////////////
+//  Function: custom_attribute_display (string $options='')
+//
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function (0 on success, non-zero on error)
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = custom_attribute_modify('host=test');
+//
+//  Exit codes:
+//    0  :: No error
+//    1  :: Help text printed - Insufficient or invalid input received
+//
+//
+//  History:
+//
+//
+///////////////////////////////////////////////////////////////////////
+function custom_attribute_display($options="") {
+
+    // The important globals
+    global $conf, $self, $onadb;
+
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+
+    printmsg("DEBUG => custom_attribute_display({$options}) called", 3);
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Return the usage summary if we need to
+    if ($options['help'] or (!$options['host'] and !$options['id'] and !$options['subnet'])) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+custom_attribute_display-v{$version}
+Display the custom attribute specified or attributes for a host
+
+  Synopsis: custom_attribute_display
+
+  Where:
+    id=ID                     custom attribute ID
+    OR
+    host=ID or NAME[.DOMAIN]  display custom attributes for specified host
+    OR
+    subnet=ID or NAME         display custom attributes for specified subnet
+
+  Optional:
+    type=ID or NAME           If you specify a type and a host or subnet you
+                              will only get back a 1 or a 0 indicating that
+                              that type is set or not set for the host or subnet
+EOM
+
+        ));
+    }
 
 
 
 
+    // Now find the ID of the record
+    if ($options['id']) {
+        list($status, $rows, $ca) = ona_get_custom_attribute_record(array('id' => $options['id']));
+        if (!$ca['id']) {
+            $self['error'] = "ERROR => The custom attribute specified, {$options['id']}, is invalid!";
+            return(array(4, $self['error']));
+        }
 
+        $text .= "CUSTOM ATTRIBUTE ENTRY RECORD ({$ca['id']})\n";
+        $text .= format_array($ca);
+        // Return the success notice
+        return(array(0, $text));
+    }
+
+    // if a type was set, check if it is associated with the host or subnet and return 1 or 0
+    if ($options['type']) {
+        $field = (is_numeric($options['type'])) ? 'id' : 'name';
+        list($status, $rows, $catype) = ona_get_custom_attribute_type_record(array($field => $options['type']));
+        // error if we cant find the type specified
+        if (!$catype['id']) {
+            $self['error'] = "ERROR => The custom attribute type specified, {$options['type']}, does not exist!";
+            return(array(5, $self['error']));
+        }
+
+        $where['custom_attribute_type_id'] = $catype['id'];
+    }
+
+    // Search for the host first
+    if ($options['host']) {
+        list($status, $rows, $host) = ona_find_host($options['host']);
+
+        // Error if the host doesn't exist
+        if (!$host['id']) {
+            $self['error'] = "ERROR => The host specified, {$options['host']}, does not exist!";
+            return(array(2, $self['error']));
+        } else {
+                $where['table_id_ref'] = $host['id'];
+                $where['table_name_ref'] = 'hosts';
+                list($status, $rows, $cas) = db_get_records($onadb,'custom_attributes', $where );
+        }
+
+        $anchor = 'host';
+        $desc = $host['fqdn'];
+    }
+
+    // Search for subnet
+    if ($options['subnet']) {
+        list($status, $rows, $subnet) = ona_find_subnet($options['subnet']);
+
+        // Error if the record doesn't exist
+        if (!$subnet['id']) {
+            $self['error'] = "ERROR => The subnet specified, {$options['subnet']}, does not exist!";
+            return(array(3, $self['error']));
+        } else {
+                list($status, $rows, $cas) = db_get_records($onadb,'custom_attributes',
+                                                array('table_id_ref' => $subnet['id'], 'table_name_ref' => 'subnets')
+
+                                            );
+        }
+
+        $anchor = 'server';
+        $desc = $subnet['description'];
+    }
+
+    if ($options['type']) {
+        if ($cas[0]) {
+            return(array(0, '1'));
+        } else {
+            return(array(0, '0'));
+        }
+    }
+
+    // Build text to return
+    $text  = strtoupper($anchor) . " CUSTOM ATTRIBUTE RECORDS ({$desc})\n";
+
+    // Display the record(s)
+    $i = 0;
+    do {
+        $i++;
+        $text .= "\nASSOCIATED CUSTOM ATTRIBUTE ENTRY RECORD ({$i} of {$rows})\n";
+        $text .= format_array($cas[$i - 1]);
+    } while ($i < $rows);
+
+    // Return the success notice
+    return(array(0, $text));
+
+}
 
 
 ?>
