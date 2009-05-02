@@ -222,7 +222,7 @@ function dhcp_server_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => dhcp_server_del({$options}) called", 3);
 
@@ -289,16 +289,6 @@ EOM
             $self['error'] = "ERROR => The server specified, {$options['server']}, does not exist!";
             return(array(2, $self['error'] . "\n"));
         }
-
-// FIXME: MP commented out for now.. not using server table or anything, plan to remove this later
-/*        // Determine the host that was found is actually a server
-        list($status, $rows, $server) = ona_get_server_record(array('HOST_ID' => $host['ID']));
-
-        if (!$server['ID']) {
-            printmsg("DEBUG => The host ({$options['server']}) is not a server!",3);
-            $self['error'] = "ERROR => The host specified, {$host['FQDN']}, is not a server!";
-            return(array(5, $self['error'] . "\n"));
-        }*/
     }
 
     //printmsg("DEBUG => dhcp_server_del(): Found server, {$host['FQDN']}", 3);
@@ -330,12 +320,6 @@ EOM
         // check for pool assigned to the server itself
         list($status, $rows, $pools) = db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $subnet['id']));
         foreach($pools as $pool) {
-// FIXME: MP commented out for now.  server is  not directly associated with pool now.  that is done via the subnet. I.E. this record we are deleting
-//             if ($pool['SERVER_ID'] == $server['ID']) {
-//                 printmsg("DEBUG => Subnet ({$subnet['DESCRIPTION']}) has a pool assigned to this Server ({$host['FQDN']})",3);
-//                 $self['error'] = "ERROR => Subnet ({$subnet['DESCRIPTION']}) has a pool assigned to this Server ({$host['FQDN']})";
-//                 return(array(12, $self['error'] . "\n"));
-//             }
             if ($pool['dhcp_failover_group_id']) {
                 $foundfg = 0;
                 list($status, $rows, $primary)   = ona_get_dhcp_failover_group_record(array('id' => $pool['dhcp_failover_group_id'],'primary_server_id' => $host['id']));
@@ -356,21 +340,22 @@ EOM
 
 
 
-
-        // check if there are any DHCP parameters assigned to the subnet
-        list($status, $rows, $data) = ona_get_dhcp_option_entry_record(array('subnet_id' => $subnet['id']));
-
-        // if so, check that this is not the last DHCP server that services this subnet
-        if ($rows > 0) {
-            list($status, $rows, $data) = ona_get_dhcp_server_subnet_record(array('subnet_id' => $subnet['id']));
-
-            // If this is the last DHCP server that services this subnet, don't allow removal until DHCP parameters are removed
-            if($rows <= 1){
-                printmsg("DEBUG => Subnet ({$subnet['name']}) has DHCP parameters assigned which need to be removed first",3);
-                $self['error'] = "ERROR => Subnet ({$subnet['name']}) has DHCP parameters assigned which need to be removed first";
-                return(array(12, $self['error'] . "\n"));
-            }
-        }
+// MP: remove this after testing.  dhcp options should not stop us from dis-associating a subnet from a server
+//     Not really sure why I have this.. probably left over cruft from old thoughts
+//         // check if there are any DHCP parameters assigned to the subnet
+//         list($status, $rows, $tmp) = ona_get_dhcp_option_entry_record(array('subnet_id' => $subnet['id']));
+// 
+//         // if so, check that this is not the last DHCP server that services this subnet
+//         if ($rows > 0) {
+//             list($status, $rows, $tmp) = ona_get_dhcp_server_subnet_record(array('subnet_id' => $subnet['id']));
+// 
+//             // If this is the last DHCP server that services this subnet, don't allow removal until DHCP parameters are removed
+//             if($rows <= 1){
+//                 printmsg("DEBUG => Subnet ({$subnet['name']}) has DHCP parameters assigned which need to be removed first",3);
+//                 $self['error'] = "ERROR => Subnet ({$subnet['name']}) has DHCP parameters assigned which need to be removed first";
+//                 return(array(12, $self['error'] . "\n"));
+//             }
+//         }
 
 
         // delete record from dhcp_server_subnets
