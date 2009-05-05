@@ -61,7 +61,7 @@ CREATE TABLE `contexts` (
 `description` VARCHAR( 127 ) NOT NULL ,
 `color` VARCHAR( 10 ) NOT NULL COMMENT 'define a color to visualy represent this context',
 PRIMARY KEY ( `id` )
-) ENGINE = innodb COMMENT = 'Allows for two sets of data with similar values.';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT = 'Allows for two sets of data with similar values.';
 
 
 --
@@ -582,4 +582,3 @@ CREATE TABLE `vlans` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2007-12-05  4:58:38
