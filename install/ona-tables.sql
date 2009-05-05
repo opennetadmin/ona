@@ -54,6 +54,7 @@ CREATE TABLE `configurations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores various types of text configurations';
 
 
+DROP TABLE IF EXISTS `contexts`;
 CREATE TABLE `contexts` (
 `id` INT( 10 ) NOT NULL ,
 `name` VARCHAR( 63 ) NOT NULL ,
