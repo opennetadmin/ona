@@ -849,7 +849,12 @@ EOM
 
 */
 
-
+    // Check permissions
+    if (!auth('host_modify')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
+    }
 
 
     //
@@ -1072,7 +1077,7 @@ EOM
     }
 
     // Check the date formatting etc
-    if (isset($options['set_ebegin'])) {
+    if (isset($options['set_ebegin']) and $options['set_ebegin'] != $dns['ebegin']) {
         // format the time that was passed in for the database, leave it as 0 if they pass it as 0
         $options['set_ebegin'] = ($options['set_ebegin'] == '0' ? 0 : date('Y-m-j G:i:s',strtotime($options['set_ebegin'])) );
         // Force the SET variable
@@ -1107,13 +1112,6 @@ EOM
     }
 
 
-    // Check permissions
-    if (!auth('host_modify')) {
-        $self['error'] = "Permission denied!";
-        printmsg($self['error'], 0);
-        return(array(10, $self['error'] . "\n"));
-    }
-
 
     // If it is an A record and they have specified to auto add the PTR record for it.
     if ($options['set_addptr'] and $options['set_type'] == 'A') {
@@ -1129,6 +1127,8 @@ EOM
 
     // Get the dns record before updating (logging)
     $original_record = $dns;
+
+
 
     // Update the host record if necessary
     if(count($SET) > 0 and $options['set_ebegin'] != $dns['ebegin']) {
