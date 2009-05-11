@@ -531,7 +531,13 @@ function quick_search($q) {
 
     printmsg("DEBUG => quick_search({$q}) called", 3);
 
-
+    // Check to see if it is a MAC.. do it here instead of in the next interface section
+    // so that we can properly find multiple hosts with the same mac
+    $mac = mac_mangle($q, 1);
+    if ($mac != -1) {
+        printmsg("DEBUG => quick_search() Looks like a MAC, Returning mac = {$q}" ,3);
+        return( array('hosts', array('mac' => $q) ) );
+    }
 
     // See if $q identifies an interface record (by IP, MAC, etc)
     list($status, $rows, $record) = ona_find_interface($q);
