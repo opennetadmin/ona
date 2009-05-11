@@ -427,7 +427,7 @@ EOL;
                         value="{$dns_record['txt']}"
                         class="edit"
                         type="text"
-                        size="25" maxlength="55"
+                        size="25" maxlength="100"
                         onblur="updatednsinfo('{$window_name}');"
                     />
                 </td>
