@@ -51,6 +51,7 @@ function ws_editor($window_name, $form='') {
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
 
+    el('name').focus();
 EOL;
 
     // Define the window's inner html
@@ -74,6 +75,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="name"
                     name="name"
                     alt="Block name"
                     value="{$block['name']}"
@@ -127,7 +129,7 @@ EOL;
                     value="{$block['notes']}"
                     class="edit"
                     type="text"
-                    size="17" maxlength="35"
+                    size="17" maxlength="255"
                 >
             </td>
         </tr>
