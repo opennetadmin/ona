@@ -128,7 +128,7 @@ function ws_search_results_submit($window_name, $form='') {
             <u>B</u>lock name
         </td>
         <td align="left" class="asearch-line">
-            <input id="blocks_field1" name="blockname" type="text" class="edit" size="35" accesskey="b" />
+            <input id="blocks_field1" name="blockname" type="text" class="edit" size="35" accesskey="b" value="{$form['blockname']}" />
             <div id="suggest_hostname" class="suggest"></div>
         </td>
     </tr>
@@ -138,7 +138,7 @@ function ws_search_results_submit($window_name, $form='') {
             &nbsp;
         </td>
         <td align="right" class="asearch-line">
-            <input class="button" type="reset" name="reset" value="Clear">
+            <input class="button" type="button" name="clear" value="Clear" onClick="clearElements('block_search_form');">
             <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('block_search_form'));">
         </td>
     </tr>
@@ -157,7 +157,7 @@ function ws_search_results_submit($window_name, $form='') {
             <u>C</u>ampus name
         </td>
         <td align="left" class="asearch-line">
-            <input id="vlan_campus_field1" name="campusname" type="text" class="edit" size="35" accesskey="c" />
+            <input id="vlan_campus_field1" name="campusname" type="text" class="edit" size="35" accesskey="c" value="{$form['campusname']}" />
             <div id="suggest_hostname" class="suggest"></div>
         </td>
     </tr>
@@ -167,7 +167,7 @@ function ws_search_results_submit($window_name, $form='') {
             &nbsp;
         </td>
         <td align="right" class="asearch-line">
-            <input class="button" type="reset" name="reset" value="Clear">
+            <input class="button" type="button" name="clear" value="Clear" onClick="clearElements('vlan_campus_search_form');">
             <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('vlan_campus_search_form'));">
         </td>
     </tr>
@@ -303,16 +303,16 @@ function ws_search_results_submit($window_name, $form='') {
     </td>
     </tr>
 
-
+    </form>
     <tr>
         <td colspan=4 align="right" class="asearch-line">
-            <input class="button" type="reset" name="reset" value="Clear">
+            <input class="button" type="button" name="reset" value="Clear" onClick="clearElements('host_search_form');">
             <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('host_search_form'));">
         </td>
     </tr>
 
     </table>
-    </form>
+
 
 
 
@@ -326,7 +326,7 @@ function ws_search_results_submit($window_name, $form='') {
             <u>V</u>lan
         </td>
         <td align="left" class="asearch-line">
-            <input id="subnets_field1" name="vlandesc" type="text" class="edit" size="32" accesskey="v" />
+            <input id="subnets_field1" name="vlandesc" type="text" class="edit" size="32" accesskey="v" value="{$form['vlandesc']}" />
         </td>
     </tr>
 
@@ -346,7 +346,7 @@ function ws_search_results_submit($window_name, $form='') {
             Subnet <u>N</u>ame
         </td>
         <td align="left" class="asearch-line">
-            <input id="subnet" name="subnetname" type="text" class="edit" size="32" accesskey="n" />
+            <input id="subnet" name="subnetname" type="text" class="edit" size="32" accesskey="n" value="{$form['subnetname']}" />
             <div id="suggest_subnet" class="suggest"></div>
         </td>
     </tr>
@@ -356,10 +356,10 @@ function ws_search_results_submit($window_name, $form='') {
             <u>I</u>P Address
         </td>
         <td align="left" class="asearch-line" nowrap="true">
-            <input id="ip_subnet" name="ip_subnet" class="edit" type="text" size="15" accesskey="i" />
+            <input id="ip_subnet" name="ip_subnet" class="edit" type="text" size="15" accesskey="i" value="{$form['ip_subnet']}" />
             <div id="suggest_ip_subnet" class="suggest"></div>
             thru
-            <input id="ip_subnet_thru" name="ip_subnet_thru" class="edit" type="text" size="15">
+            <input id="ip_subnet_thru" name="ip_subnet_thru" class="edit" type="text" size="15" value="{$form['ip_subnet_thru']}" />
             <div id="suggest_ip_subnet_thru" class="suggest"></div>
         </td>
     </tr>
@@ -369,8 +369,8 @@ function ws_search_results_submit($window_name, $form='') {
             &nbsp;
         </td>
         <td align="right" class="asearch-line">
-            <input class="button" type="reset" name="reset" value="Clear">
-            <input class="button" type="submit" name="search" value="Search" accesskey="s" onClick="toggle_window('{$window_name}'); xajax_window_submit('search_results', xajax.getFormValues('subnet_search_form'));">
+            <input class="button" type="button" name="reset" value="Clear" onClick="clearElements('subnet_search_form');">
+            <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('subnet_search_form'));">
         </td>
     </tr>
 
@@ -488,6 +488,9 @@ EOL;
 
         /* Display the list of results */
         xajax_window_submit('list_' + el('{$form_id}_tab').value, xajax.getFormValues('{$form_id}'), 'display_list');
+
+
+
 EOL;
 
 
