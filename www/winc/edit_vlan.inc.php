@@ -131,8 +131,33 @@ EOL;
                 >
             </td>
         </tr>
+EOL;
 
+    if (!$record['id']) {
+        $window['html'] .= <<<EOL
+        <tr>
+            <td align="right" nowrap="true">
+                &nbsp;
+            </td>
+            <td class="padding" align="left" width="100%">
+                <input
+                    name="keepadding"
+                    alt="Keep adding more VLANS"
+                    type="checkbox"
+                > Keep adding more VLANS
+            </td>
+        </tr>
 
+        <tr>
+            <td colspan="2" class="padding" align="center" width="100%">
+            <span id="statusinfo_{$window_name}" style="color: green;" ></span>
+            </td>
+        </tr>
+
+EOL;
+    }
+
+    $window['html'] .= <<<EOL
 
         <tr>
             <td align="right" valign="top" nowrap="true">
@@ -214,7 +239,13 @@ function ws_save($window_name, $form='') {
     if ($status)
         $js .= "alert('Save failed. ". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
     else {
-        $js .= "removeElement('{$window_name}');";
+        // if they have checked the keep adding box then dont remove the window
+        if (!$form['keepadding'])
+            $js .= "removeElement('{$window_name}');";
+        else {
+            $js .= "el('statusinfo_{$window_name}').innerHTML = 'Previously added:<br>\'{$form['name']}\' to campus: {$form['campus']}';";
+        }
+
         if ($form['js']) $js .= $form['js'];
     }
 
