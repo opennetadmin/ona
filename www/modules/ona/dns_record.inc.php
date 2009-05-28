@@ -69,6 +69,7 @@ Add a new DNS record
     dns_record_add name=host.something.com type=TXT txt="my text value"
     dns_record_add name=domain.com type=MX pointsto=mxhost.domain.com mx_preference=10
     dns_record_add name=_foo._tcp.example.com type=SRV pointsto=host.domain.com srv_port=80
+    dns_record_add name=newhost.something.com type=PTR ip=10.1.1.10
 
     DOMAIN will default to {$conf['dns_defaultdomain']} if not specified.
 

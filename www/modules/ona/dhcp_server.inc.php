@@ -28,7 +28,7 @@ function dhcp_server_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => dhcp_server_add({$options}) called", 3);
 
@@ -63,14 +63,8 @@ EOM
     }
 
 
-    if (is_numeric($options['subnet'])) {
-        $subnetsearch['id'] = $options['subnet'];
-    } else {
-        $subnetsearch['name'] = strtoupper($options['subnet']);
-    }
-
     // Determine the entry itself exists
-    list($status, $rows, $subnet) = ona_get_subnet_record($subnetsearch);
+    list($status, $rows, $subnet) = ona_find_subnet($options['subnet']);
 
     // Test to see that we were able to find the specified record
     if (!$subnet['id']) {
@@ -222,7 +216,7 @@ function dhcp_server_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => dhcp_server_del({$options}) called", 3);
 
@@ -262,14 +256,8 @@ EOM
     }
 
 
-    if (is_numeric($options['subnet'])) {
-        $subnetsearch['id'] = $options['subnet'];
-    } else {
-        $subnetsearch['name'] = strtoupper($options['subnet']);
-    }
-
     // Determine the entry itself exists
-    list($status, $rows, $subnet) = ona_get_subnet_record($subnetsearch);
+    list($status, $rows, $subnet) = ona_find_subnet($options['subnet']);
 
     // Test to see that we were able to find the specified record
     if (!$subnet['id']) {
