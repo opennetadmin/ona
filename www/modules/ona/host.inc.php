@@ -57,11 +57,15 @@ Add a new host
     mac=ADDRESS               mac address (most formats are ok)
     name=NAME                 interface name (i.e. "FastEthernet0/1.100")
     description=TEXT          brief description of the interface
+    addptr=Y|N                Auto add a PTR record for new host/IP (default: Y)
 
 \n
 EOM
         ));
     }
+
+    // Sanitize addptr.. set it to Y if it is not set
+    $options['addptr'] = sanitize_YN($options['addptr'], 'Y');
 
     // Validate that there isn't already another interface with the same IP address
     list($status, $rows, $interface) = ona_get_interface_record(array('ip_addr' => $options['ip']));
@@ -225,6 +229,8 @@ EOM
     // We must always have an IP now to add an interface, call that module now:
     // since we have no name yet, we need to use the ID of the new host as the host option for the following module calls
     $options['host'] = $id;
+    // for annoying reasons we need to keep track of what was set first
+    $options['addptrsave'] = $options['addptr'];
     // Interface adds can add PTR records, lets let the A record add that happens next add it instead.
     $options['addptr'] = '0';
 
@@ -243,7 +249,7 @@ EOM
     $options['name'] = "{$hostname}.{$domain['fqdn']}";
     $options['domain'] = $domain['fqdn'];
     // And we will go ahead and auto add the ptr.  the user can remove it later if they dont want it.  FIXME: maybe create a checkbox on the host edit
-    $options['addptr'] = '1';
+    $options['addptr'] = $options['addptrsave'];
 
     // Add the DNS entry with the IP address etc
     printmsg("DEBUG => host_add() ({$hostname}.{$domain['fqdn']}) calling dns_record_add() ({$options['ip']})", 3);

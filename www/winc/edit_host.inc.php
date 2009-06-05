@@ -383,6 +383,18 @@ EOL;
 
     if (!$host['id']) {
         $window['html'] .= <<<EOL
+        <td align="right" nowrap="true">
+            Auto create PTR
+        </td>
+        <td class="padding" align="left" width="100%" nowrap>
+            <input
+                id="set_addptr"
+                name="set_addptr"
+                alt="Automaticaly create PTR record"
+                type="checkbox"
+                checked="1"
+            />
+        </td>
         <tr>
             <td align="right" nowrap="true">
                 &nbsp;
@@ -516,7 +528,7 @@ function ws_save($window_name, $form='') {
         $form['ip'] = $form['set_ip'];                  unset($form['set_ip']);
         $form['mac'] = $form['set_mac'];                unset($form['set_mac']);
         $form['name'] = $form['set_name'];              unset($form['set_name']);
-
+        $form['addptr'] = $form['set_addptr'];          unset($form['set_addptr']);
         // If there's no "refresh" javascript, add a command to view the new host
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['host']}\', \'display\')');";
     }
