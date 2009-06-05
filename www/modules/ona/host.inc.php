@@ -225,6 +225,8 @@ EOM
     // We must always have an IP now to add an interface, call that module now:
     // since we have no name yet, we need to use the ID of the new host as the host option for the following module calls
     $options['host'] = $id;
+    // Interface adds can add PTR records, lets let the A record add that happens next add it instead.
+    $options['addptr'] = '0';
 
     printmsg("DEBUG => host_add() ({$hostname}.{$domain['fqdn']}) calling interface_add() ({$options['ip']})", 3);
     list($status, $output) = run_module('interface_add', $options);

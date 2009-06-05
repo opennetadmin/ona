@@ -263,15 +263,15 @@ EOM
     $SET['ip_mask'] = $options['netmask'];
 
     // Before we go on, we must alert the user if this new subnet would require a new PTR zone.
-    $ipflip = ip_mangle($SET['ip_addr'],'flip');
-    $octets = explode(".",$ipflip);
-    // Find a pointer zone for this ip to associate with.
-    list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
-    if (!$ptrdomain['id']) {
-        printmsg("ERROR => This subnet is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
-        $self['error'] = "ERROR => This subnet is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa";
-            return(array(9, $self['error'] . "\n"));
-    }
+//     $ipflip = ip_mangle($SET['ip_addr'],'flip');
+//     $octets = explode(".",$ipflip);
+//     // Find a pointer zone for this ip to associate with.
+//     list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+//     if (!$ptrdomain['id']) {
+//         printmsg("ERROR => This subnet is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
+//         $self['error'] = "ERROR => This subnet is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa";
+//             return(array(9, $self['error'] . "\n"));
+//     }
 
 
     // Find the type from $options[type]

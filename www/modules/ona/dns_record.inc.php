@@ -289,10 +289,15 @@ but you still want to reverse lookup all the other interfaces to know they are o
         $octets = explode(".",$ipflip);
         // Find a pointer zone for this record to associate with.
         list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+//         if (!$ptrdomain['id']) {
+//             printmsg("ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
+//             $self['error'] = "ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following DNS domain: {$octets[3]}.in-addr.arpa";
+//             return(array(5, $self['error'] . "\n"));
+//         }
         if (!$ptrdomain['id']) {
-            printmsg("ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
-            $self['error'] = "ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following DNS domain: {$octets[3]}.in-addr.arpa";
-            return(array(5, $self['error'] . "\n"));
+            printmsg("ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
+            $self['error'] = "ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa.  You could also create domains for class B or class C level reverse zones.";
+                return(array(9, $self['error'] . "\n"));
         }
 
         // PTR records dont need a name set.
