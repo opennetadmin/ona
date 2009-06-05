@@ -25,7 +25,7 @@ function host_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.08';
+    $version = '1.09';
 
     printmsg("DEBUG => host_add({$options}) called", 3);
 

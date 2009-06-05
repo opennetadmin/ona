@@ -84,10 +84,12 @@ function ws_editor($window_name, $form='') {
     list($status, $rows, $location) = ona_get_location_record(array('id' => $device['location_id']));
 
     $host['location'] = $location['reference'];
-    
+
+    $device_model_list = "<option value=\"\"></option>\n";
     foreach (array_keys((array)$device_types) as $id) {
         $device_types[$id] = htmlentities($device_types[$id]);
         $selected = '';
+
         if ($id == $device['device_type_id']) { $selected = 'SELECTED'; }
         $device_model_list .= "<option value=\"{$id}\" {$selected}>{$device_types[$id]}</option>\n";
     }

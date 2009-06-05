@@ -140,7 +140,7 @@ function subnet_add($options="") {
     printmsg('DEBUG => subnet_add('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -171,7 +171,6 @@ Adds a new subnet (subnet) record
   Optional:
     vlan=VLAN               vlan name, number, or id
     campus=CAMPUS           vlan campus name or id to help identify vlan
-    security_level=LEVEL    numeric security level ({$conf['ona_lvl']})
 \n
 EOM
         ));
