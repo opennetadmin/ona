@@ -128,6 +128,7 @@ EOL;
     if($host['fqdn']) {
         $window['html'] .= <<<EOL
        <input type="hidden" name="host" value="{$interface['host_id']}">
+       <input type="hidden" name="hostfqdn" value="{$host['fqdn']}">
 EOL;
     }
 
@@ -269,6 +270,20 @@ EOL;
 // Show a "keep adding" checkbox if they are adding records
 if (!isset($interface['id'])) {
         $window['html'] .= <<<EOL
+        <td align="right" nowrap="true">
+            Auto create PTR
+        </td>
+        <td class="padding" align="left" width="100%" nowrap>
+            <input
+                id="set_addptr"
+                name="set_addptr"
+                alt="Automaticaly create PTR record"
+                type="checkbox"
+                checked="1"
+            />
+        </td>
+
+
         <tr>
             <td align="right" nowrap="true">
                 &nbsp;
@@ -350,7 +365,7 @@ function ws_save($window_name, $form='') {
         return($response->getXML());
     }
     // set_create_a and set_create_ptr should both be set!
-    if (!$form['set_create_ptr']) $form['set_create_ptr'] = 'N';
+    if (!$form['set_addptr']) $form['set_addptr'] = 'N';
 
 
     // Decide if we're editing or adding
@@ -362,7 +377,7 @@ function ws_save($window_name, $form='') {
         $form['mac'] = $form['set_mac']; unset($form['set_mac']);
         $form['name'] = $form['set_name']; unset($form['set_name']);
         $form['description'] = $form['set_description']; unset($form['set_description']);
-        $form['create_ptr'] = $form['set_create_ptr']; unset($form['set_create_ptr']);
+        $form['addptr'] = $form['set_addptr']; unset($form['set_addptr']);
     }
     else {
         $form['interface'] = $form['interface_id']; unset($form['interface_id']);
@@ -375,15 +390,20 @@ function ws_save($window_name, $form='') {
     if ($status)
         $js .= "alert('Save failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
     else {
-        // Update the status to tell them what they just did if they just *added* a subnet and the "keep adding" box is checked.
-        // Otherwise just close the edit window.
-        if ($form['keepadding'] and $module == 'interface_add')
-            $js .= "el('statusinfo_{$window_name}').innerHTML = 'Previously added: {$form['ip']}';";
-        else
-            $js .= "removeElement('{$window_name}');";
+        // If the module returned an error code display a popup warning
+        if ($status and $module == 'modify' and $form['set_ip'])
+            $js .= "alert('Interface update failed.\\n". preg_replace('/[\s\']+/', ' ', $self['error']) . "');";
+        else {
+            // Update the status to tell them what they just did if they just *added* a subnet and the "keep adding" box is checked.
+            // Otherwise just close the edit window.
+            if ($form['keepadding'] and $module == 'interface_add')
+                $js .= "el('statusinfo_{$window_name}').innerHTML = 'Previously added: {$form['ip']}';";
+            else
+                $js .= "removeElement('{$window_name}');";
 
-        // If there is "refresh" javascript, send it to the browser to execute
-        if ($form['js']) $js .= $form['js'];
+            // If there is "refresh" javascript, send it to the browser to execute
+            if ($form['js']) $js .= $form['js'];
+        }
     }
 
     // Insert the new table into the window

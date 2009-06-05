@@ -88,7 +88,7 @@ function ws_editor($window_name, $form='') {
         $dns_record['name'] = preg_replace("/.$domain_part$/", '', $dns_record['name']);
 
         // Disable the edit boxes related to the A record info
-        $window['js'] .= "el('set_hostname_{$window_name}').disabled='1';el('set_domain_{$window_name}').disabled='1';el('set_a_record_{$window_name}').disabled='1';";
+        $window['js'] .= "el('set_hostname_{$window_name}').disabled='1';el('set_domain_{$window_name}').disabled='1';el('set_a_record_{$window_name}').disabled='1';el('set_ip_{$window_name}').disabled='1';";
     }
 
 
@@ -136,7 +136,7 @@ function ws_editor($window_name, $form='') {
     //$record_types = array('A','CNAME','TXT','NS','MX','AAAA','SRV');
     // FIXME: MP cool idea here-- support the loc record and have a google map popup to search for the location then have it populate the coords from that.
     // FIXME: MP it would probably be much better to use ajax to pull back the right form content than all this other javascript crap.
-    array_push($record_types,'A','CNAME','MX','NS','SRV','TXT');
+    array_push($record_types,'A','CNAME','MX','NS','SRV','TXT','PTR');
     foreach (array_keys((array)$record_types) as $id) {
         $record_types[$id] = htmlentities($record_types[$id]);
         $selected = '';
@@ -208,12 +208,13 @@ EOL;
                         onchange="var selectBox = el('record_type_select');
                                 el('info_{$window_name}').innerHTML = '';
                                 el('ptr_info_{$window_name}').innerHTML = '';
-                                el('a_container').style.display     = (selectBox.value == 'A') ? '' : 'none';
+                                el('a_container').style.display     = (selectBox.value == 'A' || selectBox.value == 'PTR') ? '' : 'none';
                                 el('autoptr_container').style.display   = (selectBox.value == 'A') ? '' : 'none';
                                 el('mx_container').style.display   = (selectBox.value == 'MX') ? '' : 'none';
                                 el('srv_container').style.display   = (selectBox.value == 'SRV') ? '' : 'none';
                                 el('txt_container').style.display   = (selectBox.value == 'TXT') ? '' : 'none';
-                                el('name_container').style.display     = (selectBox.value == 'NS') ? 'none' : '';
+                                el('name_container').style.display     = (selectBox.value == 'NS' || selectBox.value == 'PTR') ? 'none' : '';
+                                el('domain_name_container').style.display  = (selectBox.value == 'PTR') ? 'none' : '';
                                 el('existing_a_container').style.display = (selectBox.value == 'MX' || selectBox.value == 'PTR'|| selectBox.value == 'CNAME' || selectBox.value == 'NS' || selectBox.value == 'SRV') ? '' : 'none';"
                     >{$record_type_list}</select>
                 </td>
@@ -243,7 +244,7 @@ EOL;
                 </td>
             </tr>
 
-            <tr>
+            <tr id="domain_name_container">
                 <td class="input_required" align="right" nowrap="true">
                     Domain
                 </td>
@@ -695,6 +696,9 @@ function ws_save($window_name, $form='') {
 
         // If it is an NS record, blank the name out
         //if ($form['type'] == 'NS') $form['name'] = $form['set_domain'];
+
+        // If we are adding a PTR.. switch existing a record to name
+        if ($form['type'] == 'PTR') $form['name'] = $form['set_pointsto'];
 
         // If there's no "refresh" javascript, add a command to view the new dns record
         if (!preg_match('/\w/', $form['js'])) $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$form['name']}\', \'display\')');";

@@ -59,8 +59,8 @@ EOM
     // Set options[force] to N if it's not set
     $options['force'] = sanitize_YN($options['force'], 'N');
 
-    // Set options[create_ptr] and options[create_a] to Y if they're not set
-    $options['create_ptr'] = sanitize_YN($options['create_ptr'], 'Y');
+    // Set options[addptr] and options[create_a] to Y if they're not set
+    $options['addptr'] = sanitize_YN($options['addptr'], 'Y');
 
     // Warn about 'name' and 'description' fields exceeding max lengths
     if ($options['force'] == 'N') {
@@ -198,6 +198,17 @@ EOM
         $self['error'] = "ERROR => interface_add() SQL Query failed: " . $self['error'];
         printmsg($self['error'], 0);
         return(array(14, $self['error'] . "\n"));
+    }
+
+    // Run the module to add a PTR record if requested
+    if ($options['addptr'] == 'Y') {
+        $ptropts['name'] = $host['fqdn'];
+        $ptropts['ip'] = $options['ip'];
+        $ptropts['type'] = 'PTR';
+        printmsg("DEBUG => interface_add() calling dns_record_add() for new PTR record: {$options['ip']}", 3);
+        list($status, $output) = run_module('dns_record_add', $ptropts);
+        if ($status) { return(array($status, $output)); }
+        $self['error'] .= $output;
     }
 
     // if natip is passed, add the nat interface first
