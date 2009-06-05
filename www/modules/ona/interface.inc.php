@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -47,6 +47,7 @@ Adds a new interface to an existing host record
     name=NAME                 interface name (i.e. "FastEthernet0/1.100")
     description=TEXT          brief description of the interface
     natip=ADDRESS             IP of NAT address to add with this new interface
+    addptr                    Auto add a PTR record for new IP
 
   Notes:
     * DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
