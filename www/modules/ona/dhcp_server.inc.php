@@ -91,59 +91,6 @@ EOM
         return(array(12, $self['error'] . "\n"));
     }
 
-// FIXME: MP commented out for now.. not using server table or anything, plan to remove this later
-
-    // Determine the host that was found is actually a server
-//    list($status, $rows, $server) = ona_get_server_record(array('HOST_ID' => $host['ID']));
-
-//     $add_to_error = "";
-//     if (!$server['ID']) {
-//         // NEED TO ADD THIS HOST AS A SERVER TO THE SERVER_B TABLE
-//         // Get the next ID
-//         printmsg("DEBUG => dhcp_server_add(): Need to make the host ({$host['FQDN']}) a server", 3);
-//         $server_id = ona_get_next_id();
-//         if (!$server_id) {
-//             $self['error'] = "ERROR => The ona_get_next_id() call failed!";
-//             printmsg($self['error'],0);
-//             return(array(6, $self['error'] . "\n"));
-//         }
-//         printmsg("DEBUG => dhcp_server_add(): New dhcp server ID: $server_id", 3);
-//
-//         // Add new record to server_b
-//         list($status, $rows) =
-//             db_insert_record(
-//                                 $onadb,
-//                                 'SERVER_B',
-//                                 array(
-//                                     'ID'                        => $server_id,
-//                                     'DHCP_SERVER'               => 'Y',
-//                                     'DNS_SERVER'                => 'N',
-//                                     'SERVER_TYPE'               => 'ISC',
-//                                     'HOST_ID'                   => $host['ID']
-//                                 )
-//                             );
-//         if ($status or !$rows) {
-//             $self['error'] = "ERROR => dhcp_server_add() SQL Query failed:" . $self['error'];
-//             printmsg($self['error'],0);
-//             return(array(8, $self['error'] . "\n"));
-//         }
-//         $server['ID']=$server_id;
-//         printmsg("INFO => Server Record ADDED: {$host['FQDN']} as server ID={$server_id}", 0);
-//         $add_to_error .= "INFO => Server Record ADDED: {$host['FQDN']} as server ID={$server_id}\n";
-//     }
-//     else {
-//         // server ID already exists
-//         printmsg("DEBUG => dhcp_server_add(): Found server, {$host['FQDN']}", 3);
-//
-//         // Test that this subnet isnt already assigned to the server
-//         list($status, $rows, $dhcpserver) = ona_get_dhcp_server_subnet_record(array('SERVER_ID' => $server['ID'],'SUBNET_ID' => $subnet['ID']));
-//         if ($rows) {
-//             printmsg("DEBUG => Subnet {$subnet['DESCRIPTION']} already assigned to {$host['FQDN']}",3);
-//             $self['error'] = "ERROR => Subnet {$subnet['DESCRIPTION']} already assigned to {$host['FQDN']}";
-//             return(array(11, $self['error'] . "\n"));
-//         }
-//     }
-
     // Test that this subnet isnt already assigned to the server
     list($status, $rows, $dhcpserver) = ona_get_dhcp_server_subnet_record(array('host_id' => $host['id'],'subnet_id' => $subnet['id']));
     if ($rows) {
