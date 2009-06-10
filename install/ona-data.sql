@@ -96,6 +96,7 @@ INSERT INTO `dcm_module_list` VALUES
 ('custom_attribute_del', 'Delete a custom attribute', 'ona/custom_attribute.inc.php'),
 ('custom_attribute_modify', 'Modify a custom attribute', 'ona/custom_attribute.inc.php'),
 ('add_module', 'Register a new DCM module', 'get_module_list.inc.php'),
+('report_run', 'Run a report', 'report_run.inc.php'),
 ('ona_sql', 'Perform basic SQL operations on the database', 'sql.inc.php');
 
 /*!40000 ALTER TABLE `dcm_module_list` ENABLE KEYS */;
