@@ -12,7 +12,7 @@ REQUIREMENTS:
 
 INSTALL:
 
-1. Download the latest file from http://opennetadmin.com/downloads
+1. Download the latest file from http://opennetadmin.com/docs/download
 2. tar -C /opt -zxvf ona-v00.00.00.tar.gz
    This should extract the tar file into /opt/ona
 
