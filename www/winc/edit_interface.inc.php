@@ -116,6 +116,8 @@ function ws_editor($window_name, $form='') {
                 );
             };
 
+        suggest_setup('hostname',  'suggest_int_hostname');
+
 EOL;
 
     // Define the window's inner html
@@ -162,6 +164,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="hostname"
                     name="host"
                     alt="Hostname"
                     value="{$host['name']}"
@@ -169,6 +172,7 @@ EOL;
                     type="text"
                     size="20" maxlength="64"
                 >
+                <div id="suggest_int_hostname" class="suggest"></div>
             </td>
 EOL;
     }
