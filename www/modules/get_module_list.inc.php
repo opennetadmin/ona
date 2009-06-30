@@ -85,7 +85,7 @@ EOM
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: get_module_list (string $options='')
+//  Function: add_module (string $options='')
 //
 //  Input Options:
 //    $options = key=value pairs of options for this function.

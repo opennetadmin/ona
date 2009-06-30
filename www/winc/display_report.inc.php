@@ -78,8 +78,8 @@ function ws_run_report($window_name, $form='') {
     if (get_report_include($form['report'])) {
         // Run the report and put it in the report_content box
         list($status, $report_output) = rpt_run($form, 'html');
-        if($status)
-            $report_output = "ERROR => There was a problem running this report!";
+//         if($status)
+//             $report_output .= "ERROR => There was a problem running this report!";
     }
 
     // Insert the new html into the window

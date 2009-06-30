@@ -43,7 +43,7 @@ global $base;
     }
 
     $modbodyhtml .= <<<EOL
-    <!-- CONFIG ARCHIVES LIST -->
+    <!-- Report LIST -->
     <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
     {$row_html}
     </table>

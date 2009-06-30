@@ -117,7 +117,7 @@ function ws_editor($window_name, $form='') {
             };
 
         suggest_setup('hostname',  'suggest_int_hostname');
-
+        el('hostname').focus();
 EOL;
 
     // Define the window's inner html

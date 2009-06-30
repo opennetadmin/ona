@@ -206,6 +206,19 @@ EOL;
 EOL;
     }
 
+    if (auth('host_del')) {
+        $html .= <<<EOL
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="removeElement('start_menu'); toggle_window('app_report_list');"
+     title="List Reports"
+ ><img style="vertical-align: middle;" src="{$images}/silk/application.png" border="0"
+ />&nbsp;List Reports</div>
+
+EOL;
+    }
+
     if (auth('dns_record_add')) {
         $html .= <<<EOL
 <div class="row"
@@ -1955,7 +1968,7 @@ EOL;
             <u>E</u>xternal NAT IP
         </td>
         <td align="left" class="qf-search-line">
-            <input id="natip" name="natip" type="text" class="edit" size="24" accesskey="e" />
+            <input id="natip" name="natip" type="text" class="edit" size="24" accesskey="e" value="{$form['natip']}" />
         </td>
     </tr>
 

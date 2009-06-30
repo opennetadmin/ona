@@ -64,7 +64,7 @@ function ws_editor($window_name, $form='') {
 
         suggest_setup('dhcp_server_name',  'suggest_dhcp_server_name');
         suggest_setup('dhcp_subnet_name',  'suggest_dhcp_subnet_name');
-
+        el('dhcp_server_name').focus();
 EOL;
 
 

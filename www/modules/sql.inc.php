@@ -168,7 +168,7 @@ EOM
     $rs = $onadb->Execute($options['sql'],$sqlopts);
 
     if ($rs === false) {
-        $self['error'] = "ERROR => SQL query failed: " . $onadb->ErrorMsg() . "\n"; 
+        $self['error'] = "ERROR => SQL query failed: " . $onadb->ErrorMsg() . "\n";
         return(array(2, $self['error']));
     }
 
