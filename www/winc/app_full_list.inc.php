@@ -2,8 +2,6 @@
 global $conf, $self, $onadb ;
 global $font_family, $color, $style, $images;
 
-//$options['subnet_id'] = 424685;
-//list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $options['subnet_id']));
 
 // Set the window title:
 $window['title'] = "List by IP: {$subnet['name']}";
@@ -18,7 +16,7 @@ $window['title'] = "List by IP: {$subnet['name']}";
     $window['html'] .= <<<EOL
     <!-- HOST LIST -->
     <div style="border: 1px solid {$color['border']}; height : 700px; overflow : auto">
-        
+
         <!-- Tab & Quick Filter -->
         <table id="{$form_id}_table" cellspacing="0" border="0" cellpadding="0">
             <tr>
@@ -30,19 +28,19 @@ $window['title'] = "List by IP: {$subnet['name']}";
          <div id='{$content_id}'>
             {$conf['loading_icon']}
         </div>
-    </div>        
+    </div>
 EOL;
 
 // Define javascript to run after the window is created
 $window['js'] = <<<EOL
      /* Tell the browser to load/display the list */
      xajax_window_submit('app_full_list', 'subnet_id=>{$options['subnet_id']},form_id=>{$form_id},content_id=>{$content_id}', 'display_list');
-     
+
 EOL;
 
 //////////////////////////////////////////////////////////////////////////////
 // Function: ws_display()
-// 
+//
 // Description:
 //   Displays A list of hosts based on search criteria.
 //   Input:  An array from xajaxGetFormValues() from a quick filter form.
@@ -51,7 +49,7 @@ function ws_display($window_name, $form='') {
 
 global $conf, $self, $onadb;
 global $font_family, $color, $style, $images;
-    
+
 // If the user supplied an array in a string, build the array and store it in $form
 $form = parse_options_string($form);
 printmsg("ws_display in app_full_list.inc.php called with: " . print_r($form,1), 3);
@@ -106,7 +104,7 @@ EOL;
     }    
     $window['html'] .= <<<EOL
     <!-- HOST LIST -->
-    <div style="border: 1px solid {$color['border']}; height : 700px; overflow : auto">
+    <div style="border: 1px solid {$color['border']}; height : 700px; overflow-y : auto;overflow-x : hidden">
         
         <!-- Tab & Quick Filter -->
         <table id="{$form_id}_table" cellspacing="0" border="0" cellpadding="0">
@@ -217,6 +215,7 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Interface</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Last Response</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Device Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Location</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
@@ -282,34 +281,40 @@ EOL;
         if ($interfaces > 1) {
             $interface_style = 'font-weight: bold;';
         }
-        
+
         // Subnet description
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $record['subnet_id']));
         $record['subnet'] = $subnet['name'];
         $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
         $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
-        
+
         // Device Description
         list($status, $rows, $device) = ona_find_device($host['device_id']);
         list($status, $rows, $device_type) = ona_get_device_type_record(array('id' => $device['device_type_id']));
         list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
         list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
         list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
-        $record['DEVICE'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
-        $record['DEVICE'] = str_replace('Unknown', '?', $record['DEVICE']);
-        
-        $record['NOTES_SHORT'] = truncate($host['notes'], 40);
+        $record['device'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
+        $record['device'] = str_replace('Unknown', '?', $record['device']);
+
+        $record['notes_short'] = truncate($host['notes'], 40);
+
+        // Format the date and colorize if its older than 2 months
+        if ($record['last_response']) {
+            $record['last_response_fmt'] = date($conf['date_format'],strtotime($record['last_response']));
+            if (strtotime($record['last_response']) < strtotime('-2 month')) {
+                $record['last_response_fmt'] = "<span style=\"color: red;\">".$record['last_response_fmt']."</style>";
+            }
+        }
 
 
-
-        
         // Get location info
         list($status, $rows, $loc) = ona_get_location_record(array('id' => $device['location_id']));
 
-        
+
         // Escape data for display in html
         foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
-        
+
         $primary_object_js = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')');";
         $html .= <<<EOL
             <tr onMouseOver="this.className='row-highlight';" onMouseOut="this.className='row-normal';">
@@ -331,7 +336,7 @@ EOL;
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['id']}\', \'display\')');"
                     >{$record['subnet']}</a>&nbsp;
                 </td>
-                
+
                 <td class="list-row" align="left">
                     <span style="{$interface_style}"
 EOL;
@@ -346,15 +351,17 @@ if ($interfaces > 1) {
                                             'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>host_interface_list,id=>tt_host_interface_list_{$host['id']},host_id=>{$host['id']}\');'
                                            );"
 EOL;
-}                    
+}
         $html .= <<<EOL
                     >{$record['ip_addr']}</span>&nbsp;
                     <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>
                     <span>{$clusterhtml}</span>
                 </td>
-                
-                <td class="list-row">{$record['DEVICE']}&nbsp;</td>
-                
+
+                <td class="list-row">{$record['last_response_fmt']}&nbsp;</td>
+
+                <td class="list-row">{$record['device']}&nbsp;</td>
+
                 <td class="list-row" align="right">
                     <span onMouseOver="wwTT(this, event, 
                                             'id', 'tt_location_{$device['location_id']}', 
@@ -365,18 +372,17 @@ EOL;
                                            );"
                     >{$loc['reference']}</span>&nbsp;
                 </td>
-                
+
                 <td class="list-row">
-                    <span title="{$host['notes']}">{$record['NOTES_SHORT']}</span>&nbsp;
+                    <span title="{$host['notes']}">{$record['notes_short']}</span>&nbsp;
                 </td>
-                
-            
+
             </tr>
 EOL;
 
     }
 
-   
+
     $html .= <<<EOL
     </table>
 EOL;
