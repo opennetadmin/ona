@@ -1042,7 +1042,9 @@ function suggest_custom_attribute_type($q, $el_input, $el_suggest) {
     return($response->getXML());
 }
 
-
+function suggest_custom_attribute_type_net($q, $el_input, $el_suggest) {
+    return(suggest_custom_attribute_type($q, $el_input, $el_suggest));
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // xajax server

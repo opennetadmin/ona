@@ -317,13 +317,15 @@ function ws_display_list($window_name, $form='') {
 
     // custom attribute type
     if ($form['custom_attribute_type']) {
-        $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' and custom_attribute_type_id = " . $onadb->qstr($form['custom_attribute_type']) . ")";
+        $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' and custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type']) . "))";
         $and = " AND ";
+        $cavaluetype = "and custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type']) . ")";
+
     }
 
     // custom attribute value
     if ($form['ca_value']) {
-        $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' and value like " . $onadb->qstr('%'.$form['ca_value'].'%') . ")";
+        $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' {$cavaluetype} and value like " . $onadb->qstr('%'.$form['ca_value'].'%') . ")";
         $and = " AND ";
     }
 

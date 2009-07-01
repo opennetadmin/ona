@@ -119,6 +119,19 @@ function ws_display_list($window_name, $form='') {
        }
     }
 
+    // custom attribute type
+    if ($form['custom_attribute_type_net']) {
+        $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'subnets' and custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type_net']) . "))";
+        $and = " AND ";
+        $cavaluetype = "and custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type_net']) . ")";
+    }
+
+    // custom attribute value
+    if ($form['ca_value_net']) {
+        $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'subnets' {$cavaluetype} and value like " . $onadb->qstr('%'.$form['ca_value_net'].'%') . ")";
+        $and = " AND ";
+    }
+
 
     // Wild card .. if $where is still empty, add a 'ID > 0' to it so you see everything.
     if ($where == '')

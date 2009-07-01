@@ -364,6 +364,18 @@ function ws_search_results_submit($window_name, $form='') {
         </td>
     </tr>
 
+        <tr>
+            <td align="right" class="asearch-line">
+                <u>C</u>ustom attribute
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="custom_attribute_type_net" type="text" name="custom_attribute_type_net" size="20" class="edit" value="{$form['custom_attribute_type_net']}">
+                <div id="suggest_custom_attribute_type_net" class="suggest"></div>
+                <u>V</u>alue
+                <input id="ca_value_net" name="ca_value_net" type="text" class="edit" size="15" value="{$form['ca_value_net']}"/>
+            </td>
+        </tr>
+
     <tr>
         <td align="right" class="asearch-line">
             &nbsp;
@@ -457,6 +469,7 @@ EOL;
         suggest_setup('subnet', 'suggest_subnet');
         suggest_setup('location', 'suggest_location');
         suggest_setup('custom_attribute_type', 'suggest_custom_attribute_type');
+        suggest_setup('custom_attribute_type_net', 'suggest_custom_attribute_type_net');
         suggest_setup('role', 'suggest_role');
         suggest_setup('model', 'suggest_model');
         suggest_setup('manufacturer', 'suggest_manufacturer');
