@@ -340,7 +340,7 @@ function ws_search_results_submit($window_name, $form='') {
             </select>
         </td>
     </tr>
-    
+
     <tr>
         <td align="right" class="asearch-line">
             Subnet <u>N</u>ame
@@ -350,7 +350,7 @@ function ws_search_results_submit($window_name, $form='') {
             <div id="suggest_subnet" class="suggest"></div>
         </td>
     </tr>
-    
+
     <tr>
         <td align="right" class="asearch-line">
             <u>I</u>P Address

@@ -193,7 +193,7 @@ EOL;
 
     if (!$records[0]) {
         $html .= <<<EOL
-<tr><td colspan=4><center>There are currently no reports installed.  Please<br>visit <a href="http://opennetadmin.com">OpenNetAdmin.com</a> to download new reports.</center></td></tr>
+<tr><td colspan=4><center>There are currently no reports installed OR <br> the search returned no results.  Please<br>visit <a href="http://opennetadmin.com">OpenNetAdmin.com</a> to download new reports.</center></td></tr>
 EOL;
     }
 
