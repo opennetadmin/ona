@@ -48,6 +48,15 @@ function ona_sql($options="") {
         $options['commit'] = sanitize_YN($options['commit'], 'N');
     }
 
+    // Set "options[commit] to no if it's not set
+    if (!array_key_exists('dataarray', $options)) {
+        $options['dataarray'] = 'N';
+    }
+    // Otherwise sanitize it's value
+    else {
+        $options['dataarray'] = sanitize_YN($options['dataarray'], 'N');
+    }
+
     // Set "options[header] to yes if it's not set
     if (!array_key_exists('header', $options)) {
         $options['header'] = 'Y';
@@ -173,14 +182,19 @@ EOM
     }
 
     $text = "";
+    $dataarr = array();
 
     // If we got a record, that means they did a select .. display it
     if ($rs->RecordCount()) {
         $build_header = 1;
-
+        $i=0;
         // Loop through each record returned by the sql query
         while (!$rs->EOF) {
+            $i++;
             $record = $rs->FetchRow();
+
+            $dataarr[$i] = $record;
+
 
             // Build the header if we need to
             if ($build_header == 1 and $options['header'] == 'Y') {
@@ -205,6 +219,11 @@ EOM
         $text .= "NOTICE => SQL executed successfully - no records returned\n";
     }
 
+    // If we want the recordset returned instead of the text
+    if ($options['dataarray'] == 'Y') {
+        //print_r($dataarr);
+        return(array(0, $dataarr));
+    }
 
     // Unless the user said YES to commit, return a non-zero
     // exit status so that module_run.php doesn't commit the DB transaction.
