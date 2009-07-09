@@ -709,6 +709,9 @@ function suggest_share_hostname($q, $el_input, $el_suggest) {
 function suggest_int_hostname($q, $el_input, $el_suggest) {
     return(suggest_hostname($q, $el_input, $el_suggest));
 }
+function suggest_device($q, $el_input, $el_suggest) {
+    return(suggest_hostname($q, $el_input, $el_suggest));
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // xajax server
