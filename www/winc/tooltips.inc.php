@@ -263,22 +263,22 @@ EOL;
 
     // Load all the plugin menuitems and build a menu entry
     foreach ($pluginlist as $p) {
-        plugin_load('menuitem',$p);
+        plugin_load('menuitem',$p['name']);
 
         // based on the menu cmd type, build the right command
         switch ($menuitem['type']) {
             case 'work_space':
-                $menu_type_cmd = "xajax_window_submit('work_space', 'xajax_window_submit(\'{$p}\', \'form=>fake\', \'display\')')";
+                $menu_type_cmd = "xajax_window_submit('work_space', 'xajax_window_submit(\'{$p['name']}\', \'form=>fake\', \'display\')')";
                 break;
             case 'window':
-                $menu_type_cmd = "toggle_window('{$p}')";
+                $menu_type_cmd = "toggle_window('{$p['name']}')";
                 break;
         }
 
         // Use a default image if we cant find the one specified.
- //       if (!file_exists($menuitem['image'])){
- //           $menuitem['image'] = "{$images}/silk/application.png";
- //       }
+       if (!file_exists($menuitem['image'])){
+           $menuitem['image'] = "{$images}/silk/application.png";
+       }
 
         // Check the authorization and print the menuitem if the are authorized
         if (auth($menuitem['authname'],3) || !$menuitem['authname']) {

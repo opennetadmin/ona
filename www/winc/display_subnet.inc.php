@@ -96,6 +96,15 @@ function ws_display($window_name, $form='') {
     $wspl = workspace_plugin_loader('reports',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];
 
+    // Get all the plugin based worspace items
+    $wspl_list = plugin_list('wspl_item');
+
+    // Load all the dynamic plugins
+    foreach ($wspl_list as $p) {
+        $wspl = workspace_plugin_loader($p['path'],$record,$extravars);
+        $html .= $wspl[0]; $js .= $wspl[1];
+    }
+
     $html .= <<<EOL
 
     </div>
