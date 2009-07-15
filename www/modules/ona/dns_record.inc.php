@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.06';
+    $version = '1.07';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -183,8 +183,8 @@ primary name for a host should be unique in all cases I'm aware of
         list($status, $rows, $interface) = ona_find_interface($options['ip']);
         if (!$rows) {
             printmsg("ERROR => dns_record_add() Unable to find existing IP interface: {$options['ip']}",3);
-            $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}\\nA records must point to existing IP addresses.\\nPlease add an interface with this IP address first.";
-            return(array(4, $self['error']));
+            $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}. A records must point to existing IP addresses. Please add an interface with this IP address first.";
+            return(array(4, $self['error'] . "\n"));
         }
 
 
@@ -249,7 +249,7 @@ but you still want to reverse lookup all the other interfaces to know they are o
         list($status, $rows, $interface) = ona_find_interface($options['ip']);
         if (!$rows) {
             printmsg("ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}",3);
-            $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}\\nPTR records must point to existing IP addresses.\\nPlease add an interface with this IP address first.";
+            $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}. PTR records must point to existing IP addresses. Please add an interface with this IP address first.";
             return(array(4, $self['error'] . "\n"));
         }
 
@@ -645,8 +645,8 @@ complex DNS messes for themselves.
             list($status, $rows, $interface) = ona_find_interface($options['ip']);
             if (!$rows) {
                 printmsg("ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}",3);
-                $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}\\nTXT records must point to existing IP addresses.\\nPlease add an interface with this IP address first.";
-                return(array(4, $self['error']));
+                $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}. TXT records must point to existing IP addresses.  Please add an interface with this IP address first.";
+                return(array(4, $self['error'] . "\n"));
             }
 
             $add_interfaceid = $interface['id'];
