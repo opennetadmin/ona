@@ -132,6 +132,7 @@ EOL;
                 <input class="edit" type="button"
                     name="submit"
                     value="Save"
+                    accesskey=" "
                     onClick="if (el('pass').value != '') { el('password').value = make_md5(el('pass').value); } xajax_window_submit('{$window_name}', xajax.getFormValues('user_edit_form'), 'save');"
                 >
             </td>

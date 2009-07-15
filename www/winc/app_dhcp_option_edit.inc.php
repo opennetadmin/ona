@@ -146,6 +146,7 @@ EOL;
                 <input class="edit" type="button"
                     name="submit"
                     value="Save"
+                    accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('dhcp_option_edit_form'), 'save');"
                 >
             </td>

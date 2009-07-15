@@ -141,6 +141,7 @@ EOL;
                 <input class="edit" type="button"
                     name="submit"
                     value="Save"
+                    accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_form'), 'save');"
                 >
             </td>
