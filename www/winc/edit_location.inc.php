@@ -51,7 +51,7 @@ function ws_editor($window_name, $form='') {
             el('{$window_name}_title_r').innerHTML;
 
         el('{$window_name}_edit_form').onsubmit = function() { return false; };
-
+        el('ref').focus();
 
 EOL;
 
@@ -79,7 +79,7 @@ EOL;
                 <u>R</u>eference
             </td>
             <td align="left" class="qf-search-line">
-                <input name="reference" type="text" class="edit" size="32" accesskey="r" value="{$record['reference']}"/>
+                <input id="ref" name="reference" type="text" class="edit" size="32" accesskey="r" value="{$record['reference']}"/>
             </td>
         </tr>
 
@@ -93,7 +93,7 @@ EOL;
         </tr>
 
         <tr>
-            <td class="input_required" align="right">
+            <td align="right">
                 <u>A</u>ddress
             </td>
             <td align="left" class="qf-search-line">
@@ -102,17 +102,17 @@ EOL;
         </tr>
 
         <tr>
-            <td class="input_required" align="right">
+            <td align="right">
                 <u>C</u>ity
             </td>
             <td align="left" class="qf-search-line" nowrap="true">
                 <input name="city" class="edit" type="text" size="20" accesskey="c" value="{$record['city']}"/>&nbsp;
-                <span class="input_required">State</span> <input name="state" class="edit" type="text" size="2" maxlength="2" value="{$record['state']}"/>
+                <u>S</u>tate <input name="state" class="edit" type="text" size="2" maxlength="2" value="{$record['state']}"/>
             </td>
         </tr>
 
         <tr>
-            <td class="input_required" align="right">
+            <td align="right">
                 <u>Z</u>ip
             </td>
             <td align="left" class="qf-search-line" nowrap="true">
@@ -122,7 +122,7 @@ EOL;
 
         <tr>
             <td align="right">
-                Latitude
+                <u>L</u>atitude
             </td>
             <td align="left" class="qf-search-line" nowrap="true">
                 <input name="latitude" class="edit" type="text" size="10" maxlength="10" accesskey="l" value="{$record['latitude']}"/>
@@ -131,7 +131,7 @@ EOL;
 
         <tr>
             <td align="right">
-                Longitude
+                L<u>o</u>ngitude
             </td>
             <td align="left" class="qf-search-line" nowrap="true">
                 <input name="longitude" class="edit" type="text" size="10" maxlength="10" accesskey="o" value="{$record['longitude']}"/>
@@ -140,7 +140,7 @@ EOL;
 
         <tr>
             <td align="right">
-                Misc info
+                <u>M</u>isc info
             </td>
             <td align="left" class="qf-search-line">
                 <textarea name="misc" class="edit" rows="3" cols="20" size="256" accesskey="m">{$record['misc']}</textarea>
@@ -159,6 +159,7 @@ EOL;
                 <input class="edit" type="button"
                     name="submit"
                     value="Save"
+                    accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
                 >
             </td>

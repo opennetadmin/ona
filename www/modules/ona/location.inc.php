@@ -27,7 +27,7 @@ function location_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => location_add({$options}) called", 3);
 
@@ -54,7 +54,7 @@ Adds a location into the database
     address=STRING
     city=STRING
     state=STRING
-    zip=NUMBER
+    zip_code=NUMBER
     latitude=STRING
     longitude=STRING
     misc=STRING
@@ -87,7 +87,7 @@ EOM
         return(array(10, $self['error'] . "\n"));
     }
 
-    // Get the next ID for the new alias
+    // Get the next ID for the new location
     $id = ona_get_next_id('locations');
     if (!$id) {
         $self['error'] = "ERROR => The ona_get_next_id() call failed!";
@@ -288,7 +288,7 @@ function location_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => location_modify({$options}) called", 3);
 
@@ -316,7 +316,7 @@ Modifies an existing location entry in the database
     set_address=STRING
     set_city=STRING
     set_state=STRING
-    set_zip=NUMBER
+    set_zip_code=NUMBER
     set_latitude=STRING
     set_longitude=STRING
     set_misc=STRING

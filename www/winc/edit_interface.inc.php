@@ -63,6 +63,7 @@ function ws_editor($window_name, $form='') {
         if (isset($form['ip_addr'])) $interface['ip_addr'] = $form['ip_addr'];
         if (isset($form['name'])) $interface['name'] = $form['name'];
         if (isset($form['description'])) $interface['description'] = $form['description'];
+        if (isset($form['mac_addr'])) $interface['mac_addr'] = $form['mac_addr'];
 
     }
 
@@ -320,6 +321,7 @@ EOL;
                 <input class="edit" type="button"
                     name="submit"
                     value="Save"
+                    accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
                 >
             </td>
