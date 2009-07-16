@@ -1146,10 +1146,6 @@ function ona_get_config_type_record($array='', $order='') {
     return(ona_get_record($array, 'configuration_types', $order));
 }
 
-function ona_get_server_record($array) {
-    return(ona_get_record($array, 'servers'));
-}
-
 function ona_get_dhcp_failover_group_record($array) {
     return(ona_get_record($array, 'dhcp_failover_groups'));
 }

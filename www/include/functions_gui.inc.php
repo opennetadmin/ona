@@ -150,22 +150,22 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     // Load the modules contents from the modules directory.
     // Check for an installed module first. if not then use a builtin one
     // First check the module name as a direct path to the workspace plugin.
-    if (is_file($modulename)) { require_once($modulename); }
+    if (is_file($modulename)) { require($modulename); }
     else if (is_dir("{$ws_plugin_dir}/{$modulename}")) {
         $mod_conf="{$ws_plugin_dir}/{$modulename}/config.inc.php";
-        if (file_exists($mod_conf)) { require_once($mod_conf); }
+        if (file_exists($mod_conf)) { require($mod_conf); }
         $mod_main="{$ws_plugin_dir}/{$modulename}/main.inc.php";
-        if (file_exists($mod_main)) { require_once($mod_main); }
+        if (file_exists($mod_main)) { require($mod_main); }
     }
     else if (is_dir("{$ws_plugin_dir}/builtin/{$modulename}")) {
         $mod_conf="{$ws_plugin_dir}/builtin/{$modulename}/config.inc.php";
-        if (file_exists($mod_conf)) { require_once($mod_conf); }
+        if (file_exists($mod_conf)) { require($mod_conf); }
         $mod_main="{$ws_plugin_dir}/builtin/{$modulename}/main.inc.php";
-        if (file_exists($mod_main)) { require_once($mod_main); }
+        if (file_exists($mod_main)) { require($mod_main); }
     }
     else {
         $mod_main="{$base}/include/unknown_module_msg.inc.php";
-        if (file_exists($mod_main)) { require_once($mod_main); }
+        if (file_exists($mod_main)) { require($mod_main); }
     }
 
 
