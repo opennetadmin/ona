@@ -43,7 +43,7 @@ function dhcp_entry_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => dhcp_entry_add({$options}) called", 3);
 
@@ -102,6 +102,7 @@ EOM
         $desc = 'Global DHCP option';
         $lvl = 0;
         $subnet['id'] = 0;
+        $server['host_id'] = 0;
         $host['id'] = 0;
     } elseif ($options['host']) {
         // Determine the host is valid
@@ -117,6 +118,7 @@ EOM
         $desc = $host['fqdn'];
         $lvl = $host['lvl'];
         $subnet['id'] = 0;
+        $server['host_id'] = 0;
 
     } elseif ($options['subnet']) {
         // Determine the subnet is valid
@@ -132,10 +134,8 @@ EOM
         $desc = "{$subnet['name']} (". ip_mangle($subnet['ip_addr']).")";
         $lvl = $subnet['lvl'];
         $host['id'] = 0;
+        $server['host_id'] = 0;
 
-
-    // MP: FIXME: the server stuff here is not complete and will not currently work
-    //  The tables do not even have a server_id field in them
     } elseif ($options['server']) {
         // Determine the server is valid
         list($status, $rows, $host) = ona_find_host($options['server']);
@@ -147,18 +147,19 @@ EOM
         }
 
         // Determine the host that was found is actually a server
-        list($status, $rows, $server) = ona_get_server_record(array('host_id' => $host['id']));
+        list($status, $rows, $server) = ona_get_dhcp_server_subnet_record(array('host_id' => $host['id']));
 
-        if (!$server['id']) {
-            printmsg("DEBUG => The host specified, {$host['fqdn']}, is not a server!",3);
-            $self['error'] = "ERROR => The host specified, {$host['fqdn']}, is not a server!";
+        if (!$rows) {
+            printmsg("DEBUG => The host specified, {$host['fqdn']}, is not a DHCP server!",3);
+            $self['error'] = "ERROR => The host specified, {$host['fqdn']}, is not a DHCP server!";
             return(array(5, $self['error'] . "\n"));
         }
 
         $anchor = 'server';
         $desc = $host['fqdn'];
         $lvl = $host['lvl'];
-        $host['id'] = '';
+        $host['id'] = 0;
+        $subnet['id'] = 0;
     }
 
     // trim leading and trailing whitespace from 'value'
@@ -217,6 +218,7 @@ EOM
                 'dhcp_option_id'          => $type['id'],
                 'value'                   => $dhcp_option_value,
                 'host_id'                 => $host['id'],
+                'server_id'               => $server['host_id'],
                 'subnet_id'               => $subnet['id']
             )
         );
@@ -441,7 +443,7 @@ function dhcp_entry_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => dhcp_entry_modify({$options}) called", 3);
 
@@ -506,9 +508,8 @@ EOM
        $desc = "{$subnet['name']} (". ip_mangle($subnet['ip_addr']).")";
     }
     if ($entry['server_id']) {
-       list($status, $rows, $server)  = ona_get_server_record(array('id' => $entry['server_id']));
-       list($status, $rows, $host) = ona_find_host($entry['host_id']);
-       $desc = $host['fqdn'];
+       list($status, $rows, $server)  = ona_find_host($entry['server_id']);
+       $desc = $server['fqdn'];
     }
 
     // Check permissions on source identifier

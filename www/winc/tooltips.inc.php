@@ -555,7 +555,7 @@ EOL;
 
     <tr colspan="2" align="center">
         <td>
-            <input id="getpass" name="getpass" type="password" size="12" onkeypress="if (event.keyCode == 13) { el('loginbutton').click(); }">
+            <input id="getpass" class="edit" name="getpass" type="password" size="12" onkeypress="if (event.keyCode == 13) { el('loginbutton').click(); }">
         </td>
     </tr>
     <tr colspan="2" align="center">

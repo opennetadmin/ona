@@ -153,6 +153,12 @@ EOL;
     $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
     $html .= $wspl[0]; $js .= $wspl[1];
 
+
+    // This will display the server level, not global level
+    $extravars['dhcpserver_id'] = $host['id'];
+    $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
+
     $html .= <<<EOL
         </td>
         <!-- END OF THIRD COLUMN OF SMALL BOXES -->

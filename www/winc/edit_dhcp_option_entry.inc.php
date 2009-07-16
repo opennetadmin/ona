@@ -59,6 +59,14 @@ function ws_editor($window_name, $form='') {
         $window['edit_type_value'] = $host['fqdn'];
     }
 
+    // If they are adding a new server level DHCP entry they will usually pass a server_id in
+    if (is_numeric($form['server_id'])) {
+        list($status, $rows, $server)  = ona_find_host($form['server_id']);
+        // Setup a title description for this edit type
+        $window['edit_type'] = "Server";
+        $window['edit_type_value'] = $server['fqdn'];
+    }
+
     // Escape data for display in html
     foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
     foreach(array_keys((array)$zone) as $key)  { $zone[$key] = htmlentities($zone[$key], ENT_QUOTES); }

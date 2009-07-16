@@ -1,6 +1,7 @@
 <?php
 
 $rec_content = print_r($record, true);
+//$extra_content = print_r($extravars, true);
 $debug_display = 0;  // Set this to 1 to see contents of the $record array
 
 $title_left_html = 'Global DHCP Entries';
@@ -8,7 +9,7 @@ $hasgateway = 0;
 
 // Default kind will be global settings.  This means host and subnet ids are 0 in the option_entries table
 $kind = 'global';
-list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => 0, 'subnet_id' => 0), '');
+list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => 0, 'subnet_id' => 0,'server_id' => 0), '');
 $title_description = "These settings are global for all DHCP configurations";
 
 // Determine if this is a host or a subnet we are dealing with
@@ -19,12 +20,20 @@ if (is_numeric($record['subnet_type_id'])) {
     $title_description = "";
 }
 // determining host type using devicefull is kinda crappy.. works for now
+if (array_key_exists('dhcpserver_id',$extravars)) {
+    $kind = 'server';
+    list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'dhcp_option_entries', array('server_id' => $extravars['dhcpserver_id']), '');
+    $title_left_html = 'Server level DHCP Entries';
+    unset($title_description);
+}
+// determining host type using devicefull is kinda crappy.. works for now
 if (isset($record['devicefull'])) {
     $kind = 'host';
     list($status, $rows, $dhcp_entries) = db_get_records($onadb, 'dhcp_option_entries', array('host_id' => $record['id']), '');
     $title_left_html = 'DHCP Entries';
     unset($title_description);
 }
+
 // DHCP ENTRIES LIST
 $modbodyhtml .= <<<EOL
         <!-- DHCP INFORMATION -->
@@ -33,7 +42,7 @@ EOL;
 
 if ($debug_display) {
     $modbodyhtml .= <<<EOL
-        <tr><td><pre>{$rec_content}</pre></td></tr>
+        <tr><td><pre>{$rec_content}</pre><pre>{$extra_content}</pre></td></tr>
 EOL;
 }
 
@@ -107,19 +116,19 @@ if (auth('advanced',$debug_val)) {
             <tr>
                 <td colspan="5" align="left" valign="middle" nowrap="true" class="act-box">
 
-                    <form id="form_dhcp_entry_add_{$record['id']}"
+                    <form id="form_dhcp_entry_add_{$kind}_{$record['id']}"
                         ><input type="hidden" name="{$kind}_id" value="{$record['id']}"
                         ><input type="hidden" name="js" value="{$extravars['refresh']}"
                     ></form>
 
                     <a title="Add DHCP Entry"
                         class="act"
-                        onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_add_{$record['id']}'), 'editor');"
+                        onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_add_{$kind}_{$record['id']}'), 'editor');"
                     ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
 
                     <a title="Add DHCP Entry"
                         class="act"
-                        onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_add_{$record['id']}'), 'editor');"
+                        onClick="xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_dhcp_entry_add_{$kind}_{$record['id']}'), 'editor');"
                     >Add DHCP Entry</a>&nbsp;
                 </td>
             </tr>
