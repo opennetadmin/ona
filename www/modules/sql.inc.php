@@ -20,7 +20,7 @@ function ona_sql($options="") {
     global $conf, $onadb, $base;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     // TODO: Maybe make this into a sys_config option
     $srvdir = dirname($base)."/sql";
@@ -157,8 +157,8 @@ EOM
     ksort($options);
 
     // After the array is sorted, get just the positional bind variable options.
-    // The number to shift in the slice is variable but 5 works for now unless I add more things.
-    $sqlopts = array_slice($options,5);
+    // The number to shift in the slice is variable but 6 works for now unless I add more things.
+    $sqlopts = array_slice($options,6);
 
     // Count how many ?s there are in the sql query. that must match how many sqlopts are passed
     // if this is an oracle database you could change the ? to a :.. more work on this however needs to be done
