@@ -195,7 +195,7 @@ EOL;
         $html .= <<<EOL
 <tr><td colspan=4><center>There are currently no reports installed OR <br> the search returned no results.  Please<br>visit <a href="http://opennetadmin.com">OpenNetAdmin.com</a> to download new reports.</center></td></tr>
 EOL;
-    }
+    } else {
 
     // Loop through and display the groups
     foreach ($records[$page-1] as $entry) {
@@ -240,7 +240,7 @@ EOL;
     </table>
 
 EOL;
-
+}
 
     // Build page links if there are any
     $html .= get_page_links($page, $conf['search_results_per_page'], $count, $window_name, $form['form_id']);
