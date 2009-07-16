@@ -152,22 +152,28 @@ EOM
         return(array(0, $text));
     }
 
-
-    // Sort the options array so we get our numerical bind variables in the right order
-    ksort($options);
-
-    // After the array is sorted, get just the positional bind variable options.
-    // The number to shift in the slice is variable but 6 works for now unless I add more things.
-    $sqlopts = array_slice($options,6);
-
     // Count how many ?s there are in the sql query. that must match how many sqlopts are passed
     // if this is an oracle database you could change the ? to a :.. more work on this however needs to be done
     $qvars = substr_count($options['sql'], '?');
 
+    // loop through the options based on how many qvars are in the sql statement. print an error if we didnt
+    // get a variable to use in the sql statement
+    for ($i = 1; $i <= $qvars; $i++) {
+        if (!array_key_exists($i,$options)) {
+            $self['error'] = "ERROR => You did not supply a value for bind variable {$i}!";
+            printmsg($self['error'],2);
+            return(array(10, $self['error']."\n"));
+        }
+        // assign the variables to sqlopts
+        $sqlopts[$i] = $options[$i];
+    }
+
+    // One last check to be sure
     // Count how many times ? is in the sql statement.  there should be that many elements in sqlopts
     if (count($sqlopts) != $qvars) {
-        $self['error'] = "ERROR => SQL query and bind variable count did not match.\n"; 
-        return(array(1, $self['error']));
+        $self['error'] = "ERROR => SQL query and bind variable count did not match.";
+        printmsg($self['error'],2);
+        return(array(1, $self['error']."\n"));
     }
 
 
