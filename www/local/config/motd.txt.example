@@ -3,8 +3,49 @@ This is an example MOTD file. Rename it to ona/www/local/config/motd.txt for it 
 It technically can be used for whatever content you would like, not just MOTDs
 -->
 <div style="padding-top: 5px;" align="center">
-    <div style="text-align:center;width: 50%;background-color: #D3DBFF;border-style: solid; border-width: 1px 1px 0px; padding-right: 10px;">MOTD</div>
-    <div style="padding: 5px;border-style:solid;border-width: 1px;text-align:left;width: 50%;">
+<table cellspacing="0" cellpadding="0" border="0" style="margin-bottom: 8px;">
+  <tr>
+	<td class="ws_plugin_title_right" title="">MOTD</td>
+	<td class="ws_plugin_title_left">
+            <img  src=""
+                  id="desktopmotd_dropdown"
+                  title="Min/Max"
+                  onclick="if (el('desktopmotd_content').style.display=='none') { 
+			   el('desktopmotd_content').style.display=''; el('desktopmotd_dropdown').src=self.location.pathname +'/images/silk/bullet_arrow_up.png'; 
+			} else {
+			   el('desktopmotd_content').style.display='none'; el('desktopmotd_dropdown').src=self.location.pathname +'/images/silk/bullet_arrow_down.png';
+			}"
+         /></td>
+   </tr>
+   <tr>
+     <td colspan="99" id="desktopmotd_content">
+
+
+
+
+
+
+
+
+
+
+
+
         Here is an example MOTD.. put your content here
-    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+     </td>
+  </tr>
+</table>
+<script>el('desktopmotd_dropdown').src=self.location.pathname +'/images/silk/bullet_arrow_up.png';</script>
 </div>

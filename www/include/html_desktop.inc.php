@@ -5,56 +5,56 @@ header("Cache-control: private");
 
 $year = date('Y');
 
-// Set up a generic where clause
-$where = 'id > 0';
-
-// Start getting various record counts
-list ($status, $host_count, $records)       = db_get_records($onadb, 'hosts', $where, "", 0);
-list ($status, $dns_count, $records)        = db_get_records($onadb, 'dns', $where, "", 0);
-list ($status, $interface_count, $records)  = db_get_records($onadb, 'interfaces', $where, "", 0);
-list ($status, $domain_count, $records)     = db_get_records($onadb, 'domains', $where, "", 0);
-list ($status, $subnet_count, $records)     = db_get_records($onadb, 'subnets', $where, "", 0);
-list ($status, $pool_count, $records)       = db_get_records($onadb, 'dhcp_pools', $where, "", 0);
-list ($status, $block_count, $records)      = db_get_records($onadb, 'blocks', $where, "", 0);
-list ($status, $vlan_campus_count, $records) = db_get_records($onadb, 'vlan_campuses', $where, "", 0);
-list ($status, $config_archive_count, $records) = db_get_records($onadb, 'configurations', $where, "", 0);
-
-
-// The following checks with the opennetadmin server to see what the most current version is.
-// It will do this each time the interface is opened so the traffic should be very minimal.
-// Dont perform a version check if the user has requested not to
-if (!$conf['skip_version_check']) {
-    @ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']."-----".$conf['version']);
-    //$onachkserver = @gethostbynamel('opennetadmin.com');
-    $onachkserver[0] = 'opennetadmin.com';
-    if ($onachkserver[0]) {
-        // use fsockopen to test that the connection works, if it does, open using fopen
-        // for some reason the default_socket_timeout was not working properly.
-        $fsock = @fsockopen("tcp://{$onachkserver[0]}", 80, $errNo, $errString, 2);
-        if ($fsock) {
-            $old = @ini_set('default_socket_timeout', 2);
-            $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
-            @ini_set('default_socket_timeout', $old);
-        }
-    }
-    
-    $onaver = "Unable to determine";
-    if ($file) {
-        while (!feof ($file)) {
-            $buffer = trim(fgets ($file, 4096));
-            $onaver = $buffer;
-        }
-        fclose($file);
-    }
-    if ($conf['version'] == $onaver) {
-        $versit = "<img src='{$images}/silk/accept.png'> You are on the official stable version! ({$onaver})<br/><br/>";
-    }
-    else {
-        $sty='fail';
-        if ($onaver == "Unable to determine") $sty='_unknown';
-        $versit = "<div class='version_check{$sty}'><img src='{$images}/silk/exclamation.png'> You are NOT on the official stable version<br>Your version = {$conf['version']}<br>Official version = {$onaver}</div><br/>";
-    }
-}
+// // Set up a generic where clause
+// $where = 'id > 0';
+// 
+// // Start getting various record counts
+// list ($status, $host_count, $records)       = db_get_records($onadb, 'hosts', $where, "", 0);
+// list ($status, $dns_count, $records)        = db_get_records($onadb, 'dns', $where, "", 0);
+// list ($status, $interface_count, $records)  = db_get_records($onadb, 'interfaces', $where, "", 0);
+// list ($status, $domain_count, $records)     = db_get_records($onadb, 'domains', $where, "", 0);
+// list ($status, $subnet_count, $records)     = db_get_records($onadb, 'subnets', $where, "", 0);
+// list ($status, $pool_count, $records)       = db_get_records($onadb, 'dhcp_pools', $where, "", 0);
+// list ($status, $block_count, $records)      = db_get_records($onadb, 'blocks', $where, "", 0);
+// list ($status, $vlan_campus_count, $records) = db_get_records($onadb, 'vlan_campuses', $where, "", 0);
+// list ($status, $config_archive_count, $records) = db_get_records($onadb, 'configurations', $where, "", 0);
+// 
+// 
+// // The following checks with the opennetadmin server to see what the most current version is.
+// // It will do this each time the interface is opened so the traffic should be very minimal.
+// // Dont perform a version check if the user has requested not to
+// if (!$conf['skip_version_check']) {
+//     @ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']."-----".$conf['version']);
+//     //$onachkserver = @gethostbynamel('opennetadmin.com');
+//     $onachkserver[0] = 'opennetadmin.com';
+//     if ($onachkserver[0]) {
+//         // use fsockopen to test that the connection works, if it does, open using fopen
+//         // for some reason the default_socket_timeout was not working properly.
+//         $fsock = @fsockopen("tcp://{$onachkserver[0]}", 80, $errNo, $errString, 2);
+//         if ($fsock) {
+//             $old = @ini_set('default_socket_timeout', 2);
+//             $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
+//             @ini_set('default_socket_timeout', $old);
+//         }
+//     }
+// 
+//     $onaver = "Unable to determine";
+//     if ($file) {
+//         while (!feof ($file)) {
+//             $buffer = trim(fgets ($file, 4096));
+//             $onaver = $buffer;
+//         }
+//         fclose($file);
+//     }
+//     if ($conf['version'] == $onaver) {
+//         $versit = "<img src='{$images}/silk/accept.png'> You are on the official stable version! ({$onaver})<br/><br/>";
+//     }
+//     else {
+//         $sty='fail';
+//         if ($onaver == "Unable to determine") $sty='_unknown';
+//         $versit = "<div class='version_check{$sty}'><img src='{$images}/silk/exclamation.png'> You are NOT on the official stable version<br>Your version = {$conf['version']}<br>Official version = {$onaver}</div><br/>";
+//     }
+// }
 
 // If there is a message of the day file, display it.
 $motdfile = $base.'/local/config/motd.txt';
@@ -185,180 +185,53 @@ print <<<EOL
     <!-- Workspace div -->
     <div id="content_table" height="100%" class="theWholeBananna">
 
-        <!-- Parent element for all "windows" -->
-        <span id="window_container"></span>&nbsp;
 
-        <div style="font-size: xx-small;text-align:center;">&copy; {$year} <a href="http://opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}</div>
+
+        <div id="appbanner" style="font-size: xx-small;text-align:center;padding-top:5px;">&copy; {$year} <a href="http://opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}</div>
 
         <!-- FORMATTING TABLE -->
-        <div valign="center" align="center" style="{$style['content_box']};padding-left: 8px;">
-        <table cellspacing="0" border="0" cellpadding="0"><tr>
+        <div id="desktopmodules" valign="center" align="center" style="{$style['content_box']};padding-left: 8px;overflow:auto;">
+        <table cellspacing="0" border="0" cellpadding="0" width="100%"><tr>
 
             <!-- START OF FIRST COLUMN OF SMALL BOXES -->
-            <td nowrap="true" valign="top" style="padding: 15px;"><br/><canvas id="record_counts_pie" width="150" height="150"></canvas></td>
             <td nowrap="true" valign="top" style="padding: 15px;">
+EOL;
 
-<script type="text/javascript">
-  function record_counts_pie(rownum) {
-    // Function modified from code posted on http://www.phpied.com/canvas-pie/
-    //
+    $extravars['window_name'] = 'html_desktop';
+    $wspl = workspace_plugin_loader('desktop_versioncheck',$record,$extravars);
+    print($wspl[0]);
+    $wspl = workspace_plugin_loader('desktop_counts',$record,$extravars);
+    print($wspl[0]);
+    $wspl = workspace_plugin_loader('desktop_firsttasks',$record,$extravars);
+    print($wspl[0]);
 
-    // source data table and canvas tag
-    var data_table = document.getElementById('record_counts');
-    var td_index = 1; // which TD contains the data
-    var canvas = document.getElementById('record_counts_pie');
 
-    // exit if canvas is not supported
-    if (typeof canvas.getContext === 'undefined') {
-        return;
-    }
 
-    // define some colors
-    var color = [];
-    color[0] = "#bbaaff";
-    color[1] = "#ffaaaa";
-    color[2] = "#8899ff";
-    color[3] = "#ddffaa";
-    color[4] = "#aaffee";
-    color[5] = "#66ddcc";
-    color[6] = "#dd6677";
-    color[7] = "#55DD88";
 
-    // get the data[] from the table
-    var tds, data = [], value = 0, total = 0, bump = [];
-    var trs = data_table.getElementsByTagName('tr'); // all TRs
-    for (var i = 0; i < trs.length; i++) {
-        tds = trs[i].getElementsByTagName('td'); // all TDs
+print <<<EOL
 
-        if (tds.value === 0) continue; //  no TDs here, move on
 
-        bump[i] = 0;
-        if (i == rownum) bump[i] = 10;
-
-        // get the value, update total
-        value  = parseFloat(tds[td_index].innerHTML);
-        data[i] = value;
-        total += value;
-    }
-
-    // get canvas context, determine radius and center
-    var ctx = canvas.getContext('2d');
-    var canvas_size = [canvas.width, canvas.height];
-    var radius = Math.min((canvas_size[0]-20), (canvas_size[1]-20)) / 2;
-    var center = [canvas_size[0]/2, canvas_size[1]/2];
-
-    var sofar = 0; // keep track of progress
-
-    // clear out the current contents
-    ctx.fillStyle = "rgb(255,255,255)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    // loop through each table row
-    for (var piece = 0; piece < trs.length; piece++) {
-
-        var thisvalue = data[piece] / total;
-
-        ctx.beginPath();
-        ctx.moveTo(center[0], center[1]); // center of the pie
-
-        ctx.arc(  // draw next arc
-            center[0],
-            center[1],
-            (radius + bump[piece]),
-            Math.PI * (- 0.5 + 2 * sofar), // -0.5 sets set the start to be top
-            Math.PI * (- 0.5 + 2 * (sofar + thisvalue)),
-            false
-        );
-
-        ctx.lineTo(center[0], center[1]); // line back to the center
-        ctx.closePath();
-        ctx.fillStyle = color[piece];
-        ctx.fill();
-
-        sofar += thisvalue; // increment progress tracker
-    }
-}
-</script>
-
-                <b>Record Counts</b>
-                <table onmouseout="record_counts_pie(99)" id="record_counts" border=1 style="border-collapse: collapse;border-color: #999999;"s>
-                    <tr onmouseover="record_counts_pie(0)"><td><a title="List Subnets" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form');">Subnets</a></td><td>{$subnet_count}</td>
-                    <tr onmouseover="record_counts_pie(1)"><td><a title="List Hosts" onClick="xajax_window_submit('search_results', 'search_form_id=>host_search_form');">Hosts</a></td><td>{$host_count}</td>
-                    <tr onmouseover="record_counts_pie(2)"><td>Interfaces</td><td>{$interface_count}</td>
-                    <tr onmouseover="record_counts_pie(3)"><td>DNS Records</td><td>{$dns_count}</td>
-                    <tr onmouseover="record_counts_pie(4)"><td><a title="List DNS Domains" onClick="toggle_window('app_domain_list');">DNS Domains</a></td><td>{$domain_count}</td>
-                    <tr onmouseover="record_counts_pie(5)"><td>DHCP Pools</td><td>{$pool_count}</td>
-                    <tr onmouseover="record_counts_pie(6)"><td><a title="List Blocks" onClick="xajax_window_submit('search_results', 'search_form_id=>block_search_form');"> Blocks</a></td><td>{$block_count}</td>
-                    <tr onmouseover="record_counts_pie(7)"><td><a title="List VLAN Campuses" onClick="xajax_window_submit('search_results', 'search_form_id=>vlan_campus_search_form');">VLAN Campuses</a></td><td>{$vlan_campus_count}</td>
-                    <tr onmouseover="record_counts_pie(8)"><td>Config Archives</td><td>{$config_archive_count}</td>
-                </table>
 
             <!-- END OF FIRST COLUMN OF SMALL BOXES -->
             </td>
 
-            <!-- START OF SECOND COLUMN OF SMALL BOXES -->
-            <td valign="top" style="padding: 15px; border-right: 1px solid #777777; border-left: 1px solid #777777;">
 
-                If you are wondering where to start,<br>
-                try one of these tasks:<br>
-                <a title="Add DNS domain"
-                class="act"
-                onClick="xajax_window_submit('edit_domain', ' ', 'editor');"
-                ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-                <a title="Add DNS domain"
-                class="act"
-                onClick="xajax_window_submit('edit_domain', ' ', 'editor');"
-                >Add a DNS domain</a>&nbsp;
-                <br>
-                <a title="Add subnet"
-                class="act"
-                onClick="xajax_window_submit('edit_subnet', ' ', 'editor');"
-                ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-                <a title="Add subnet"
-                class="act"
-                onClick="xajax_window_submit('edit_subnet', ' ', 'editor');"
-                >Add a new subnet</a>&nbsp;
-                <br>
-                <a title="Add host"
-                class="act"
-                onClick="xajax_window_submit('edit_host', ' ', 'editor');"
-                ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-                <a title="Add host"
-                class="act"
-                onClick="xajax_window_submit('edit_host', ' ', 'editor');"
-                >Add a new host</a>&nbsp;
-                <br>
-                <a title="Advanced search" class="act"
-                       onClick="toggle_window('app_advanced_search');"
-                    ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0" /></a>&nbsp;
-                <a title="Advanced search"
-                class="act"
-                onClick="toggle_window('app_advanced_search');"
-                >Perform a search</a>&nbsp;
-                <br>
-                <a title="List Hosts"
-                class="act"
-                onClick="xajax_window_submit('search_results', 'search_form_id=>qsearch_form'); return false;"
-                ><img src="{$images}/silk/application_view_detail.png" border="0"></a>&nbsp;
-                <a title="List Hosts"
-                class="act"
-                onClick="xajax_window_submit('search_results', 'search_form_id=>qsearch_form');"
-                >List Hosts</a>&nbsp;
+        </tr>
 
+            <td nowrap="true" valign="top" style="padding: 15px;">
+EOL;
 
-            <!-- END OF SECOND COLUMN OF SMALL BOXES -->
+    // Get all the plugin based worspace items
+    $wspl_list = plugin_list('wspl_item');
+
+    // Load all the dynamic plugins
+    foreach ($wspl_list as $p) {
+        $wspl = workspace_plugin_loader($p['path'],$record,$extravars);
+        print($wspl[0]);
+    }
+
+print <<<EOL
             </td>
-
-            <!-- START OF THIRD COLUMN OF SMALL BOXES -->
-            <td valign="top" style="padding: 15px;">
-                {$versit}
-                <ul>
-                <li>If you need further assistance, look for the <img src='{$images}/silk/help.png'> icon<br>
-                in the title bar of windows.<br></li>
-                <li>You can also try the main help index located <a href='{$_ENV['help_url']}'>here</a><br></li>
-                </ul>
-            </td>
-            <!-- END OF THIRD COLUMN OF SMALL BOXES -->
         </tr>
         </table>
 
@@ -367,6 +240,10 @@ print <<<EOL
 
         </div>
         <!-- END OF TOP SECTION -->
+
+        <!-- Parent element for all "windows" -->
+        <span id="window_container"></span>
+
     </div>
 
 
@@ -513,6 +390,16 @@ EOL;
 
 
 print <<<EOL
+
+<script>
+    var desktop_height = document.body.clientHeight - el('bar_top').clientHeight - el('trace_history').clientHeight - el('appbanner').clientHeight;
+    if (browser.isIE) {
+        desktop_height -= 20;
+    }
+
+    /* Finally reposition/resize the window, hide any overflow, and bring it up behind other windows. */
+    el('desktopmodules').style.height = desktop_height + 'px';
+</script>
 </body>
 </html>
 EOL;
