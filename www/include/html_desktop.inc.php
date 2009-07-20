@@ -185,12 +185,13 @@ print <<<EOL
     <!-- Workspace div -->
     <div id="content_table" height="100%" class="theWholeBananna">
 
-
+        <!-- Parent element for all "windows" -->
+        <span id="window_container"></span>
 
         <div id="appbanner" style="font-size: xx-small;text-align:center;padding-top:5px;">&copy; {$year} <a href="http://opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}</div>
 
         <!-- FORMATTING TABLE -->
-        <div id="desktopmodules" valign="center" align="center" style="{$style['content_box']};padding-left: 8px;overflow:auto;">
+        <div id="desktopmodules" valign="center" align="center" style="{$style['content_box']};padding-left: 8px;overflow-x: auto;">
         <table cellspacing="0" border="0" cellpadding="0" width="100%"><tr>
 
             <!-- START OF FIRST COLUMN OF SMALL BOXES -->
@@ -241,8 +242,7 @@ print <<<EOL
         </div>
         <!-- END OF TOP SECTION -->
 
-        <!-- Parent element for all "windows" -->
-        <span id="window_container"></span>
+
 
     </div>
 
