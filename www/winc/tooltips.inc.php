@@ -1898,7 +1898,7 @@ EOL;
                 onMouseOut="this.className='row';"
                 title="Add DNS record to this interface"
                 class="act"
-                onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}'), 'editor');"
+                onClick="xajax_window_submit('edit_record', xajax.getFormValues('{$form['form_id']}'), 'editor');setTimeout('toggleBox(\'edit_record\');',500);"
                 ><img src="{$images}/silk/font_add.png" border="0">&nbsp; Add DNS</div>
 EOL;
     }
