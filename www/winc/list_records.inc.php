@@ -390,7 +390,7 @@ EOL;
                 $record['name'] = $txtmain['name'].'.';
             }
 
-            $data = $record['txt'];
+            $data = truncate($record['txt'],70);
         }
 
         // Get the domain name and domain ttl
