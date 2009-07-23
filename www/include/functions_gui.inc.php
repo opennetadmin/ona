@@ -79,7 +79,7 @@ function plugin_list($type=''){
       if ($plugin == '.' || $plugin == '..' || $plugin == 'tmp') continue;
       if (is_file($base."/local/plugins/".$plugin)) continue;
 
-      if ($type=='' || @file_exists($base."/local/plugins/$plugin/$type.inc.php")){
+      if ($type=='' || @file_exists($base."/local/plugins/$plugin/$type.inc.php") and @!file_exists($base."/local/plugins/$plugin/plugin_disabled")){
           $plugins[$i]['name'] = $plugin;
           $plugins[$i]['path'] = $base."/local/plugins/$plugin/$type.inc.php";
           $i++;
@@ -112,9 +112,11 @@ function &plugin_load($type,$name){
     return $ONA_PLUGINS[$type][$name];
   }
 
-  //try to load the wanted plugin file
-  if (file_exists($base."/local/plugins/$name/$type.inc.php")){
-    include_once($base."/local/plugins/$name/$type.inc.php");
+  //try to load the wanted plugin file if it is not disabled
+  if (!file_exists($base."/local/plugins/$name/plugin_disabled")){
+    if (file_exists($base."/local/plugins/$name/$type.inc.php")){
+        include_once($base."/local/plugins/$name/$type.inc.php");
+    }
   }
 
   //construct class and instanciate

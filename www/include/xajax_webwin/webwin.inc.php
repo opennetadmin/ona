@@ -173,6 +173,7 @@ function window_submit($window_name, $form='', $function='') {
     // Try looking for the same function in an include file
     $file = window_find_include($window_name);
     if ($file) { require_once($file); }
+    else { $response->addAssign("work_space_content", "innerHTML", "<br><center><font color=\"red\"><b>Invalid window requested: {$window_name}</b></font></center>"); }
 
     // Now see if our function is available...
     if (function_exists($function)) { return($function($window_name, $form)); }
@@ -223,9 +224,11 @@ function window_find_include($window_name) {
     // If we still didn't find it, try it without the '_win_' in the file prefix
     // but with a .inc.php extension.
     foreach ($directories as $directory) {
-        $file = "{$directory}/{$window_name}.inc.php";
-        if (is_file($file)) {
-            return($file);
+        if (!file_exists($directory.'/plugin_disabled')){
+            $file = "{$directory}/{$window_name}.inc.php";
+            if (is_file($file)) {
+                return($file);
+            }
         }
     }
 

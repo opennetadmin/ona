@@ -65,6 +65,7 @@ $conf = array (
 
     /* Settings for dcm.pl */
     "dcm_module_dir"         => "$base/modules",
+    "plugin_dir"             => "$base/local/plugins",
 
     /* Defaults for some user definable options normally in sys_config table */
     "debug"                  => "2",
