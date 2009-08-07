@@ -259,6 +259,8 @@ function get_subnet_usage($subnet_id) {
     list($status, $rows, $subnet) = db_get_record($onadb, 'subnets', array('id' => $subnet_id));
     if ($status or !$rows) { return(0); }
     $subnet['size'] = (0xffffffff - ip_mangle($subnet['ip_mask'], 'numeric')) - 1;
+    if ($subnet['ip_mask'] == 4294967295) $subnet['size'] = 1;
+    if ($subnet['ip_mask'] == 4294967294) $subnet['size'] = 2;
 
     // Calculate the percentage used (total size - allocated hosts - dhcp pool size)
     list($status, $hosts, $tmp) = db_get_records($onadb, 'interfaces', array('subnet_id' => $subnet['id']), "", 0);

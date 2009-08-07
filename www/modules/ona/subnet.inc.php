@@ -140,7 +140,7 @@ function subnet_add($options="") {
     printmsg('DEBUG => subnet_add('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -339,7 +339,7 @@ EOM
     // Get some info for display
     $net = ip_mangle($options['ip'], 'dotted');
     $bcast = ip_mangle($last_host, 'dotted');
-    $real_hosts = $num_hosts - 1;
+    if ($num_hosts > 1) $real_hosts = $num_hosts - 1;
 
     // Return the success notice
     $self['error'] = "INFO => Subnet ADDED: {$net}/{$cidr} Bcast: {$bcast} Host addresses: {$real_hosts}";

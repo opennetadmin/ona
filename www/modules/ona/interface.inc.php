@@ -128,7 +128,7 @@ EOM
     printmsg("DEBUG => Subnet selected: {$subnet['description']}", 3);
 
     // Validate that the IP address supplied isn't the base or broadcast of the subnet, as long as it is not /32 or /31
-    if ($subnet['ip_mask'] != 4294967295) {
+    if ($subnet['ip_mask'] < 4294967294) {
         if ($options['ip'] == $subnet['ip_addr']) {
             printmsg("DEBUG => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!",3);
             $self['error'] = "ERROR => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!";
