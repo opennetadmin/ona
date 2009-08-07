@@ -482,7 +482,7 @@ function ws_save($window_name, $form='') {
     // have a good chance of working!
 
     // Validate the "set_host" name is valid
-    $form['set_host'] = sanitize_hostname($form['set_host']);
+    $form['set_host'] = sanitize_hostname(trim($form['set_host']));
     if (!$form['set_host']) {
         $response->addScript("alert('Invalid hostname!');");
         return($response->getXML());
@@ -501,6 +501,8 @@ function ws_save($window_name, $form='') {
             return($response->getXML());
         }
     }
+
+    if ($form['set_addptr'] == '') $form['set_addptr'] = 'N';
 
     // FIXME: If we're editing, validate the $form['host'] is valid
     // FIXME: If we're editing, validate the $form['interface'] is valid

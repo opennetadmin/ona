@@ -106,6 +106,15 @@ primary name for a host should be unique in all cases I'm aware of
 
 */
 
+    // Sanitize addptr.. set it to Y if it is not set
+    $options['addptr'] = sanitize_YN($options['addptr'], 'Y');
+
+    // clean up what is passed in
+    $options['ip'] = trim($options['ip']);
+    $options['pointsto'] = trim($options['pointsto']);
+    $options['name'] = trim($options['name']);
+    $options['domain'] = trim($options['domain']);
+
     // Check the date formatting etc
     if (isset($options['ebegin'])) {
         // format the time that was passed in for the database, leave it as 0 if they pass it as 0
@@ -217,7 +226,7 @@ primary name for a host should be unique in all cases I'm aware of
         $info_msg = "{$hostname}{$domain['fqdn']} -> " . ip_mangle($interface['ip_addr'],'dotted');
 
         // Just to be paranoid, I'm doing the ptr checks here as well if addptr is set
-        if ($options['addptr']) {
+        if ($options['addptr'] == 'Y') {
             // Check that no other PTR records are set up for this IP
             list($status, $rows, $record) = ona_get_dns_record(array('interface_id' => $interface['id'], 'type' => 'PTR'));
             if ($rows) {
@@ -742,7 +751,7 @@ complex DNS messes for themselves.
     $text = '';
 
     // If it is an A record and they have specified to auto add the PTR record for it.
-    if ($options['addptr'] and $options['type'] == 'A') {
+    if ($options['addptr'] == 'Y' and $options['type'] == 'A') {
         printmsg("DEBUG => Auto adding a PTR record for {$options['name']}.", 0);
         // Run dns_record_add as a PTR type
         list($status, $output) = run_module('dns_record_add', array('name' => $options['name'],'domain' => $domain['fqdn'],'ip' => $options['ip'],'ebegin' => $options['ebegin'],'type' => 'PTR'));
@@ -791,7 +800,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.06';
+    $version = '1.07';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -862,6 +871,15 @@ EOM
         return(array(10, $self['error'] . "\n"));
     }
 
+
+    // Sanitize addptr.. set it to Y if it is not set
+    $options['set_addptr'] = sanitize_YN($options['set_addptr'], 'Y');
+
+    // clean up what is passed in
+    $options['set_ip'] = trim($options['set_ip']);
+    $options['set_pointsto'] = trim($options['set_pointsto']);
+    $options['set_name'] = trim($options['set_name']);
+    $options['set_domain'] = trim($options['set_domain']);
 
     //
     // Find the dns record we're modifying
@@ -1120,7 +1138,7 @@ EOM
 
 
     // If it is an A record and they have specified to auto add the PTR record for it.
-    if ($options['set_addptr'] and $options['set_type'] == 'A') {
+    if ($options['set_addptr'] == 'Y' and $options['set_type'] == 'A') {
         printmsg("DEBUG => Auto adding a PTR record for {$options['set_name']}.", 0);
         // Run dns_record_add as a PTR type
         // Always use the $current_name variable as the name might change during the update

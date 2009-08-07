@@ -25,7 +25,7 @@ function host_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.09';
+    $version = '1.10';
 
     printmsg("DEBUG => host_add({$options}) called", 3);
 
@@ -66,6 +66,12 @@ EOM
 
     // Sanitize addptr.. set it to Y if it is not set
     $options['addptr'] = sanitize_YN($options['addptr'], 'Y');
+
+    // clean up what is passed in
+    $options['ip'] = trim($options['ip']);
+    $options['mac'] = trim($options['mac']);
+    $options['name'] = trim($options['name']);
+    $options['host'] = trim($options['host']);
 
     // Validate that there isn't already another interface with the same IP address
     list($status, $rows, $interface) = ona_get_interface_record(array('ip_addr' => $options['ip']));
@@ -303,7 +309,7 @@ function host_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     printmsg("DEBUG => host_modify({$options}) called", 3);
 
@@ -341,6 +347,10 @@ Modify a host record
 EOM
         ));
     }
+
+    // clean up what is passed in
+    $options['interface'] = trim($options['interface']);
+    $options['host'] = trim($options['host']);
 
     //
     // Find the host record we're modifying
