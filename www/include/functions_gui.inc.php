@@ -1264,6 +1264,7 @@ function suggest_masks_edit_subnet($q, $el_input, $el_suggest) {
     $hasslash = strpos($q,'/');
     if ($hasslash === FALSE) {
         $results = array(
+                        '255.255.255.255',
                         '255.255.255.254',
                         '255.255.255.252',
                         '255.255.255.248',
@@ -1299,6 +1300,7 @@ function suggest_masks_edit_subnet($q, $el_input, $el_suggest) {
     }
     else {
         $results = array(
+                        '/32',
                         '/31',
                         '/30',
                         '/29',

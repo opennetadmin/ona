@@ -333,8 +333,6 @@ print <<<EOL
     // Populate the trace_history with anything that might already be in the session
     el('trace_history').innerHTML=xajax_window_submit('work_space', 'return_html=>1', 'rewrite_history');
 
-    // Print the nice pie chart!
-    record_counts_pie(99);
 
 --></script>
 

@@ -226,7 +226,7 @@ EOL;
      onMouseOut="this.className='row';"
      onClick="removeElement('start_menu'); toggle_window('app_domain_list');"
      title="List DNS Domains"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ ><img style="vertical-align: middle;" src="{$images}/silk/application.png" border="0"
  />&nbsp;List DNS Domains</div>
 
 EOL;
@@ -239,7 +239,7 @@ EOL;
      onMouseOut="this.className='row';"
      onClick="removeElement('start_menu'); toggle_window('app_domain_servers_list');"
      title="List DNS Domain Servers"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ ><img style="vertical-align: middle;" src="{$images}/silk/application.png" border="0"
  />&nbsp;List DNS Domain Servers</div>
 
 EOL;
@@ -252,7 +252,7 @@ EOL;
      onMouseOut="this.className='row';"
      onClick="removeElement('start_menu'); toggle_window('app_dhcp_servers_list');"
      title="List DHCP Servers"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ ><img style="vertical-align: middle;" src="{$images}/silk/application.png" border="0"
  />&nbsp;List DHCP Servers</div>
 
 EOL;

@@ -152,6 +152,15 @@ $window['html'] .= <<<EOL
      />&nbsp;Manage DHCP failover groups</div>
 
 
+    <div class="row"
+        onMouseOver="this.className='hovered';"
+        onMouseOut="this.className='row';"
+        onClick="removeElement('start_menu'); toggle_window('app_plugin_list');"
+        title="List Plugins"
+    ><img style="vertical-align: middle;" src="{$images}/silk/plugin_edit.png" border="0"
+    />&nbsp;Manage Plugins</div>
+
+
 </div>
 
 EOL;

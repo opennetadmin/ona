@@ -127,6 +127,11 @@ if ($extravars['window_name'] == 'html_desktop') {
     </tr>
 </table>
 
+<script type="text/javascript">
+    // Print the nice pie chart!
+    record_counts_pie(99);
+</script>
+
 EOL;
 
 }
