@@ -1120,7 +1120,7 @@ function ona_get_domain_record($array='', $order='') {
 function ona_get_dns_record($array='', $order='') {
     list($status, $rows, $record) = ona_get_record($array, 'dns', $order);
 
-    if ($record['type'] == 'A') {
+    if ($record['type'] == 'A' or $record['type'] == 'TXT') {
         $record['fqdn'] = $record['name'].'.'.ona_build_domain_name($record['domain_id']);
         $record['domain_fqdn'] = ona_build_domain_name($record['domain_id']);
     }

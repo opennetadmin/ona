@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -56,6 +56,11 @@ EOM
         ));
     }
 
+    // clean up what is passed in
+    $options['ip'] = trim($options['ip']);
+    $options['mac'] = trim($options['mac']);
+    $options['name'] = trim($options['name']);
+    $options['natip'] = trim($options['natip']);
 
     // Set options[force] to N if it's not set
     $options['force'] = sanitize_YN($options['force'], 'N');
@@ -257,7 +262,7 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.06';
+    $version = '1.07';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -297,6 +302,10 @@ EOM
         ));
     }
 
+    // clean up what is passed in
+    $options['set_ip'] = trim($options['set_ip']);
+    $options['set_mac'] = trim($options['set_mac']);
+    $options['set_name'] = trim($options['set_name']);
 
     // They provided a interface ID, IP address, interface name, or MAC address
     if ($options['interface']) {
