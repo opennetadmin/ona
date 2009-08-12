@@ -600,18 +600,23 @@ EOL;
 //      Runs the actual login switch after hitting the login button in the tooltip
 //////////////////////////////////////////////////////////////////////////////
 function ws_logingo($window_name, $form='') {
-    global $conf, $self, $onadb;
+    global $conf, $self, $onadb, $baseURL;
     global $font_family, $color, $style, $images;
 
     $html = $js = '';
     $form = parse_options_string($form);
+    $type='Desktop';
 
-    printmsg("INFO => Attempting login as " . $form['onausername'] ."/". $form['onapassword'], 0);
+    if ($form['standalone']) $type='Standalone';
+
+    printmsg("INFO => [{$type}] Attempting login as " . $form['onausername'] ."/". $form['onapassword'], 0);
 
     list($status, $js) = get_authentication($form['onausername'],$form['onapassword']);
 
-    if ($status==0)
+    if ($status==0) {
         get_perms($form['onausername']);
+        if ($form['standalone'] == 'standalone') $js .= "window.location='{$http}{$baseURL}/';";
+    }
 
     $response = new xajaxResponse();
     $response->addScript($js);
