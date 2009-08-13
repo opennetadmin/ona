@@ -65,7 +65,7 @@ if (file_exists($motdfile)) {
 
 // Lets start building the page!
 print <<<EOL
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <!-- This web site is copyrighted (c) {$year} -->
 <html>
 <head>
@@ -74,24 +74,21 @@ print <<<EOL
     <link rel="stylesheet" type="text/css" href="{$baseURL}/include/html_style_sheet.inc.php">
     <link rel="shortcut icon" type="image/ico" href="{$images}/favicon.ico">
     <script type="text/javascript" src="{$baseURL}/include/js/global.js" language="javascript"></script>
-{$conf['html_headers']}
-
-
+    {$conf['html_headers']}
 </head>
 <body style="overflow: hidden;" bgcolor="{$color['bg']}" link="{$color['link']}" alink="{$color['alink']}" vlink="{$color['vlink']}">
 
     <!-- Top (Task) Bar -->
-    <div class="bar" id="bar_top">
+    <div class="menubar" id="bar_topmenu" >
 
+        <!-- Button to open the "Start Menu" (Application Links) -->
+        <div id="menu-apps-item" class="main_menu_button" onmouseover="xajax_window_submit('menu_control', ' ');">Menu</div>
+
+    </div>
+    <div class="bar" id="bar_top" >
         <!-- Left Side -->
-        <div class="bar-left">
+        <div class="bar-left" onmouseover="ona_menu_closedown();">
 
-            <!-- Button to open the "Start Menu" (Application Links) -->
-            <span class="topmenu-item" id="menu-apps-item">
-                <a id="menu-apps-button"
-                   class="button"
-                ><img style="vertical-align: middle;" src="{$images}/silk/house.png" border="0" />&nbsp;Tools&nbsp;</a>
-            </span>
 
             <!-- Button to open the "search dialog" -->
             <span class="topmenu-item" title="Advanced search" id="search-item" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form'); return false;">
@@ -126,7 +123,7 @@ print <<<EOL
             </span>
 
             <!-- Task Bar (i.e. Window List) -->
-            <span class="topmenu-item" style="border-right: 1px solid {$color['border']};"></span>
+            <span class="topmenu-item" style="border-right: 1px solid {$color['border']};">&nbsp;</span>
             <span class="topmenu-item" id="menu-window-list">&nbsp;</span>
 
         </div>
@@ -180,10 +177,12 @@ print <<<EOL
         </div>
     </div>
 
-    <div id="trace_history" style="font-size: smaller; border-style: solid; border-width: 0px 1px 1px 1px; background-color: #EDEEFF;white-space: nowrap;">&nbsp;Trace:</div>
+    <div id="menu_bar_top" style="display: none; float: left;width: 100%; font-size: smaller; background-color: #AABBFF;white-space: nowrap;font-weight: bold;border-left: 1px solid #555555;border-right: 1px solid #555555;border-bottom: 1px solid #555555;"></div>
+
+    <div id="trace_history" style="font-size: smaller; border-color: #555555;border-style: solid; border-width: 0px 1px 1px 1px; background-color: #EDEEFF;white-space: nowrap;">&nbsp;Trace:</div>
 
     <!-- Workspace div -->
-    <div id="content_table" height="100%" class="theWholeBananna">
+    <div id="content_table" class="theWholeBananna">
 
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>
@@ -191,7 +190,7 @@ print <<<EOL
         <div id="appbanner" style="font-size: xx-small;text-align:center;padding-top:5px;">&copy; {$year} <a href="http://opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}</div>
 
         <!-- FORMATTING TABLE -->
-        <div id="desktopmodules" valign="center" align="center" style="{$style['content_box']};padding-left: 8px;overflow-x: auto;">
+        <div id="desktopmodules" valign="center" align="center" style="padding-left: 8px;overflow-x: auto;">
         <table cellspacing="0" border="0" cellpadding="0" width="100%"><tr>
 
             <!-- START OF FIRST COLUMN OF SMALL BOXES -->
@@ -306,29 +305,6 @@ print <<<EOL
 
     /* Go ahead and process_alerts on the initial load */
     xajax_window_submit('process_alerts', 'sys_alert=>yes');
-
-    /* Setup mouse handlers for the "Start" button */
-    var _button = el('menu-apps-button');
-    _button.onclick =
-        function(ev) {
-            if (!ev) ev = event;
-            /* Get info about the button */
-            var button_top    = calcOffset(el('menu-apps-button'), 'offsetTop');
-            var button_left   = calcOffset(el('menu-apps-button'), 'offsetLeft');
-            var button_height = el('menu-apps-button').offsetHeight;
-            /* Create the tool-tip menu */
-            wwTT(this, ev,
-                 'id', 'start_menu',
-                 'type', 'velcro',
-                 'x', button_left,
-                 'y', button_top + button_height,
-                 'width', 200,
-                 'delay', 0,
-                 'lifetime', 1000,
-                 'styleClass', 'wwTT_ona_menu',
-                 'javascript', 'el(\'start_menu\').style.visibility = \'hidden\'; xajax_window_submit(\'tooltips\', \'tooltip=>start_menu,id=>start_menu\');'
-            );
-        };
 
     // Populate the trace_history with anything that might already be in the session
     el('trace_history').innerHTML=xajax_window_submit('work_space', 'return_html=>1', 'rewrite_history');

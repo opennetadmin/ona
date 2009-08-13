@@ -80,6 +80,42 @@ function clearElements(el){
 }
 
 
+
+
+/* Setup mouse handlers for the "Start" button 
+   These are used by the ona main menu only */
+function ona_menuTT(menu_name, menu_id) {
+   var _button = el(menu_name);
+    _button.onmouseover =
+        function(ev) {
+            if (!ev) ev = event;
+            /* Get info about the button */
+            var button_top    = calcOffset(el(menu_name+'_name'), 'offsetTop');
+            var button_left   = calcOffset(el(menu_name+'_name'), 'offsetLeft');
+            var button_height = el(menu_name+'_name').offsetHeight;
+            /* Create the tool-tip menu */
+            wwTT(this, ev,
+                 'id', menu_id,
+                 'type', 'velcro',
+                 'x', button_left,
+                 'y', button_top + button_height,
+                 'width', 200,
+                 'delay', 0,
+                 'lifetime', 0,
+                 'styleClass', 'wwTT_ona_menu',
+                 'javascript', 'el(\''+menu_id+'\').style.visibility = \'hidden\'; xajax_window_submit(\'menu_control\', \'menu_name=>'+menu_name+',id=>'+menu_id+'\', \'menu\');'
+            );
+            el(menu_name+'_name').className='menu-title-highlight';
+        };
+}
+
+// This will close down the menu bar and any remaining menu lists
+function ona_menu_closedown() {
+    el('menu-apps-item').style.paddingBottom='3px';
+    el('menu_bar_top').style.display = 'none';
+    removeElement(wwTTobj.lastID);
+}
+
 //
 // Hide or display an object
 //

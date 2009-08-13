@@ -19,6 +19,7 @@ print <<<EOL
 
 
 /* --------------- Styles for common HTML elements --------------- */
+html { height: 100%; }
 
 body {
     margin: 0px;
@@ -26,6 +27,9 @@ body {
     color: {$color['font_default']};
     background-color: {$color['bg']};
     vertical-align: top;
+    height:auto !important;
+    height:100%;
+    min-height:100%;
 }
 
 td {
@@ -66,7 +70,7 @@ a:hover      { cursor: pointer; text-decoration: underline; }
   float: left;
   padding-right: 4px;
   padding-left: 4px;
-
+  text-align: left;
 }
 
 .ws_plugin_title_right {
@@ -88,16 +92,44 @@ a:hover      { cursor: pointer; text-decoration: underline; }
 
 /* ---------------  Used in the Site ---------------- */
 
-/* Bar with Nav Links at the top */
+/* Bar with Nav Links at the top (this first one is for IE only)*/
 .bar {
     height:25px;
     background:{$color['bar_bg']};
     border:1px solid {$color['border']};
+    border-left:0px;
     padding-top: 8px;
-    padding-bottom: 1px;
+    padding-bottom: 0px;
     margin:0px;
     vertical-align: middle;
-    clear: both;
+//    float:left;
+//    clear: both;
+}
+
+.menubar {
+    height:25px;
+    background:{$color['bar_bg']};
+    border: 1px solid {$color['border']};
+    border-right: 0px;
+    padding-top: 8px;
+    padding-bottom: 0px;
+    margin:0px;
+    vertical-align: middle;
+    float:left;
+//    clear: both;
+}
+
+.main_menu_button {
+    float:left;
+    background-color: #AABBFF;
+    border-radius-topright: 3px;
+    -moz-border-radius-topright: 3px;
+    -webkit-border-radius-topright: 3px;
+    border-radius: 3px;
+    padding: 2px 8px 3px 8px;
+    font-weight: bold;
+    border-top: 1px solid #555555;
+    border-right: 1px solid #555555;
 }
 
 .bar-left {
@@ -277,6 +309,9 @@ a.linkact img      { padding-right: 4px; }
 
 .row-normal    { background-color: #FFFFFF; }
 .row-highlight { background-color: #E8E9FD; }
+
+.menu-title-normal    { float:left;margin-bottom: -1px;padding: 0px 5px 0px 5px;background-color: #AABBFF; }
+.menu-title-highlight { float:left;margin-bottom: -1px;padding: 0px 5px 0px 5px;background-color: #8899FF; }
 
 .topmenu-item {
     font-size: smaller;
