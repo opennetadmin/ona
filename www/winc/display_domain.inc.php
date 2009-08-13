@@ -432,7 +432,7 @@ EOL;
         // Display the config if it ran ok
         if (!$status) {
             $html .= "<div id=\"dnsoutputdiv\" style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;overflow:hidden;width: 100px;'><pre style='font-family: monospace;overflow-y:auto;'>{$output}</pre></div>";
-            $js .= "setTimeout('el(\'dnsoutputdiv\').style.width = el(\'{$form_id}_table\').offsetWidth-8;',500);";
+            $js .= "setTimeout('el(\'dnsoutputdiv\').style.width = el(\'{$form_id}_table\').offsetWidth-8+\'px\';',900);";
         }
     }
 
