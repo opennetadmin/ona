@@ -203,7 +203,7 @@ EOL;
         $plugin_version = '';
         $record['name'] = basename($entry);
 
-        include_once $entry.'/plugin_info.php';
+        @include_once $entry.'/plugin_info.php';
         $record['desc'] = $plugin_description;
         $record['version'] = ($plugin_version) ? $plugin_version : 'Unknown';
 
