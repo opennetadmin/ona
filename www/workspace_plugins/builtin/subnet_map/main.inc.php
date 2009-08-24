@@ -53,10 +53,9 @@ $modbodyhtml .= <<<EOL
                 <div id="{$extravars['window_name']}_portal" onclick="el('dragmessage').style.display='';el('{$extravars['window_name']}_portal').style.color = '#FFFFFF';el('{$extravars['window_name']}_portal').style.height = '150px';el('{$extravars['window_name']}_portal').myonmouseup('fake event');" style="text-align: center;color: #999999;position: relative; height: 19px; width: 355px;">
                     Click here to show map
                     <span id="{$extravars['window_name']}_substrate"></span>
+
                 </div>
-                </td>
-                <td>
-                    <span id="dragmessage" style="display: none;font-size:10px;position:fixed;margin-left: -11px;">&uarr;<br><br>D<br>R<br>A<br>G<br><br>&darr;<br></span>
+                <span id="dragmessage" style="display: none;font-size:10px;float: right;margin-top: -150px;padding-right: 12px;">&uarr;<br><br>D<br>R<br>A<br>G<br><br>&darr;<br></span>
                 </td>
             </tr>
         </table>

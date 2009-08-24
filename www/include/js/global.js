@@ -98,7 +98,7 @@ function ona_menuTT(menu_name, menu_id) {
                  'id', menu_id,
                  'type', 'velcro',
                  'x', button_left,
-                 'y', button_top + button_height,
+                 'y', button_top + button_height + 1,
                  'width', 200,
                  'delay', 0,
                  'lifetime', 0,

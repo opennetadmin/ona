@@ -5,57 +5,6 @@ header("Cache-control: private");
 
 $year = date('Y');
 
-// // Set up a generic where clause
-// $where = 'id > 0';
-// 
-// // Start getting various record counts
-// list ($status, $host_count, $records)       = db_get_records($onadb, 'hosts', $where, "", 0);
-// list ($status, $dns_count, $records)        = db_get_records($onadb, 'dns', $where, "", 0);
-// list ($status, $interface_count, $records)  = db_get_records($onadb, 'interfaces', $where, "", 0);
-// list ($status, $domain_count, $records)     = db_get_records($onadb, 'domains', $where, "", 0);
-// list ($status, $subnet_count, $records)     = db_get_records($onadb, 'subnets', $where, "", 0);
-// list ($status, $pool_count, $records)       = db_get_records($onadb, 'dhcp_pools', $where, "", 0);
-// list ($status, $block_count, $records)      = db_get_records($onadb, 'blocks', $where, "", 0);
-// list ($status, $vlan_campus_count, $records) = db_get_records($onadb, 'vlan_campuses', $where, "", 0);
-// list ($status, $config_archive_count, $records) = db_get_records($onadb, 'configurations', $where, "", 0);
-// 
-// 
-// // The following checks with the opennetadmin server to see what the most current version is.
-// // It will do this each time the interface is opened so the traffic should be very minimal.
-// // Dont perform a version check if the user has requested not to
-// if (!$conf['skip_version_check']) {
-//     @ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']."-----".$conf['version']);
-//     //$onachkserver = @gethostbynamel('opennetadmin.com');
-//     $onachkserver[0] = 'opennetadmin.com';
-//     if ($onachkserver[0]) {
-//         // use fsockopen to test that the connection works, if it does, open using fopen
-//         // for some reason the default_socket_timeout was not working properly.
-//         $fsock = @fsockopen("tcp://{$onachkserver[0]}", 80, $errNo, $errString, 2);
-//         if ($fsock) {
-//             $old = @ini_set('default_socket_timeout', 2);
-//             $file = @fopen("http://{$onachkserver[0]}/check_version.php", "r");
-//             @ini_set('default_socket_timeout', $old);
-//         }
-//     }
-// 
-//     $onaver = "Unable to determine";
-//     if ($file) {
-//         while (!feof ($file)) {
-//             $buffer = trim(fgets ($file, 4096));
-//             $onaver = $buffer;
-//         }
-//         fclose($file);
-//     }
-//     if ($conf['version'] == $onaver) {
-//         $versit = "<img src='{$images}/silk/accept.png'> You are on the official stable version! ({$onaver})<br/><br/>";
-//     }
-//     else {
-//         $sty='fail';
-//         if ($onaver == "Unable to determine") $sty='_unknown';
-//         $versit = "<div class='version_check{$sty}'><img src='{$images}/silk/exclamation.png'> You are NOT on the official stable version<br>Your version = {$conf['version']}<br>Official version = {$onaver}</div><br/>";
-//     }
-// }
-
 // If there is a message of the day file, display it.
 $motdfile = $base.'/local/config/motd.txt';
 if (file_exists($motdfile)) {
@@ -80,16 +29,13 @@ print <<<EOL
 
     <!-- Top (Task) Bar -->
     <div class="menubar" id="bar_topmenu" >
-
         <!-- Button to open the "Start Menu" (Application Links) -->
         <div id="menu-apps-item" class="main_menu_button" onmouseover="xajax_window_submit('menu_control', ' ');">Menu</div>
-
     </div>
-    <div class="bar" id="bar_top" >
+
+    <div class="bar" id="bar_top" onmouseover="ona_menu_closedown();">
         <!-- Left Side -->
-        <div class="bar-left" onmouseover="ona_menu_closedown();">
-
-
+        <div class="bar-left">
             <!-- Button to open the "search dialog" -->
             <span class="topmenu-item" title="Advanced search" id="search-item" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form'); return false;">
                 <a id="search-button"
@@ -198,12 +144,12 @@ print <<<EOL
 EOL;
 
     $extravars['window_name'] = 'html_desktop';
-    $wspl = workspace_plugin_loader('desktop_versioncheck',$record,$extravars);
-    print($wspl[0]);
-    $wspl = workspace_plugin_loader('desktop_counts',$record,$extravars);
-    print($wspl[0]);
-    $wspl = workspace_plugin_loader('desktop_firsttasks',$record,$extravars);
-    print($wspl[0]);
+    list($wspl, $wsjs) = workspace_plugin_loader('desktop_versioncheck',$record,$extravars);
+    print($wspl);
+    list($wspl, $wsjs) = workspace_plugin_loader('desktop_counts',$record,$extravars);
+    print($wspl);
+    list($wspl, $wsjs) = workspace_plugin_loader('desktop_firsttasks',$record,$extravars);
+    print($wspl);
 
 
 
@@ -226,8 +172,9 @@ EOL;
 
     // Load all the dynamic plugins
     foreach ($wspl_list as $p) {
-        $wspl = workspace_plugin_loader($p['path'],$record,$extravars);
-        print($wspl[0]);
+        list($wspl, $wsjs) = workspace_plugin_loader($p['path'],$record,$extravars);
+        print($wspl);
+        $ws_plugin_js .= $wsjs;
     }
 
 print <<<EOL
@@ -373,6 +320,9 @@ print <<<EOL
 
     /* Finally reposition/resize the window, hide any overflow, and bring it up behind other windows. */
     el('desktopmodules').style.height = desktop_height + 'px';
+
+    // process any workspace plugin javascript
+    {$ws_plugin_js}
 </script>
 </body>
 </html>

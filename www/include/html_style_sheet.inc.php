@@ -102,8 +102,6 @@ a:hover      { cursor: pointer; text-decoration: underline; }
     padding-bottom: 0px;
     margin:0px;
     vertical-align: middle;
-//    float:left;
-//    clear: both;
 }
 
 .menubar {
@@ -116,7 +114,6 @@ a:hover      { cursor: pointer; text-decoration: underline; }
     margin:0px;
     vertical-align: middle;
     float:left;
-//    clear: both;
 }
 
 .main_menu_button {
@@ -310,8 +307,8 @@ a.linkact img      { padding-right: 4px; }
 .row-normal    { background-color: #FFFFFF; }
 .row-highlight { background-color: #E8E9FD; }
 
-.menu-title-normal    { float:left;margin-bottom: -1px;padding: 0px 5px 0px 5px;background-color: #AABBFF; }
-.menu-title-highlight { float:left;margin-bottom: -1px;padding: 0px 5px 0px 5px;background-color: #8899FF; }
+.menu-title-normal    { float:left;padding: 0px 5px 0px 5px;background-color: #AABBFF; }
+.menu-title-highlight { float:left;padding: 0px 5px 0px 5px;background-color: #8899FF; }
 
 .topmenu-item {
     font-size: smaller;
