@@ -60,7 +60,7 @@ function ws_editor($window_name, $form='') {
     // Load a interface record if we got passed a interface_id
     if ($form['interface_id']) {
         list($status, $rows, $int) = ona_get_interface_record(array('id' => $form['interface_id']));
-        $int['ip_addr_text'] = ip_mangle($int['ip_addr'], 'dotted');
+        $interface['ip_addr'] = $int['ip_addr_text'];
         $window['js'] .= "el('set_ip_{$window_name}').value = '{$int['ip_addr_text']}'";
         $form['js'] = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host=>{$int['host_id']}\', \'display\')');";
     }

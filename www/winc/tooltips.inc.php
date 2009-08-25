@@ -1663,7 +1663,7 @@ EOL;
             to <u>H</u>ost
         </td>
         <td align="left" class="qf-search-line">
-            <input id="share_hostname" name="host" type="text" class="edit" size="24" accesskey="h" />
+            <input id="share_hostname" name="host" type="text" class="edit" size="24" accesskey="h" autocomplete="off"/>
             <div id="suggest_share_hostname" class="suggest"></div>
         </td>
     </tr>
@@ -2122,7 +2122,7 @@ EOL;
             to <u>H</u>ost
         </td>
         <td align="left" class="qf-search-line">
-            <input id="move_hostname" name="host" type="text" class="edit" size="24" accesskey="h" />
+            <input id="move_hostname" name="host" type="text" class="edit" size="24" accesskey="h" autocomplete="off" />
             <div id="suggest_move_hostname" class="suggest"></div>
         </td>
     </tr>

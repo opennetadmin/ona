@@ -346,6 +346,18 @@ function get_html_menu_button_edit() {
 
     $html = $js = '';
 
+    if (auth('subnet_add')) {
+        $html .= <<<EOL
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_subnet', ' ', 'editor');"
+     title="Add a new subnet"
+ ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ />&nbsp;Add Subnet</div>
+EOL;
+    }
+
     if (auth('host_modify') and auth('host_add')) {
         $html .= <<<EOL
 <div class="row"
@@ -358,15 +370,15 @@ function get_html_menu_button_edit() {
 EOL;
     }
 
-    if (auth('subnet_add')) {
+    if (auth('host_modify') and auth('host_add')) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_subnet', ' ', 'editor');"
-     title="Add a new subnet"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_record', 'blank=>nope', 'editor');"
+     title="Add a new DNS record"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add Subnet</div>
+ />&nbsp;Add DNS record</div>
 EOL;
     }
 
