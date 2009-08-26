@@ -132,6 +132,10 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
+    // display a nice message when we dont find all the records
+    if ($where == '' and $form['content_id'] == 'search_results_list') {
+        $js .= "el('search_results_msg').innerHTML = 'Unable to find subnets matching your query, showing all records';";
+    }
 
     // Wild card .. if $where is still empty, add a 'ID > 0' to it so you see everything.
     if ($where == '')

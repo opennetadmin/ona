@@ -55,31 +55,31 @@ function ws_display_list($window_name, $form='') {
     $where = "";
     $and = "";
     $orderby = "";
-    $from = 'hosts';
+    $from = 'hosts h';
 
     // DISPLAY ALL
     // MP: I dont think this is used.. remove it if you can
     if ($form['all_flag']) {
-        $where .= $and . "id > 0";
+        $where .= $and . "h.id > 0";
         $and = " AND ";
     }
 
     // HOST ID
     if ($form['host_id']) {
-        $where .= $and . "id = " . $onadb->qstr($form['host_id']);
+        $where .= $and . "h.id = " . $onadb->qstr($form['host_id']);
         $and = " AND ";
     }
 
     // DEVICE ID
     if ($form['device_id']) {
-        $where .= $and . "device_id = " . $onadb->qstr($form['device_id']);
+        $where .= $and . "h.device_id = " . $onadb->qstr($form['device_id']);
         $and = " AND ";
     }
 
 
     // HOSTNAME
     if ($form['hostname']) {
-        // Find the domain name piece of the hostname.
+        // Find the domain name piece of the hostname assuming it was passed in as an fqdn.
         // FIXME: MP this was taken from the ona_find_domain function. make that function have the option
         // to NOT return a default domain.
 
@@ -107,17 +107,26 @@ function ws_display_list($window_name, $form='') {
         $withdomain = '';
         $hostname = $form['hostname'];
         // If you found a domain in the query, add it to the search, and strip the domain from the host portion.
-        if (array_key_exists('id', $domain)) {
-            $withdomain = "AND domain_id = {$domain['id']}";
+        if (array_key_exists('id', $domain) and !$form['domain']) {
+            $withdomain = "AND b.domain_id = {$domain['id']}";
             // Now find what the host part of $search is
             $hostname = str_replace(".{$domain['fqdn']}", '', $form['hostname']);
+        }
+        // If we have a hostname and a domain name then use them both
+        if ($form['domain']) {
+            list($status, $rows, $record) = ona_find_domain($form['domain']);
+            if ($record['id']) {
+                $withdomain = "AND b.domain_id = {$record['id']}";
+            }
+            // Now find what the host part of $search is
+            $hostname = trim($form['hostname']);
         }
 
 
         // MP: Doing the many select IN statements was too slow.. I did this kludge:
         //  1. get a list of all the interfaces
         //  2. loop through the array and build a list of comma delimited host_ids to use in the final select
-        list($status, $rows, $tmp) = db_get_records($onadb, 'interfaces', "id in (SELECT interface_id FROM dns WHERE name LIKE '%{$hostname}%' {$withdomain})");
+        list($status, $rows, $tmp) = db_get_records($onadb, 'interfaces a, dns b', "a.id = b.interface_id and b.name LIKE '%{$hostname}%' {$withdomain}");
         $commait = '';
         $hostids = '';
         foreach ($tmp as $item) {
@@ -141,7 +150,7 @@ function ws_display_list($window_name, $form='') {
         $hostids = trim($hostids, ",");
         // If we got a list of hostids from interfaces then use them
         if ($hostids) {
-            $idqry = "id IN ($hostids)";
+            $idqry = "h.id IN ($hostids)";
         }
         // Otherwise assume we found nothing specific and should return all rows.
         else {
@@ -155,9 +164,9 @@ function ws_display_list($window_name, $form='') {
 
 
     // DOMAIN
-    if ($form['domain']) {
+    if ($form['domain'] and !$form['hostname']) {
         // FIXME: does this clause work correctly?
-        printmsg("FIXME: => Does \$form['domain'] work correctly in list_hosts.inc.php, line 79?", 2);
+        printmsg("FIXME: => Does \$form['domain'] work correctly in list_hosts.inc.php?", 2);
         // Find the domain name piece of the hostname.
         // FIXME: MP this was taken from the ona_find_domain function. make that function have the option
         // to NOT return a default domain.
@@ -186,7 +195,7 @@ function ws_display_list($window_name, $form='') {
         if (array_key_exists('id', $domain)) {
 
             // We do a sub-select to find id's that match
-            $where .= $and . "id IN (SELECT host_id ".
+            $where .= $and . "h.id IN (SELECT host_id ".
                                        "FROM interfaces " .
                                         "WHERE id IN (" .
                                             "( SELECT interface_id " .
@@ -197,8 +206,8 @@ function ws_display_list($window_name, $form='') {
     }
 
     // DOMAIN ID
-    if ($form['domain_id']) {
-        $where .= $and . "primary_dns_id IN ( SELECT id " .
+    if ($form['domain_id'] and !$form['hostname']) {
+        $where .= $and . "h.primary_dns_id IN ( SELECT id " .
                                             "  FROM dns " .
                                             "  WHERE domain_id = " . $onadb->qstr($form['domain_id']) . " )  ";
         $and = " AND ";
@@ -214,7 +223,7 @@ function ws_display_list($window_name, $form='') {
         $form['mac'] = preg_replace('/[^%0-9A-F]/', '', $form['mac']);
 
         // We do a sub-select to find interface id's that match
-        $where .= $and . "id IN ( SELECT host_id " .
+        $where .= $and . "h.id IN ( SELECT host_id " .
                          "        FROM interfaces " .
                          "        WHERE mac_addr LIKE " . $onadb->qstr('%'.$form['mac'].'%') . " ) ";
         $and = " AND ";
@@ -235,7 +244,7 @@ function ws_display_list($window_name, $form='') {
         $ip_end = ip_mangle($ip_end, 'numeric');
         if ($ip != -1 and $ip_end != -1) {
             // We do a sub-select to find interface id's between the specified ranges
-            $where .= $and . "id IN ( SELECT host_id " .
+            $where .= $and . "h.id IN ( SELECT host_id " .
                              "        FROM interfaces " .
                              "        WHERE ip_addr >= " . $onadb->qstr($ip) . " AND ip_addr <= " . $onadb->qstr($ip_end) . " )";
             $and = " AND ";
@@ -245,7 +254,7 @@ function ws_display_list($window_name, $form='') {
 
     // NOTES
     if ($form['notes']) {
-        $where .= $and . "notes LIKE " . $onadb->qstr('%'.$form['notes'].'%');
+        $where .= $and . "h.notes LIKE " . $onadb->qstr('%'.$form['notes'].'%');
         $and = " AND ";
     }
 
@@ -254,12 +263,12 @@ function ws_display_list($window_name, $form='') {
 
     // DEVICE MODEL
     if ($form['model_id']) {
-        $where .= $and . "device_id in (select id from devices where device_type_id in (select id from device_types where model_id = {$form['model_id']}))";
+        $where .= $and . "h.device_id in (select id from devices where device_type_id in (select id from device_types where model_id = {$form['model_id']}))";
         $and = " AND ";
     }
 
     if ($form['model']) {
-        $where .= $and . "device_id in (select id from devices where device_type_id in (select id from device_types where model_id in (select id from models where name like '{$form['model']}')))";
+        $where .= $and . "h.device_id in (select id from devices where device_type_id in (select id from device_types where model_id in (select id from models where name like '{$form['model']}')))";
         $and = " AND ";
     }
 
@@ -280,8 +289,7 @@ function ws_display_list($window_name, $form='') {
             $or = "";
             foreach ($records as $record) {
                 // Yes this is one freakin nasty query but it works.
-                $where .= $or . "device_id in (select id from devices where device_type_id in (select id from device_types
-                        where role_id = " . $onadb->qstr($record['id']) ."))";
+                $where .= $or . "h.device_id in (select id from devices where device_type_id in (select id from device_types where role_id = " . $onadb->qstr($record['id']) ."))";
                 $or = " OR ";
             }
             $where .= " ) ";
@@ -306,8 +314,7 @@ function ws_display_list($window_name, $form='') {
             $or = "";
             foreach ($records as $record) {
                 // Yes this is one freakin nasty query but it works.
-                $where .= $or . "device_id in (select id from devices where device_type_id in (select id from device_types
-                        where model_id = " . $onadb->qstr($record['id']) ."))";
+                $where .= $or . "h.device_id in (select id from devices where device_type_id in (select id from device_types where model_id = " . $onadb->qstr($record['id']) ."))";
                 $or = " OR ";
             }
             $where .= " ) ";
@@ -317,22 +324,22 @@ function ws_display_list($window_name, $form='') {
 
     // custom attribute type
     if ($form['custom_attribute_type']) {
-        $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' and custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type']) . "))";
+        $where .= $and . "h.id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' and custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type']) . "))";
         $and = " AND ";
-        $cavaluetype = "and custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type']) . ")";
+        $cavaluetype = "and h.custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type']) . ")";
 
     }
 
     // custom attribute value
     if ($form['ca_value']) {
-        $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' {$cavaluetype} and value like " . $onadb->qstr('%'.$form['ca_value'].'%') . ")";
+        $where .= $and . "h.id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' {$cavaluetype} and value like " . $onadb->qstr('%'.$form['ca_value'].'%') . ")";
         $and = " AND ";
     }
 
     // LOCATION No.
     if ($form['location']) {
         list($status, $rows, $loc) = ona_find_location($form['location']);
-        $where .= $and . "device_id in (select id from devices where location_id = " . $onadb->qstr($loc['id']) . ")";
+        $where .= $and . "h.device_id in (select id from devices where location_id = " . $onadb->qstr($loc['id']) . ")";
         $and = " AND ";
     }
 
@@ -349,10 +356,15 @@ order by b.ip_addr) hosts";
         $and = " AND ";
     }
 
+    // display a nice message when we dont find all the records
+    if ($where == '' and $form['content_id'] == 'search_results_list') {
+        $js .= "el('search_results_msg').innerHTML = 'Unable to find hosts matching your query, showing all records';";
+    }
 
     // Wild card .. if $while is still empty, add a 'ID > 0' to it so you see everything.
-    if ($where == '')
-        $where = 'id > 0';
+    if ($where == '') {
+        $where = 'h.id > 0';
+    }
 
 
     // Do the SQL Query
@@ -362,7 +374,7 @@ order by b.ip_addr) hosts";
         // Host names should always be lower case
         $form['filter'] = strtolower($form['filter']);
         // FIXME (MP) for now this uses primary_dns_id, this will NOT find multiple A records or other record types. Find a better way some day
-        $filter = " AND primary_dns_id IN  (SELECT id " .
+        $filter = " AND h.primary_dns_id IN  (SELECT id " .
                                             " FROM dns " .
                                             " WHERE name LIKE ". $onadb->qstr('%'.$form['filter'].'%') . " )  ";
 

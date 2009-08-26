@@ -403,8 +403,6 @@ div.wwTT_ona p
 div.wwTT_qf {
     background-color: #A6C3F5;
     color: #FFFFFF;
-    font-weight: bold;
-    font-size: 13px;
     font-family: "Trebuchet MS", sans-serif;
     left: 0;
     top: 0;

@@ -388,7 +388,7 @@ function ws_search_results_submit($window_name, $form='') {
 
     </table>
     </form>
-
+    <center><span style="font-weight: bold;color: green; font-size: small;" id="search_results_msg"></span></center>
     </div>
 
     <!-- Item List -->
@@ -674,6 +674,9 @@ function ws_change_tab($window_name, $form, $display_list=1, $return_text=0) {
     // Save the new tab in the session
     $old_tab = $_SESSION['ona'][$form_id]['tab'];
     $_SESSION['ona'][$form_id]['tab'] = $tab;
+
+    // remove any messages
+    $js .= "el('search_results_msg').innerHTML = '';";
 
     // Make the old tab look inactive
     $js .= "_el = el('{$form_id}_{$old_tab}_tab'); if (_el) _el.className = 'table-tab-inactive'; el('{$old_tab}_search').style.display = 'none';";
