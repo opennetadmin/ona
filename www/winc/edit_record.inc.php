@@ -647,7 +647,8 @@ function ws_save($window_name, $form='') {
     // have a good chance of working!
 
     // If the name we were passed has a leading . in it then remove the dot.
-    $form['set_name'] = preg_replace("/^\./", '', $form['set_name']);
+    $form['set_name'] = preg_replace("/^\./", '', trim($form['set_name']));
+    $form['set_ip'] = trim($form['set_ip']);
 
     // Validate the "set_name" name is valid
     if ($form['set_name'] and ($form['set_type'] != 'NS')) {
@@ -675,6 +676,8 @@ function ws_save($window_name, $form='') {
     // If we're adding, re-map some the array names to match what the "add" module wants
     if (!$form['dns_id']) {
         $module = 'add';
+
+        $form['set_addptr'] = sanitize_YN($form['set_addptr'], 'N');
 
         // options
         $form['domain'] = $form['set_domain'];

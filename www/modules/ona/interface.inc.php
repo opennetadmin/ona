@@ -567,7 +567,7 @@ function interface_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     printmsg("DEBUG => interface_del({$options}) called", 3);
 
@@ -663,11 +663,16 @@ EOM
         }
 
         // Delete any DNS records are associated with the host.
-        list($status, $rows, $record) = db_get_record($onadb, 'dns', array('interface_id' => $interface['id']));
-        // Run the module
-        if ($rows) list($status, $output) = run_module('dns_record_del', array('name' => $record['id'], 'type' => $record['type'], 'commit' => 'Y', 'delete_by_module' => 'Y'));
-        $add_to_error .= $output;
-        $add_to_status = $add_to_status + $status;
+        list($status, $rows, $records) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id'], 'dns_id' => 0));
+        // Loop through all the records and delete them
+        // This deletes the primary records only and expects dns_record_del to delete child records
+        if ($rows) {
+            foreach($records as $record) {
+                list($status, $output) = run_module('dns_record_del', array('name' => $record['id'], 'type' => $record['type'], 'commit' => 'Y', 'delete_by_module' => 'Y'));
+                $add_to_error .= $output;
+                $add_to_status = $add_to_status + $status;
+            }
+        }
 
 
         // Drop the record
@@ -678,7 +683,7 @@ EOM
             return(array(5, $self['error']));
         }
         // Build a success notice to return to the user
-        $text = "INFO => Interface DELETED: " . ip_mangle($interface['ip_addr'], 'dotted') . " from {$host['fqdn']}\n";
+        $text = "INFO => Interface DELETED: " . ip_mangle($interface['ip_addr'], 'dotted') . " from {$host['fqdn']}";
         printmsg($text, 0);
 
         // Check to see if there are any other interfaces for the current host_id
@@ -725,10 +730,10 @@ EOM
     }
 
     // Display DNS records associated with this interface
-    list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']), '', 0);
+    list($status, $total_dns, $dns) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']), '');
     if ($total_dns) $text .= "\nASSOCIATED DNS RECORDS ({$total_dns}):\n";
     foreach ($dns as $rec) {
-        $text .= "  TYPE: {$rec['type']}, {$rec['name']} -> {$interface['ip_addr_text']}\n";
+        $text .= "  TYPE: [ID:{$rec['id']}] {$rec['type']}, {$rec['name']} -> {$interface['ip_addr_text']}\n";
     }
 
     if ($interface['nat_interface_id'] > 0) {
