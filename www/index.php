@@ -20,6 +20,10 @@ require_once($base . '/config/config.inc.php');
 //     exit;
 // }
 
+// MP: Since we know ONA will generate a ton of notice level errors, lets turn them off here
+// I dont believe this will be impactful to anyone. keep an eye out for it however.
+error_reporting (E_ALL ^ E_NOTICE);
+
 // Start out the session as a guest with level 0 access.  This is for view only mode.
 if (!$_SESSION['ona']['auth']['user']['username']) {
     $_SESSION['ona']['auth']['user']['username'] = 'guest';
