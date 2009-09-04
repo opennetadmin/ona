@@ -351,7 +351,7 @@ SELECT distinct a.*
 from hosts as a, interfaces as b
 where a.id = b.host_id
 and b.subnet_id = ". $onadb->qstr($form['subnet_id']). "
-order by b.ip_addr) hosts";
+order by b.ip_addr) h";
 
         $and = " AND ";
     }

@@ -13,9 +13,7 @@ if (file_exists($mod_conf)) { require_once($mod_conf); }
 $title_left_html = 'Host Actions';
 
 
-$title_right_html .= <<<EOL
-                <img title="Edit plugin configuration" onClick="" src="{$images}/silk/plugin_edit.png" border="0">
-EOL;
+$title_right_html .= '';
 
 
 if ($debug_display) {
