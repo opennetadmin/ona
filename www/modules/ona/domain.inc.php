@@ -414,7 +414,7 @@ function domain_modify($options="") {
     printmsg("DEBUG => domain_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -563,7 +563,9 @@ EOM
     // will that be too much of an increment for it to properly zone xfer?  i.e.  1209230515 = 12/09 23:05:15 in time format
 
     // MP: FOR NOW SERIAL WONT EVER GET USED...  LEFT IT IN HERE FOR AWHILE THOUGH
-    $SET['serial'] = date('njHis');
+    //$SET['serial'] = date('njHis');
+
+    // Serial numbers are now built based on the timeformat
 
 
 
@@ -601,6 +603,15 @@ EOM
             $log_msg .= $more . $key . "[" .$original_domain[$key] . "=>" . $new_domain[$key] . "]";
             $more= ";";
         }
+    }
+
+
+    // TRIGGER:Now that we have updated the domain, lets mark the domain on all the servers for a rebuild to pick up any new SOA info.
+    list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $entry['id']), array('rebuild_flag' => 1));
+    if ($status) {
+        $self['error'] = "ERROR => domain_modify() Unable to update rebuild flags for domain. SQL Query failed: {$self['error']}";
+        printmsg($self['error'],0);
+        return(array(7, $self['error'] . "\n"));
     }
 
     // only print to logfile if a change has been made to the record

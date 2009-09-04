@@ -28,7 +28,7 @@ function domain_server_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => domain_server_add({$options}) called", 3);
 
@@ -144,7 +144,8 @@ EOM
                 'id'                      => $id,
                 'host_id'                 => $host['id'],
                 'domain_id'               => $domain['id'],
-                'role'                    => $role
+                'role'                    => $role,
+                'rebuild_flag'            => 1
 
             )
         );

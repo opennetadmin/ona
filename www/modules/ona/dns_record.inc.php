@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.07';
+    $version = '1.08';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -114,6 +114,7 @@ primary name for a host should be unique in all cases I'm aware of
     $options['pointsto'] = trim($options['pointsto']);
     $options['name'] = trim($options['name']);
     $options['domain'] = trim($options['domain']);
+    $options['txt'] = trim($options['txt']);
 
     // Check the date formatting etc
     if (isset($options['ebegin'])) {
@@ -761,6 +762,14 @@ complex DNS messes for themselves.
         printmsg($text,0);
     }
 
+    // TRIGGER: Since we are adding a new record, lets mark the domain for rebuild on its servers
+    list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $add_domainid), array('rebuild_flag' => 1));
+    if ($status) {
+        $self['error'] = "ERROR => dns_record_add() Unable to update rebuild flags for domain.: {$self['error']}";
+        printmsg($self['error'],0);
+        return(array(7, $self['error'] . "\n"));
+    }
+
     // Else start an output message
     $text .= "INFO => DNS {$options['type']} record ADDED: {$info_msg}";
     printmsg($text,0);
@@ -800,7 +809,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.07';
+    $version = '1.08';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -880,6 +889,7 @@ EOM
     $options['set_pointsto'] = trim($options['set_pointsto']);
     $options['set_name'] = trim($options['set_name']);
     $options['set_domain'] = trim($options['set_domain']);
+    $options['set_txt'] = trim($options['set_txt']);
 
     //
     // Find the dns record we're modifying
@@ -935,6 +945,9 @@ EOM
         if ($interface['id'] != $dns['interface_id']) {
             $changingint = 1;
             $SET['interface_id'] = $interface['id'];
+
+            // get the info on the original interface
+            list($status, $rows, $origint) = ona_get_interface_record(array('id' => $dns['interface_id']));
         }
     }
 
@@ -1171,19 +1184,40 @@ EOM
                     printmsg($self['error'], 0);
                     return(array(11, $self['error'] . "\n"));
                 }
+                // TODO: may need set rebuild flag on each of the domains related to  these child records that just changed
             }
 
             // Check the PTR record has the proper domain still
             $ipflip = ip_mangle($interface['ip_addr_text'],'flip');
             // Find a pointer zone for this record to associate with.
             list($status, $prows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
-            list($status, $rows, $dnsrec) = ona_get_dns_record(array('type' => 'PTR','interface_id' => $SET['interface_id']));
-            if (isset($ptrdomain['id']) and $rows>0 and $dnsrec['domain_id'] != $ptrdomain['id']) {
+            list($status, $drrows, $dnsrec) = ona_get_dns_record(array('type' => 'PTR','interface_id' => $SET['interface_id']));
+
+            // TRIGGER: we made a change and need to update the CURRENT PTR record as well, only sets it if the ptrdomain changes
+            list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $dnsrec['domain_id']), array('rebuild_flag' => 1));
+            if ($status) {
+                $self['error'] = "ERROR => dns_record_add() Unable to update rebuild flags for domain.: {$self['error']}";
+                printmsg($self['error'],0);
+                return(array(7, $self['error'] . "\n"));
+            }
+
+            // if we find any PTR records and the domain has chaned, make sure the child PTR records have the updated PTR domain info.
+            if (isset($ptrdomain['id']) and $drrows>0 and $dnsrec['domain_id'] != $ptrdomain['id']) {
                 list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $dnsrec['id']), array('domain_id' => $ptrdomain['id'], 'ebegin' => $SET['ebegin']));
                 if ($status or !$rows) {
                     $self['error'] = "ERROR => dns_record_modify() Child PTR record domain update failed: " . $self['error'];
                     printmsg($self['error'], 0);
                     return(array(14, $self['error'] . "\n"));
+                }
+
+
+
+                // TRIGGER: we made a change and need to update the NEW PTR record as well, only sets it if the ptrdomain changes
+                list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $ptrdomain['id']), array('rebuild_flag' => 1));
+                if ($status) {
+                    $self['error'] = "ERROR => dns_record_add() Unable to update rebuild flags for domain.: {$self['error']}";
+                    printmsg($self['error'],0);
+                    return(array(7, $self['error'] . "\n"));
                 }
             }
         }
@@ -1195,6 +1229,25 @@ EOM
             printmsg($self['error'], 0);
             return(array(12, $self['error'] . "\n"));
         }
+
+        // TRIGGER: we made a change, lets mark the domain for rebuild on its servers
+        list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $dns['domain_id']), array('rebuild_flag' => 1));
+        if ($status) {
+            $self['error'] = "ERROR => dns_record_add() Unable to update rebuild flags for domain.: {$self['error']}";
+            printmsg($self['error'],0);
+            return(array(7, $self['error'] . "\n"));
+        }
+
+        // TRIGGER: If we are chaning domains, lets flag the new domain as well, lets mark the domain for rebuild on its servers
+        if($SET['domain_id']) {
+            list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $SET['domain_id']), array('rebuild_flag' => 1));
+            if ($status) {
+                $self['error'] = "ERROR => dns_record_add() Unable to update rebuild flags for domain.: {$self['error']}";
+                printmsg($self['error'],0);
+                return(array(7, $self['error'] . "\n"));
+            }
+        }
+
 
     }
 
@@ -1252,7 +1305,7 @@ function dns_record_del($options="") {
     printmsg("DEBUG => dns_record_del({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -1341,7 +1394,7 @@ need to do a better delete of DNS records when deleting a host.. currently its a
         }
 
 
-        // Delete related PTR records
+        // Delete related Points to records
         // get list for logging
         list($status, $rows, $records) = db_get_records($onadb, 'dns', array('dns_id' => $dns['id']));
         // do the delete
@@ -1358,6 +1411,16 @@ need to do a better delete of DNS records when deleting a host.. currently its a
             $add_to_error .= "INFO => {$rows} child record(s) DELETED from {$dns['fqdn']}\n";
         }
 
+        // TRIGGER: flag the domains for rebuild
+        foreach($records as $record) {
+            list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $record['domain_id']), array('rebuild_flag' => 1));
+            if ($status) {
+                $self['error'] = "ERROR => dns_record_add() Unable to update rebuild flags for domain.: {$self['error']}";
+                printmsg($self['error'],0);
+                return(array(7, $self['error'] . "\n"));
+            }
+        }
+
 
         // Delete the DNS record
         list($status, $rows) = db_delete_records($onadb, 'dns', array('id' => $dns['id']));
@@ -1365,6 +1428,14 @@ need to do a better delete of DNS records when deleting a host.. currently its a
             $self['error'] = "ERROR => dns_record_del() DNS record delete SQL Query failed: {$self['error']}";
             printmsg($self['error'],0);
             return(array(5, $add_to_error . $self['error'] . "\n"));
+        }
+
+        // TRIGGER: flag the current dnsrecords domain for rebuild
+        list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $dns['domain_id']), array('rebuild_flag' => 1));
+        if ($status) {
+            $self['error'] = "ERROR => dns_record_add() Unable to update rebuild flags for domain.: {$self['error']}";
+            printmsg($self['error'],0);
+            return(array(7, $self['error'] . "\n"));
         }
 
 

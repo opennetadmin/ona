@@ -264,7 +264,7 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.07';
+    $version = '1.08';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -432,12 +432,27 @@ EOM
             }
         }
 
-        // Check permissions
-        if (!authlvl($subnet['LVL'])) {
-            $self['error'] = "Permission denied!";
-            printmsg($self['error'], 0);
-            return(array(13, $self['error'] . "\n"));
+        // TRIGGER: Since we are changing the IP of an interface that dns records may point to, we need to loop through them all
+        if($interface['ip_addr'] != $options['set_ip']) {
+            // Get all the DNS records using this interface ID
+            list($status, $rows, $records) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']));
+            // Loop them and set their domains for rebuild
+            foreach($records as $record) {
+                list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $record['domain_id']), array('rebuild_flag' => 1));
+                if ($status) {
+                    $self['error'] = "ERROR => dns_record_add() Unable to update rebuild flags for domain.: {$self['error']}";
+                    printmsg($self['error'],0);
+                    return(array(7, $self['error'] . "\n"));
+                }
+            }
         }
+
+        // Check permissions
+//         if (!authlvl($subnet['LVL'])) {
+//             $self['error'] = "Permission denied!";
+//             printmsg($self['error'], 0);
+//             return(array(13, $self['error'] . "\n"));
+//         }
 
         // Everything looks ok, add it to $SET
         if($interface['subnet_id'] != $subnet['id'])
