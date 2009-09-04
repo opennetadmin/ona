@@ -26,7 +26,7 @@ function ws_editor($window_name, $form='') {
     $window = array();
 
     // Check permissions
-    if (! (auth('host_modify') and auth('host_add')) ) {
+    if (! (auth('host_modify') or auth('host_add')) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
@@ -459,7 +459,7 @@ function ws_save($window_name, $form='') {
     global $include, $conf, $self, $onadb;
 
     // Check permissions
-    if (! (auth('host_modify') and auth('host_add')) ) {
+    if (! (auth('host_modify') or auth('host_add')) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
@@ -516,6 +516,12 @@ function ws_save($window_name, $form='') {
     // If we're adding, re-map some the array names to match what the "add" module wants
     if ($form['host'] == '.') {
         $module = 'add';
+
+        if (!auth('host_add')) {
+            $response = new xajaxResponse();
+            $response->addScript("alert('Permission denied!');");
+            return($response->getXML());
+        }
 
         // Device options
         $form['type'] = $form['set_type'];              unset($form['set_type']);
