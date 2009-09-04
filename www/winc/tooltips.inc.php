@@ -530,7 +530,7 @@ function get_loginform_html($form) {
 
     $style['content_box'] = <<<EOL
         padding: 2px 4px;
-        vertical-align: top;
+
 EOL;
 
     // WARNING: this one's different than most of them!
@@ -544,27 +544,28 @@ EOL;
     $html .= <<<EOL
 
     <!-- LOGIN PROMPT -->
-    <form id="loginform_form" onSubmit="return(false);">
-    <input id="onausername" type="hidden" name="onausername">
+    <form id="loginform_form" onSubmit="return false;">
     <input id="onapassword" type="hidden" name="onapassword">
-    <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
+    <table style="{$style['content_box']}" cellspacing="0" border="0">
 
-    <tr><td colspan="2" align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
-    Password
-    </td></tr>
-
-    <tr colspan="2" align="center">
-        <td>
-            <input id="getpass" class="edit" name="getpass" type="password" size="12" onkeypress="if (event.keyCode == 13) { el('loginbutton').click(); }">
+    <tr >
+        <td nowrap="true" align="right">
+            <b>Username</b>&nbsp;
         </td>
-    </tr>
-    <tr colspan="2" align="center">
         <td>
-            <span id="loginmsg" style="color: red;font-size: x-small;"></span>
+            <input id="onausername" class="edit" autocomplete="off" name="onausername" type="edit" size="12" onkeypress="if (event.keyCode == 13) { el('getpass').focus(); }">
         </td>
     </tr>
     <tr>
-        <td align="right" class="qf-search-line">
+        <td nowrap="true" align="right">
+            <b>Password</b>&nbsp;
+        </td>
+        <td>
+            <input id="getpass" class="edit" autocomplete="off" name="getpass" type="password" size="12" onkeypress="if (event.keyCode == 13) { el('loginbutton').click(); }">
+        </td>
+    </tr>
+    <tr><td></td>
+        <td nowrap="true">
             <input  class="button"
                     type="button"
                     name="cancel"
@@ -576,16 +577,22 @@ EOL;
                     type="button"
                     name="login"
                     value="Login"
-                    onClick="el('onausername').value = el('login_userid').value;
-                             el('onapassword').value = make_md5(el('getpass').value);
+                    onClick="el('onapassword').value = make_md5(el('getpass').value);
                              xajax_window_submit('tooltips', xajax.getFormValues('loginform_form'), 'logingo');"
             >
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" align="center">
+            <span id="loginmsg" style="color: red;font-size: x-small;"></span>
         </td>
     </tr>
 
     </table>
     </form>
 EOL;
+
+    $js = "el('onausername').focus();";
 
 
     return(array($html, $js));
@@ -616,6 +623,7 @@ function ws_logingo($window_name, $form='') {
     if ($status==0) {
         get_perms($form['onausername']);
         if ($form['standalone'] == 'standalone') $js .= "window.location='{$http}{$baseURL}/';";
+        $js .= "el('loggedin_user').innerHTML = '{$_SESSION['ona']['auth']['user']['username']}';";
     }
 
     $response = new xajaxResponse();

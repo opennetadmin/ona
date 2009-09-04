@@ -81,45 +81,39 @@ print <<<EOL
                   id="sys_alert"
                   style="visibility: hidden;padding: 0px;"
                   onClick="wwTT(this, event,
-                                            'id', 'tt_sys_alert',
-                                            'type', 'static',
-                                            'delay', 0,
-                                            'styleClass', 'wwTT_qf',
-                                            'direction', 'southwest',
-                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>sys_alert,id=>tt_sys_alert\');'
-                                           );"
+                                    'id', 'tt_sys_alert',
+                                    'type', 'static',
+                                    'delay', 0,
+                                    'styleClass', 'wwTT_qf',
+                                    'direction', 'southwest',
+                                    'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>sys_alert,id=>tt_sys_alert\');'
+                                    );"
             ><img src="{$images}/silk/comment.png" border="0" /></span>
 
-            <span class="topmenu-item" style="cursor: pointer;" title="Current user: {$_SESSION['ona']['auth']['user']['username']}, Click to display user info." onClick="toggle_window('app_user_info');">
-                <img style="vertical-align: middle;" src="{$images}/silk/user_gray.png" border="0" />
-            </span>
-            <input id="login_userid"
+
+            <span id="login_userid" class="topmenu-item"
                     title="Current logged in user, click to change"
-                    class="edit"
-                    type="text"
-                    value="{$_SESSION['ona']['auth']['user']['username']}"
-                    name="login_userid"
-                    size="12"
-                    onkeypress="if ((event.keyCode|event.which) == 9|(event.keyCode|event.which) == 13) { setTimeout('el(\'getpass\').focus()',10) }"
-                    onclick="wwTT(this, event,
+                    onclick="var button_left   = calcOffset(el('login_userid'), 'offsetLeft');
+                             wwTT(this, event,
                                         'id', 'tt_loginform',
                                         'type', 'static',
+                                        'x', button_left - 75,
+                                        'y', 1,
                                         'delay', 0,
-                                        'styleClass', 'wwTT_qf',
+                                        'styleClass', 'wwTT_login',
                                         'direction', 'south',
                                         'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>loginform,id=>tt_loginform\');'
                                         );"
-            >
-
-
-            <span class="topmenu-item" style="cursor: pointer;" title="Open online help" onClick="document.location = '{$_ENV['help_url']}'; /* FIXME: Open help in an iframe in a window */">
-                <img style="vertical-align: middle;" title="Global help index" src="{$images}/silk/help.png" border="0" />
+            ><a class="button" style="font-weight:bold;"><img style="vertical-align: middle;" src="{$images}/silk/user_go.png" border="0" /> <span id="loggedin_user">{$_SESSION['ona']['auth']['user']['username']}</span> <span style="font-weight: normal;font-size: xx-small;">[Change]</span> </a>
             </span>
-            <span class="topmenu-item" style="cursor: pointer;" title="Logout" onClick="var doit=confirm('Are you sure you want to logout?'); if (doit == true) document.location = 'logout.php';">
+
+            <span id="loggedin_info" class="topmenu-item" style="cursor: pointer;" title="Click to display user info." onClick="toggle_window('app_user_info');">
+                <img style="vertical-align: middle;" src="{$images}/silk/user_gray.png" border="0" />
+            </span>
+
+            <span id="logoutbutton" class="topmenu-item" style="cursor: pointer;padding-right: 5px;" title="Logout" onClick="var doit=confirm('Are you sure you want to logout?'); if (doit == true) document.location = 'logout.php';">
                 <img style="vertical-align: middle;" title="Switch to Guest user (Logout)" src="{$images}/silk/door_out.png" border="0" />
             </span>
-
-            &nbsp;
         </div>
     </div>
 

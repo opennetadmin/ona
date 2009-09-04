@@ -261,12 +261,12 @@ EOL;
 
         }
 
-            $html .= <<<EOL
-                <a title="Uninstall plugin: {$record['name']}"
-                    class="act"
-                    onClick="xajax_window_submit('app_plugin_list', 'plugin=>{$record['name']},state=>disable', 'uninstall')');"
-                ><img src="{$images}/silk/plugin_delete.png" border="0"></a>&nbsp;
-EOL;
+//             $html .= <<<EOL
+//                 <a title="Uninstall plugin: {$record['name']}"
+//                     class="act"
+//                     onClick="xajax_window_submit('app_plugin_list', 'plugin=>{$record['name']},state=>disable', 'uninstall')');"
+//                 ><img src="{$images}/silk/plugin_delete.png" border="0"></a>&nbsp;
+// EOL;
 
 
 

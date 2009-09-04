@@ -20,7 +20,7 @@ function ws_menu_control_submit($window_name, $form='') {
 
 
     $html .= <<<EOL
-    <div style="float:left;margin-top: 0px;"  onMouseOver="ona_menu_closedown();">
+    <div style="float:left;margin-top: 0px;" title="Click to close menu" onclick="ona_menu_closedown();">
         <img style="vertical-align: bottom;" src="{$images}/silk/bullet_delete.png" border="0" />
     </div>
 EOL;

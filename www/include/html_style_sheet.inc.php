@@ -92,7 +92,7 @@ a:hover      { cursor: pointer; text-decoration: underline; }
 
 /* ---------------  Used in the Site ---------------- */
 
-/* Bar with Nav Links at the top (this first one is for IE only)*/
+/* Bar with Nav Links at the top */
 .bar {
     height:25px;
     background:{$color['bar_bg']};
@@ -133,12 +133,15 @@ a:hover      { cursor: pointer; text-decoration: underline; }
     float:left;
     max-height: 25px;
     vertical-align: middle;
+
 }
 
 .bar-right {
     float:right;
     text-align:right;
     vertical-align: middle;
+    max-height: 23px;
+width: 200px;
 }
 
 /* The body of the page */
@@ -315,7 +318,7 @@ a.linkact img      { padding-right: 4px; }
     color: {$color['menu_item_text']};
     vertical-align: middle;
     margin: 0px;
-    padding: 2px 4px;
+    padding-left: 4px;
 }
 
 .asearch-line {
@@ -368,8 +371,8 @@ div.wwTT_ona
     font-weight: bold;
     font-size: 13px;
     font-family: "Trebuchet MS", sans-serif;
-    left: 0;
-    top: 0;
+    left: 0px;
+    top: 0px;
     padding: 4px;
     position: absolute;
     text-align: left;
@@ -399,13 +402,37 @@ div.wwTT_ona p
     -moz-opacity: 1;
 }
 
+div.wwTT_login {
+    background-color: #D3DBFF;
+    color: #FFFFFF;
+    font-family: "Trebuchet MS", sans-serif;
+    font-size: small;
+    position: absolute;
+    text-align: left;
+    z-index: 20;
+    padding: 4px;
+    padding-right: 6px;
+    border-radius-bottomleft: 4px;
+    border-radius-bottomright: 4px;
+    -moz-border-radius-bottomleft: 4px;
+    -webkit-border-radius-bottomleft: 4px;
+    -moz-border-radius-bottomright: 4px;
+    -webkit-border-radius-bottomright: 4px;
+    border-left: 1px solid #000000;
+    border-right: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+    right: 10px;
+    top: 1px;
+    float: right;
+}
+
 /* Quick Filter Style */
 div.wwTT_qf {
     background-color: #A6C3F5;
     color: #FFFFFF;
     font-family: "Trebuchet MS", sans-serif;
-    left: 0;
-    top: 0;
+    left: 0px;
+    top: 0px;
     position: absolute;
     text-align: left;
     z-index: 20;
