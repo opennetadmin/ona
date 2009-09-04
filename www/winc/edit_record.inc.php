@@ -110,6 +110,7 @@ function ws_editor($window_name, $form='') {
     // Set the window title:
     if ($dns_record['id']) {
         $typedisable = 'disabled="1"';
+        $auto_ptr_checked = '';
         $window['title'] = "Edit DNS Record";
         $window['js'] .= "el('record_type_select').onchange('fake event');updatednsinfo('{$window_name}');el('set_hostname_{$window_name}').focus();";
         // If you are editing and there is no ttl set, use the one from the domain.
@@ -122,6 +123,7 @@ function ws_editor($window_name, $form='') {
         if (strlen($form['ip_addr']) > 1) $interface['ip_addr'] = ip_mangle($form['ip_addr'], 'dotted');
         if (strlen($form['hostname']) > 1) $dns_record['name'] = $form['hostname'];
     } else {
+        $auto_ptr_checked = 'checked="1"';
         $window['title'] = "Add DNS Record";
         $dns_record['srv_pri'] = 0;
         $dns_record['srv_weight'] = 0;
@@ -400,7 +402,7 @@ EOL;
 
             <tr id="autoptr_container">
                 <td align="right" nowrap="true">
-                    Auto create PTR
+                    Create PTR
                 </td>
                 <td class="padding" align="left" width="100%" nowrap>
                     <input
@@ -408,7 +410,7 @@ EOL;
                         name="set_addptr"
                         alt="Automaticaly create PTR record"
                         type="checkbox"
-                        checked="1"
+                        {$auto_ptr_checked}
                         {$ptr_readonly}
                         onchange="updatednsinfo('{$window_name}');"
                     />{$hasptr_msg}
@@ -668,6 +670,8 @@ function ws_save($window_name, $form='') {
         }
     }
 
+    $form['set_addptr'] = sanitize_YN($form['set_addptr'], 'N');
+
     // Set the effective date to 0 to disable
     if ($form['disable']) $form['set_ebegin'] = 0;
 
@@ -677,8 +681,6 @@ function ws_save($window_name, $form='') {
     if (!$form['dns_id']) {
         $module = 'add';
 
-        $form['set_addptr'] = sanitize_YN($form['set_addptr'], 'N');
-
         // options
         $form['domain'] = $form['set_domain'];
         $form['name'] = $form['set_name'] . '.' . $form['set_domain']; unset($form['set_name']); unset($form['set_domain']);
@@ -687,7 +689,7 @@ function ws_save($window_name, $form='') {
         $form['notes'] = $form['set_notes']; unset($form['set_notes']);
         $form['ip'] = $form['set_ip']; unset($form['set_ip']);
         $form['ttl'] = $form['set_ttl']; unset($form['set_ttl']);
-        $form['addptr'] = $form['set_addptr'];
+        $form['addptr'] = $form['set_addptr']; unset($form['set_addptr']);
 
         // if this is a cname. then set the pointsto option
         if ($form['type'] == 'CNAME' or $form['type'] == 'MX' or $form['type'] == 'NS' or $form['type'] == 'SRV') $form['pointsto'] = $form['set_pointsto'];
