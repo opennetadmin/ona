@@ -49,8 +49,8 @@ function ws_display($window_name, $form='') {
     }
 
     // Find the primary_master host to see if it is valid
-    list($status,$rows,$primaster_host) = ona_find_host($record['primary_master']);
-    if (!$rows or $status) $not_a_primaster = 1;
+    list($status,$rows,$primaster_host) = ona_find_dns_record($record['primary_master']);
+    if ($primaster_host['id'] === 0) $not_a_primaster = 1;
 
     $style['content_box'] = <<<EOL
         margin: 10px 20px;
@@ -139,7 +139,7 @@ EOL;
 
     if ($record['primary_master']) {
         if ($not_a_primaster) {
-            $record['primary_master'] = "<span style='background-color: #FFDDDD;' title='INFO: This FQDN is not defined in the database as a host.'><img src='{$images}/silk/error.png' border='0'> {$record['primary_master']}</span>";
+            $record['primary_master'] = "<span style='background-color: #FFDDDD;' title='INFO: This FQDN is not defined in the database.'><img src='{$images}/silk/error.png' border='0'> {$record['primary_master']}</span>";
         }
         $html .= <<<EOL
             <tr>
