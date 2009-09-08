@@ -213,7 +213,7 @@ function domain_server_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => domain_server_del({$options}) called", 3);
 
@@ -288,6 +288,7 @@ EOM
 
     // Test that there are no NS records for this pair
     // ASSUMPTION: MP this will always be just one record??
+    // depending on how the user has their NS records set up, we may not find anything.
     list ($status, $dnsrows, $dnsrec) =
         db_get_record(
             $onadb,
@@ -314,16 +315,18 @@ EOM
             return(array(9, $self['error'] . "\n"));
         }
 
-        // Run the module to delete the associated NS record
-        list($status, $output) = run_module('dns_record_del', array('name' => $dnsrec['id'], 'type' => 'NS', 'commit' => 'Y'));
-        if ($status) {
-            $self['error'] = "ERROR => domain_server_del() NS record delete failed:" . $output;
-            printmsg($self['error'],0);
-            return(array(9, $self['error'] . "\n"));
-        }
-        else {
-            // add the output to self error for display
-            $add_to_error = $output;
+        // Run the module to delete the associated NS record.. Only if we found a dns record for NS
+        if ($dnsrec['id']) {
+            list($status, $output) = run_module('dns_record_del', array('name' => $dnsrec['id'], 'type' => 'NS', 'commit' => 'Y'));
+            if ($status) {
+                $self['error'] = "ERROR => domain_server_del() NS record delete failed:" . $output;
+                printmsg($self['error'],0);
+                return(array(9, $self['error'] . "\n"));
+            }
+            else {
+                // add the output to self error for display
+                $add_to_error = $output;
+            }
         }
 
         // Return the success notice
@@ -343,7 +346,7 @@ EOM
 EOL;
 
     if ($dnsrows) {
-        $text .= "    Removing related NS record.\n";
+        $text .= "    Removing related NS record, if any. Please double check your NS records for this domain.\n";
     }
 
     return(array(6, $text));
