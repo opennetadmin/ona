@@ -68,6 +68,18 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
+    // DNS RECORD note
+    if ($form['notes']) {
+        $where .= $and . "notes LIKE " . $onadb->qstr('%'.$form['notes'].'%');
+        $and = " AND ";
+    }
+
+    // DNS RECORD TYPE
+    if ($form['dnstype']) {
+        $where .= $and . "type = " . $onadb->qstr($form['dnstype']);
+        $and = " AND ";
+    }
+
     // HOSTNAME
     if ($form['hostname']) {
         $where .= $and . "id IN (SELECT id " .
@@ -109,7 +121,7 @@ function ws_display_list($window_name, $form='') {
         $ip_end = ip_mangle($ip_end, 'numeric');
         if ($ip != -1 and $ip_end != -1) {
             // We do a sub-select to find interface id's between the specified ranges
-            $where .= $and . "id IN ( SELECT host_id " .
+            $where .= $and . "interface_id IN ( SELECT id " .
                              "        FROM interfaces " .
                              "        WHERE ip_addr >= " . $onadb->qstr($ip) . " AND ip_addr <= " . $onadb->qstr($ip_end) . " )";
             $and = " AND ";
@@ -120,7 +132,10 @@ function ws_display_list($window_name, $form='') {
 
 
 
-
+    // display a nice message when we dont find all the records
+    if ($where == '' and $form['content_id'] == 'search_results_list') {
+        $js .= "el('search_results_msg').innerHTML = 'Unable to find DNS records matching your query, showing all records';";
+    }
 
     // Wild card .. if $while is still empty, add a 'ID > 0' to it so you see everything.
     if ($where == '')

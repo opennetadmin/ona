@@ -839,6 +839,9 @@ function suggest_domain_server_edit($q, $el_input, $el_suggest) {
 function suggest_set_domain_edit_record($q, $el_input, $el_suggest) {
     return(suggest_domain($q, $el_input, $el_suggest));
 }
+function suggest_dns_domain($q, $el_input, $el_suggest) {
+    return(suggest_domain($q, $el_input, $el_suggest));
+}
 
 
 
@@ -979,7 +982,9 @@ function suggest_set_ip_edit_interface($q, $el_input, $el_suggest) {
 function suggest_natip_qf($q, $el_input, $el_suggest) {
     return(suggest_ip($q, $el_input, $el_suggest));
 }
-
+function suggest_dns_ip($q, $el_input, $el_suggest) {
+    return(suggest_ip($q, $el_input, $el_suggest));
+}
 
 
 //////////////////////////////////////////////////////////////////////////////

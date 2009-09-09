@@ -61,6 +61,10 @@ function ws_search_results_submit($window_name, $form='') {
                 Hosts <span id="{$form_id}_hosts_count"></span>
             </td>
 
+            <td id="{$form_id}_records_tab" class="table-tab-inactive" onClick="xajax_window_submit('{$window_name}', 'form_id=>{$form_id},tab=>records', 'change_tab');">
+                DNS records <span id="{$form_id}_records_count"></span>
+            </td>
+
             <td style="vertical-align: middle;" class="padding" nowrap="true">
                 <img id="adv_search_img" src="{$min_img}" />
                 <span id="adv_search_div_toggle"
@@ -316,6 +320,88 @@ function ws_search_results_submit($window_name, $form='') {
 
 
 
+    <!-- DNS record Search Tab -->
+    <form id="dns_record_search_form">
+    <input type="hidden" name="search_form_id" value="dns_record_search_form">
+    <table id="records_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
+
+
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>H</u>ostname
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="records_field1" name="hostname" type="text" class="edit" size="35" accesskey="h" value="{$form['hostname']}" />
+            <div id="suggest_hostname" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="asearch-line">
+            Subdomain (<u>z</u>one)
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="dns_domain" name="domain" type="text" class="edit" size="35" accesskey="z" value="{$form['domain']}" />
+            <div id="suggest_dns_domain" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="asearch-line">
+            Type
+        </td>
+        <td align="left" class="asearch-line">
+            <select id="dnstype" name="dnstype" class="edit" accesskey="u" >
+                <option></option>
+                <option>A</option>
+                <option>CNAME</option>
+                <option>NS</option>
+                <option>PTR</option>
+                <option>MX</option>
+                <option>SRV</option>
+                <option>TXT</option>
+            </select>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>I</u>P Address
+        </td>
+        <td align="left" class="asearch-line" nowrap="true">
+            <input id="dns_ip" name="ip" type="text" class="edit" size="15" accesskey="i" value="{$form['ip']}" />
+            <div id="suggest_dns_ip" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="asearch-line">
+            <u>N</u>otes
+        </td>
+        <td align="left" class="asearch-line">
+            <input id="notes" name="notes" type="text" class="edit" size="17" accesskey="n" value="{$form['notes']}" />
+            <div id="suggest_notes" class="suggest"></div>
+        </td>
+    </tr>
+
+
+    <tr>
+        <td align="right" class="asearch-line">
+            &nbsp;
+        </td>
+        <td align="right" class="asearch-line">
+            <input class="button" type="button" name="clear" value="Clear" onClick="clearElements('dns_record_search_form');">
+            <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('dns_record_search_form'));">
+        </td>
+    </tr>
+
+    </table>
+    </form>
+
+    <!-- END DNS record Search Tab -->
+
+
+
     <!-- subnet Search Tab -->
     <form id="subnet_search_form">
     <input type="hidden" name="search_form_id" value="subnet_search_form">
@@ -417,6 +503,10 @@ EOL;
            $tab = 'vlan_campus';
            break;
 
+        case 'dns_record_search_form':
+           $tab = 'records';
+           break;
+
         case 'qsearch_form':
            // If the quick search begins with a "/" it's a command
            if (strpos($form['q'], '/') === 0) {
@@ -460,8 +550,10 @@ EOL;
 
         suggest_setup('hosts_field1', 'suggest_hostname');
         suggest_setup('domain',     'suggest_domain');
+        suggest_setup('dns_domain', 'suggest_dns_domain');
         suggest_setup('mac',      'suggest_mac');
         suggest_setup('ip',       'suggest_ip');
+        suggest_setup('dns_ip',   'suggest_dns_ip');
         suggest_setup('ip_thru',  'suggest_ip_thru');
         suggest_setup('notes',    'suggest_notes');
         suggest_setup('ip_subnet', 'suggest_ip_subnet');
@@ -610,15 +702,6 @@ function qsearch_command($q) {
             $_SESSION['search_results_per_page'] = $q;
             $js .= "alert('Lists will now display {$q} rows.');";
         }
-    }
-
-    // Custom backgrounds
-    if (strpos($q, 'bg ') === 0) {
-        $q = str_replace('bg ', '', $q);
-        $js .= "el('content_table').style.backgroundRepeat = 'no-repeat';";
-        $js .= "el('content_table').style.backgroundImage = 'url(\'{$q}\')';";
-        setcookie("pref_bg_url", $q, time()+63072000);
-        setcookie("pref_bg_repeat", 'no-repeat', time()+63072000);
     }
 
     // Reverse text flow
