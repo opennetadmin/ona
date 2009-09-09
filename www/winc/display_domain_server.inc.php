@@ -216,7 +216,12 @@ EOL;
 EOL;
     }
 
-    $html .= "    </div>";
+    $html .= <<<EOL
+    </div>
+
+    <div id="confoutputdiv" style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;overflow:hidden;width: 100px;'><pre style='font-family: monospace;overflow-y:auto;' id="confoutput"><center>Generating configuration...</center><br>{$conf['loading_icon']}</pre></div>
+
+EOL;
 
     $js .= <<<EOL
         /* Setup the quick filter */
@@ -225,26 +230,11 @@ EOL;
 
         /* Tell the browser to load/display the list */
         xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display_list');
-EOL;
 
-    // MP: This could be slow depending on the size of the database.  maybe make it a button.. having no build_dns_type turns it off
-    // It expects to be passed the domain name as domain= to the module
-    if ($conf['build_dns_type'] && auth('dns_record_add',$debug_val)) {
-        switch (strtolower($conf['build_dns_type'])) {
-            case "bind":
-                $dns_module_name = 'build_bind_conf';
-                break;
-            case "tinydns":
-                $dns_module_name = 'build_tinydns_conf';
-                break;
-        }
-        list($status, $output) = run_module("{$dns_module_name}", array('server' => $record['fqdn'],'path' => 'GUI-only-path'));
-        // If the module returned an error code display a warning
-        if (!$status) {
-            $html .= "<div id=\"dnsoutputdiv\" style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;overflow:hidden;width: 100px;'><pre style='font-family: monospace;overflow-y:auto;'>{$output}</pre></div>";
-            $js .= "setTimeout('el(\'dnsoutputdiv\').style.width = el(\'{$form_id}_table\').offsetWidth-8+\'px\';',500);";
-        }
-    }
+        xajax_window_submit('{$window_name}', 'fqdn=>{$record['fqdn']}', 'display_config');
+
+        setTimeout('el(\'confoutputdiv\').style.width = el(\'{$form_id}_table\').offsetWidth-8+\'px\';',900);
+EOL;
 
 
     // Insert the new html into the window
@@ -254,6 +244,56 @@ EOL;
     if ($js) { $response->addScript($js); }
     return($response->getXML());
 }
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: ws_display_config()
+//
+// Description:
+//   generates the configuration from the database.
+//////////////////////////////////////////////////////////////////////////////
+function ws_display_config($window_name, $form='') {
+    global $conf;
+    $html = '';
+    $js = '';
+
+    // If the user supplied an array in a string, transform it into an array
+    $form = parse_options_string($form);
+
+    // MP: This could be slow depending on the size of the database.  maybe make it a button.. having no build_dns_type turns it off
+    // It expects to be passed the domain name as domain= to the module
+    if ($conf['build_dns_type'] && auth('dns_record_add',$debug_val)) {
+        switch (strtolower($conf['build_dns_type'])) {
+            case "bind":
+                $dns_module_name = 'build_bind_domain';
+                break;
+            case "tinydns":
+                $dns_module_name = 'build_tinydns_conf';
+                break;
+        }
+        list($status, $output) = run_module("{$dns_module_name}", array('server' => $form['fqdn'],'path' => 'GUI-only-path'));
+        // Display the config if it ran ok
+        if (!$status) {
+            $html .= $output;
+        } else {
+            $html .= "There was a problem generating the configuration.";
+        }
+    }
+
+    // Insert the new html into the window
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    $response->addAssign("confoutput", "innerHTML", $html);
+    if ($js) { $response->addScript($js); }
+    return($response->getXML());
+}
+
+
+
 
 
 
