@@ -194,10 +194,10 @@ function wwTT_create() {
     tooltip.style.position = 'absolute';
     // FIXME: This should be removed someday (year) when Firefox/Mozilla no longer have this bug
     // Bug workaround: "position fixed" below is a workaround for this bug: https://bugzilla.mozilla.org/show_bug.cgi?id=167801
-    if (navigator.userAgent.indexOf('Gecko/') != -1)
-        tooltip.style.position = 'fixed';
-    tooltip.style.left = '0px';
-    tooltip.style.top = '0px';
+//     if (navigator.userAgent.indexOf('Gecko/') != -1)
+//         tooltip.style.position = 'fixed';
+    //tooltip.style.left = '0px';
+    //tooltip.style.top = '0px';
     if (wwTTobj.options.content != '')
         tooltip.innerHTML = wwTTobj.options.content;
 
