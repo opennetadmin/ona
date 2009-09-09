@@ -144,7 +144,7 @@ EOL;
         $html .= <<<EOL
             <tr>
                 <td align="right" nowrap="true"><b>Primary Master</b>&nbsp;</td>
-                <td class="padding" align="left">
+                <td class="padding" align="left" onClick="xajax_window_submit('edit_domain', xajax.getFormValues('form_domain_{$record['id']}'), 'editor');">
                     {$record['primary_master']}&nbsp;
                 </td>
             </tr>

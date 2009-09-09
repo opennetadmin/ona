@@ -72,6 +72,7 @@ function ws_editor($window_name, $form='') {
 
         suggest_setup('domain_edit',     'suggest_domain_edit');
         el('{$window_name}_edit_form').onsubmit = function() { return false; };
+        el('domain_name').focus();
 
 EOL;
 
