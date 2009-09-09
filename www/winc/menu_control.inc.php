@@ -382,6 +382,18 @@ EOL;
 EOL;
     }
 
+    if (auth('dns_record_del')) {
+        $html .= <<<EOL
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_domain', ' ', 'editor');"
+     title="Add a new DNS domain"
+ ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ />&nbsp;Add DNS domain</div>
+EOL;
+    }
+
     if (auth('vlan_add')) {
         $html .= <<<EOL
 <div class="row"
