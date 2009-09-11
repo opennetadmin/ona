@@ -194,13 +194,15 @@ function ws_display_list($window_name, $form='') {
 
         if (array_key_exists('id', $domain)) {
 
-            // We do a sub-select to find id's that match
-            $where .= $and . "h.id IN (SELECT host_id ".
-                                       "FROM interfaces " .
-                                        "WHERE id IN (" .
-                                            "( SELECT interface_id " .
-                                            "  FROM dns " .
-                                            "  WHERE domain_id = " . $onadb->qstr($domain['id']) . " )) )";
+            // Crappy way of writing the query but it makes it fast.
+            $from = "(
+SELECT distinct a.*
+from hosts as a, interfaces as i, dns as d
+where a.id = i.host_id
+and i.id = d.interface_id
+and d.domain_id = ". $onadb->qstr($domain['id']). "
+) h";
+
             $and = " AND ";
         }
     }
