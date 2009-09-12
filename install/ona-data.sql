@@ -215,7 +215,7 @@ INSERT INTO `sys_config` (`name`, `value`, `description`, `field_validation_rule
 ('suggest_max_results', '10', 'Limits the amount of rows returned by queries. (test impact of changing this first)', '', '', 1, 0),
 ('syslog', '0', 'Log via syslog, only works if debug is set to 0', '', '', 0, 0),
 ('version', 'not-set', 'Tracks current installed version, used to detect when upgrades should be done.', '', '', 0, 0),
-('upgrade_index', '7', 'Tracks current upgrade index, used to perform database upgrades.', '', '', 0, 0);
+('upgrade_index', '8', 'Tracks current upgrade index, used to perform database upgrades.', '', '', 0, 0);
 
 --
 -- Dumping data for table `users`
