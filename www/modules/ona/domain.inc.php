@@ -42,7 +42,7 @@ function domain_add($options="") {
     printmsg("DEBUG => domain_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -93,6 +93,11 @@ EOM
     if ($options['expiry'])  { $expiry  = $options['expiry']; } else { $expiry  = $conf['dns_expiry'];  }
     if ($options['minimum']) { $minimum = $options['minimum'];} else { $minimum = $conf['dns_minimum']; }
     if ($options['ttl'])     { $ttl     = $options['ttl'];}     else { $ttl     = $conf['dns_default_ttl']; }
+
+    $options['name'] = trim($options['name']);
+    $options['parent'] = trim($options['parent']);
+    $options['primary_master'] = trim($options['primary_master']);
+    $options['admin'] = trim($options['admin']);
 
     // Setup array for searching existing domains
     $exist_domain = array('name' => $options['name']);
@@ -414,7 +419,7 @@ function domain_modify($options="") {
     printmsg("DEBUG => domain_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -463,6 +468,12 @@ Modifies a DNS domain in the database
 EOM
         ));
     }
+
+    $options['domain'] = trim($options['domain']);
+    $options['set_name'] = trim($options['set_name']);
+    $options['set_parent'] = trim($options['set_parent']);
+    $options['set_primary_master'] = trim($options['set_primary_master']);
+    $options['set_admin'] = trim($options['set_admin']);
 
     $domainsearch = array();
     // setup a domain search based on name or id

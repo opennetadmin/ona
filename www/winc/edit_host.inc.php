@@ -545,6 +545,19 @@ function ws_save($window_name, $form='') {
         $form['set_host'] .= '.' . $form['set_domain'];
     }
 
+    // Do a pre check of the ptr domain so we can prompt the user properly
+    if ($module == 'add') {
+        $ipflip = ip_mangle($form['ip'],'flip');
+        $octets = explode(".",$ipflip);
+        list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+        if (!$ptrdomain['id']) {
+            printmsg("ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
+            $self['error'] = "ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa.  You could also create domains for class B or class C level reverse zones.  Click OK to open add domain dialog";
+            $response->addScript("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[3]}.in-addr.arpa', 'editor');");
+            return($response->getXML());
+        }
+    }
+
     // Run the module to ADD the HOST AND INTERFACE, or MODIFY THE HOST.
     list($status, $output) = run_module('host_'.$module, $form);
 
