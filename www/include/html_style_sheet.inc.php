@@ -122,7 +122,6 @@ a:hover      { cursor: pointer; text-decoration: underline; }
     border-radius-topright: 3px;
     -moz-border-radius-topright: 3px;
     -webkit-border-radius-topright: 3px;
-    border-radius: 3px;
     padding: 2px 8px 3px 8px;
     font-weight: bold;
     border-top: 1px solid #555555;
@@ -378,6 +377,8 @@ div.wwTT_ona
     text-align: left;
     z-index: 20;
     -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
     filter: progid:DXImageTransform.Microsoft.Alpha(opacity=87);
     -moz-opacity: .87;
     -khtml-opacity: .87;
@@ -438,6 +439,8 @@ div.wwTT_qf {
     z-index: 20;
     padding: 4px;
     -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
 }
 div.wwTT_qf .contents {
     margin: 0;
@@ -456,6 +459,8 @@ div.wwTT_int_menu
     position: absolute;
     text-align: left;
     z-index: 20;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     filter: progid:DXImageTransform.Microsoft.Alpha(opacity=87);
     -moz-opacity: .87;
@@ -514,6 +519,8 @@ div.wwTT_ca_info
     position: absolute;
     text-align: left;
     z-index: 20;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     filter: progid:DXImageTransform.Microsoft.Alpha(opacity=87);
     border: solid black 1px
