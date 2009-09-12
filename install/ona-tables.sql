@@ -175,10 +175,11 @@ CREATE TABLE `dhcp_option_entries` (
   `id` int(10) unsigned NOT NULL,
   `subnet_id` int(10) unsigned NOT NULL COMMENT 'only subnet_id or host_id can be populated, not both',
   `host_id` int(10) unsigned NOT NULL COMMENT 'if neither host or subnet id is populated then it is a global value',
+  `server_id` int(10) unsigned NOT NULL COMMENT 'DHCP entries for a specific server',
   `dhcp_option_id` int(10) unsigned NOT NULL,
   `value` varchar(127) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Assigns DHCP options to a host or subnet and gives it a valu';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Assigns DHCP options to a host or subnet and gives it a value';
 
 --
 -- Table structure for table `dhcp_options`
@@ -259,6 +260,7 @@ CREATE TABLE `dns_server_domains` (
   `host_id` int(10) unsigned NOT NULL,
   `domain_id` int(10) unsigned NOT NULL,
   `role` VARCHAR(10) NOT NULL COMMENT 'What role does this server play for this domain? master, slave, forward?',
+  `rebuild_flag` INT(1) UNSIGNED NOT NULL COMMENT 'Track if this domain needs to be rebuilt on this server',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Stores domain to DNS server relationships';
 
