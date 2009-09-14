@@ -27,7 +27,7 @@ function vlan_campus_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => vlan_campus_add({$options}) called", 3);
 
@@ -56,8 +56,9 @@ EOM
     }
 
 
-    // The formatting rule on vlan campus names is all upper and trim it
+    // The formatting rule on vlan campus names is all upper and trim it, spaces to -
     $options['name'] = strtoupper(trim($options['name']));
+    $options['name'] = preg_replace('/\s+/', '-', $options['name']);
 
     // check to see if the campus already exists
     list($status, $rows, $campus) = ona_get_vlan_campus_record(array('name' => $options['name']));
@@ -281,7 +282,7 @@ function vlan_campus_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => vlan_campus_modify({$options}) called", 3);
 
@@ -311,8 +312,10 @@ EOM
         ));
     }
 
-    // The formatting rule on vlan campus names is all upper and trim it
+    // The formatting rule on vlan campus names is all upper and trim it, spaces to -
+    $options['name'] = strtoupper(trim($options['name']));
     $options['set_name'] = strtoupper(trim($options['set_name']));
+    $options['set_name'] = preg_replace('/\s+/', '-', $options['set_name']);
 
     // If the vlan provided is numeric, check to see if it's an vlan
     if (is_numeric($options['name'])) {

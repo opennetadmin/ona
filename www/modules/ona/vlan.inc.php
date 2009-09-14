@@ -31,7 +31,7 @@ function vlan_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => vlan_add({$options}) called", 3);
 
@@ -62,9 +62,11 @@ EOM
     }
 
 
-    // The formatting rule on vlan names/campus names is all upper and trim it
+    // The formatting rule on vlan names/campus names is all upper and trim it, spaces to -
     $options['name'] = strtoupper(trim($options['name']));
+    $options['name'] = preg_replace('/\s+/', '-', $options['name']);
     $options['campus'] = strtoupper(trim($options['campus']));
+    $options['number'] = trim($options['number']);
 
     if (is_numeric($options['campus']))
         list($status, $rows, $campus) = ona_get_vlan_campus_record(array('id' => $options['campus']));
@@ -318,7 +320,7 @@ function vlan_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => vlan_modify({$options}) called", 3);
 
@@ -351,6 +353,11 @@ EOM
     }
 
 
+    // The formatting rule on vlan names/campus names is all upper and trim it, spaces to -
+    $options['set_name'] = strtoupper(trim($options['set_name']));
+    $options['set_name'] = preg_replace('/\s+/', '-', $options['set_name']);
+    $options['set_campus'] = strtoupper(trim($options['set_campus']));
+    $options['set_number'] = trim($options['set_number']);
 
     // Load the record we will be modifying
     list($status, $rows, $vlan) = ona_get_vlan_record(array('id' => $options['vlan']));
@@ -381,7 +388,7 @@ EOM
             $self['error'] = "ERROR => The VLAN {$options['set_name']} already exists on this campus!";
             return(array(4, $self['error'] . "\n"));
         }
-        $SET['name'] = $options['set_name'];
+        if ($vlan['name'] != $options['set_name']) $SET['name'] = $options['set_name'];
     }
 
     if ($options['set_number']) {
@@ -393,7 +400,7 @@ EOM
             return(array(3, $self['error'] . "\n"));
         }
         // Add the new info to $SET
-        $SET['number'] = $options['set_number'];
+        if ($vlan['number'] != $options['set_number']) $SET['number'] = $options['set_number'];
     }
 
     // FIXME: yes I'm lazy.. test that the new campus does not have the vlan name or number already on it.
@@ -437,7 +444,7 @@ EOM
         }
 
         // Add the new info to $SET
-        $SET['vlan_campus_id'] = $record['id'];
+        if ($vlan['vlan_campus_id'] != $record['id']) $SET['vlan_campus_id'] = $record['id'];
     }
 
     // Check permissions
@@ -448,12 +455,16 @@ EOM
     }
 
 
-    // Update the record
-    list($status, $rows) = db_update_record($onadb, 'vlans', array('id' => $vlan['id']), $SET);
-    if ($status or !$rows) {
-        $self['error'] = "ERROR => vlan_modify() SQL Query failed: " . $self['error'];
-        printmsg($self['error'], 0);
-        return(array(6, $self['error'] . "\n"));
+
+
+    if ($SET) {
+        // Update the record
+        list($status, $rows) = db_update_record($onadb, 'vlans', array('id' => $vlan['id']), $SET);
+        if ($status or !$rows) {
+            $self['error'] = "ERROR => vlan_modify() SQL Query failed: " . $self['error'];
+            printmsg($self['error'], 0);
+            return(array(6, $self['error'] . "\n"));
+        }
     }
 
     // Get the VLAN record after updating (logging)
