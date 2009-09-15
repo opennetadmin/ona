@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.07';
+    $version = '1.08';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -58,9 +58,6 @@ EOM
 
     // clean up what is passed in
     $options['ip'] = trim($options['ip']);
-    $options['mac'] = trim($options['mac']);
-    $options['name'] = trim($options['name']);
-    $options['natip'] = trim($options['natip']);
 
     // Set options[force] to N if it's not set
     $options['force'] = sanitize_YN($options['force'], 'N');
@@ -144,6 +141,7 @@ EOM
 
     // Remove any MAC address formatting
     if ($options['mac']) {
+        $options['mac'] = trim($options['mac']);
         $orig_mac = $options['mac'];
         $options['mac'] = mac_mangle($options['mac'], 1);
         if ($options['mac'] == -1) {
@@ -198,8 +196,8 @@ EOM
                 'subnet_id'                => $subnet['id'],
                 'ip_addr'                  => $options['ip'],
                 'mac_addr'                 => $options['mac'],
-                'name'                     => $options['name'],
-                'description'              => $options['description']
+                'name'                     => trim($options['name']),
+                'description'              => trim($options['description'])
             )
         );
     if ($status or !$rows) {
@@ -264,7 +262,7 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.08';
+    $version = '1.09';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -304,10 +302,6 @@ EOM
         ));
     }
 
-    // clean up what is passed in
-    $options['set_ip'] = trim($options['set_ip']);
-    $options['set_mac'] = trim($options['set_mac']);
-    $options['set_name'] = trim($options['set_name']);
 
     // They provided a interface ID, IP address, interface name, or MAC address
     if ($options['interface']) {
@@ -349,6 +343,7 @@ EOM
 
     // Setting an IP address?
     if ($options['set_ip']) {
+        $options['set_ip'] = trim($options['set_ip']);
         $orig_ip = $options['set_ip'];
         $options['set_ip'] = ip_mangle($options['set_ip'], 'numeric');
         if ($options['set_ip'] == -1) {
@@ -465,6 +460,7 @@ EOM
     // Setting an MAC address?
     if (array_key_exists('set_mac', $options)) {
         if ($options['set_mac']) {  // allow null mac addresses (to unset one for example)
+            $options['set_mac'] = trim($options['set_mac']);
             $orig_mac = $options['set_mac'];
             $options['set_mac'] = mac_mangle($options['set_mac'], 1);
             if ($options['set_mac'] == -1) {
@@ -498,7 +494,7 @@ EOM
 
     // Set options[set_name]?
     if (array_key_exists('set_name', $options) && $interface['name'] != $options['set_name']) {
-        $SET['name'] = $options['set_name'];
+        $SET['name'] = trim($options['set_name']);
     }
 
     // Set options[set_description]?
