@@ -1421,12 +1421,22 @@ function run_module($module='', $options='', $transaction=1) {
         }
     }
 
+    // get the options as an array so we can look for logging info
+    $local_options = parse_options($options);
+
+    // If the user passes in an option called 'module_loglevel' then use it as the run module output level
+    // otherwise default it to 0 so it will print out as normal.
+    $log_level = 0;
+    if ($local_options['module_loglevel']) {
+        $log_level = $local_options['module_loglevel'];
+    }
+
     // Remove config info as it can be huge and could have sensitive info in it.
     // This could cause issues since I"m doing & as an anchor at the end.  see how it goes.
     // The module that is called could also display this information depending on debug level
     $options_string = preg_replace("/config=.*&/", '', $options_string);
 
-    printmsg("INFO => Running module: {$module} options: {$options_string}", 0);
+    printmsg("INFO => Running module: {$module} options: {$options_string}", $log_level);
 
     // Load the module
     if (load_module($module)) { return(array(1, $self['error'] . "\n")); }
