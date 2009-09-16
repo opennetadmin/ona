@@ -6,7 +6,10 @@ $include = $base . '/include';
 if (!is_dir($include)) { print "ERROR => Couldn't find include folder!\n"; exit; }
 require_once($base . '/config/config.inc.php');
 /* --------------------------------------------------------- */
-//
+// MP: Since we know ONA will generate a ton of notice level errors, lets turn them off here
+// I dont believe this will be impactful to anyone. keep an eye out for it however.
+error_reporting (E_ALL ^ E_NOTICE);
+
 //
 //
 //

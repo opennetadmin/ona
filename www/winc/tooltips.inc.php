@@ -616,7 +616,7 @@ function ws_logingo($window_name, $form='') {
 
     if ($form['standalone']) $type='Standalone';
 
-    printmsg("INFO => [{$type}] Attempting login as " . $form['onausername'] ."/". $form['onapassword'], 0);
+    printmsg("INFO => [{$type}] Attempting login as " . $form['onausername'] ."/". $form['onapassword'], 4);
 
     list($status, $js) = get_authentication($form['onausername'],$form['onapassword']);
 
@@ -624,6 +624,7 @@ function ws_logingo($window_name, $form='') {
         get_perms($form['onausername']);
         if ($form['standalone'] == 'standalone') $js .= "window.location='{$http}{$baseURL}/';";
         $js .= "el('loggedin_user').innerHTML = '{$_SESSION['ona']['auth']['user']['username']}';";
+        printmsg("INFO => [{$type}] {$_SESSION['ona']['auth']['user']['username']} has logged in",0);
     }
 
     $response = new xajaxResponse();
