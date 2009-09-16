@@ -530,9 +530,9 @@ EOM
 
     // Return the success notice
     $text = format_array($SET);
-    $self['error'] = "INFO => Interface UPDATED:{$interface['id']}: ". ip_mangle($new_int['ip_addr'],'dotted');
+    $self['error'] = "INFO => Interface UPDATED:{$interface['id']}: {$new_int['ip_addr_text']}";
 
-    $log_msg = "INFO => Interface UPDATED:{$interface['id']}: ";
+    $log_msg = "INFO => Interface UPDATED:{$interface['id']}:{$new_int['ip_addr_text']}: ";
     $more="";
     foreach(array_keys($original_interface) as $key) {
         if($original_interface[$key] != $new_interface[$key]) {
@@ -542,10 +542,7 @@ EOM
     }
 
     // only print to logfile if a change has been made to the record
-    if($more != '') {
-        printmsg($self['error'], 0);
-        printmsg($log_msg, 0);
-    }
+    if($more != '') printmsg($log_msg, 0);
 
     return(array(0, $self['error'] . "\n{$text}\n"));
 }

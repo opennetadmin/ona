@@ -30,7 +30,7 @@ function get_authentication($login_name='', $login_password='') {
     }
 
     // If the password is good.. return success.
-    printmsg("INFO => Authentication Successful for {$login_name}", 0);
+    printmsg("INFO => Authentication Successful for {$login_name}", 1);
     return(array($exit_status, $js));
 }
 
@@ -105,7 +105,7 @@ function get_perms($login_name='') {
     $_SESSION['ona']['auth']['perms']  = $permissions;
 
     // Log that the user logged in
-    printmsg("INFO => Authorization successful for " . $login_name, 0);
+    printmsg("INFO => Loaded permissions for " . $login_name, 2);
     return(0);
 
 }
