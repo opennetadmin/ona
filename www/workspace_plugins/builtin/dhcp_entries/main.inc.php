@@ -50,11 +50,16 @@ if ($rows) {
     foreach ($dhcp_entries as $entry) {
         list($status, $rows, $dhcp_type) = ona_get_dhcp_option_entry_record(array('id' => $entry['id']));
         foreach(array_keys($dhcp_type) as $key) { $dhcp_type[$key] = htmlentities($dhcp_type[$key], ENT_QUOTES); }
-
+        $rowstyle = '';
         if ($dhcp_type['display_name'] == "Default Gateway") { $hasgateway = 1;}
 
+        // check that the hostname value matches the primary dns name.. they should be the same. warn only
+        if ($kind == 'host' and $dhcp_type['display_name'] == "Host Name" and (strpos($record['fqdn'],$dhcp_type['value'].'.') != 0 or strpos($record['fqdn'],$dhcp_type['value'].'.') === FALSE)) {
+            $rowstyle = 'style="background-color: #F7FF5E;" title="Hostname value does not match the primary DNS name"';
+        }
+
         $modbodyhtml .= <<<EOL
-            <tr onMouseOver="this.className='row-highlight';"
+            <tr {$rowstyle} onMouseOver="this.className='row-highlight';"
                 onMouseOut="this.className='row-normal';">
 
                 <td align="left" nowrap="true" title="DHCP Option number: {$dhcp_type['number']}">

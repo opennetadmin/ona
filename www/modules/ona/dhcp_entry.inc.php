@@ -83,7 +83,7 @@ Adds a dhcp entry into the database pointing to the specified identifier
   Identifier (pick one):
     host=HOSTNAME[.DOMAIN] or ID            host identifier to add to
     subnet=NAME or ID                       subnet identifier to add to
-    server=NAME[.DOMAIN] or ID              server identifier to add to -DISABLED OPTION-
+    server=NAME[.DOMAIN] or ID              server identifier to add to
     global                                  global entry for all subnets/hosts etc
 
   Options (both required):
@@ -270,7 +270,7 @@ function dhcp_entry_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => dhcp_entry_del({$options}) called", 3);
 
@@ -306,6 +306,7 @@ EOM
 
     // Sanitize options[commit] (default is no)
     $options['commit'] = sanitize_YN($options['commit'], 'N');
+    $desc = 'Global level';
 
     // If the option provided is numeric, check to see if it exists
     if (is_numeric($options['id'])) {
