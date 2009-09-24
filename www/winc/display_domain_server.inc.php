@@ -269,7 +269,7 @@ function ws_display_config($window_name, $form='') {
     if ($conf['build_dns_type'] && auth('dns_record_add',$debug_val)) {
         switch (strtolower($conf['build_dns_type'])) {
             case "bind":
-                $dns_module_name = 'build_bind_domain';
+                $dns_module_name = 'build_bind_conf';
                 break;
             case "tinydns":
                 $dns_module_name = 'build_tinydns_conf';
