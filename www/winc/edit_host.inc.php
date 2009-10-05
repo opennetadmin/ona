@@ -36,7 +36,7 @@ function ws_editor($window_name, $form='') {
     $form = parse_options_string($form);
 
     // Load an existing host record (and associated info) if $form is a host_id
-    $host = array('fqdn' => '.');
+    $host = array('fqdn' => '.','domain_fqdn' => $conf['dns_defaultdomain']);
     $interface = array();
     if (is_numeric($form['host_id'])) {
         list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']));
@@ -68,6 +68,8 @@ function ws_editor($window_name, $form='') {
         $host['domain_fqdn'] = $domain['fqdn'];
     }
 
+    // If we dont have a domain_fqdn yet.. lets use the system default domain
+    if (!$host['domain_fqdn']) $host['domain_fqdn'] = $conf['dns_defaultdomain'];
 
     // Build a device_types list
     list($status, $rows, $records) = db_get_records($onadb, 'device_types', 'id >= 1');
