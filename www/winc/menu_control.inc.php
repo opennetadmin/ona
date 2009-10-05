@@ -322,6 +322,14 @@ function get_html_menu_button_admin() {
     ><img style="vertical-align: middle;" src="{$images}/silk/plugin_edit.png" border="0"
     />&nbsp;Manage Plugins</div>
 
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="ona_menu_closedown(); xajax_window_submit('work_space', 'xajax_window_submit(\'display_ona_db_logs\', \'form=>fake\', \'display\')');"
+     title="Display DB logs"
+ ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
+ />&nbsp;Display DB logs</div>
+
 EOL;
     }
 
@@ -346,7 +354,7 @@ function get_html_menu_button_edit() {
 
     $html = $js = '';
 
-    if (auth('subnet_add')) {
+    if (auth('subnet_add',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -358,7 +366,7 @@ function get_html_menu_button_edit() {
 EOL;
     }
 
-    if (auth('host_modify') and auth('host_add')) {
+    if (auth('host_modify',3) and auth('host_add',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -370,7 +378,7 @@ EOL;
 EOL;
     }
 
-    if (auth('host_modify') and auth('host_add')) {
+    if (auth('host_modify',3) and auth('host_add',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -382,7 +390,7 @@ EOL;
 EOL;
     }
 
-    if (auth('dns_record_del')) {
+    if (auth('dns_record_del',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -394,7 +402,7 @@ EOL;
 EOL;
     }
 
-    if (auth('vlan_add')) {
+    if (auth('vlan_add',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -406,7 +414,7 @@ EOL;
 EOL;
     }
 
-    if (auth('vlan_add')) {
+    if (auth('vlan_add',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -418,7 +426,7 @@ EOL;
 EOL;
     }
 
-    if (auth('subnet_add')) {
+    if (auth('subnet_add',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -430,7 +438,7 @@ EOL;
 EOL;
     }
 
-    if (auth('location_add')) {
+    if (auth('location_add',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -544,7 +552,7 @@ function get_html_menu_button_view() {
     $html = $js = '';
 
 
-    if (auth('host_del')) {
+    if (auth('host_del',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -557,7 +565,7 @@ function get_html_menu_button_view() {
 EOL;
     }
 
-    if (auth('dns_record_add')) {
+    if (auth('dns_record_add',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -570,7 +578,7 @@ EOL;
 EOL;
     }
 
-    if (auth('dns_record_add')) {
+    if (auth('dns_record_add',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"
@@ -583,7 +591,7 @@ EOL;
 EOL;
     }
 
-    if (auth('advanced')) {
+    if (auth('advanced',3)) {
         $html .= <<<EOL
 <div class="row"
      onMouseOver="this.className='hovered';"

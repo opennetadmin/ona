@@ -745,7 +745,7 @@ complex DNS messes for themselves.
     );
     if ($status or !$rows) {
         $self['error'] = "ERROR => dns_record_add() SQL Query failed adding dns record: " . $self['error'];
-        printmsg($self['error'], 0);
+        printmsg($self['error'], 1);
         return(array(6, $self['error'] . "\n"));
     }
 
@@ -753,13 +753,13 @@ complex DNS messes for themselves.
 
     // If it is an A record and they have specified to auto add the PTR record for it.
     if ($options['addptr'] == 'Y' and $options['type'] == 'A') {
-        printmsg("DEBUG => Auto adding a PTR record for {$options['name']}.", 0);
+        printmsg("DEBUG => Auto adding a PTR record for {$options['name']}.", 4);
         // Run dns_record_add as a PTR type
         list($status, $output) = run_module('dns_record_add', array('name' => $options['name'],'domain' => $domain['fqdn'],'ip' => $options['ip'],'ebegin' => $options['ebegin'],'type' => 'PTR'));
-        if ($status)
+        if ($status) {
             return(array($status, $output));
-        //$text .= $output;
-        printmsg($text,0);
+            printmsg($output,3);
+        }
     }
 
     // TRIGGER: Since we are adding a new record, lets mark the domain for rebuild on its servers
