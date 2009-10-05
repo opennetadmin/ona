@@ -15,7 +15,7 @@ $window['js'] .= <<<EOL
 
 EOL;
 
-global $conf;
+global $conf, $self;
 
 $output['ona_username']    = $_SESSION['ona']['auth']['user']['username'];
 $output['ona_user_level']  = $_SESSION['ona']['auth']['user']['level'];
@@ -200,6 +200,19 @@ $window['html'] .= <<<EOL
     </table>
     </form>
     </span>
+
+    <div style="background-color: {$color['window_content_bg']};">
+    <table style="padding: 25px;" cellspacing="0" border="0" cellpadding="0">
+    <tr><td class="padding" style="font-weight: bold;" align="center"  colspan="3"><u>Current DB connection info</u></td></tr>
+    <tr><td class="padding" style="font-weight: bold;">Database Host</td><td class="padding">{$self['db_host']}</td></tr>
+    <tr><td class="padding" style="font-weight: bold;">Database Type</td><td class="padding">{$self['db_type']}</td></tr>
+    <tr><td class="padding" style="font-weight: bold;">Database Name</td><td class="padding">{$self['db_database']}</td></tr>
+    <tr><td class="padding" style="font-weight: bold;">Database User</td><td class="padding">{$self['db_login']}</td></tr>
+    <tr><td class="padding" style="font-weight: bold;">Database Context</td><td class="padding">{$self['context_name']}</td></tr>
+    <tr><td class="padding" style="font-weight: bold;">Database Context Desc</td><td class="padding">{$self['context_desc']}</td></tr>
+    <tr><td class="padding" style="font-weight: bold;">Database Context Color</td><td class="padding" style="background-color: {$self['context_color']}">{$self['context_color']}</td></tr>
+    </table>
+    </div>
 
 
 EOL;
