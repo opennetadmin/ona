@@ -75,11 +75,11 @@ $ADODB_FETCH_MODE = ADODB_FETCH_ASSOC;
 
 
 ///////////////////////////////////////////////////////////////////////
-//  Function: db_pconnect($context_type, $contect_name)
+//  Function: db_pconnect($context_type, $context_name)
 //
 //  Establishes a persistent connection to the database as specified
-//  by $context_type and $context_name.  Uses the global DB context
-//  definitions stored in $db_context().
+//  by $context_name.  Uses the global DB context
+//  definitions stored in $ona_contexts().
 //  This function will try up to 5 times to get the connection working.
 //  This was a necessary function, because quite regularly we were
 //  getting Oracle errors when ADODB/PHP thought it was connected to
@@ -87,66 +87,79 @@ $ADODB_FETCH_MODE = ADODB_FETCH_ASSOC;
 //
 //  Returns an ADODB database handle object
 ///////////////////////////////////////////////////////////////////////
-function db_pconnect($type, $name) {
-    global $conf;
-    global $self;
+function db_pconnect($type, $context_name) {
+    global $conf, $base, $self, $ona_contexts;
     global $db_context;
 
-    // Get info from $db_context[]
-    $which = 'primary';
-    $self['db_type']     = $db_context[$type] [$name] [$which] ['db_type'];
-    $self['db_host']     = $db_context[$type] [$name] [$which] ['db_host'];
-    $self['db_login']    = $db_context[$type] [$name] [$which] ['db_login'];
-    $self['db_passwd']   = $db_context[$type] [$name] [$which] ['db_passwd'];
-    $self['db_database'] = $db_context[$type] [$name] [$which] ['db_database'];
-    $self['db_debug']    = $db_context[$type] [$name] [$which] ['db_debug'];
 
-    // Create a new ADODB connection object
-    $object = NewADOConnection($self['db_type']);
-    $object->debug = $self['db_debug'];
-
-    // Try connecting to the primary server
-    $connected = 0;
-    for ($a = 1; $a <= 5 and $connected == 0; $a++) {
-        $ok1 = $object->PConnect($self['db_host'], $self['db_login'], $self['db_passwd'], $self['db_database']);
-        $ok2 = $object->IsConnected();
-        $ok3 = $object->ErrorMsg();
-
-        // If the connection didn't work, bail.
-        if (!$ok1 or !$ok2 or $ok3)
-            printmsg("ERROR => {$self['db_type']} DB connection failed: " . $object->ErrorMsg(), 1);
-
-        // Otherwise return the object.
-        else
-            return $object;
+    // Get info from old $db_context[] array if ona_contexts does not exist
+    // this is transitional, hopefully I can remove this part soon.
+    if (!is_array($ona_contexts) and is_array($db_context)) {
+        $type='mysqlt';
+        $ona_contexts[$context_name]['databases']['0']['db_type']     = $db_context[$type] [$context_name] ['primary'] ['db_type'];
+        $ona_contexts[$context_name]['databases']['0']['db_host']     = $db_context[$type] [$context_name] ['primary'] ['db_host'];
+        $ona_contexts[$context_name]['databases']['0']['db_login']    = $db_context[$type] [$context_name] ['primary'] ['db_login'];
+        $ona_contexts[$context_name]['databases']['0']['db_passwd']   = $db_context[$type] [$context_name] ['primary'] ['db_passwd'];
+        $ona_contexts[$context_name]['databases']['0']['db_database'] = $db_context[$type] [$context_name] ['primary'] ['db_database'];
+        $ona_contexts[$context_name]['databases']['0']['db_debug']    = $db_context[$type] [$context_name] ['primary'] ['db_debug'];
+        $ona_contexts[$context_name]['databases']['1']['db_type']     = $db_context[$type] [$context_name] ['secondary'] ['db_type'];
+        $ona_contexts[$context_name]['databases']['1']['db_host']     = $db_context[$type] [$context_name] ['secondary'] ['db_host'];
+        $ona_contexts[$context_name]['databases']['1']['db_login']    = $db_context[$type] [$context_name] ['secondary'] ['db_login'];
+        $ona_contexts[$context_name]['databases']['1']['db_passwd']   = $db_context[$type] [$context_name] ['secondary'] ['db_passwd'];
+        $ona_contexts[$context_name]['databases']['1']['db_database'] = $db_context[$type] [$context_name] ['secondary'] ['db_database'];
+        $ona_contexts[$context_name]['databases']['1']['db_debug']    = $db_context[$type] [$context_name] ['secondary'] ['db_debug'];
+        $ona_contexts[$context_name]['description']   = 'Default data context';
+        $ona_contexts[$context_name]['context_color'] = '#D3DBFF';
     }
 
-    // If we're not connected, try the secondary server
-    $which = 'secondary';
-    $self['db_type']     = $db_context[$type] [$name] [$which] ['db_type'];
-    $self['db_host']     = $db_context[$type] [$name] [$which] ['db_host'];
-    $self['db_login']    = $db_context[$type] [$name] [$which] ['db_login'];
-    $self['db_passwd']   = $db_context[$type] [$name] [$which] ['db_passwd'];
-    $self['db_database'] = $db_context[$type] [$name] [$which] ['db_database'];
-    $self['db_debug']    = $db_context[$type] [$name] [$which] ['db_debug'];
+    // check if the context name passed in is in our array or not
+    if (!isset($ona_contexts[$context_name])) {
+        setcookie("ona_context_name", $conf['default_context']);
+        printmsg("ERROR => Unable to find context name '{$context_name}' in the ona_contexts configuration. Reverting back to '{$conf['default_context']}' context.",0);
+        echo "ERROR => Unable to find context name '{$context_name}' in the ona_contexts configuration.  Please check {$base}/local/config/database_settings.inc.php is configured properly.  Reverting back to '{$conf['default_context']}' context.";
+        return $object;
+    }
 
-    for ($a = 1; $a <= 5 and $connected == 0; $a++) {
-        $ok1 = $object->PConnect($self['db_host'], $self['db_login'], $self['db_passwd'], $self['db_database']);
-        $ok2 = $object->IsConnected();
-        $ok3 = $object->ErrorMsg();
 
-        // If the connection didn't work, bail.
-        if (!$ok1 or !$ok2 or $ok3)
-            printmsg("ERROR => {$self['db_type']} DB connection failed: " . $object->ErrorMsg(), 1);
+    // Populate basic context info into the self storage array
+    $self['context_name']  = $context_name;
+    $self['context_desc']  = $ona_contexts[$context_name]['description'];
+    $self['context_color'] = $ona_contexts[$context_name]['context_color'];
 
-        // Otherwise return the object.
-        else
-            return $object;
+    // loop through each context in the array and try and connect to the databases
+    // we will use the first DB we connect to for the specified context
+    // ONA will NOT connect to multiple databases at once.
+    foreach ((array)$ona_contexts[$context_name]['databases'] as $db) {
+
+        $self['db_type']     = $db['db_type'];
+        $self['db_host']     = $db['db_host'];
+        $self['db_login']    = $db['db_login'];
+        $self['db_database'] = $db['db_database'];
+        $self['db_debug']    = $db['db_debug'];
+
+        // Create a new ADODB connection object
+        $object = NewADOConnection($self['db_type']);
+        $object->debug = $self['db_debug'];
+
+        // Try connecting to the database server
+        $connected = 0;
+        for ($a = 1; $a <= 5 and $connected == 0; $a++) {
+            $ok1 = $object->PConnect($self['db_host'], $self['db_login'], $db['db_passwd'], $self['db_database']);
+            $ok2 = $object->IsConnected();
+            $ok3 = $object->ErrorMsg();
+
+            // If the connection didn't work, bail.
+            if (!$ok1 or !$ok2 or $ok3)
+                printmsg("ERROR => {$self['db_type']} DB connection failed: " . $object->ErrorMsg(), 0);
+            // Otherwise return the object.
+            else
+                return $object;
+        }
     }
 
     // If it still isn't connected, return an error.
     if ($connected == 0)
-        printmsg("ERROR => {$self['db_type']} DB connection failed after 5 tries!  Maybe server is down? Error: " . $object->ErrorMsg());
+        printmsg("ERROR => {$self['db_type']} DB connection failed after 5 tries!  Maybe server is down?", 0);
 
     return $object;
 }

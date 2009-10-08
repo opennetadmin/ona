@@ -12,6 +12,14 @@ if (file_exists($motdfile)) {
     $MOTD = file_get_contents($motdfile);
 }
 
+// Build a select option list for the context names
+foreach (array_keys($ona_contexts) as $entry) {
+    $selected = "";
+    // If this entry matches the record you are editing, set it to selected
+    if ($entry == $self['context_name']) { $selected = "SELECTED=\"yes\""; }
+    if ($entry) {$context_list .= "<option {$selected} value=\"{$entry}\">{$entry}</option>\n";}
+}
+
 // Lets start building the page!
 print <<<EOL
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
@@ -28,12 +36,12 @@ print <<<EOL
 <body style="overflow: hidden;" bgcolor="{$color['bg']}" link="{$color['link']}" alink="{$color['alink']}" vlink="{$color['vlink']}">
 
     <!-- Top (Task) Bar -->
-    <div class="menubar" id="bar_topmenu" >
+    <div class="menubar" id="bar_topmenu" style="background-color: {$self['context_color']}">
         <!-- Button to open the "Start Menu" (Application Links) -->
         <div id="menu-apps-item" class="main_menu_button" onmouseover="xajax_window_submit('menu_control', ' ');">Menu</div>
     </div>
 
-    <div class="bar" id="bar_top" onmouseover="ona_menu_closedown();">
+    <div class="bar" id="bar_top" onmouseover="ona_menu_closedown();" style="background-color: {$self['context_color']}">
         <!-- Left Side -->
         <div class="bar-left">
             <!-- Button to open the "search dialog" -->
@@ -120,18 +128,52 @@ print <<<EOL
     <div id="menu_bar_top" style="display: none; float: left;width: 100%; font-size: smaller; background-color: #AABBFF;white-space: nowrap;font-weight: bold;border-left: 1px solid #555555;border-right: 1px solid #555555;border-bottom: 1px solid #555555;"></div>
 
     <div id="trace_history" style="font-size: smaller; border-color: #555555;border-style: solid; border-width: 0px 1px 1px 1px; background-color: #EDEEFF;white-space: nowrap;">&nbsp;Trace:</div>
+EOL;
 
+// If we have more than one context defined, lets create a context selector
+if (count($ona_contexts) > 1) {
+print <<<EOL
+    <div style="position: fixed;width: 100%;z-index: 10;">
+    <center><div style="max-height: 1px;">
+    <table class="context_select_table" cellspacing="0" border="0" cellpadding="0" style="background-color: {$self['context_color']};">
+        <tr id="current_context" title="Click to change context" onclick="this.style.display='none'; el('change_context').style.display='';">
+            <td onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='';">Context: {$self['context_name']}</td>
+        </tr>
+        <tr id="change_context" style="display: none;">
+            <td>
+                <img title="Cancel context change"
+                    src="{$images}/silk/bullet_delete.png"
+                    border="0"
+                    onclick="el('change_context').style.display='none'; el('current_context').style.display='';"
+                /> Select Context:
+                <form id="context_select_form">
+                    <select id="context_select"
+                            class="edit"
+                            name="context_select"
+                            onchange="el('change_context').style.display='none'; el('current_context').style.display='';xajax_window_submit('tooltips', xajax.getFormValues('context_select_form'), 'switch_context');">
+                            {$context_list}
+                    </select>
+                </form>
+            </td>
+        </tr>
+    </table>
+    </div></center>
+    </div>
+EOL;
+}
+
+print <<<EOL
     <!-- Workspace div -->
     <div id="content_table" class="theWholeBananna">
 
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>
 
-        <div id="appbanner" style="font-size: xx-small;text-align:center;padding-top:5px;">&copy; {$year} <a href="http://opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}</div>
+        <div id="appbanner" style="font-size: xx-small;text-align:center;padding-top:1px;"></div>
 
         <!-- FORMATTING TABLE -->
         <div id="desktopmodules" valign="center" align="center" style="padding-left: 8px;overflow-x: auto;">
-        <table cellspacing="0" border="0" cellpadding="0" width="100%"><tr>
+        <table cellspacing="0" border="0" cellpadding="0" width="100%" style="margin-top: 7px;"><tr>
 
             <!-- START OF FIRST COLUMN OF SMALL BOXES -->
             <td nowrap="true" valign="top" style="padding: 15px;">

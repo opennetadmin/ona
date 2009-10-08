@@ -39,8 +39,8 @@ if (file_exists($base.'/local/config/run_install')) {
 $conf = array (
     /* General Setup */
     // Database Context
-    // For possible values see the $db_context() array and description below
-    "db_context"          => 'default',
+    // For possible values see the $ona_contexts() array  in the database_settings.inc.php file
+    "default_context"        => 'default',
 
     /* Used in header.php */
     "title"                  => 'OpenNetAdmin :: ',
@@ -150,16 +150,6 @@ $style['borderL'] = "border-left: 1px solid {$color['border']};";
 $style['borderR'] = "border-right: 1px solid {$color['border']};";
 
 
-// First things first, do we have the mysql functions on this system
-if (!function_exists('mysql_close')) {
-    print <<<EOL
-<html><body>
-Your PHP system does not contain the php mysql libraries.  Try a "php -m" and check for mysql in the list.
-</body></html>
-EOL;
-exit;
-}
-
 // Include the localized Database settings
 @include("{$base}/local/config/database_settings.inc.php");
 
@@ -174,9 +164,12 @@ require_once($conf['inc_functions']);
 // Include the basic database functions
 require_once($conf['inc_functions_db']);
 
+// If we dont have a ona_context set in the cookie, lets set a cookie with the default context
+if (!isset($_COOKIE['ona_context_name'])) { $_COOKIE['ona_context_name'] = $conf['default_context']; setcookie("ona_context_name", $conf['default_context']); }
+
 // (Re)Connect to the DB now.
 global $onadb;
-$onadb = @db_pconnect('mysqlt', $conf['db_context']);
+$onadb = db_pconnect('', $_COOKIE['ona_context_name']);
 
 // Load the actual user config from the database table sys_config
 // These will override any of the defaults set above
@@ -202,7 +195,6 @@ startSession();
 ini_set("session.gc_maxlifetime", $conf['cookie_life']);
 
 // if search_results_per_page is in the session, set the $conf variable to it.  this fixes the /rows command
-// FIXME: MP -- find out why every (ajax) call re-runs config.inc.php.. I dont think it used to??!!
 if (isset($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
 
 // DON'T put whitespace at the beginning or end of included files!!!

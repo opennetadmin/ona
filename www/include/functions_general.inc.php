@@ -46,20 +46,28 @@ foreach (array_keys($_REQUEST) as $key) printmsg("Name: $key    Value: $_REQUEST
 function printmsg($msg="",$debugLevel=0) {
     global $conf, $self;
 
-    if ($debugLevel <= $conf['debug']) {
+    if ($debugLevel <= $conf['debug'] and isset($msg)) {
+
+        // Get a username or "anonymous"
+        if (isset($_SESSION['ona']['auth']['user']['username']))
+            $username = $_SESSION['ona']['auth']['user']['username'];
+        else
+            $username = "anonymous";
 
         // Print to a log file if needed
         if ($conf['logfile'])
             logmsg($msg);
 
+        // log level 0 entries to database table
+        if ($conf['log_to_db'] and $debugLevel == 0) {
+            global $onadb;
+            // MP TODO: log using tia64n
+            list($status, $rows) = db_insert_record($onadb, 'ona_logs', array('username' => $username, 'remote_addr' => $_SERVER['REMOTE_ADDR'], 'message' => $msg));
+        }
+
         // Print to syslogd if needed
         if ($conf['syslog']) {
-            // Get a username or "anonymous"
-            if (isset($_SESSION['ona']['auth']['user']['username']))
-                $username = $_SESSION['ona']['auth']['user']['username'];
-            else
-                $username = "anonymous";
-
+            // MP: fix this up so it uses openlog and allows the user to set the facility?
             syslog(LOG_INFO, "{$username}@{$_SERVER['REMOTE_ADDR']}: $msg");
         }
 
@@ -101,7 +109,7 @@ function printmsg($msg="",$debugLevel=0) {
 //
 ///////////////////////////////////////////////////////////////////////
 function logmsg($message, $logfile="") {
-    global $conf;
+    global $conf, $self;
 
     // Do a little input validation
     if (!isset($message) or $message == "") {
@@ -135,7 +143,7 @@ function logmsg($message, $logfile="") {
     }
 
     // Build the exact line we want to write to the file
-    $logdata = date("M j G:i:s ") . "{$uname['nodename']} {$username}@{$_SERVER['REMOTE_ADDR']}: {$message}\n";
+    $logdata = date("M j G:i:s ") . "{$uname['nodename']} {$username}@{$_SERVER['REMOTE_ADDR']}: [{$self['context_name']}] {$message}\n";
 
     // Write the line to the file
     if (!fwrite($file, $logdata)) {
@@ -1261,7 +1269,7 @@ function loggedIn() {
 // Returns true if the current user has access to the requested resource,
 // false if not.
 //////////////////////////////////////////////////////////////////////////////
-function auth($resource,$msg_level=0) {
+function auth($resource,$msg_level=1) {
 
     if (!is_string($resource)) return false;
     if (array_key_exists($resource, (array)$_SESSION['ona']['auth']['perms'])) {
@@ -1425,8 +1433,8 @@ function run_module($module='', $options='', $transaction=1) {
     $local_options = parse_options($options);
 
     // If the user passes in an option called 'module_loglevel' then use it as the run module output level
-    // otherwise default it to 0 so it will print out as normal.
-    $log_level = 0;
+    // otherwise default it to 1 so it will print out as normal.
+    $log_level = 1;
     if ($local_options['module_loglevel']) {
         $log_level = $local_options['module_loglevel'];
     }

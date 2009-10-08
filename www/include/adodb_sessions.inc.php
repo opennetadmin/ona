@@ -50,7 +50,7 @@
  * does that sort of thing before it passes data to these functions.
 */
 
-global $SESS_DBH, $onadb, $conf;
+global $SESS_DBH, $SESS_LIFE, $onadb, $conf;
 $SESS_DBH = $onadb;
 $SESS_LIFE = $conf['cookie_life'];
 

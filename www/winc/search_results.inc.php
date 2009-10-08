@@ -685,7 +685,7 @@ function quick_search($q) {
 // QSearch Command Intrepreter
 //////////////////////////////////////////////////////////////////////////////
 function qsearch_command($q) {
-    global $conf, $self, $images;
+    global $conf, $self, $images, $baseURL;
     $js = "";
 
     // Instantiate the xajaxResponse object
@@ -701,6 +701,14 @@ function qsearch_command($q) {
             $conf['search_results_per_page'] = $q;
             $_SESSION['search_results_per_page'] = $q;
             $js .= "alert('Lists will now display {$q} rows.');";
+        }
+    }
+
+    if (strpos($q, 'context ') === 0) {
+        $q = str_replace('context ', '', $q);
+        if ($q) {
+            setcookie("ona_context_name", $q);
+            $js .= "alert('Database context is now: {$q}.');";
         }
     }
 

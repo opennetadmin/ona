@@ -118,7 +118,7 @@ function ws_tooltips_submit($window_name, $form='') {
 
 
 
-
+/*
 
 //////////////////////////////////////////////////////////////////////////////
 // Function: get_start_menu_html()
@@ -328,7 +328,7 @@ EOL;
 EOL;
 
     return(array($html, $js));
-}
+}*/
 
 
 
@@ -509,7 +509,37 @@ EOL;
 
 
 
+///////////////////////////////////////////////////////////////////////
+//  Function: switch_context (string $context_name)
+//
+//   $context_name   = The name of the context to switch to
+//
+//   Switches the current context cookie and reloads the interface
+//   This is meant to be called by the GUI only and not by DCM etc
+//
+///////////////////////////////////////////////////////////////////////
+function ws_switch_context($window_name, $form='') {
+    global $conf, $self, $ona_contexts, $baseURL;
 
+    $html = $js = '';
+    $form = parse_options_string($form);
+
+    // If the context passed in is in our array, switch
+    if (isset($ona_contexts[$form['context_select']])) {
+        printmsg("INFO => Switching to context: {$form['context_select']}",0);
+        setcookie("ona_context_name", $form['context_select']);
+        $js = "window.location='{$baseURL}';";
+    }
+    // Otherwise, complain
+    else {
+        printmsg("DEBUG => There was an error switching to context: {$form['context_select']}",1);
+        $js = "alert('The context \'{$form['context_select']}\' is not valid.');";
+    }
+
+    $response = new xajaxResponse();
+    $response->addScript($js);
+    return($response->getXML());
+}
 
 
 
