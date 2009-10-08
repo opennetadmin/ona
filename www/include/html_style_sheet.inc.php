@@ -119,9 +119,9 @@ a:hover      { cursor: pointer; text-decoration: underline; }
 .main_menu_button {
     float:left;
     background-color: #AABBFF;
-    border-radius-topright: 3px;
+    border-top-right-radius: 3px;
     -moz-border-radius-topright: 3px;
-    -webkit-border-radius-topright: 3px;
+    -webkit-border-top-right-radius: 3px;
     padding: 2px 8px 3px 8px;
     font-weight: bold;
     border-top: 1px solid #555555;
@@ -132,7 +132,6 @@ a:hover      { cursor: pointer; text-decoration: underline; }
     float:left;
     max-height: 25px;
     vertical-align: middle;
-
 }
 
 .bar-right {
@@ -140,7 +139,22 @@ a:hover      { cursor: pointer; text-decoration: underline; }
     text-align:right;
     vertical-align: middle;
     max-height: 23px;
-width: 200px;
+    width: 200px;
+}
+
+.context_select_table {
+    font-size: small;
+    font-weight: bold;
+    border-bottom: 1px solid #555555;
+    border-right: 1px solid #555555;
+    border-left: 1px solid #555555;
+    padding: 0px 4px 0px 4px;
+    -moz-border-radius-bottomright: 3px;
+    -moz-border-radius-bottomleft: 3px;
+    -webkit-border-bottom-right-radius: 3px;
+    -webkit-border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
 }
 
 /* The body of the page */
@@ -413,12 +427,12 @@ div.wwTT_login {
     z-index: 20;
     padding: 4px;
     padding-right: 6px;
-    border-radius-bottomleft: 4px;
-    border-radius-bottomright: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
     -moz-border-radius-bottomleft: 4px;
-    -webkit-border-radius-bottomleft: 4px;
+    -webkit-border-bottom-left-radius: 4px;
     -moz-border-radius-bottomright: 4px;
-    -webkit-border-radius-bottomright: 4px;
+    -webkit-border-bottom-right-radius: 4px;
     border-left: 1px solid #000000;
     border-right: 1px solid #000000;
     border-bottom: 1px solid #000000;
