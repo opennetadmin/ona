@@ -419,7 +419,7 @@ function domain_modify($options="") {
     printmsg("DEBUG => domain_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -472,7 +472,6 @@ EOM
     $options['domain'] = trim($options['domain']);
     $options['set_name'] = trim($options['set_name']);
     $options['set_parent'] = trim($options['set_parent']);
-    $options['set_primary_master'] = trim($options['set_primary_master']);
     $options['set_admin'] = trim($options['set_admin']);
 
     $domainsearch = array();
@@ -519,14 +518,14 @@ EOM
             return(array(2, $self['error'] . "\n"));
         }
 
-        $SET['parent_id'] = $domain['id'];
+        if ($entry['parent_id'] != $domain['id']) $SET['parent_id'] = $domain['id'];
     } else {
-        $SET['parent_id'] = '';
+        if ($entry['parent_id'] != 0) $SET['parent_id'] = 0;
     }
 
     if ($options['set_name']) {
         // trim leading and trailing whitespace from 'value'
-        $SET['name'] = trim($options['set_name']);
+        if ($entry['name'] != trim($options['set_name'])) $SET['name'] = trim($options['set_name']);
 
         // Determine the entry itself exists
         list($status, $rows, $domain) = ona_get_domain_record(array('name' => $options['set_name']));
@@ -541,13 +540,13 @@ EOM
     }
 
     // define the remaining entries
-    if ($entry['primary_master'] != $options['set_primary_master']) $SET['primary_master'] = $options['set_primary_master'];
-    if ($options['set_admin'])   $SET['admin_email'] = $options['set_admin'];
-    if ($options['set_refresh']) $SET['refresh']     = $options['set_refresh'];
-    if ($options['set_retry'])   $SET['retry']       = $options['set_retry'];
-    if ($options['set_expiry'])  $SET['expiry']      = $options['set_expiry'];
-    if ($options['set_minimum']) $SET['minimum']     = $options['set_minimum'];
-    if ($options['set_ttl'])     $SET['default_ttl'] = $options['set_ttl'];
+    if ($options['set_primary_master'] and $entry['primary_master'] != $options['set_primary_master']) $SET['primary_master'] = trim($options['set_primary_master']);
+    if ($options['set_admin'] and $entry['admin_email'] != $options['set_admin'])   $SET['admin_email'] = $options['set_admin'];
+    if ($options['set_refresh'] and $entry['refresh'] != $options['set_refresh']) $SET['refresh']     = $options['set_refresh'];
+    if ($options['set_retry'] and $entry['retry'] != $options['set_retry'])   $SET['retry']       = $options['set_retry'];
+    if ($options['set_expiry'] and $entry['expiry'] != $options['set_expiry'])  $SET['expiry']      = $options['set_expiry'];
+    if ($options['set_minimum'] and $entry['minimum'] != $options['set_minimum']) $SET['minimum']     = $options['set_minimum'];
+    if ($options['set_ttl'] and $entry['default_ttl'] != $options['set_ttl'])     $SET['default_ttl'] = $options['set_ttl'];
 
 
 // FIXME: MP for now this is removed.  it is a chicken/egg issue on setting this name
@@ -593,13 +592,14 @@ EOM
     list($status, $rows, $original_domain) = ona_get_domain_record(array('id'=>$entry['id']));
 
     // Update the record
+    if (count($SET) > 0) {
     list($status, $rows) = db_update_record($onadb, 'domains', array('id' => $entry['id']), $SET);
     if ($status or !$rows) {
         $self['error'] = "ERROR => domain_modify() SQL Query failed: {$self['error']}";
         printmsg($self['error'],0);
         return(array(6, $self['error'] . "\n"));
     }
-
+}
     // Get the entry again to display details
     list($status, $rows, $new_domain) = ona_get_domain_record(array('id'=>$entry['id']));
 
