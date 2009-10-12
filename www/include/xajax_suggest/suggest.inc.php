@@ -6,6 +6,8 @@
 // These are the functions we'll be exposing via Xajax
 $xajax->registerFunction("suggest");
 
+// for when and if I switch to xajax 0.5.x
+//$xajax->register(XAJAX_FUNCTION,"suggest");
 
 
 

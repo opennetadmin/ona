@@ -10,6 +10,8 @@
 
 $xajax->registerFunction("window_save_position");
 
+// for when and if I switch to xajax 0.5.x
+//$xajax->register(XAJAX_FUNCTION,"window_save_position");
 
 
 

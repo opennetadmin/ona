@@ -8,7 +8,28 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // Load Xajax and create an xajax object
+
+// xajax 0.5.x formatting
+//require_once("{$include}/xajax/xajax_core/xajax.inc.php");
+//$xajaxProcReq='processRequest';
+
+
+
+
+
+
+// xajax 0.2.x formatting
 require_once("{$include}/xajax/xajax.inc.php");
+$xajaxProcReq='processRequests';
+
+
+
+
+
+
+
+
+
 $xajax = new xajax();
 
 
@@ -42,7 +63,7 @@ $conf['html_headers'] .= '<link rel="stylesheet" type="text/css" href="'.$baseUR
 
 
 // Process xajax requests 
-$xajax->processRequests();
+$xajax->$xajaxProcReq();
 
 
 // Include the xajax javascript in our html headers

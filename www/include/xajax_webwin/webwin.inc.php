@@ -24,10 +24,13 @@ $color['window_content_bg']         = '#F2F2F2';
 
 
 // These are the functions we'll be exposing via Xajax
+// xajax 0.2.x format
 $xajax->registerFunction("window_open");
 $xajax->registerFunction("window_submit");
 
-
+// for when and if I switch to xajax 0.5.x
+//$xajax->register(XAJAX_FUNCTION,"window_submit");
+//$xajax->register(XAJAX_FUNCTION,"window_open");
 
 
 
