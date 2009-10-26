@@ -45,10 +45,43 @@ EOL;
 EOL;
 
     // Escape data for display in html
-    foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
 
     $html .= <<<EOL
-Logging is currently: disabled or enabled?
+    <div style="{$style['content_box']}">
+    <table cellspacing="0" border="0" cellpadding="0"><tr>
+        <!-- START OF FIRST COLUMN OF SMALL BOXES -->
+        <td nowrap="true" valign="top" style="padding-right: 15px;">
+EOL;
+
+
+    // LOG INFORMATION
+    $logstat = ($conf['log_to_db']) ? "<img src=\"{$images}/silk/accept.png\" border=\"0\"> Enabled" : "<img src=\"{$images}/silk/stop.png\" border=\"0\"> Disabled";
+
+    $html .= <<<EOL
+            <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
+
+                <tr>
+                    <td align="right" nowrap="true"><b>System DB logging status:</b>&nbsp;</td>
+                    <td class="padding"
+                        title="Click to change"
+                        align="left"
+                        onClick="xajax_window_submit('app_sysconf_edit', 'log_to_db', 'editor');"
+                        >{$logstat}&nbsp;
+                    </td>
+                </tr>
+
+
+            </table>
+EOL;
+    // END LOG INFORMATION
+
+
+    $html .= <<<EOL
+        <!-- END OF FIRST COLUMN OF SMALL BOXES -->
+        </td>
+      </tr></table>
+    </div>
 EOL;
 
 

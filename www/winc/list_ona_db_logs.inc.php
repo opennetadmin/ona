@@ -117,6 +117,7 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Timestamp</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Username</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Remote location</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Context</td>
                 <td class="list-header" align="center">Message</td>
             </tr>
 EOL;
@@ -140,6 +141,10 @@ EOL;
 
                 <td class="list-row">
                     {$record['remote_addr']}&nbsp;
+                </td>
+
+                <td class="list-row">
+                    {$record['context_name']}&nbsp;
                 </td>
 
                 <td class="list-row">
