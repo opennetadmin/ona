@@ -62,7 +62,7 @@ function printmsg($msg="",$debugLevel=0) {
         if ($conf['log_to_db'] and $debugLevel == 0) {
             global $onadb;
             // MP TODO: log using tia64n
-            list($status, $rows) = db_insert_record($onadb, 'ona_logs', array('username' => $username, 'remote_addr' => $_SERVER['REMOTE_ADDR'], 'message' => $msg));
+            list($status, $rows) = db_insert_record($onadb, 'ona_logs', array('username' => $username, 'remote_addr' => $_SERVER['REMOTE_ADDR'], 'message' => $msg,'context_name' => $self['context_name']));
         }
 
         // Print to syslogd if needed
