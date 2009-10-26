@@ -405,10 +405,16 @@ EOL;
 
     $html .= <<<EOL
     </div>
-
-    <div id="confoutputdiv" style='border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;overflow:hidden;width: 100px;'><pre style='font-family: monospace;overflow-y:auto;' id="confoutput"><center>Generating configuration...</center><br>{$conf['loading_icon']}</pre></div>
-
 EOL;
+
+    // If we have a build type set, then display the output div
+    if ($conf['build_dns_type'] && auth('dns_record_add',$debug_val)) {
+        $html .= <<<EOL
+    <div id="confoutputdiv" style="border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;overflow:hidden;width: 100px;"><pre style='font-family: monospace;overflow-y:auto;' id="confoutput"><center>Generating configuration...</center><br>{$conf['loading_icon']}</pre></div>
+EOL;
+
+        $js .= "xajax_window_submit('{$window_name}', 'fqdn=>{$record['fqdn']}', 'display_config');";
+    }
 
     $js .= <<<EOL
         /* Setup the quick filter */
@@ -417,8 +423,6 @@ EOL;
 
         /* Tell the browser to load/display the list */
         xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display_list');
-
-        xajax_window_submit('{$window_name}', 'fqdn=>{$record['fqdn']}', 'display_config');
 
         setTimeout('el(\'confoutputdiv\').style.width = el(\'{$form_id}_table\').offsetWidth-8+\'px\';',900);
 EOL;
@@ -466,7 +470,7 @@ function ws_display_config($window_name, $form='') {
         if (!$status) {
             $html .= $output;
         } else {
-            $html .= "There was a problem generating the configuration.";
+            $html .= "There was a problem generating the configuration.<br>{$output}";
         }
     }
 
