@@ -56,7 +56,7 @@ function printmsg($msg="",$debugLevel=0) {
 
         // Print to a log file if needed
         if ($conf['logfile'])
-            logmsg($msg);
+            ona_logmsg($msg);
 
         // log level 0 entries to database table
         if ($conf['log_to_db'] and $debugLevel == 0) {
@@ -108,7 +108,7 @@ function printmsg($msg="",$debugLevel=0) {
 //
 //
 ///////////////////////////////////////////////////////////////////////
-function logmsg($message, $logfile="") {
+function ona_logmsg($message, $logfile="") {
     global $conf, $self;
 
     // Do a little input validation
