@@ -63,11 +63,14 @@ EOL;
 
                 <tr>
                     <td align="right" nowrap="true"><b>System DB logging status:</b>&nbsp;</td>
-                    <td class="padding"
-                        title="Click to change"
-                        align="left"
-                        onClick="xajax_window_submit('app_sysconf_edit', 'log_to_db', 'editor');"
-                        >{$logstat}&nbsp;
+                    <td>
+                        <div style="border: 1px solid #555555;cursor: pointer;padding: 2px;"
+                             onmouseover="this.style.backgroundColor='#EBEBEB';"
+                             onmouseout="this.style.backgroundColor='#FFFFFF';"
+                             title="Click to change"
+                             onClick="xajax_window_submit('app_sysconf_edit', 'log_to_db', 'editor');">
+                             {$logstat}&nbsp;
+                        </div>
                     </td>
                 </tr>
 
