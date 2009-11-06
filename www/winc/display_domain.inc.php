@@ -409,6 +409,32 @@ EOL;
 
     // If we have a build type set, then display the output div
     if ($conf['build_dns_type'] && auth('dns_record_add',$debug_val)) {
+
+        // Get a list of the views so we can build a select option
+        if ($conf['dns_views']) {
+            list($status, $rows, $recs) = db_get_records($onadb, 'dns_views', 'id >= 0', 'name');
+            $dns_view_list = '';
+            foreach ($recs as $rec) {
+                $rec['name'] = htmlentities($rec['name']);
+                $dns_view_list .= "<option value=\"{$rec['id']}\">{$rec['name']}</option>\n";
+            }
+            $html .= <<<EOL
+    <div style="margin: 10px 20px;padding-left: 8px;">
+        <form>
+        Show config for DNS view: <select name="build_dns_view"
+                id="build_dns_view"
+                class="edit"
+                onchange="xajax_window_submit('{$window_name}', 'fqdn=>{$record['fqdn']},view=>'+el('build_dns_view').value , 'display_config');"
+        >
+            {$dns_view_list}
+        </select>
+        </form>
+    </div>
+EOL;
+
+        }
+
+
         $html .= <<<EOL
     <div id="confoutputdiv" style="border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;overflow:hidden;width: 100px;"><pre style='font-family: monospace;overflow-y:auto;' id="confoutput"><center>Generating configuration...</center><br>{$conf['loading_icon']}</pre></div>
 EOL;
@@ -465,7 +491,7 @@ function ws_display_config($window_name, $form='') {
                 $dns_module_name = 'build_tinydns_conf';
                 break;
         }
-        list($status, $output) = run_module("{$dns_module_name}", array('domain' => $form['fqdn']));
+        list($status, $output) = run_module("{$dns_module_name}", array('domain' => $form['fqdn'],'view' => $form['view']));
         // Display the config if it ran ok
         if (!$status) {
             $html .= $output;

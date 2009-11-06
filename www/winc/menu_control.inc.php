@@ -304,7 +304,21 @@ function get_html_menu_button_admin() {
          title="Manage DNS domains"
     ><img style="vertical-align: middle;" src="{$images}/silk/world_edit.png" border="0"
      />&nbsp;Manage DNS domains</div>
+EOL;
 
+    if ($conf['dns_views']) {
+        $html .= <<<EOL
+    <div class="row"
+         onMouseOver="this.className='hovered';"
+         onMouseOut="this.className='row';"
+         onClick="ona_menu_closedown();toggle_window('app_dns_view_list');"
+         title="Manage DNS views"
+    ><img style="vertical-align: middle;" src="{$images}/silk/world_edit.png" border="0"
+     />&nbsp;Manage DNS views</div>
+EOL;
+    }
+
+    $html .= <<<EOL
     <div class="row"
          onMouseOver="this.className='hovered';"
          onMouseOut="this.className='row';"

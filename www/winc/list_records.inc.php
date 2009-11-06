@@ -62,6 +62,14 @@ function ws_display_list($window_name, $form='') {
         $and = " AND ";
     }
 
+    // DNS VIEW ID
+    if ($form['dns_view']) {
+        if (is_string($form['dns_view'])) list($status, $rows, $dnsview) = ona_get_dns_view_record(array('name' => $form['dns_view']));
+        if (is_numeric($form['dns_view'])) list($status, $rows, $dnsview) = ona_get_dns_view_record(array('id' => $form['dns_view']));
+        $where .= $and . "dns_view_id = " . $onadb->qstr($dnsview['id']);
+        $and = " AND ";
+    }
+
     // INTERFACE ID
     if ($form['interface_id']) {
         $where .= $and . "interface_id = " . $onadb->qstr($form['interface_id']);
@@ -140,6 +148,12 @@ function ws_display_list($window_name, $form='') {
     // Wild card .. if $while is still empty, add a 'ID > 0' to it so you see everything.
     if ($where == '')
         $where = 'id > 0';
+
+    // If we dont have DNS views turned on, limit data to just the default view.
+    // Even if there is data associated with other views, ignore it
+    if (!$conf['dns_views']) {
+        $where .= $and . 'dns_view_id = 0';
+    }
 
 
     // Do the SQL Query
@@ -238,6 +252,12 @@ function ws_display_list($window_name, $form='') {
                 <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Data</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Effective</td>
+EOL;
+    if ($conf['dns_views']) {
+        $html .= "<td class=\"list-header\" align=\"center\" style=\"{$style['borderR']};\">DNS View</td>";
+    }
+
+    $html .= <<<EOL
                 <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
                 <td class="list-header" align="center">&nbsp;</td>
             </tr>
@@ -441,6 +461,13 @@ EOL;
         // If we get this far and the name we have built has a leading . in it then remove the dot.
         $record['name'] = preg_replace("/^\./", '', $record['name']);
 
+        // Get the name of the view and the description
+        if ($conf['dns_views']) {
+            list($status, $rows, $dnsview) = ona_get_dns_view_record(array('id' => $record['dns_view_id']));
+            $record['view_name'] = $dnsview['name'];
+            $record['view_desc'] = $dnsview['description'];
+        }
+
         // Escape data for display in html
         foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
 
@@ -485,7 +512,18 @@ EOL;
                 <td class="list-row" align="center">
                     {$ebegin}&nbsp;
                 </td>
+EOL;
 
+        // Display the view we are part of
+        if ($conf['dns_views']) {
+        $html .= <<<EOL
+                <td class="list-row" align="center" title="{$record['view_desc']}">
+                    {$record['view_name']}&nbsp;
+                </td>
+EOL;
+        }
+
+        $html .= <<<EOL
                 <td class="list-row">
                     <span title="{$record['notes']}">{$record['notes_short']}</span>&nbsp;
                 </td>

@@ -147,6 +147,20 @@ function ws_editor($window_name, $form='') {
     }
 
 
+    //Get the list of DNS views
+    if ($conf['dns_views']) {
+        list($status, $rows, $dnsviews) = db_get_records($onadb, 'dns_views','id >= 0', 'name');
+
+        foreach ($dnsviews as $entry) {
+            $selected = '';
+            $dnsviews['name'] = htmlentities($dnsviews['name']);
+            // If this entry matches the record you are editing, set it to selected
+            if ($entry['id'] == $dns_record['dns_view_id']) { $selected = "SELECTED=\"selected\""; }
+            $dns_view_list .= "<option {$selected} value=\"{$entry['id']}\">{$entry['name']}</option>\n";
+        }
+    }
+
+
 
     // Javascript to run after the window is built
     $window['js'] .= <<<EOL
@@ -185,18 +199,42 @@ EOL;
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']};padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;" width="100%">
         <!-- DNS RECORD -->
         <tr>
-            <td align="left" nowrap="true">
+            <td align="right" nowrap="true">
                 <b><u>DNS Record</u></b>&nbsp;
             </td>
             <td class="padding" align="left" width="100%">
                 &nbsp;
             </td>
         </tr>
+
     </table>
 
     <!-- RECORD TYPE CONTAINER -->
     <div id="type_container">
         <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']};padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;" width="100%">
+EOL;
+
+    // Print a dns view selector
+    if ($conf['dns_views']) {
+      $window['html'] .= <<<EOL
+        <tr>
+            <td class="input_required" align="right" nowrap="true">
+                DNS Record View
+            </td>
+            <td class="padding" align="left" width="100%">
+                <select
+                    id="dns_view_select"
+                    name="set_view"
+                    alt="DNS View"
+                    class="edit"
+                >{$dns_view_list}</select>
+            </td>
+        </tr>
+
+EOL;
+    }
+
+    $window['html'] .= <<<EOL
             <tr>
                 <td class="input_required" align="right" nowrap="true">
                     DNS record type
@@ -690,6 +728,7 @@ function ws_save($window_name, $form='') {
         $form['ip'] = $form['set_ip']; unset($form['set_ip']);
         $form['ttl'] = $form['set_ttl']; unset($form['set_ttl']);
         $form['addptr'] = $form['set_addptr']; unset($form['set_addptr']);
+        $form['view'] = $form['set_view']; unset($form['set_view']);
 
         // if this is a cname. then set the pointsto option
         if ($form['type'] == 'CNAME' or $form['type'] == 'MX' or $form['type'] == 'NS' or $form['type'] == 'SRV') $form['pointsto'] = $form['set_pointsto'];

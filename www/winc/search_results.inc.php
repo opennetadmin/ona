@@ -31,11 +31,20 @@ function ws_search_results_submit($window_name, $form='') {
     // Build subnet type list
     list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', 'id >= 1', 'display_name');
     $subnet_type_list = '<option value="">&nbsp;</option>\n';
-    $record['display_name'] = htmlentities($record['display_name']);
     foreach ($records as $record) {
+        $record['display_name'] = htmlentities($record['display_name']);
         $subnet_type_list .= "<option value=\"{$record['id']}\">{$record['display_name']}</option>\n";
     }
 
+    // Build subnet type list
+    if ($conf['dns_views']) {
+        list($status, $rows, $records) = db_get_records($onadb, 'dns_views', 'id >= 0', 'name');
+        $dns_view_list = '<option value="">&nbsp;</option>\n';
+        foreach ($records as $record) {
+            $record['name'] = htmlentities($record['name']);
+            $dns_view_list .= "<option value=\"{$record['name']}\">{$record['name']}</option>\n";
+        }
+    }
 
     // Load some html into $window['html']
     $form_id = "{$window_name}_filter_form";
@@ -325,7 +334,25 @@ function ws_search_results_submit($window_name, $form='') {
     <input type="hidden" name="search_form_id" value="dns_record_search_form">
     <table id="records_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
 
+EOL;
 
+    // Display view dropdown
+    if ($conf['dns_views']) {
+    $window['html'] .= <<<EOL
+    <tr>
+        <td align="right" class="asearch-line">
+            DNS <u>V</u>iew
+        </td>
+        <td align="left" class="asearch-line">
+            <select id="dns_view" name="dns_view" class="edit" accesskey="v" >
+                {$dns_view_list}
+            </select>
+        </td>
+    </tr>
+EOL;
+    }
+
+    $window['html'] .= <<<EOL
     <tr>
         <td align="right" class="asearch-line">
             <u>H</u>ostname

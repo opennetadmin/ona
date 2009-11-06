@@ -1144,6 +1144,10 @@ function ona_get_dns_record($array='', $order='') {
     return(array($status, $rows, $record));
 }
 
+function ona_get_dns_view_record($array='', $order='') {
+    return(ona_get_record($array, 'dns_views', $order));
+}
+
 function ona_get_config_record($array='', $order='ctime DESC') {
     list($status, $rows, $record) = ona_get_record($array, 'configurations', $order);
 
@@ -1526,19 +1530,26 @@ function ona_find_host($search="") {
     $domain_parts = explode('.', $domain['fqdn']);
     foreach ($domain_parts as $part) {
         // Loop through the parts of the domain to find host.sub domain.com type entries..
-        list($status, $rows, $dns) = ona_get_dns_record(array('domain_id' => $domain['id'], 'name' => $hostname));
+        list($status, $dnsrows, $dnsrecs) = db_get_records($onadb, 'dns', array('domain_id' => $domain['id'], 'name' => $hostname));
         // If we didnt just find a dns record.. lets move the period over and try a deeper domain/host pair.
-        if (!$dns['id']) {
+        if (!$dnsrows) {
             $hostname = $hostname.'.'.$part;
             $name = str_replace("{$part}.", '', $domain['fqdn']);
             list($status, $rows, $domain) = ona_get_domain_record(array('name' => $name));
+        } else {
+            break;
         }
     }
 
 
-    // If we got a valid dns record, lookup the associated host record, and return it
-    if ($dns['id'])
-        return(ona_get_host_record(array('primary_dns_id' => $dns['id'])));
+    // If we found one or more dns records, lets loop through them all and find the first primary host using that name
+    if ($dnsrows) {
+        foreach ($dnsrecs as $entry) {
+            list($status, $rows, $host) = ona_get_host_record(array('primary_dns_id' => $entry['id']));
+            if ($host['id'])
+                return(array($status, $rows, $host));
+        }
+    }
 
     // Otherwise, build a fake host record with only a few entries in it and return that
     $host = array(
