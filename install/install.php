@@ -1,30 +1,24 @@
 <?php
+// get adodb xml processing
+require_once($conf['inc_adodb_xml']);
 
 $base = dirname(__FILE__);
-$baseURL=dirname($_SERVER['SCRIPT_NAME']); $baseURL = rtrim($baseURL, '/');
-
-// stuff and notes:
-//  maybe change the mysqlt type to a variable..
 
 // Init and setup some variables.
-$DBname = $database_name;
-$DBPrefix = '';
 $text = '';
-$status=0;
-$installdir = dirname($base);
-$runinstall = $installdir.'/www/local/config/run_install';
-$sqlfile = $base.'/ona-tables.sql';
-$sqlfile_data = $base.'/ona-data.sql';
-$dbconffile = $installdir.'/www/local/config/database_settings.inc.php';
+$status = 0;
+$onabase = dirname($base);
+$runinstall = $onabase.'/www/local/config/run_install';
+$xmlfile_tables = $base.'/ona-table_schema.xml';
+$xmlfile_data = $base.'/ona-data.xml';
 $license_text = file_get_contents($base.'/../docs/LICENSE');
-$new_ver = trim(file_get_contents($installdir.'/VERSION'));
-
+$new_ver = trim(file_get_contents($onabase.'/VERSION'));
+$curr_ver = '';
 
 // Get some pre-requisite information
-$version = phpversion() > '4.1' ? 'Yes' : '<font color="red">No</font>';
-$hasmysql = function_exists( 'mysql_connect' ) ? 'Yes' : '<font color="red">No</font>';
+$phpversion = phpversion() > '4.1' ? 'Yes' : '<font color="red">No</font>';
 $hasgmp = function_exists( 'gmp_init' ) ? 'Yes' : 'Recommended';
-$dbconfwrite = @is_writable($installdir.'/www/local/config/') ? 'Yes' : '<font color="red">No</font>';
+$dbconfwrite = @is_writable($onabase.'/www/local/config/') ? 'Yes' : '<font color="red">No</font>';
 
 $blankmain = "<script>el('main').style.display = 'none';</script>";
 
@@ -45,39 +39,92 @@ $requisitediv = <<<EOL
             <div id="checksdiv">
                 <table id="checks">
                     <tr><th colspan="5">Prerequisite checks</th></tr>
-                    <tr><td>PHP version > 4.1:</td><td>{$version}</td></tr>
-                    <tr><td>Has MySQL support:</td><td>{$hasmysql}</td></tr>
+                    <tr><td>PHP version > 4.1:</td><td>{$phpversion}</td></tr>
                     <tr title="The PHP GMP modules provide extra functionality, but are not required."><td>Has GMP support:</td><td>{$hasgmp}</td></tr>
-                    <tr title="The local config directory must be writable by the web server."><td>{$installdir}/www/local/config dir writable:</td><td>{$dbconfwrite}</td></tr>
+                    <tr title="The local config directory must be writable by the web server user: {$_ENV['APACHE_RUN_USER']}"><td>{$onabase}/www/local/config dir writable by '{$_ENV['APACHE_RUN_USER']}':</td><td>{$dbconfwrite}</td></tr>
                 </table>
             </div>
 EOL;
 
 // Initial text for the greeting div
-$greet_txt = "It looks as though this is your first time running OpenNetAdmin. Please answer a few questions and we'll initialize the system for you. We've pre-populated some of the fields with suggested values.  If the database you specify below already exists, it will be overwritten.";
+$greet_txt = "It looks as though this is your first time running OpenNetAdmin. Please answer a few questions and we'll initialize the system for you. We've pre-populated some of the fields with suggested values.  If the database you specify below already exists, it will be overwritten entirely.";
 
 
 $upgrademain = '';
 
+// Get info from old $db_context[] array if ona_contexts does not exist
+// this is transitional, hopefully I can remove this part soon.
+if (!is_array($ona_contexts) and is_array($db_context)) {
+    $type='mysqlt';
+    $context_name='default';
+    $ona_contexts[$context_name]['databases']['0']['db_type']     = $db_context[$type] [$context_name] ['primary'] ['db_type'];
+    $ona_contexts[$context_name]['databases']['0']['db_host']     = $db_context[$type] [$context_name] ['primary'] ['db_host'];
+    $ona_contexts[$context_name]['databases']['0']['db_login']    = $db_context[$type] [$context_name] ['primary'] ['db_login'];
+    $ona_contexts[$context_name]['databases']['0']['db_passwd']   = $db_context[$type] [$context_name] ['primary'] ['db_passwd'];
+    $ona_contexts[$context_name]['databases']['0']['db_database'] = $db_context[$type] [$context_name] ['primary'] ['db_database'];
+    $ona_contexts[$context_name]['databases']['0']['db_debug']    = $db_context[$type] [$context_name] ['primary'] ['db_debug'];
+    $ona_contexts[$context_name]['description']   = 'Default data context';
+    $ona_contexts[$context_name]['context_color'] = '#D3DBFF';
+}
+
+
+// If they already have a dbconffile, assume that we are doing and upgrade
 if (@file_exists($dbconffile)) {
-    // Get the existing database config so we can connect using its settings
+    // Get the existing database config (again) so we can connect using its settings
     include($dbconffile);
-    // Connect to the database as the administrator user
-    $con = mysql_connect($db_context['mysqlt']['default']['primary']['db_host'],$db_context['mysqlt']['default']['primary']['db_login'],$db_context['mysqlt']['default']['primary']['db_passwd']);
-    if (!$con) {
-        $status++;
-        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to connect to '{$db_context['mysqlt']['default']['primary']['db_host']}' as '{$db_context['mysqlt']['default']['primary']['db_login']}'.<br>";
-    } else {
-        if (mysql_select_db($db_context['mysqlt']['default']['primary']['db_database'], $con)) {
-            $result = mysql_query("SELECT value FROM sys_config WHERE name like 'version';",$con);
-            $curr_ver = @mysql_result($result, 0);
 
-            if ($curr_ver == '') { $curr_ver = 'PRE-v08.02.18'; }
+    $context_count = count($ona_contexts);
 
-            // Update the greet text with new info
-            $greet_txt = "It looks as though you already have version '{$curr_ver}' of OpenNetAdmin installed.  You should make a backup of the data before proceeding with the upgrade.<br><br>We will be upgrading to the version '{$new_ver}'.";
+    $greet_txt = "It looks as though you already have a version of OpenNetAdmin installed.  You should make a backup of the data for each context listed below before proceeding with this upgrade.<br><br>We will be upgrading to version '{$new_ver}'.<br><br>We have found {$context_count} context(s) in your current db configuration file.<br><br>";
 
-            $upgrademain = <<<EOL
+    $greet_txt .= "<center><table><tr><th>Context Name</th><th>DB type</th><th>Server</th><th>DB name</th><th>Version</th><th>Upgrade Index</th></tr>";
+
+    // Loop through each context and identify the Databases within
+    foreach(array_keys($ona_contexts) as $cname) {
+
+        foreach($ona_contexts[$cname]['databases'] as $cdbs) {
+            $curr_ver = '<span style="background-color:#FF7375;">Unable to determine</span>';
+            // Make an initial connection to a DB server without specifying a database
+            $db = ADONewConnection($cdbs['db_type']);
+            @$db->Connect( $cdbs['db_host'], $cdbs['db_login'], $cdbs['db_passwd'], '' );
+
+            if (!$db->IsConnected()) {
+                $status++;
+                printmsg("INFO => Unable to connect to server '{$cdbs['db_host']}'. ".$db->ErrorMsg(),0);
+                $err_txt .= " <img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> [{$cname}] Failed to connect as '{$cdbs['db_login']}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+            } else {
+                if ($db->SelectDB($cdbs['db_database'])) {
+                    $rs = $db->Execute("SELECT value FROM sys_config WHERE name like 'version'");
+                    $array = $rs->FetchRow();
+                    $curr_ver = $array['value'];
+
+                    $rs = $db->Execute("SELECT value FROM sys_config WHERE name like 'upgrade_index'");
+                    $array = $rs->FetchRow();
+                    $upgrade_index = $array['value'];
+
+                    $levelinfo = $upgrade_index;
+
+                    if ($curr_ver == '') { $curr_ver = 'PRE-v08.02.18'; }
+                    if ($upgrade_index < 8) { $levelinfo = "<span style='background-color:#FF7375;'>Must upgrade to at least v09.09.15 first!</span>"; }
+                } else {
+                    $status++;
+                    $err_txt .= " <img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> [{$cname}] Failed to select DB '{$cdbs['db_database']}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                }
+            }
+            // Close the database connection
+            @$db->Close();
+
+
+            $greet_txt .= "<tr style='background-color:{$ona_contexts[$cname]['context_color']};'><td >{$cname}</td><td>{$cdbs['db_type']}</td><td>{$cdbs['db_host']}</td><td>{$cdbs['db_database']}</td><td>{$curr_ver}</td><td><center>{$levelinfo}</center></td></tr>";
+        }
+
+    }
+
+    $greet_txt .= "</table></center>";
+
+
+    if ($status == 0) {
+        $upgrademain = <<<EOL
             <div id="upgrademain">
                 <form id="upgradeform">
                     <input type='hidden' name='install_submit' value='Y' />
@@ -87,10 +134,19 @@ if (@file_exists($dbconffile)) {
                 </form>
             </div>
 EOL;
-        }
+    } else {
+        $upgrademain = <<<EOL
+            <div id='status'>There was an error determining database context versions. Please correct them before proceeding.<br><br>Check that the content of your database configuration file:<br> '<i>{$dbconffile}</i>'<br>is accurate and that the databases themselves are configured properly.<br><br>{$err_txt}</div><br>
+            <div id="upgrademain">
+                <form id="upgradeform">
+                    <input type='hidden' name='install_submit' value='Y' />
+                    <input id='upgrade' type='hidden' name='upgrade' value='N' />
+                    <a style="text-decoration: none;" href="{$baseURL}"><input class='edit' type="button" value="Retry upgrade" onclick="" /></a>
+                </form>
+            </div>
+EOL;
     }
-    // Close the database connection
-    @mysql_close($con);
+
 }
 
 $main = <<<EOL
@@ -102,16 +158,28 @@ $main = <<<EOL
                     <table>
                         <tr onmouseover="el('help').innerHTML = input1text;">
                             <td>Database Host:</td><td><input id='input1' class='edit' type='text' name='database_host' value='localhost' onfocus="el('help').innerHTML = input1text;"/></td></tr>
+                        <tr onmouseover="el('help').innerHTML = inputtext_dbtype;">
+                            <td>Database Type:</td>
+                            <td>
+                                <select class='edit' name='dbtype' onfocus="el('help').innerHTML = inputtext_dbtype;">
+                                <option value="mysqlt" selected="true">MySQL</option>
+                              <!--  <option value="oci8">Oracle (oci8 driver)</option>
+                                <option value="oci8po">Oracle (oci8po driver)</option>
+                                <option value="postgres7">Postgres7</option>
+                                <option value="postgres8">Postgres8</option>-->
+                                </select>
+                            </td>
+                        </tr>
                         <tr onmouseover="el('help').innerHTML = input2text;">
                             <td>Database Admin:</td><td><input class='edit' type='text' name='admin_login' value='root' onfocus="el('help').innerHTML = input2text;" /></td></tr>
                         <tr onmouseover="el('help').innerHTML = input3text;">
                             <td>Database Admin Password:</td><td><input class='edit' type='password' name='admin_passwd' value='{$admin_passwd}' onfocus="el('help').innerHTML = input3text;"/></td></tr>
                         <tr onmouseover="el('help').innerHTML = input4text;">
-                            <td>Database Name:</td><td><input class='edit' type='text' name='database_name' value='ona' onfocus="el('help').innerHTML = input4text;"/></td></tr>
+                            <td>Database Name:</td><td><input class='edit' type='text' name='database_name' value='default' onfocus="el('help').innerHTML = input4text;"/></td></tr>
                         <tr onmouseover="el('help').innerHTML = input5text;">
-                            <td>System User Name:</td><td><input class='edit' type='text' name='sys_login' value='ona_sys' onfocus="el('help').innerHTML = input5text;"/></td></tr>
+                            <td>Application Database User Name:</td><td><input class='edit' type='text' name='sys_login' value='ona_sys' onfocus="el('help').innerHTML = input5text;"/></td></tr>
                         <tr onmouseover="el('help').innerHTML = input6text;">
-                            <td>System User Password:</td><td><input class='edit' type='password' name='sys_passwd' value='{$sys_passwd}' onfocus="el('help').innerHTML = input6text;"/></td></tr>
+                            <td>Application Database User Password:</td><td><input class='edit' type='password' name='sys_passwd' value='{$sys_passwd}' onfocus="el('help').innerHTML = input6text;"/></td></tr>
                         <tr onmouseover="el('help').innerHTML = input7text;">
                             <td>Default Domain Name:</td><td><input class='edit' type='text' name='default_domain' value='example.com' onfocus="el('help').innerHTML = input7text;"/></td></tr>
                         <tr><td colspan=2 style="text-align: center;"><br><input class='edit' type='submit' value='Create my database!' /></td></tr>
@@ -119,13 +187,14 @@ $main = <<<EOL
                 </form>
                 <script type="text/javascript" language="javascript">
 
-                    var input1text = '<b>Database Host:</b> The hostname or IP address of the database server that will house your database.';
+                    var input1text = '<b>Database Host:</b> The hostname or IP address of the database server where your database will be located.';
                     var input2text = '<b>Database Admin:</b> The username for the database administrator. This account will be used to create the new database and must have proper privledges to do so.';
                     var input3text = '<b>Database Admin Password:</b> The password for the database administrator account.';
-                    var input4text = '<b>Database Name:</b> The name of the database that will store the OpenNetAdmin tables.  We suggest "ona"';
-                    var input5text = '<b>System User Name:</b> The application username used to access the database.  We suggest "ona_sys"';
+                    var input4text = '<b>Database Name:</b> The name of the database that will store the OpenNetAdmin tables.  We suggest "default", which will become "ona_default" when created.';
+                    var input5text = '<b>System User Name:</b> The application username used by the php code to connect to the database.  We suggest "ona_sys"';
                     var input6text = '<b>System User Password:</b> The password for the application user.';
                     var input7text = '<b>Default Domain Name:</b> The default DNS domain for your site.  This will be your primary domain to add hosts to and will serve the default domain for certain tasks.';
+                    var inputtext_dbtype = '<b>Database Type:</b> The type of database running on the database host.';
 
                 </script>
             </div>
@@ -136,124 +205,166 @@ EOL;
 
 
 
-$dbconfig_contents = <<<EOL
-<?php
-// Define database context names
-//   The concept here is that we need multiple copies of the entire IP
-//   database to support different "contexts".  For example - the current
-//   database scheme doesn't allow a single server to have both an
-//   internal and external DNS name .. or an IP address in two different
-//   MPLS networks.  By having multiple IP Database instances we can leave
-//   all the code the same and simply switch the "context", or database,
-//   we are using.
-//
-//   I use this array as a place to store the MySQL database info as well,
-//   to keep all database connection info in one place.
-//
-//   Note: after adding a new context here you also need to add the details
-//         for that new context in functions_db.php as well.
-//   Note: the context used is determined by the value of \$conf['mysql_context']
-//         at the time functions_db.php is included.
-//   Note: Available ADODB types:
-//         mysql, mysqlt, oracle, oci8, mssql, postgres, sybase, vfp, access, ibase and many others.
-\$db_context = array (
-
-
-    // Type: -- The type should be a transactional database to support proper data rollbacks.
-    'mysqlt' => array(
-        // Name:
-        'default' => array(
-            'description' => 'Website metadata',
-            'primary' => array(
-                'db_type'     => 'mysqlt',  // using mysqlt for transaction support
-                'db_host'     => '{$database_host}',
-                'db_login'    => '{$sys_login}',
-                'db_passwd'   => '{$sys_passwd}',
-                'db_database' => '{$database_name}',
-                'db_debug'    => false,
-            ),
-            // You can use this to connect to a secondary server that is
-            // syncronized on the back end.
-            'secondary' => array(
-                'db_type'     => 'mysqlt',
-                'db_host'     => '{$database_host}',
-                'db_login'    => '{$sys_login}',
-                'db_passwd'   => '{$sys_passwd}',
-                'db_database' => '{$database_name}',
-                'db_debug'    => false,
-            ),
-        ),
-    ),
-);
-?>
-EOL;
-
-
-
-
 
 // If they have selected to keep the tables then remove the run_install file
 if ($install_submit == 'Y' && $upgrade == 'Y') {
-    // Connect to the database as the administrator user
-    $con = mysql_connect($db_context['mysqlt']['default']['primary']['db_host'],$db_context['mysqlt']['default']['primary']['db_login'],$db_context['mysqlt']['default']['primary']['db_passwd']);
-    if (!$con) {
-        $status++;
-        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to connect to '{$db_context['mysqlt']['default']['primary']['db_host']}' as '{$db_context['mysqlt']['default']['primary']['db_login']}'.<br>";
-    } else {
-        mysql_select_db($db_context['mysqlt']['default']['primary']['db_database'], $con);
 
-        $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Keeping your original data.<br>";
+    // Loop through each context and upgrade the Databases within
+    foreach(array_keys($ona_contexts) as $cname) {
 
-        // Get the current upgrade index if there is one.
-        if (mysql_select_db($db_context['mysqlt']['default']['primary']['db_database'], $con)) {
-            $result = mysql_query("SELECT value FROM sys_config WHERE name like 'upgrade_index';",$con);
-            $upgrade_index = @mysql_result($result, 0);
-        }
+        foreach($ona_contexts[$cname]['databases'] as $cdbs) {
+            printmsg("INFO => [{$cname}/{$cdbs['db_host']}] Performing an upgrade.",0);
 
-        $script_text = '';
-        if ($upgrade_index == '') {
-            $text .= "<img src=\"{$images}/silk/error.png\" border=\"0\" /> Auto upgrades not yet supported. Please see docs/UPGRADES<br>";
-        } else {
-            // loop until we have processed all the upgrades
-            while(1 > 0) {
-                // Find out what the next index will be
-                $new_index = $upgrade_index + 1;
-                // Determine file name
-                $upgrade_sqlfile = "{$base}/{$upgrade_index}-to-{$new_index}.sql";
-                $upgrade_phpfile = "{$base}/{$upgrade_index}-to-{$new_index}.php";
-                // Check that the upgrade script exists
-                if (file_exists($upgrade_phpfile)) {
-                    $script_text .= "<img src=\"{$images}/silk/error.png\" border=\"0\" />Please go to a command prompt and execute 'php {$upgrade_phpfile}' manually to complete the upgrade!<br>";
-                }
-                // Check that the upgrade file exists
-                if (file_exists($upgrade_sqlfile)) {
-                    populate_db($db_context['mysqlt']['default']['primary']['db_database'],$DBPrefix,$upgrade_sqlfile);
-                    $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Upgraded from index {$upgrade_index} to {$new_index}.<br>";
-                    // Update the upgrade_index element in the sys_config table
-                    if(mysql_query("UPDATE sys_config SET value='{$new_index}' WHERE name like 'upgrade_index';",$con)) {
-                        $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Updated database upgrade_index variable to '{$new_index}'.<br>";
-                    }
-                    else {
+            // switch from mysqlt to mysql becuase of adodb problems with innodb and opt stuff when doing xml
+            $adotype = $cdbs['db_type'];
+            if ($adotype == 'mysqlt') $adotype = 'mysql';
+
+            // Make an initial connection to a DB server without specifying a database
+            $db = ADONewConnection($adotype);
+            @$db->NConnect( $cdbs['db_host'], $cdbs['db_login'], $cdbs['db_passwd'], '' );
+
+            if (!$db->IsConnected()) {
+                $status++;
+                printmsg("INFO => Unable to connect to server '{$cdbs['db_host']}'. ".$db->ErrorMsg(),0);
+                $text .= " <img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> [{$cname}] Failed to connect to '{$cdbs['db_host']}' as '{$cdbs['db_login']}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+            } else {
+                $db->Close();
+                if ($db->NConnect( $database_host, $admin_login, $admin_passwd, $cdbs['db_database'])) {
+
+
+                    // Get the current upgrade index if there is one.
+                    $rs = $db->Execute("SELECT value FROM sys_config WHERE name like 'upgrade_index'");
+                    $array = $rs->FetchRow();
+                    $upgrade_index = $array['value'];
+
+                    if ($upgrade_index < 8) {
                         $status++;
-                        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to update upgrade_index variable in table 'sys_config'.<br>";
+                        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] This database must be on at least v09.09.15 before upgrading to this version.<br>";
+                        printmsg("ERROR => [{$cname}/{$cdbs['db_host']}] This database must be on at least v09.09.15 before upgrading to this version.",0);
+                        break;
                     }
-                    $upgrade_index++;
+
+                    $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Keeping your original data.<br>";
+
+                    // update existing tables in our database to match our baseline xml schema
+                    // create a schema object and build the query array.
+                    $schema = new adoSchema( $db );
+                    // Build the SQL array from the schema XML file
+                    $sql = $schema->ParseSchema($xmlfile_tables);
+                    // Execute the SQL on the database
+                    //$text .= "<pre>".$schema->PrintSQL('TEXT')."</pre>";
+                    if ($schema->ExecuteSchema( $sql ) == 2) {
+                        $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Upgrading tables within database '{$cdbs['db_database']}'.<br>";
+                        printmsg("INFO => [{$cname}/{$cdbs['db_host']}] Upgrading tables within database: {$cdbs['db_database']}",0);
+                    } else {
+                        $status++;
+                        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was an error upgrading tables.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                        printmsg("ERROR => There was an error processing tables: ".$db->ErrorMsg(),0);
+                        break;
+                    }
+
+
+
+
+
+                    $script_text = '';
+                    if ($upgrade_index == '') {
+                        $text .= "<img src=\"{$images}/silk/error.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Auto upgrades not yet supported. Please see docs/UPGRADES<br>";
+                    } else {
+                        // loop until we have processed all the upgrades
+                        while(1 > 0) {
+                            // Find out what the next index will be
+                            $new_index = $upgrade_index + 1;
+                            // Determine file name
+                            //$upgrade_sqlfile = "{$base}/{$upgrade_index}-to-{$new_index}.sql";
+                            $upgrade_xmlfile = "{$base}/{$upgrade_index}-to-{$new_index}.xml";
+                            $upgrade_phpfile = "{$base}/{$upgrade_index}-to-{$new_index}.php";
+                            // Check that the upgrade script exists
+                            if (file_exists($upgrade_phpfile)) {
+                                $script_text .= "<img src=\"{$images}/silk/error.png\" border=\"0\" />Please go to a command prompt and execute 'php {$upgrade_phpfile}' manually to complete the upgrade!<br>";
+                            }
+                            // Check that the upgrade file exists
+                            if (file_exists($upgrade_xmlfile)) {
+                                // get the contents of the sql update file
+                                // create new tables in our database
+                                // create a schema object and build the query array.
+                                $schema = new adoSchema( $db );
+                                // Build the SQL array from the schema XML file
+                                $sql = $schema->ParseSchema($upgrade_xmlfile);
+                                // Execute the SQL on the database
+                                if ($schema->ExecuteSchema( $sql ) == 2) {
+                                    $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Processed XML update file.<br>";
+                                    printmsg("INFO => [{$cname}/{$cdbs['db_host']}] Processed XML update file.",0);
+
+                                    // update index info in the DB
+                                    $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Upgraded from index {$upgrade_index} to {$new_index}.<br>";
+                                    // Update the upgrade_index element in the sys_config table
+                                    if($db->Execute("UPDATE sys_config SET value='{$new_index}' WHERE name like 'upgrade_index'")) {
+                                        $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Updated DB upgrade_index variable to '{$new_index}'.<br>";
+                                    }
+                                    else {
+                                        $status++;
+                                        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Failed to update upgrade_index variable in table 'sys_config'.<br>";
+                                        break;
+                                    }
+                                    $upgrade_index++;
+                                } else {
+                                    $status++;
+                                    $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Failed to process XML update file.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                                    printmsg("ERROR => [{$cname}/{$cdbs['db_host']}] Failed to process XML update file.  ".$db->ErrorMsg(),0);
+                                    break;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+
+                    }
+
+
+                    // Update the version element in the sys_config table if there were no previous errors
+                    if($status == 0) {
+                        if($db->Execute("UPDATE sys_config SET value='{$new_ver}' WHERE name like 'version'")) {
+                            $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Updated DB version variable to '{$new_ver}'.<br>";
+                        }
+                        else {
+                            $status++;
+                            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Failed to update version info in table 'sys_config'.<br>";
+                        }
+                    }
                 } else {
-                    break;
+                    $status++;
+                    $text .= " <img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Failed to select DB '{$cdbs['db_database']}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
                 }
             }
+            // Close the database connection
+            @$db->Close();
 
         }
 
-        // Update the version element in the sys_config table
-        if(mysql_query("UPDATE sys_config SET value='{$new_ver}' WHERE name like 'version';",$con)) {
-            $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Updated database version variable to '{$new_ver}'.<br>";
+    }
+
+    // If we still have the old reference to db_context in our config, upgrade it
+    if (is_array($db_context)) {
+        // set default db name to uppercase
+        $ona_contexts['DEFAULT'] = $ona_contexts['default'];unset($ona_contexts['default']);
+
+        // Open the database config and write the contents to it.
+        if (!$fh = @fopen($dbconffile, 'w')) {
+            $status++;
+            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to open config file for writing: '{$dbconffile}'.<br>";
+            printmsg("ERROR => Failed to open config file for writing: '{$dbconffile}'.",0);
         }
         else {
-            $status++;
-            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to update version info in table 'sys_config'.<br>";
+            fwrite($fh, "<?php\n\n\$ona_contexts=".var_export($ona_contexts,TRUE).";\n\n?>");
+            fclose($fh);
+            $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Upgraded database connection config file to new format.<br>";
+            printmsg("INFO => Upgraded database connection config file to new format.",0);
         }
+    }
 
+
+    if($status == 0) {
         $text .= $script_text;
         $text .= "You can now <a href='{$baseURL}'>CLICK HERE</a> to start using OpenNetAdmin! Enjoy!";
 
@@ -261,9 +372,10 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
             $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to delete the file '{$runinstall}'.<br>";
             $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Please remove '{$runinstall}' manually.<br>";
         }
+    } else {
+        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was a fatal error. Upgrade may be incomplete. Fix the issue and <a href=\"{$baseURL}\">try again</a>.<br>";
     }
-    // Close the database connection
-    @mysql_close($con);
+
 }
 
 
@@ -271,60 +383,147 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
 
 
 
-// If the initialize button was clicked, lets go for it!
+
+// This is the section for an brand new install
 if ($install_submit == 'Y' && !isset($upgrade)) {
-    // Connect to the database as the administrator user
-    $con = @mysql_connect($database_host,$admin_login,$admin_passwd);
-    if (!$con) {
+
+    // Just to keep things a little bit grouped, lets prepend the database with ona_
+    $database_name = 'ona_'.$database_name;
+
+    // set up initial context connection information
+    $context_name = 'DEFAULT';
+    $ona_contexts[$context_name]['databases']['0']['db_type']     = $dbtype;
+    $ona_contexts[$context_name]['databases']['0']['db_host']     = $database_host;
+    $ona_contexts[$context_name]['databases']['0']['db_login']    = $sys_login;
+    $ona_contexts[$context_name]['databases']['0']['db_passwd']   = $sys_passwd;
+    $ona_contexts[$context_name]['databases']['0']['db_database'] = $database_name;
+    $ona_contexts[$context_name]['databases']['0']['db_debug']    = FALSE;
+    $ona_contexts[$context_name]['description']   = 'Default data context';
+    $ona_contexts[$context_name]['context_color'] = '#D3DBFF';
+
+    // switch from mysqlt to mysql becuase of adodb problems with innodb and opt stuff when doing xml
+    $adotype = $dbtype;
+    if ($adotype == 'mysqlt') $adotype = 'mysql';
+
+    // Make an initial connection to a DB server without specifying a database
+    $db = ADONewConnection($adotype);
+    $db->NConnect( $database_host, $admin_login, $admin_passwd, '' );
+
+    if (!$db->IsConnected()) {
         $status++;
-        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to connect to '{$database_host}' as '{$admin_login}'.<br>";
+        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to connect to '{$database_host}' as '{$admin_login}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+        printmsg("INFO => Unable to connect to server '$database_host'. ".$db->ErrorMsg(),0);
     } else {
-        mysql_select_db($database_name, $con);
         $text .= "<script>el('mainform').style.display = 'none';</script><img src=\"{$images}/silk/accept.png\" border=\"0\" /> Connected to '{$database_host}' as '{$admin_login}'.<br>";
+
         // Drop out any existing database and user
-        if (@mysql_query("DROP DATABASE IF EXISTS {$database_name};",$con)) {
-            @mysql_query("DROP USER IF EXISTS '{$sys_login}'@'%';",$con);
+        if (@$db->Execute("DROP DATABASE IF EXISTS {$database_name}")) {
+            //@$db->Execute("DROP USER IF EXISTS '{$sys_login}'@'%'");
             $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Dropped existing instance of '{$database_name}'.<br>";
+            printmsg("INFO => Dropped existing DB: $database_name",0);
         }
         else {
             $status++;
-            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to drop existing instance of '{$database_name}'.<br>";
+            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to drop existing instance of '{$database_name}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
         }
 
-        // Create the database
-        if (@mysql_query("CREATE DATABASE {$database_name};",$con)) {
+        // MP TODO: when this is done as part of an add conext, we must copy the system_config data from the default context to populate it
+        // so that plugins that have created options will show up etc.  Prompt the user that this happened so they can change what they want.
+
+        // Create the new database
+        $datadict = NewDataDictionary($db);
+        $sqlarray = $datadict->CreateDatabase($database_name);
+        if ($datadict->ExecuteSQLArray($sqlarray) == 2) {
             $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created new database '{$database_name}'.<br>";
+            printmsg("INFO => Added new DB: $database_name",0);
+        }
+        else {
+            $status++;
+            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to create new database '{$database_name}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+            printmsg("ERROR => Failed to create new database '{$database_name}'. ".$db->ErrorMsg(),0);
+        }
 
-            // Open a sql file and load it into the database
-            // Start with the base tables
-            populate_db($DBname,$DBPrefix,$sqlfile);
-            $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created tables within database '{$database_name}'.<br>";
 
-            populate_db($DBname,$DBPrefix,$sqlfile_data);
-            $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Loaded tables with default data.<br>";
+        // select the new database we just created
+        $db->Close();
+        if ($db->NConnect( $database_host, $admin_login, $admin_passwd, $database_name)) {
+
+            $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Selected existing DB: '{$database_name}'.<br>";
+
+            // create new tables in our database
+            // create a schema object and build the query array.
+            $schema = new adoSchema( $db );
+            // Build the SQL array from the schema XML file
+            $sql = $schema->ParseSchema($xmlfile_tables);
+            // Execute the SQL on the database
+            if ($schema->ExecuteSchema( $sql ) == 2) {
+                $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Creating and updating tables within database '{$database_name}'.<br>";
+                printmsg("INFO => Creating and updating tables within new DB: {$database_name}",0);
+            } else {
+                $status++;
+                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was an error processing tables.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                printmsg("ERROR => There was an error processing tables: ".$db->ErrorMsg(),0);
+            }
+
+             // Load initial data into the new tables
+            if ($status == 0) {
+                $schema = new adoSchema( $db );
+                // Build the SQL array from the schema XML file
+                $sql = $schema->ParseSchema($xmlfile_data);
+                //$text .= "<pre>".$schema->PrintSQL('TEXT')."</pre>";
+                // Execute the SQL on the database
+                if ($schema->ExecuteSchema( $sql ) == 2) {
+                    $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Loaded tables with default data.<br>";
+                    printmsg("INFO => Loaded data to new DB: {$database_name}",0);
+                } else {
+                    $status++;
+                    $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed load default data.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                    printmsg("ERROR => There was an error loading the data: ".$db->ErrorMsg(),0);
+                }
+            }
 
             // Add the system user to the database
-            if(@mysql_query("GRANT ALL ON `{$database_name}`.* TO '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}';",$con)) {
-                @mysql_query("GRANT ALL ON `{$database_name}`.* TO '{$sys_login}'@'%' IDENTIFIED BY '{$sys_passwd}';",$con);
-                @mysql_query("GRANT ALL ON `{$database_name}`.* TO '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}';",$con);
-                @mysql_query("FLUSH PRIVILEGES;",$con);
+            // Run the query
+
+          if ($status == 0) {
+            // it is likely that this method here is mysql only?
+            if(@$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}'")) {
+                @$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'%' IDENTIFIED BY '{$sys_passwd}'");
+                @$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}'");
+                @$db->Execute("FLUSH PRIVILEGES");
                 $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created system user '{$sys_login}'.<br>";
+                printmsg("INFO => Created new DB user: {$sys_login}",0);
             }
             else {
                 $status++;
-                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to create system user '{$sys_login}'.<br>";
+                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to create system user '{$sys_login}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                printmsg("ERROR => There was an error creating DB user: ".$db->ErrorMsg(),0);
             }
 
             // add the default domain to the system
             // This is a manual add with hard coded values for timers.
-            if (@mysql_query("INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600);",$con)) {
-                @mysql_query("UPDATE sys_config SET value='{$default_domain}' WHERE name like 'dns_defaultdomain';",$con);
+            $xmldefdomain = <<<EOL
+<?xml version="1.0"?>
+<schema version="0.3">
+<sql>
+    <query>INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600)</query>
+    <query>UPDATE sys_config SET value='{$default_domain}' WHERE name like 'dns_defaultdomain'</query>
+</sql>
+</schema>
+EOL;
+            $schema = new adoSchema( $db );
+
+            // Build the SQL array from the schema XML file
+            $domainsql = $schema->ParseSchemaString($xmldefdomain);
+
+            // Execute the SQL on the database
+            if ($schema->ExecuteSchema( $domainsql ) == 2) {
                 $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created default DNS domain '{$default_domain}'.<br>";
-            }
-            else {
+            } else {
                 $status++;
-                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to create default DNS domain '{$default_domain}'.<br>";
+                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to create default DNS domain '{$default_domain}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
             }
+
 
             // Open the database config and write the contents to it.
             if (!$fh = @fopen($dbconffile, 'w')) {
@@ -332,24 +531,28 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
                 $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to open config file for writing: '{$dbconffile}'.<br>";
             }
             else {
-                fwrite($fh, $dbconfig_contents);
+                fwrite($fh, "<?php\n\n\$ona_contexts=".var_export($ona_contexts,TRUE).";\n\n?>");
                 fclose($fh);
-                $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created database config file.<br>";
+                $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created database connection config file.<br>";
             }
 
             // Update the version element in the sys_config table
-            if(@mysql_query("UPDATE sys_config SET value='{$new_ver}' WHERE name like 'version';",$con)) {
+            if(@$db->Execute("UPDATE sys_config SET value='{$new_ver}' WHERE name like 'version'")) {
                // $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Updated local version info.<br>";
             }
             else {
                 $status++;
-                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to update version info in table 'sys_config'.<br>";
+                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to update version info in table 'sys_config'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
             }
+          }
 
         } else {
             $status++;
-            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to create new database '{$database_name}'.<br>";
+            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to select DB '{$database_name}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+            printmsg("ERROR => Failed to select DB: {$database_name}.  ".$db->ErrorMsg(),0);
         }
+
+
 
         if ($status > 0) {
             $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was a fatal error. Install may be incomplete. Fix the issue and <a href=\"{$baseURL}\">try again</a>.<br>";
@@ -361,9 +564,11 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
             }
             $text .= "You can now <a href='{$baseURL}'>CLICK HERE TO START</a> using OpenNetAdmin!<br>You can log in as 'admin' with a password of 'admin'<br>Enjoy!";
         }
+
+        // Close the database connection
+        @$db->Close();
     }
-    // Close the database connection
-    @mysql_close($con);
+
 }
 
 
@@ -395,6 +600,16 @@ print <<<EOL
             width:100%;
         }
 
+        table {
+            font-size: small;
+            font-family: Arial, Sans-Serif;
+        }
+        td {
+            margin: 0px;
+            font-family: {$style['font-family']};
+            color: {$color['font_default']};
+            vertical-align: top;
+        }
         input.edit,select.edit {
             border: 1px solid #8CACBB;
             color: Black;
@@ -471,8 +686,8 @@ if ($upgrademain != '') {
 
 if ($install_submit == 'Y') {print "<div id='status'>{$text}</div><br>"; }
 
-if ($install_submit == 'Y') {print '<div id="help">Thanks for using ONA. Please visit <a href="http://opennetadmin.com>http://opennetadmin.com</a></div>';}
-if ($upgrademain == '') {print '<div id="help"></div>';}
+if ($install_submit == 'Y') {print '<div id="help">Thanks for using ONA. Please visit <a href="http://opennetadmin.com">http://opennetadmin.com</a></div>';}
+if ($upgrademain == '' and $install_submit != 'Y') {print '<div id="help"></div>';}
 
 print <<<EOL
                 </div>
@@ -485,69 +700,6 @@ EOL;
 
 
 
-
-
-
-/////////////////////////////////////////////////////////////////////
-// The following functions were taken from the php-syslog-ng install scripts
-// http://code.google.com/p/php-syslog-ng/
-//
-// They are used to take a mysqldump file and turn it into something the mysql_query function can use
-/////////////////////////////////////////////////////////////////////
-function populate_db($DBname, $DBPrefix, $sqlfile) {
-
-    mysql_select_db($DBname);
-    $mqr = @get_magic_quotes_runtime();
-    @set_magic_quotes_runtime(0);
-    $query = fread(fopen($sqlfile, "r"), filesize($sqlfile));
-    @set_magic_quotes_runtime($mqr);
-    $pieces  = split_sql($query);
-
-    for ($i=0; $i<count($pieces); $i++) {
-        $pieces[$i] = trim($pieces[$i]);
-        if(!empty($pieces[$i]) && $pieces[$i] != "#") {
-            $pieces[$i] = str_replace( "#__", $DBPrefix, $pieces[$i]);
-            if (!$result = mysql_query ($pieces[$i])) {
-                $errors[] = array ( mysql_error(), $pieces[$i] );
-            }
-        }
-    }
-}
-
-
-
-function split_sql($sql) {
-    $sql = trim($sql);
-    $sql = ereg_replace("\n#[^\n]*\n", "\n", $sql);
-
-    $buffer = array();
-    $ret = array();
-    $in_string = false;
-
-    for($i=0; $i<strlen($sql)-1; $i++) {
-        if($sql[$i] == ";" && !$in_string) {
-            $ret[] = substr($sql, 0, $i);
-            $sql = substr($sql, $i + 1);
-            $i = 0;
-        }
-
-        if($in_string && ($sql[$i] == $in_string) && $buffer[1] != "\\") {
-            $in_string = false;
-        }
-        elseif(!$in_string && ($sql[$i] == '"' || $sql[$i] == "'") && (!isset($buffer[0]) || $buffer[0] != "\\")) {
-            $in_string = $sql[$i];
-        }
-        if(isset($buffer[1])) {
-            $buffer[0] = $buffer[1];
-        }
-        $buffer[1] = $sql[$i];
-    }
-
-    if(!empty($sql)) {
-        $ret[] = $sql;
-    }
-    return($ret);
-}
 
 
 

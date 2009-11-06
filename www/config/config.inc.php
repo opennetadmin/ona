@@ -26,13 +26,7 @@ $_ENV['help_url'] = "http://opennetadmin.com/docs/";
 // Get any query info
 parse_str($_SERVER['QUERY_STRING']);
 
-// Check to see if the run_install file exists.
-// If it does, run the install process.
-if (file_exists($base.'/local/config/run_install')) {
-    // Process the install script
-    require_once($base.'/../install/install.php');
-    exit;
-}
+
 
 // Many of these settings serve as defaults.  They can be overridden by the settings in
 // the table "sys_config"
@@ -40,7 +34,7 @@ $conf = array (
     /* General Setup */
     // Database Context
     // For possible values see the $ona_contexts() array  in the database_settings.inc.php file
-    "default_context"        => 'default',
+    "default_context"        => 'DEFAULT',
 
     /* Used in header.php */
     "title"                  => 'OpenNetAdmin :: ',
@@ -60,6 +54,7 @@ $conf = array (
     "inc_functions_auth"     => "$include/functions_auth.inc.php",
     "inc_db_sessions"        => "$include/adodb_sessions.inc.php",
     "inc_adodb"              => "$include/adodb/adodb.inc.php",
+    "inc_adodb_xml"          => "$include/adodb/adodb-xmlschema03.inc.php",
     "inc_xajax_stuff"        => "$include/xajax_setup.inc.php",
     "inc_diff"               => "$include/DifferenceEngine.php",
 
@@ -149,9 +144,16 @@ $style['borderB'] = "border-bottom: 1px solid {$color['border']};";
 $style['borderL'] = "border-left: 1px solid {$color['border']};";
 $style['borderR'] = "border-right: 1px solid {$color['border']};";
 
-
 // Include the localized Database settings
-@include("{$base}/local/config/database_settings.inc.php");
+$dbconffile = "{$base}/local/config/database_settings.inc.php";
+if (file_exists($dbconffile)) {
+    if (substr(exec("php -l $dbconffile"), 0, 28) == "No syntax errors detected in") {
+        @include($dbconffile);
+    } else {
+        echo "Syntax error in your DB config file: {$dbconffile}<br>Please check that it contains a valid PHP formatted array.";
+        exit;
+    }
+}
 
 // Include the localized configuration settings
 // MP: this may not be needed now that "user" configs are in the database
@@ -163,6 +165,14 @@ require_once($conf['inc_functions']);
 
 // Include the basic database functions
 require_once($conf['inc_functions_db']);
+
+// Check to see if the run_install file exists.
+// If it does, run the install process.
+if (file_exists($base.'/local/config/run_install')) {
+    // Process the install script
+    require_once($base.'/../install/install.php');
+    exit;
+}
 
 // If we dont have a ona_context set in the cookie, lets set a cookie with the default context
 if (!isset($_COOKIE['ona_context_name'])) { $_COOKIE['ona_context_name'] = $conf['default_context']; setcookie("ona_context_name", $conf['default_context']); }

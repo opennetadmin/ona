@@ -1,0 +1,1034 @@
+<?xml version="1.0"?>
+<schema version="0.3">
+
+<!-- Begin creating base tables for the OpenNetAdmin system -->
+<!-- This file is used for the sole purpose of creating the base tables -->
+<!-- Another file will populate the default data -->
+
+  <table name="blocks">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="ip_addr_start" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="ip_addr_end" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="63">
+      <NOTNULL/>
+    </field>
+    <field name="notes" type="C" size="255">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="configuration_types">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="63">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="configurations">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="configuration_type_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="host_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="md5_checksum" type="C" size="63">
+      <NOTNULL/>
+    </field>
+    <field name="config_body" type="XL">
+      <NOTNULL/>
+    </field>
+    <field name="ctime" type="T">
+      <NOTNULL/>
+      <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
+    </field>
+    <field name="etime" type="T">
+      <NOTNULL/>
+      <DEFTIMESTAMP value="0000-00-00 00:00:00"/>
+    </field>
+  </table>
+
+
+  <table name="custom_attribute_types">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="63">
+      <NOTNULL/>
+    </field>
+    <field name="notes" type="C" size="127">
+      <NOTNULL/>
+    </field>
+    <field name="field_validation_rule" type="X">
+      <NOTNULL/>
+    </field>
+    <field name="failed_rule_text" type="X">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="custom_attributes">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <AUTOINCREMENT/>
+      <UNSIGNED/>
+    </field>
+    <field name="table_name_ref" type="C" size="40">
+      <NOTNULL/>
+    </field>
+    <field name="table_id_ref" type="I" size="10">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+      <UNSIGNED/>
+    </field>
+    <field name="custom_attribute_type_id" type="I" size="10">
+      <NOTNULL/>
+    </field>
+    <field name="value" type="X">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="dcm_module_list">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="name" type="C" size="128">
+      <KEY/>
+    </field>
+    <field name="description" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <field name="file" type="C" size="128">
+      <NOTNULL/>
+    </field>
+    <index name="name">
+      <UNIQUE/>
+      <col>name</col>
+    </index>
+  </table>
+
+
+  <table name="device_types">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+    </field>
+    <field name="model_id" type="I" size="10">
+      <NOTNULL/>
+    </field>
+    <field name="role_id" type="I" size="10">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="devices">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+    </field>
+    <field name="device_type_id" type="I" size="10">
+      <NOTNULL/>
+    </field>
+    <field name="location_id" type="I" size="10">
+      <NOTNULL/>
+    </field>
+    <field name="primary_host_id" type="I" size="10">
+      <NOTNULL/>
+    </field>
+    <field name="asset_tag" type="C" size="255"/>
+    <field name="serial_number" type="C" size="255"/>
+    <index name="asset_tag">
+      <UNIQUE/>
+      <col>asset_tag</col>
+      <col>serial_number</col>
+    </index>
+  </table>
+
+
+  <table name="dhcp_failover_groups">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="primary_server_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="secondary_server_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="max_response_delay" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="max_unacked_updates" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="max_load_balance" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="primary_port" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="peer_port" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="mclt" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="split" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+  </table>
+
+
+  <table name="dhcp_option_entries">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="subnet_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="host_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="server_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="dhcp_option_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="value" type="C" size="127">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="dhcp_options">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="31">
+      <NOTNULL/>
+    </field>
+    <field name="number" type="I" size="3">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="type" type="C" size="1">
+      <NOTNULL/>
+    </field>
+    <field name="display_name" type="C" size="31">
+      <NOTNULL/>
+    </field>
+    <field name="sys_default" type="I" size="1">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+  </table>
+
+
+  <table name="dhcp_pools">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="subnet_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="dhcp_failover_group_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="ip_addr_start" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="ip_addr_end" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="lease_length" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="lease_grace_period" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="lease_renewal_time" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="lease_rebind_time" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="allow_bootp_clients" type="I" size="1">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="dhcp_server_subnets">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="host_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="subnet_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+  </table>
+
+
+  <table name="dns">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="domain_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="interface_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="dns_id" type="I" size="10">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+      <UNSIGNED/>
+    </field>
+    <field name="type" type="C" size="15">
+      <NOTNULL/>
+    </field>
+    <field name="ttl" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <field name="ebegin" type="T">
+      <NOTNULL/>
+      <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
+    </field>
+    <field name="notes" type="C" size="128">
+      <NOTNULL/>
+    </field>
+    <field name="mx_preference" type="I" size="5">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="txt" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <field name="srv_pri" type="I" size="5">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="srv_weight" type="I" size="5">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="srv_port" type="I" size="5">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="dns_view_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <index name="domain_id">
+      <col>domain_id</col>
+    </index>
+  </table>
+
+
+  <table name="dns_server_domains">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="host_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="domain_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="role" type="C" size="10">
+      <NOTNULL/>
+    </field>
+    <field name="type" type="C" size="10">
+      <NOTNULL/>
+    </field>
+    <field name="rebuild_flag" type="I" size="1">
+      <NOTNULL/>
+    </field>
+  </table>
+
+  <table name="dns_views">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <field name="description" type="C" size="255">
+      <NOTNULL/>
+    </field>
+  </table>
+
+  <table name="domains" platform="mysql|mysqlt">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="parent_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="ctime" type="T">
+      <NOTNULL/>
+      <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
+    </field>
+    <field name="mtime" type="T">
+      <NOTNULL/>
+      <DEFTIMESTAMP value="0000-00-00 00:00:00"/>
+    </field>
+    <field name="serial" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="refresh" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="retry" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="expiry" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="minimum" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="default_ttl" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="primary_master" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <field name="admin_email" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <field name="name" type="C" size="255">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="group_assignments">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <AUTOINCREMENT/>
+      <UNSIGNED/>
+    </field>
+    <field name="group_id" type="I" size="10">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+      <UNSIGNED/>
+    </field>
+    <field name="user_id" type="I" size="10">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+      <UNSIGNED/>
+    </field>
+  </table>
+
+
+  <table name="groups">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <AUTOINCREMENT/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="32">
+      <NOTNULL/>
+    </field>
+    <field name="description" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <field name="level" type="I" size="4">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+    </field>
+    <index name="name">
+      <UNIQUE/>
+      <col>name</col>
+    </index>
+  </table>
+
+
+  <table name="host_roles">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="host_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="role_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+  </table>
+
+
+  <table name="hosts">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="parent_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="primary_dns_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="device_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="notes" type="C" size="255">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="interface_clusters">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="interface_id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="host_id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="255">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="interfaces">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="subnet_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="host_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="nat_interface_id" type="I" size="10">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+      <UNSIGNED/>
+    </field>
+    <field name="ip_addr" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="mac_addr" type="C" size="12">
+      <NOTNULL/>
+    </field>
+    <field name="name" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <field name="description" type="C" size="255"/>
+    <field name="last_response" type="T"/>
+  </table>
+
+
+  <table name="locations">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="reference" type="C" size="10">
+      <NOTNULL/>
+    </field>
+    <field name="name" type="C" size="63">
+      <NOTNULL/>
+    </field>
+    <field name="address" type="C" size="63">
+      <NOTNULL/>
+    </field>
+    <field name="city" type="C" size="63">
+      <NOTNULL/>
+    </field>
+    <field name="state" type="C" size="31">
+      <NOTNULL/>
+    </field>
+    <field name="zip_code" type="I" size="5">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="latitude" type="C" size="20">
+      <NOTNULL/>
+    </field>
+    <field name="longitude" type="C" size="20">
+      <NOTNULL/>
+    </field>
+    <field name="misc" type="C" size="256">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="manufacturers">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <index name="name">
+      <UNIQUE/>
+      <col>name</col>
+    </index>
+  </table>
+
+
+  <table name="messages">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <AUTOINCREMENT/>
+      <UNSIGNED/>
+    </field>
+    <field name="table_name_ref" type="C" size="40">
+      <NOTNULL/>
+    </field>
+    <field name="table_id_ref" type="I" size="10">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+      <UNSIGNED/>
+    </field>
+    <field name="priority" type="C" size="20">
+      <NOTNULL/>
+    </field>
+    <field name="username" type="C" size="40">
+      <NOTNULL/>
+    </field>
+    <field name="mtime" type="T">
+      <NOTNULL/>
+      <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
+    </field>
+    <field name="expiration" type="T">
+      <NOTNULL/>
+      <DEFTIMESTAMP value="0000-00-00 00:00:00"/>
+    </field>
+    <field name="message_text" type="X">
+      <NOTNULL/>
+    </field>
+    <index name="table_name_ref">
+      <col>table_name_ref</col>
+    </index>
+    <index name="table_id_ref">
+      <col>table_id_ref</col>
+    </index>
+  </table>
+
+
+  <table name="models">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="manufacturer_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <field name="snmp_sysobjectid" type="C" size="255">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="ona_logs">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <AUTOINCREMENT/>
+      <UNSIGNED/>
+    </field>
+    <field name="timestamp" type="T">
+      <NOTNULL/>
+      <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
+    </field>
+    <field name="username" type="C" size="25">
+      <NOTNULL/>
+    </field>
+    <field name="remote_addr" type="C" size="50">
+      <NOTNULL/>
+    </field>
+    <field name="message" type="C" size="1023">
+      <NOTNULL/>
+    </field>
+    <field name="context_name" type="C" size="63">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="permission_assignments">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <AUTOINCREMENT/>
+      <UNSIGNED/>
+    </field>
+    <field name="perm_id" type="I" size="10">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+      <UNSIGNED/>
+    </field>
+    <field name="user_id" type="I" size="10">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+      <UNSIGNED/>
+    </field>
+    <field name="group_id" type="I" size="10">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+      <UNSIGNED/>
+    </field>
+  </table>
+
+
+  <table name="permissions">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <AUTOINCREMENT/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="32">
+      <NOTNULL/>
+    </field>
+    <field name="description" type="C" size="255">
+      <NOTNULL/>
+    </field>
+    <index name="name">
+      <UNIQUE/>
+      <col>name</col>
+    </index>
+  </table>
+
+
+  <table name="roles">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="127">
+      <NOTNULL/>
+    </field>
+    <index name="name">
+      <UNIQUE/>
+      <col>name</col>
+    </index>
+  </table>
+
+
+  <table name="sequences" platform="mysql|mysqlt">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="name" type="C" size="31">
+      <KEY/>
+    </field>
+    <field name="seq" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+  </table>
+
+
+  <table name="sessions">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="sesskey" type="C" size="32">
+      <KEY/>
+    </field>
+    <field name="expiry" type="I" size="11">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="sessvalue" type="X">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="subnet_types">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="short_name" type="C" size="31">
+      <NOTNULL/>
+    </field>
+    <field name="display_name" type="C" size="63">
+      <NOTNULL/>
+    </field>
+    <field name="notes" type="C" size="255">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="subnets">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="network_role_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="subnet_type_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="vlan_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="ip_addr" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="ip_mask" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="127">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="sys_config">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="name" type="C" size="128">
+      <KEY/>
+    </field>
+    <field name="value" type="C" size="256">
+      <NOTNULL/>
+    </field>
+    <field name="description" type="C" size="512">
+      <NOTNULL/>
+    </field>
+    <field name="field_validation_rule" type="X">
+      <NOTNULL/>
+    </field>
+    <field name="editable" type="I" size="1">
+      <NOTNULL/>
+    </field>
+    <field name="deleteable" type="I" size="1">
+      <NOTNULL/>
+    </field>
+    <field name="failed_rule_text" type="X">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="users">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <AUTOINCREMENT/>
+      <UNSIGNED/>
+    </field>
+    <field name="username" type="C" size="32">
+      <NOTNULL/>
+    </field>
+    <field name="password" type="C" size="64">
+      <NOTNULL/>
+    </field>
+    <field name="level" type="I" size="4">
+      <NOTNULL/>
+      <DEFAULT value="0"/>
+    </field>
+    <field name="ctime" type="T">
+      <NOTNULL/>
+      <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
+    </field>
+    <field name="atime" type="T">
+      <NOTNULL/>
+      <DEFTIMESTAMP value="0000-00-00 00:00:00"/>
+    </field>
+    <index name="username">
+      <UNIQUE/>
+      <col>username</col>
+    </index>
+  </table>
+
+
+  <table name="vlan_campuses">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="63">
+      <NOTNULL/>
+    </field>
+  </table>
+
+
+  <table name="vlans">
+   <opt platform="mysql">TYPE=INNODB</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="vlan_campus_id" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="63">
+      <NOTNULL/>
+    </field>
+    <field name="number" type="I" size="5">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+  </table>
+
+
+
+
+  <!-- Run some sql to adjust tables that do not quite look right after the above table creations -->
+  <sql>
+      <!-- Added platform mysql to these.. not sure if/how they need to be adjusted on other platforms -->
+      <query platform="mysql">ALTER TABLE `configurations` CHANGE `ctime` `ctime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP</query>
+      <query platform="mysql">ALTER TABLE `dns` CHANGE `ebegin` `ebegin` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP</query>
+      <query platform="mysql">ALTER TABLE `ona_logs` CHANGE `timestamp` `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP</query>
+      <query platform="mysql">ALTER TABLE `users` CHANGE `ctime` `ctime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP</query>
+  </sql>
+
+  <sql>
+      <query platform="postgres">
+CREATE TABLE domains (
+id                       INTEGER NOT NULL,
+host_id                  INTEGER NOT NULL,
+domain_id                INTEGER NOT NULL,
+role                     VARCHAR(10) NOT NULL,
+type                     VARCHAR(10) NOT NULL,
+rebuild_flag             INTEGER NOT NULL,    
+                 PRIMARY KEY (id)             
+); 
+      </query>
+  </sql>
+
+
+
+
+  <!-- Get rid of old tables that are no longer used -->
+  <table name="defaults">
+      <DROP/> 
+  </table>
+  <table name="contexts">
+      <DROP/> 
+  </table>
+
+
+
+
+</schema>
