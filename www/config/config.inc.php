@@ -150,7 +150,7 @@ if (file_exists($dbconffile)) {
     if (substr(exec("php -l $dbconffile"), 0, 28) == "No syntax errors detected in") {
         @include($dbconffile);
     } else {
-        echo "Syntax error in your DB config file: {$dbconffile}<br>Please check that it contains a valid PHP formatted array.";
+        echo "Syntax error in your DB config file: {$dbconffile}<br>Please check that it contains a valid PHP formatted array, or check that you have the php cli tools installed.<br>You can perform this check maually using the command 'php -l {$dbconffile}'.";
         exit;
     }
 }

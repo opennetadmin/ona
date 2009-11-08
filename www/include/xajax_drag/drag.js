@@ -49,6 +49,7 @@ function Browser() {
   this.isIE    = false;
   this.isNS    = false;
   this.isKONQ  = false;
+  this.isOP    = false;
   this.version = null;
 
   ua = navigator.userAgent;
@@ -80,6 +81,14 @@ function Browser() {
   if ((i = ua.indexOf(s)) >= 0) {
     this.isNS = true;
     this.version = 6.1;
+    return;
+  }
+
+  // Check to see if this is Opera.
+  s = "Opera/";
+  if ((i = ua.indexOf(s)) >= 0) {
+    this.isOP = true;
+    this.version = parseFloat(ua.substr(i + s.length));
     return;
   }
   
@@ -131,7 +140,7 @@ function dragStart(event, id) {
         x = event.clientX + window.scrollX;
         y = event.clientY + window.scrollY;
     }
-    else if (browser.isIE || browser.isKONQ) {
+    else if (browser.isIE || browser.isKONQ || browser.isOP) {
         x = window.event.clientX + document.documentElement.scrollLeft
             + document.body.scrollLeft;
         y = window.event.clientY + document.documentElement.scrollTop
@@ -169,7 +178,7 @@ function dragStart(event, id) {
     }
     
     // Capture mousemove and mouseup events on the page.
-    if (browser.isNS || browser.isKONQ) {
+    if (browser.isNS || browser.isKONQ || browser.isOP) {
         document.addEventListener("mousemove", dragGo,   true);
         document.addEventListener("mouseup",   dragStop, true);
         event.preventDefault();
@@ -187,7 +196,7 @@ function dragGo(event) {
     var x, y;
     
     // Get cursor position with respect to the page.
-    if (browser.isIE || browser.isKONQ) {
+    if (browser.isIE || browser.isKONQ || browser.isOP) {
         x = window.event.clientX + document.documentElement.scrollLeft
             + document.body.scrollLeft;
         y = window.event.clientY + document.documentElement.scrollTop
@@ -208,7 +217,7 @@ function dragGo(event) {
         window.event.cancelBubble = true;
         window.event.returnValue = false;
     }
-    if (browser.isNS || browser.isKONQ)
+    if (browser.isNS || browser.isKONQ || browser.isOP)
         event.preventDefault();
 }
 
@@ -263,7 +272,7 @@ function dragStop(event) {
         document.detachEvent("onmousemove", dragGo);
         document.detachEvent("onmouseup",   dragStop);
     }
-    if (browser.isNS || browser.isKONQ) {
+    if (browser.isNS || browser.isKONQ || browser.isOP) {
         // MP: FIXME: this is not a good fix as it is a hard coding of block maps.  find a better way!
         if (dragObj.elNode.id != 'display_subnet_substrate' && dragObj.elNode.id != 'display_block_map_substrate' && dragObj.elNode.id != 'display_block_substrate') {
             dragObj.elNode.style.position = "fixed";
