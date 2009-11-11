@@ -779,7 +779,7 @@ complex DNS messes for themselves.
     if ($options['addptr'] == 'Y' and $options['type'] == 'A') {
         printmsg("DEBUG => Auto adding a PTR record for {$options['name']}.", 4);
         // Run dns_record_add as a PTR type
-        list($status, $output) = run_module('dns_record_add', array('name' => $options['name'],'domain' => $domain['fqdn'],'ip' => $options['ip'],'ebegin' => $options['ebegin'],'type' => 'PTR'));
+        list($status, $output) = run_module('dns_record_add', array('name' => $options['name'],'domain' => $domain['fqdn'],'ip' => $options['ip'],'ebegin' => $options['ebegin'],'type' => 'PTR','view' => $add_viewid));
         if ($status) {
             return(array($status, $output));
             printmsg($output,3);
@@ -850,7 +850,8 @@ function dns_record_modify($options="") {
         !$options['set_srv_weight'] and
         !$options['set_srv_port'] and
         !$options['set_mx_preference'] and
-        !$options['set_notes']
+        !$options['set_notes'] and
+        !$options['set_view']
        ) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
         $self['error'] = 'ERROR => Insufficient parameters';
@@ -1000,7 +1001,7 @@ EOM
 
     // Set options['set_name']?
     // Validate that the DNS name has only valid characters in it
-    if ($options['set_name']) {
+    if (array_key_exists('set_view',$options)) {
 
         // If we are specifically passing in a domain, use its value.  If we dont have a domain
         // then try to find it in the name that we are setting.
@@ -1202,7 +1203,7 @@ EOM
         printmsg("DEBUG => Auto adding a PTR record for {$options['set_name']}.", 0);
         // Run dns_record_add as a PTR type
         // Always use the $current_name variable as the name might change during the update
-        list($status, $output) = run_module('dns_record_add', array('name' => $current_name, 'domain' => $domain['fqdn'], 'ip' => $options['set_ip'],'ebegin' => $options['set_ebegin'],'type' => 'PTR'));
+        list($status, $output) = run_module('dns_record_add', array('name' => $current_name, 'domain' => $domain['fqdn'], 'ip' => $options['set_ip'],'ebegin' => $options['set_ebegin'],'type' => 'PTR','view' => $add_viewid));
         if ($status)
             return(array($status, $output));
             printmsg($text);
