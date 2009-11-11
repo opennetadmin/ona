@@ -360,17 +360,17 @@ EOL;
                     <input id="ebegin_input" style="display:none;"
                         id="set_ebegin"
                         name="set_ebegin"
-                        alt="TTL"
+                        alt="Set a future begin time"
                         value="{$dns_record['ebegin']}"
                         class="edit"
                         type="text"
                         size="16" maxlength="30"
                     />
-                    <img 
+                    <img
                         id="ebegin_clock"
-                        style="margin-top: -6px;" 
-                        src='{$images}/silk/clock.png' 
-                        border='0' 
+                        style="margin-top: -6px;"
+                        src='{$images}/silk/clock.png'
+                        border='0'
                         title="Set a future begin time"
                         onclick="el('ebegin_clock').style.display = 'none';el('ebegin_input').style.display = '';"
                     > -or-

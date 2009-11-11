@@ -978,11 +978,15 @@ EOM
             return(array(4, $self['error'] . "\n"));
         }
 
+            printmsg("ERROR => dns_record_modify() Changing a DNS view is not yet supported.",3);
+            $self['error'] = "ERROR => dns_record_modify() Changing a DNS view is not yet supported.";
+            return(array(4, $self['error'] . "\n"));
+
         // If we have a new dns view, add it to the SET array and update the check view variable used in all the checks.
-        if($dns['dns_view_id'] != $dnsview['id']) {
-            $SET['dns_view_id'] = $dnsview['id'];
-            $check_dns_view_id = $dnsview['id'];
-        }
+//         if($dns['dns_view_id'] != $dnsview['id']) {
+//             $SET['dns_view_id'] = $dnsview['id'];
+//             $check_dns_view_id = $dnsview['id'];
+//         }
     }
 
     // Checking the IP setting first to estabilish if we are changing the IP so I can check the new combo of A/ip later
