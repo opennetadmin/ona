@@ -151,7 +151,11 @@ function ws_save($window_name, $form='') {
 
     // Strip whitespace
     // FIXME: (PK) What about SQL injection attacks?  This is a user-entered string...
+    // Sanitize "name" option
+    // We require view names to be in upper case and spaces are converted to -'s.
     $form['dns_view_name'] = strtoupper(trim($form['dns_view_name']));
+    $form['dns_view_name'] = preg_replace('/\s+/', '-', $form['dns_view_name']);
+
     $form['dns_view_description'] = trim($form['dns_view_description']);
 
     // Don't insert a string of all white space!

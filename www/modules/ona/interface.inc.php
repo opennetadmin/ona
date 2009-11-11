@@ -210,6 +210,7 @@ EOM
     if ($options['addptr'] == 'Y') {
         $ptropts['name'] = $host['fqdn'];
         $ptropts['ip'] = $options['ip'];
+        $ptropts['view'] = $options['view'];
         $ptropts['type'] = 'PTR';
         printmsg("DEBUG => interface_add() calling dns_record_add() for new PTR record: {$options['ip']}", 3);
         list($status, $output) = run_module('dns_record_add', $ptropts);

@@ -97,6 +97,23 @@ function ws_editor($window_name, $form='') {
     }
     unset($device_types, $device, $manufacturer, $role, $model, $records);
 
+    //Get the list of DNS views
+    if ($conf['dns_views']) {
+        list($status, $rows, $dnsviews) = db_get_records($onadb, 'dns_views','id >= 0', 'name');
+
+        foreach ($dnsviews as $entry) {
+            $selected = '';
+            $dnsviews['name'] = htmlentities($dnsviews['name']);
+            // If this entry matches the record you are editing, set it to selected
+            if ($dns_record['id'] and $entry['id'] == $dns_record['dns_view_id']) {
+                $selected = "SELECTED=\"selected\"";
+            } elseif (!$dns_record['id'] and $entry['id'] == 0) {
+                // Otherwise use the default record if we are adding a new entry
+                $selected = "SELECTED=\"selected\"";
+            }
+            $dns_view_list .= "<option {$selected} value=\"{$entry['id']}\">{$entry['name']}</option>\n";
+        }
+    }
 
     // Escape data for display in html
     foreach(array_keys((array)$host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
@@ -172,7 +189,29 @@ EOL;
                 &nbsp;
             </td>
         </tr>
+EOL;
 
+    // Print a dns view selector
+    if ($conf['dns_views']) {
+      $window['html'] .= <<<EOL
+        <tr {$hideit}>
+            <td align="right" nowrap="true">
+                DNS View
+            </td>
+            <td class="padding" align="left" width="100%">
+                <select
+                    id="dns_view_select"
+                    name="set_view"
+                    alt="DNS View"
+                    class="edit"
+                >{$dns_view_list}</select>
+            </td>
+        </tr>
+
+EOL;
+    }
+
+    $window['html'] .= <<<EOL
         <tr {$hideit}>
             <td class="input_required" align="right" nowrap="true">
                 DNS Name
@@ -534,6 +573,7 @@ function ws_save($window_name, $form='') {
         $form['host'] = $form['set_host'] . '.' . $form['set_domain'];          unset($form['set_host']); unset($form['set_domain']);
         $form['notes'] = $form['set_notes'];                                    unset($form['set_notes']);
         $form['description'] = $form['set_description'];                        unset($form['set_description']);
+        $form['view'] = $form['set_view'];                                      unset($form['set_view']);
 
         // Interface options
         $form['ip'] = $form['set_ip'];                  unset($form['set_ip']);

@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.09';
+    $version = '1.10';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -210,6 +210,9 @@ primary name for a host should be unique in all cases I'm aware of
         $add_viewid = $dnsview['id'];
     }
 
+    // Set a message to display when using dns views
+    if ($conf['dns_views']) $viewmsg = ' Ensure you are selecting the proper DNS view for this record.';
+
     // Process A record types
     if ($options['type'] == 'A') {
         // find the IP interface record,
@@ -224,16 +227,16 @@ primary name for a host should be unique in all cases I'm aware of
         // Validate that there isn't already any dns record named $hostname in the domain $domain_id.
         list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'interface_id' => $interface['id'],'type' => 'A', 'dns_view_id' => $add_viewid));
         if ($d_status or $d_rows) {
-            printmsg("ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} with IP {$interface['ip_addr_text']} already exists!",3);
-            $self['error'] = "ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} with IP {$interface['ip_addr_text']} already exists!";
+            printmsg("ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} with IP {$interface['ip_addr_text']} already exists!{$viewmsg}",3);
+            $self['error'] = "ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} with IP {$interface['ip_addr_text']} already exists!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
         // Validate that there are no CNAMES already with this fqdn
         list($c_status, $c_rows, $c_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'CNAME','dns_view_id' => $add_viewid));
         if ($c_rows or $c_status) {
-            printmsg("ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!",3);
-            $self['error'] = "ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!";
+            printmsg("ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!{$viewmsg}",3);
+            $self['error'] = "ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -254,8 +257,8 @@ primary name for a host should be unique in all cases I'm aware of
             // Check that no other PTR records are set up for this IP
             list($status, $rows, $record) = ona_get_dns_record(array('interface_id' => $interface['id'], 'type' => 'PTR','dns_view_id' => $add_viewid));
             if ($rows) {
-                printmsg("ERROR => Another DNS PTR record already exists for this IP interface!",3);
-                $self['error'] = "ERROR => Another DNS PTR record already exists for this IP interface!";
+                printmsg("ERROR => Another DNS PTR record already exists for this IP interface!{$viewmsg}",3);
+                $self['error'] = "ERROR => Another DNS PTR record already exists for this IP interface!{$viewmsg}";
                 return(array(5, $self['error'] . "\n"));
             }
         }
@@ -290,8 +293,8 @@ but you still want to reverse lookup all the other interfaces to know they are o
         // Check that no other PTR records are set up for this IP
         list($status, $rows, $record) = ona_get_dns_record(array('interface_id' => $interface['id'], 'type' => 'PTR','dns_view_id' => $add_viewid));
         if ($rows) {
-            printmsg("ERROR => Another DNS PTR record already exists for this IP interface!",3);
-            $self['error'] = "ERROR => Another DNS PTR record already exists for this IP interface!";
+            printmsg("ERROR => Another DNS PTR record already exists for this IP interface!{$viewmsg}",3);
+            $self['error'] = "ERROR => Another DNS PTR record already exists for this IP interface!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -299,8 +302,8 @@ but you still want to reverse lookup all the other interfaces to know they are o
 
         list($status, $rows, $arecord) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'interface_id' => $interface['id'], 'type' => 'A','dns_view_id' => $add_viewid));
         if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point PTR entry to! Check that the IP you chose is associated with the name you chose.",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point PTR entry to! Check that the IP you chose is associated with the name you chose.";
+            printmsg("ERROR => Unable to find DNS A record to point PTR entry to! Check that the IP you chose is associated with the name you chose.{$viewmsg}",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point PTR entry to! Check that the IP you chose is associated with the name you chose.{$viewmsg}";
 
             // As a last resort just find a matching A record no matter the IP.  
             // This is for PTRs that point to an A record that uses a different IP (loopback example)
@@ -309,8 +312,8 @@ but you still want to reverse lookup all the other interfaces to know they are o
             // this is limiting in a way but allows cleaner data.
             list($status, $rows, $arecord) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
             if (($rows > 1)) {
-                printmsg("ERROR => Unable to find a SINGLE DNS A record to point PTR entry to! In this case, you are only allowed to do this if there is one A record using this name",3);
-                $self['error'] = "ERROR => Unable to find a SINGLE DNS A record to point PTR entry to! In this case, you are only allowed to do this if there is one A record using this name";
+                printmsg("ERROR => Unable to find a SINGLE DNS A record to point PTR entry to! In this case, you are only allowed to do this if there is one A record using this name.{$viewmsg}",3);
+                $self['error'] = "ERROR => Unable to find a SINGLE DNS A record to point PTR entry to! In this case, you are only allowed to do this if there is one A record using this name.{$viewmsg}";
             }
 
             if ($rows != 1)
@@ -398,8 +401,8 @@ complex DNS messes for themselves.
         // Validate that the CNAME I'm adding doesnt match an existing A record.
         list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'A','dns_view_id' => $add_viewid));
         if ($d_status or $d_rows) {
-            printmsg("ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} already exists!",3);
-            $self['error'] = "ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} already exists!";
+            printmsg("ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} already exists!{$viewmsg}",3);
+            $self['error'] = "ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} already exists!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -407,16 +410,16 @@ complex DNS messes for themselves.
         // Validate that there are no CNAMES already with this fqdn
         list($c_status, $c_rows, $c_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'CNAME','dns_view_id' => $add_viewid));
         if ($c_rows or $c_status) {
-            printmsg("ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!",3);
-            $self['error'] = "ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!";
+            printmsg("ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!{$viewmsg}",3);
+            $self['error'] = "ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
         // Find the dns record that it will point to
         list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
         if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point CNAME entry to!",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point CNAME entry to!";
+            printmsg("ERROR => Unable to find DNS A record to point CNAME entry to!{$viewmsg}",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point CNAME entry to!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -468,16 +471,16 @@ complex DNS messes for themselves.
         // Find the dns record that it will point to
         list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
         if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point NS entry to!",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!";
+            printmsg("ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
         // Validate that there are no NS already with this domain and host
         list($status, $rows, $record) = ona_get_dns_record(array('dns_id' => $pointsto_record['id'], 'domain_id' => $domain['id'],'type' => 'NS','dns_view_id' => $add_viewid));
         if ($rows or $status) {
-            printmsg("ERROR => Another DNS NS record for {$domain['fqdn']} pointing to {$options['pointsto']} already exists!",3);
-            $self['error'] = "ERROR => Another DNS NS record for {$domain['fqdn']} pointing to {$options['pointsto']} already exists!";
+            printmsg("ERROR => Another DNS NS record for {$domain['fqdn']} pointing to {$options['pointsto']} already exists!{$viewmsg}",3);
+            $self['error'] = "ERROR => Another DNS NS record for {$domain['fqdn']} pointing to {$options['pointsto']} already exists!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -543,8 +546,8 @@ complex DNS messes for themselves.
         // Find the dns record that it will point to
         list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
         if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point NS entry to!",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!";
+            printmsg("ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -617,16 +620,16 @@ complex DNS messes for themselves.
         // Find the dns record that it will point to
         list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
         if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point SRV entry to!",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point SRV entry to!";
+            printmsg("ERROR => Unable to find DNS A record to point SRV entry to!{$viewmsg}",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point SRV entry to!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
         // Validate that there are no records already with this domain and host
         list($status, $rows, $record) = ona_get_dns_record(array('dns_id' => $pointsto_record['id'], 'name' => $hostname, 'domain_id' => $domain['id'],'type' => 'SRV','dns_view_id' => $add_viewid));
         if ($rows or $status) {
-            printmsg("ERROR => Another DNS SRV record for {$hostname}.{$domain['fqdn']} pointing to {$options['pointsto']} already exists!",3);
-            $self['error'] = "ERROR => Another DNS SRV record for {$hostname}.{$domain['fqdn']} pointing to {$options['pointsto']} already exists!";
+            printmsg("ERROR => Another DNS SRV record for {$hostname}.{$domain['fqdn']} pointing to {$options['pointsto']} already exists!{$viewmsg}",3);
+            $self['error'] = "ERROR => Another DNS SRV record for {$hostname}.{$domain['fqdn']} pointing to {$options['pointsto']} already exists!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -690,8 +693,8 @@ complex DNS messes for themselves.
         // Validate that there are no TXT already with this domain and host
         list($status, $rows, $record) = ona_get_dns_record(array('txt' => $options['txt'], 'name' => $hostname, 'domain_id' => $domain['id'],'type' => 'TXT','dns_view_id' => $add_viewid));
         if ($rows or $status) {
-            printmsg("ERROR => Another DNS TXT record for {$options['name']} with that text value already exists!",3);
-            $self['error'] = "ERROR => Another DNS TXT record for {$options['name']} with that text value already exists!";
+            printmsg("ERROR => Another DNS TXT record for {$options['name']} with that text value already exists!{$viewmsg}",3);
+            $self['error'] = "ERROR => Another DNS TXT record for {$options['name']} with that text value already exists!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -833,7 +836,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.09';
+    $version = '1.10';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -950,6 +953,9 @@ EOM
     // Set status on if we are chaning IP addresses
     $changingint = 0;
 
+    // Set a message to display when using dns views
+    if ($conf['dns_views']) $viewmsg = ' Ensure you are selecting the proper DNS view for this record.';
+
     //
     // Define the records we're updating
     //
@@ -958,7 +964,7 @@ EOM
     $SET = array();
 
     // Gather DNS view information
-    if ($options['set_view']) {
+    if (array_key_exists('set_view',$options)) {
         if (is_numeric($options['set_view'])) {
             $viewsearch = array('id' => $options['set_view']);
         } else {
@@ -1001,7 +1007,7 @@ EOM
 
     // Set options['set_name']?
     // Validate that the DNS name has only valid characters in it
-    if (array_key_exists('set_view',$options)) {
+    if ($options['set_name']) {
 
         // If we are specifically passing in a domain, use its value.  If we dont have a domain
         // then try to find it in the name that we are setting.
@@ -1046,8 +1052,8 @@ EOM
             list($status, $rows, $tmp) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'interface_id' => $dns['interface_id'], 'type' => 'A','dns_view_id' => $check_dns_view_id));
             if ($rows) {
                 if ($tmp['id'] != $dns['id'] or $rows > 1) {
-                    printmsg("ERROR => There is already an A record with that name and IP address!",3);
-                    $self['error'] = "ERROR => There is already an A record with that name and IP address!";
+                    printmsg("ERROR => There is already an A record with that name and IP address!{$viewmsg}",3);
+                    $self['error'] = "ERROR => There is already an A record with that name and IP address!{$viewmsg}";
                     return(array(5, $self['error'] . "\n"));
                 }
             }
@@ -1058,8 +1064,8 @@ EOM
             list($status, $rows, $tmp) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'dns_id' => $dns['dns_id'], 'type' => $dns['type'],'dns_view_id' => $check_dns_view_id));
             if ($rows) {
                 if ($tmp['id'] != $dns['id'] or $rows > 1) {
-                    printmsg("ERROR => There is already a {$dns['type']} with that name pointing to that A record!",3);
-                    $self['error'] = "ERROR => There is already a {$dns['type']} with that name pointing to that A record!";
+                    printmsg("ERROR => There is already a {$dns['type']} with that name pointing to that A record!{$viewmsg}",3);
+                    $self['error'] = "ERROR => There is already a {$dns['type']} with that name pointing to that A record!{$viewmsg}";
                     return(array(6, $self['error'] . "\n"));
                 }
             }
@@ -1069,8 +1075,8 @@ EOM
             // if it is a CNAME, make sure the new name is not an A record name already
             list($status, $rows, $tmp) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'type' => 'A','dns_view_id' => $check_dns_view_id));
             if ($status or $rows) {
-                printmsg("ERROR => There is already an A record with that name!",3);
-                $self['error'] = "ERROR => There is already an A record with that name!";
+                printmsg("ERROR => There is already an A record with that name!{$viewmsg}",3);
+                $self['error'] = "ERROR => There is already an A record with that name!{$viewmsg}";
                 return(array(7, $self['error'] . "\n"));
             }
         }
@@ -1127,8 +1133,8 @@ EOM
         // Find the dns record that it will point to
         list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $check_dns_view_id));
         if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point {$options['set_type']} entry to!",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point {$options['set_type']} entry to!";
+            printmsg("ERROR => Unable to find DNS A record to point {$options['set_type']} entry to!{$viewmsg}",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point {$options['set_type']} entry to!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -1136,8 +1142,8 @@ EOM
         // Validate that there are no entries already pointed to the new A record
         list($c_status, $c_rows, $c_record) = ona_get_dns_record(array('name' => $dns['name'], 'domain_id' => $dns['domain_id'], 'dns_id' => $pointsto_record['id'], 'type' => $options['set_type'],'dns_view_id' => $check_dns_view_id));
         if ($c_record['id'] != $dns['id'] and $c_rows) {
-            printmsg("ERROR => Another DNS {$options['set_type']} record exists with the values you've selected!",3);
-            $self['error'] = "ERROR => Another DNS {$options['set_type']} record exists with the values you've selected!";
+            printmsg("ERROR => Another DNS {$options['set_type']} record exists with the values you've selected!{$viewmsg}",3);
+            $self['error'] = "ERROR => Another DNS {$options['set_type']} record exists with the values you've selected!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
         }
 
@@ -1398,6 +1404,8 @@ should make a find_dns_record(s) function.  a find by host option would be good.
 
 need to do a better delete of DNS records when deleting a host.. currently its a problem.
 
+MP: TODO:  this delete will not handle DNS views unless you use the ID of the record to delete.  add a view option at some point.
+
 */
 
     // If the name we were passed has a leading . in it then remove the dot.
@@ -1639,7 +1647,7 @@ EOM
         } while ($i < $rows);
 
 
-// FIXME: MP display other types of records like NS,MX,SRV etc etc
+// FIXME: MP display other types of records like NS,MX,SRV etc etc, also support dns views better
 
 
     }

@@ -70,6 +70,23 @@ function ws_editor($window_name, $form='') {
     // Load the host record for display
     if($interface['host_id']) list($status, $rows, $host) = ona_find_host($interface['host_id']);
 
+    //Get the list of DNS views
+    if ($conf['dns_views']) {
+        list($status, $rows, $dnsviews) = db_get_records($onadb, 'dns_views','id >= 0', 'name');
+
+        foreach ($dnsviews as $entry) {
+            $selected = '';
+            $dnsviews['name'] = htmlentities($dnsviews['name']);
+            // If this entry matches the record you are editing, set it to selected
+            if ($dns_record['id'] and $entry['id'] == $dns_record['dns_view_id']) {
+                $selected = "SELECTED=\"selected\"";
+            } elseif (!$dns_record['id'] and $entry['id'] == 0) {
+                // Otherwise use the default record if we are adding a new entry
+                $selected = "SELECTED=\"selected\"";
+            }
+            $dns_view_list .= "<option {$selected} value=\"{$entry['id']}\">{$entry['name']}</option>\n";
+        }
+    }
 
     // Escape data for display in html
     foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
@@ -274,6 +291,27 @@ EOL;
 
 // Show a "keep adding" checkbox if they are adding records
 if (!isset($interface['id'])) {
+
+    // Print a dns view selector
+    if ($conf['dns_views']) {
+      $window['html'] .= <<<EOL
+        <tr>
+            <td align="right" nowrap="true">
+                DNS View for PTR
+            </td>
+            <td class="padding" align="left" width="100%">
+                <select
+                    id="dns_view_select"
+                    name="set_view"
+                    alt="DNS View"
+                    class="edit"
+                >{$dns_view_list}</select>
+            </td>
+        </tr>
+
+EOL;
+    }
+
         $window['html'] .= <<<EOL
         <td align="right" nowrap="true">
             Auto create PTR
@@ -384,6 +422,7 @@ function ws_save($window_name, $form='') {
         $form['name'] = $form['set_name']; unset($form['set_name']);
         $form['description'] = $form['set_description']; unset($form['set_description']);
         $form['addptr'] = $form['set_addptr']; unset($form['set_addptr']);
+        $form['view'] = $form['set_view']; unset($form['set_view']);
     }
     else {
         $form['interface'] = $form['interface_id']; unset($form['interface_id']);
@@ -403,7 +442,7 @@ function ws_save($window_name, $form='') {
     }
 
     // Run the module
-    list($status, $output) = run_module('host_'.$module, $form);
+    list($status, $output) = run_module($module, $form);
 
     // If the module returned an error code display a popup warning
     if ($status)

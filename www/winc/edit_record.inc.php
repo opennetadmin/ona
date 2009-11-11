@@ -223,8 +223,8 @@ EOL;
     if ($conf['dns_views']) {
       $window['html'] .= <<<EOL
         <tr>
-            <td class="input_required" align="right" nowrap="true">
-                DNS Record View
+            <td align="right" nowrap="true">
+                DNS View
             </td>
             <td class="padding" align="left" width="100%">
                 <select
@@ -242,7 +242,7 @@ EOL;
     $window['html'] .= <<<EOL
             <tr>
                 <td class="input_required" align="right" nowrap="true">
-                    DNS record type
+                    DNS Record Type
                 </td>
                 <td class="padding" align="left" width="100%">
                     <select {$typedisable}
