@@ -949,9 +949,11 @@ EOM
     $current_name = $dns['fqdn'];
     $current_int_id = $dns['interface_id'];
     $check_dns_view_id = $dns['dns_view_id'];
+    $current_dns_view_id = $dns['dns_view_id'];
 
     // Set status on if we are chaning IP addresses
     $changingint = 0;
+    $changingview = 0;
 
     // Set a message to display when using dns views
     if ($conf['dns_views']) $viewmsg = ' Ensure you are selecting the proper DNS view for this record.';
@@ -978,15 +980,20 @@ EOM
             return(array(4, $self['error'] . "\n"));
         }
 
-            printmsg("ERROR => dns_record_modify() Changing a DNS view is not yet supported.",3);
-            $self['error'] = "ERROR => dns_record_modify() Changing a DNS view is not yet supported.";
-            return(array(4, $self['error'] . "\n"));
-
         // If we have a new dns view, add it to the SET array and update the check view variable used in all the checks.
-//         if($dns['dns_view_id'] != $dnsview['id']) {
-//             $SET['dns_view_id'] = $dnsview['id'];
-//             $check_dns_view_id = $dnsview['id'];
-//         }
+        if($dns['dns_view_id'] != $dnsview['id']) {
+
+            // You can only change the view on parent records.. if this record has a dns_id, you must change the parent
+            if ($dns['dns_id']) {
+                printmsg("ERROR => You must change the parent DNS A record to the new view.  This record will follow.",3);
+                $self['error'] = "ERROR => You must change the parent DNS A record to the new view.  This record will follow.";
+                return(array(5, $self['error'] . "\n"));
+            }
+
+            $SET['dns_view_id'] = $dnsview['id'];
+            $check_dns_view_id = $dnsview['id'];
+            $changingview = 1;
+        }
     }
 
     // Checking the IP setting first to estabilish if we are changing the IP so I can check the new combo of A/ip later
@@ -1213,7 +1220,7 @@ EOM
         printmsg("DEBUG => Auto adding a PTR record for {$options['set_name']}.", 0);
         // Run dns_record_add as a PTR type
         // Always use the $current_name variable as the name might change during the update
-        list($status, $output) = run_module('dns_record_add', array('name' => $current_name, 'domain' => $domain['fqdn'], 'ip' => $options['set_ip'],'ebegin' => $options['set_ebegin'],'type' => 'PTR','view' => $add_viewid));
+        list($status, $output) = run_module('dns_record_add', array('name' => $current_name, 'domain' => $domain['fqdn'], 'ip' => $options['set_ip'],'ebegin' => $options['set_ebegin'],'type' => 'PTR','view' => $check_dns_view_id));
         if ($status)
             return(array($status, $output));
             printmsg($text);
@@ -1278,6 +1285,22 @@ EOM
                     return(array(7, $self['error'] . "\n"));
                 }
             }
+        }
+
+        // If we are changing the view, we must change all other DNS records that point to this one to the same view.
+        if ($changingview) {
+            if ($SET['dns_view_id'] != $current_dns_view_id) {
+                printmsg("DEBUG = > dns_record_modify() Updating child DNS records to new dns view.", 2);
+                list($status, $rows) = db_update_record($onadb, 'dns', array('dns_id' => $dns['id']), array('dns_view_id' => $SET['dns_view_id']));
+                if ($status) {
+                    $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record child view updates: " . $self['error'];
+                    printmsg($self['error'], 0);
+                    return(array(11, $self['error'] . "\n"));
+                }
+            }
+
+            // TRIGGER: yep I probably need one here  FIXME
+
         }
 
         // Change the actual DNS record

@@ -110,6 +110,7 @@ function ws_editor($window_name, $form='') {
     // Set the window title:
     if ($dns_record['id']) {
         $typedisable = 'disabled="1"';
+        if ($dns_record['dns_id']) $viewdisable = 'disabled="1"';
         $auto_ptr_checked = '';
         $window['title'] = "Edit DNS Record";
         $window['js'] .= "el('record_type_select').onchange('fake event');updatednsinfo('{$window_name}');el('set_hostname_{$window_name}').focus();";
@@ -200,6 +201,12 @@ EOL;
         $window['html'] .= "<input type=\"hidden\" name=\"set_type\" value=\"{$dns_record['type']}\">";
     }
 
+    // If we are editing and thus disabling the view selector, we need to put a hidden input field
+    if ($viewdisable) {
+        $window['html'] .= "<input type=\"hidden\" name=\"set_view\" value=\"{$dns_record['dns_view_id']}\">";
+    }
+
+
     $window['html'] .= <<<EOL
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']};padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;" width="100%">
         <!-- DNS RECORD -->
@@ -227,7 +234,7 @@ EOL;
                 DNS View
             </td>
             <td class="padding" align="left" width="100%">
-                <select
+                <select {$viewdisable}
                     id="dns_view_select"
                     name="set_view"
                     alt="DNS View"
