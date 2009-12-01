@@ -199,7 +199,7 @@ primary name for a host should be unique in all cases I'm aware of
         } else {
             $viewsearch = array('name' => strtoupper($options['view']));
         }
-        // find the IP interface record,
+        // find the view record,
         list($status, $rows, $dnsview) = ona_get_dns_view_record($viewsearch);
         if (!$rows) {
             printmsg("ERROR => dns_record_add() Unable to find DNS view: {$options['view']}",3);
@@ -207,7 +207,14 @@ primary name for a host should be unique in all cases I'm aware of
             return(array(4, $self['error'] . "\n"));
         }
 
-        $add_viewid = $dnsview['id'];
+        $add_pointsto_viewid = $add_viewid = $dnsview['id'];
+    }
+
+    // lets test out if it has a / in it to strip the view name portion
+    if (strstr($options['pointsto'],'/')) {
+        list($dnsview,$options['pointsto']) = explode('/', $options['pointsto']);
+        list($status, $rows, $view) = db_get_record($onadb, 'dns_views', array('name' => strtoupper($dnsview)));
+        if($rows) $add_pointsto_viewid = $view['id'];
     }
 
     // Set a message to display when using dns views
@@ -458,6 +465,13 @@ complex DNS messes for themselves.
         // Now find what the host part of $search is
         $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
 
+        // lets test out if it has a / in it to strip the view name portion
+//         if (strstr($phostname,'/')) {
+//             list($dnsview,$phostname) = explode('/', $phostname);
+//             list($status, $rows, $view) = db_get_record($onadb, 'dns_views', array('name' => strtoupper($dnsview)));
+//             if($rows) $add_pointsto_viewid = $view['id'];
+//         }
+
         // Validate that the DNS name has only valid characters in it
         $phostname = sanitize_hostname($phostname);
         if (!$phostname) {
@@ -469,7 +483,7 @@ complex DNS messes for themselves.
         printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
 
         // Find the dns record that it will point to
-        list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
+        list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_pointsto_viewid));
         if ($status or !$rows) {
             printmsg("ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}",3);
             $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}";

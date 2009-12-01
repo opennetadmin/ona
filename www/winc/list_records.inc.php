@@ -152,7 +152,7 @@ function ws_display_list($window_name, $form='') {
     // If we dont have DNS views turned on, limit data to just the default view.
     // Even if there is data associated with other views, ignore it
     if (!$conf['dns_views']) {
-        $where .= $and . 'dns_view_id = 0';
+        $where .= ' AND dns_view_id = 0';
     }
 
 
@@ -169,6 +169,13 @@ function ws_display_list($window_name, $form='') {
     // 1. get (A) records that match any interface_id associated with the host
     // 2. get CNAMES that point to dns records that are using an interface_id associated with the host
     if ($form['host_id']) {
+        // If we dont have DNS views turned on, limit data to just the default view.
+        // Even if there is data associated with other views, ignore it
+        // MP: something strange with this, it should only limit to default view.. sometimes it does not???
+        if (!$conf['dns_views']) {
+            $hwhere .= 'dns_view_id = 0 AND ';
+        }
+
         // Get the host record so we know what the primary interface is
         list($status, $rows, $host) = ona_get_host_record(array('id' => $form['host_id']), '');
 
@@ -176,7 +183,7 @@ function ws_display_list($window_name, $form='') {
         db_get_records(
             $onadb,
             'dns',
-            'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .') OR interface_id in (select interface_id from interface_clusters where host_id = '. $onadb->qstr($form['host_id']) .')',
+            $hwhere.'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .') OR interface_id in (select interface_id from interface_clusters where host_id = '. $onadb->qstr($form['host_id']) .')',
             "type",
             $conf['search_results_per_page'],
             $offset
@@ -195,7 +202,7 @@ function ws_display_list($window_name, $form='') {
                 db_get_records(
                     $onadb,
                     'dns',
-                    'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .') OR interface_id in (select interface_id from interface_clusters where host_id = '. $onadb->qstr($form['host_id']) .')' . $filter,
+                    $hwhere.'interface_id in (select id from interfaces where host_id = '. $onadb->qstr($form['host_id']) .') OR interface_id in (select interface_id from interface_clusters where host_id = '. $onadb->qstr($form['host_id']) .')' . $filter,
                     "",
                     0
                 );

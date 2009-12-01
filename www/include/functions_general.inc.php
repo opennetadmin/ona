@@ -885,6 +885,11 @@ function sanitize_hostname($string="") {
     //  * Can not have more than one consecutive period
     //  * Length must range between 1 and 63 characters
 
+    // lets test out if it has a / in it to strip the view name portion
+    if (strstr($string,'/')) {
+        list($dnsview,$string) = explode('/', $string);
+    }
+
     // We lower case all dns names
     $string = strtolower($string);
 

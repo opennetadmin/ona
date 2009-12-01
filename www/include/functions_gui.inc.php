@@ -309,12 +309,15 @@ function get_host_suggestions($q, $max_results=10) {
     global $self, $conf, $onadb;
     $results = array();
 
+    // If we are not using views, limit to the default
+    if (!$conf['dns_views']) $limit_to_view = 'dns_view_id = 0 AND ';
+
     // wildcard the query before searching
     $q = $q . '%';
 
     $table = 'dns';
     $field = 'name';
-    $where  = "{$field} LIKE " . $onadb->qstr($q);
+    $where  = "{$limit_to_view} {$field} LIKE " . $onadb->qstr($q);
     $order  = "{$field} ASC";
 
     // Search the db for results
@@ -335,7 +338,11 @@ function get_host_suggestions($q, $max_results=10) {
             $results[] = $record[$field];
         } else {
             list($status, $rows, $domain) = db_get_record($onadb, 'domains', array('id' => $record['domain_id']));
-            $results[] = $record[$field].".".$domain['name'];
+            if ($conf['dns_views']) {
+                list($status, $rows, $view) = db_get_record($onadb, 'dns_views', array('id' => $record['dns_view_id']));
+                $viewname = $view['name'].'/';
+            }
+            $results[] = $viewname.$record[$field].".".$domain['name'];
         }
     }
 
@@ -347,12 +354,15 @@ function get_a_record_suggestions($q, $max_results=10) {
     global $self, $conf, $onadb;
     $results = array();
 
+    // If we are not using views, limit to the default
+    if (!$conf['dns_views']) $limit_to_view = 'dns_view_id = 0 AND ';
+
     // wildcard the query before searching
     $q = $q . '%';
 
     $table = 'dns';
     $field = 'name';
-    $where  = "type LIKE 'A' and {$field} LIKE " . $onadb->qstr($q);
+    $where  = "{$limit_to_view} type LIKE 'A' and {$field} LIKE " . $onadb->qstr($q);
     $order  = "{$field} ASC";
 
     // Search the db for results

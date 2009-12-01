@@ -1509,6 +1509,15 @@ function ona_find_host($search="") {
     // It's an FQDN, do a bunch of stuff!
     //
 
+    // lets test out if it has a / in it to strip the view name portion
+    $view['id'] = 0;
+    if (strstr($search,'/')) {
+        list($dnsview,$search) = explode('/', $search);
+        list($status, $rows, $view) = db_get_record($onadb, 'dns_views', array('name' => strtoupper($dnsview)));
+        if(!$rows) $view['id'] = 0;
+    }
+
+
     // FIXME: MP this will currently "fail" if the fqdn of the server
     // is the same as a valid domain name.  not sure why anyone would have this but
     // never say never.  I'll leave this issue unfixed for now
@@ -1530,7 +1539,7 @@ function ona_find_host($search="") {
     $domain_parts = explode('.', $domain['fqdn']);
     foreach ($domain_parts as $part) {
         // Loop through the parts of the domain to find host.sub domain.com type entries..
-        list($status, $dnsrows, $dnsrecs) = db_get_records($onadb, 'dns', array('domain_id' => $domain['id'], 'name' => $hostname));
+        list($status, $dnsrows, $dnsrecs) = db_get_records($onadb, 'dns', array('domain_id' => $domain['id'], 'name' => $hostname, 'dns_view_id' => $view['id']));
         // If we didnt just find a dns record.. lets move the period over and try a deeper domain/host pair.
         if (!$dnsrows) {
             $hostname = $hostname.'.'.$part;
@@ -1592,6 +1601,11 @@ function ona_find_domain($fqdn="", $returndefault=0) {
     $status=1;
     $fqdn = strtolower($fqdn);
     printmsg("DEBUG => ona_find_domain({$fqdn}) called", 3);
+
+    // lets test out if it has a / in it to strip the view name portion
+    if (strstr($fqdn,'/')) {
+        list($dnsview,$fqdn) = explode('/', $fqdn);
+    }
 
     // Split it up on '.' and put it in an array backwards
     $parts = array_reverse(explode('.', $fqdn));
@@ -1696,6 +1710,15 @@ function ona_find_dns_record($search="",$type='',$int_id=0) {
     // It's an FQDN, do a bunch of stuff!
     //
 
+    // lets test out if it has a / in it to strip the view name portion
+    $view['id'] = 0;
+    if (strstr($search,'/')) {
+        list($dnsview,$search) = explode('/', $search);
+        list($status, $rows, $view) = db_get_record($onadb, 'dns_views', array('name' => strtoupper($dnsview)));
+        if(!$rows) $view['id'] = 0;
+    }
+
+
     // Find the domain name piece of $search
     list($status, $rows, $domain) = ona_find_domain($search);
     printmsg("DEBUG => ona_find_domain({$search}) returned: {$domain['fqdn']}", 3);
@@ -1708,7 +1731,7 @@ function ona_find_dns_record($search="",$type='',$int_id=0) {
     if ($hostname == $domain['fqdn']) $hostname = '';
 
     // Setup the search array
-    $searcharray = array('domain_id' => $domain['id'], 'name' => $hostname);
+    $searcharray = array('domain_id' => $domain['id'], 'name' => $hostname, 'dns_view_id' => $view['id']);
 
     // If an interface_id was passed, add it to the array
     if ($int_id > 0) { $searcharray['interface_id'] = $int_id; }
