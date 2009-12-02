@@ -369,7 +369,7 @@ EOL;
 
 
         // Escape data for display in html
-        foreach(array_keys((array)$record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES);}
+        foreach(array_keys((array)$record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']);}
 
         // determine the priority and setup an image for it
         switch ($record['priority']) {
@@ -796,8 +796,8 @@ EOL;
     // Calculate the percentage of the subnet that's used (total size - allocated hosts - dhcp pool size)
     $usage_html = get_subnet_usage_html($subnet['id']);
 
-    foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
-    foreach(array_keys((array)$location) as $key) { $location[$key] = htmlentities($location[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES, $conf['php_charset']); }
+    foreach(array_keys((array)$location) as $key) { $location[$key] = htmlentities($location[$key], ENT_QUOTES, $conf['php_charset']); }
 
     $html .= <<<EOL
 
@@ -1237,7 +1237,7 @@ EOL;
         color: #FFFFFF;
 EOL;
 
-    foreach(array_keys((array)$form) as $key) { $form[$key] = htmlentities($form[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$form) as $key) { $form[$key] = htmlentities($form[$key], ENT_QUOTES, $conf['php_charset']); }
 
     $html .= <<<EOL
     <!-- FREE IP QUICK SEARCH -->
@@ -1468,8 +1468,8 @@ EOL;
 
     foreach($interfaces as $interface) {
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id'=>$interface['subnet_id']));
-        foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
-        foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
+        foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES, $conf['php_charset']); }
+        foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES, $conf['php_charset']); }
         $ip = ip_mangle($interface['ip_addr'],'dotted');
 
         $clusticon = '';
@@ -1581,8 +1581,8 @@ EOL;
 
     foreach($interfaces as $interface) {
         list($status, $rows, $host) = ona_get_host_record(array('id'=>$interface['host_id']));
-        foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
-        foreach(array_keys((array)$host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
+        foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES, $conf['php_charset']); }
+        foreach(array_keys((array)$host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES, $conf['php_charset']); }
 
         // If there is no cluster name then use the name from the primary interface
         if (!$interface['name'])

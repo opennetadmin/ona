@@ -53,7 +53,7 @@ function ws_editor($window_name, $form='') {
 
 
     // Escape data for display in html
-    foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES, $conf['php_charset']); }
 
     // Set the window title:
     $window['title'] = "Add Subnet";

@@ -67,7 +67,15 @@ $conf = array (
     "syslog"                 => "0",
     "stdout"                 => "0",
     "logfile"                => "/var/log/ona.log",
+
+    /* The output charset to be used in htmlentities() and htmlspecialchars() filtering */
+    "charset"                => "utf8",
+    "php_charset"            => "UTF-8",
+
 );
+
+// Set multibyte encoding to UTF-8
+mb_internal_encoding("UTF-8");
 
 // Read in the version file to our conf variable
 // It must have a v<majornum>.<minornum>, no number padding, to match the check version code.

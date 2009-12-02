@@ -140,6 +140,9 @@ function db_pconnect($type, $context_name) {
         // Create a new ADODB connection object
         $object = NewADOConnection($self['db_type']);
         $object->debug = $self['db_debug'];
+        // MP: this does not seem to be a consistant setting for all adodb drivers
+        // leaving it set for those that can use it.
+        $object->charSet = $conf['charset'];
 
         // Try connecting to the database server
         $connected = 0;
@@ -152,8 +155,11 @@ function db_pconnect($type, $context_name) {
             if (!$ok1 or !$ok2 or $ok3)
                 printmsg("ERROR => {$self['db_type']} DB connection failed: " . $object->ErrorMsg(), 0);
             // Otherwise return the object.
-            else
+            else {
+                // MP: not sure how this behaves on other databases.. should work for mysql and postgres
+                $object->Execute("SET names '{$conf['charset']}'");
                 return $object;
+            }
         }
     }
 
@@ -1101,6 +1107,7 @@ function ona_get_host_record($array='', $order='') {
     list($status_dns, $rows_dns, $dns) = ona_get_dns_record(array('id' => $record['primary_dns_id']));
     $record['name'] = $dns['name'];
     $record['fqdn'] = $dns['fqdn'];
+    $record['dns_view_id'] = $dns['dns_view_id'];
     $record['domain_id'] = $dns['domain_id'];
     $record['domain_fqdn'] = $dns['domain_fqdn'];
     return(array($status + $status_dns, $rows, $record));

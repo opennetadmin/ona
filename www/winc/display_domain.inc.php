@@ -37,7 +37,7 @@ function ws_display($window_name, $form='') {
     }
 
     // Create some javascript to refresh the current page
-    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
+    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES, $conf['php_charset']);
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
 
     // Get associated info
@@ -66,8 +66,8 @@ EOL;
 EOL;
 
     // Escape data for display in html
-    foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
-    foreach(array_keys((array)$parent_domain) as $key) { $parent_domain[$key] = htmlentities($parent_domain[$key], ENT_QUOTES); }
+    foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
+    foreach(array_keys((array)$parent_domain) as $key) { $parent_domain[$key] = htmlentities($parent_domain[$key], ENT_QUOTES, $conf['php_charset']); }
 
 
     $html .= <<<EOL
@@ -226,7 +226,7 @@ EOL;
             $domainserver['role'] = strtoupper($domainserver['role']);
 
             list($status, $rows, $host) = ona_find_host($domainserver['host_id']);
-            $host['fqdn'] = htmlentities($host['fqdn'], ENT_QUOTES);
+            $host['fqdn'] = htmlentities($host['fqdn'], ENT_QUOTES, $conf['php_charset']);
             $html .= <<<EOL
                 <tr onMouseOver="this.className='row-highlight';"
                     onMouseOut="this.className='row-normal';">

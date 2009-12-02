@@ -76,7 +76,7 @@ function printmsg($msg="",$debugLevel=0) {
             if ($self['nohtml'] == 1)
                 echo $msg . "\n";
             else {
-                $msg = htmlentities($msg, ENT_QUOTES);
+                $msg = htmlentities($msg, ENT_QUOTES, $conf['php_charset']);
                 echo "<b>[$debugLevel]</b>:<font style=\"
                     font-size:12px;
                     color:crimson;
@@ -205,8 +205,9 @@ function strsize($string) {
 //
 ///////////////////////////////////////////////////////////////////////
 function truncate($msg="",$length=0) {
+    global $conf;
     if ($length > 0)
-        $msg = (strlen($msg) < $length) ? $msg : substr($msg,0,$length - 3) . "...";
+        $msg = (mb_strlen($msg) < $length) ? $msg : mb_substr($msg,0,$length - 3) . "...";
 
     return($msg);
 }

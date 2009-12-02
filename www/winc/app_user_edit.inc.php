@@ -70,7 +70,7 @@ EOL;
     }
 
     // Escape data for display in html
-    foreach(array_keys($user) as $key) { $user[$key] = htmlentities($user[$key], ENT_QUOTES); }
+    foreach(array_keys($user) as $key) { $user[$key] = htmlentities($user[$key], ENT_QUOTES, $conf['php_charset']); }
 
     // Load some html into $window['html']
     $window['html'] .= <<<EOL

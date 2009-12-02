@@ -147,7 +147,7 @@ EOL;
 
         // Escape data for display in html
         foreach(array_keys($record) as $key) {
-            $record[$key] = htmlentities($record[$key], ENT_QUOTES);
+            $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']);
         }
 
         $primary_object_js = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$record['id']}\', \'display\')');";

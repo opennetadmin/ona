@@ -44,7 +44,7 @@ function ws_editor($window_name, $form='') {
     
     
     // Escape data for display in html
-    foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
+    foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
     
     // Load some html into $window['html']
     $window['html'] .= <<<EOL

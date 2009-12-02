@@ -162,10 +162,10 @@ function ws_rewrite_history($window_name, $null='', $return_html=0) {
     $html .= "<span title=\"Click to clear history\" onclick=\"xajax_window_submit('work_space', 'clear', 'rewrite_history');\">&nbsp;Trace: </span>";
     $and = '';
     foreach((array)$_SESSION['ona'][$window_name]['history'] as $history) {
-        $history['title'] = htmlentities($history['title'], ENT_QUOTES);
-        $history['type'] = htmlentities($history['type'], ENT_QUOTES);
+        $history['title'] = htmlentities($history['title'], ENT_QUOTES, $conf['php_charset']);
+        $history['type'] = htmlentities($history['type'], ENT_QUOTES, $conf['php_charset']);
         $history['url'] = str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']);
-        $history['url'] = htmlentities($history['url'], ENT_QUOTES);
+        $history['url'] = htmlentities($history['url'], ENT_QUOTES, $conf['php_charset']);
         $html .= <<<EOL
 {$and}<a title="{$history['type']}: {$history['title']}" onClick="xajax_window_submit('work_space', '{$history['url']}');">{$history['title']}</a>&nbsp;
 EOL;

@@ -33,7 +33,7 @@ function ws_editor($window_name, $form='') {
 
 
     // Escape data for display in html
-    foreach(array_keys((array)$vlan_campus) as $key) { $vlan_campus[$key] = htmlentities($vlan_campus[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$vlan_campus) as $key) { $vlan_campus[$key] = htmlentities($vlan_campus[$key], ENT_QUOTES, $conf['php_charset']); }
 
 
     // Set the window title:

@@ -46,7 +46,7 @@ $modbodyhtml .= <<<EOL
 
                 <tr>
                     <td align="right" {$notes_valign} nowrap="true"><b>Notes</b>&nbsp;</td>
-                    <td nowrap="true" class="padding" align="left" {$notes_width}><textarea size="256" cols=25 rows=3 class="display_notes">{$record['notes']}</textarea></td>
+                    <td nowrap="true" class="padding" align="left" {$notes_width}><textarea readonly size="256" cols=25 rows=3 class="display_notes">{$record['notes']}</textarea></td>
                 </tr>
 EOL;
 

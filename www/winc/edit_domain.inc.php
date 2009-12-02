@@ -53,7 +53,7 @@ function ws_editor($window_name, $form='') {
     if ($form['newptrdomainname']) $domain['name'] = $form['newptrdomainname'];
 
     // Escape data for display in html
-    foreach(array_keys((array)$domain) as $key) {$domain[$key] = htmlentities($domain[$key], ENT_QUOTES);}
+    foreach(array_keys((array)$domain) as $key) {$domain[$key] = htmlentities($domain[$key], ENT_QUOTES, $conf['php_charset']);}
 
 
 

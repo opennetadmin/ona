@@ -64,7 +64,7 @@ function ws_display($window_name, $form='') {
     }
 
     // Create some javascript to refresh the current page
-    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
+    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES, $conf['php_charset']);
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
 
     $style['content_box'] = <<<EOL
@@ -82,7 +82,7 @@ EOL;
 EOL;
 
     // Escape data for display in html
-    foreach(array_keys((array)$record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
 
     $html .= <<<EOL
     <!-- FORMATTING TABLE -->
@@ -253,7 +253,7 @@ EOL;
         list($status, $rows, $config) = ona_get_config_record(array('id' => $form['displayconf']));
 
         // Remove characters that will not display properly in a browser.. specifically CTRL-C chars
-        $config['config_body'] = str_replace(chr(03), "", $config['config_body']);
+        $config['config_body'] = htmlentities(str_replace(chr(03), "", $config['config_body']), ENT_QUOTES,$conf['php_charset']);
 
         $html .= <<<EOL
         <div style="margin: 10px 20px; float: left; width: 96%; background-color: {$color['bar_bg']}; border: 1px solid;">
@@ -317,8 +317,8 @@ EOL;
     array_push($_SESSION['ona']['work_space']['history'], $history);
 
     // Remove characters that will not display properly in a browser.. specifically CTRL-C chars
-    $old['config_body'] = str_replace(chr(03), "", $old['config_body']);
-    $new['config_body'] = str_replace(chr(03), "", $new['config_body']);
+    $old['config_body'] = htmlentities(str_replace(chr(03), "", $old['config_body']), ENT_QUOTES,$conf['php_charset']);
+    $new['config_body'] = htmlentities(str_replace(chr(03), "", $new['config_body']), ENT_QUOTES,$conf['php_charset']);
 
     // Display the config text diff
     $html .= <<<EOL
@@ -415,7 +415,7 @@ EOL;
 EOL;
 
     // Display the diff
-    $html .= html_diff($old['config_body'], $new['config_body'], "Config A", "Config B", 0);
+    $html .= html_diff(html_entity_decode($old['config_body'],ENT_QUOTES,$conf['php_charset']), html_entity_decode($new['config_body'],ENT_QUOTES,$conf['php_charset']), "Config A", "Config B", 0);
 
     $html .= <<<EOL
             </td>

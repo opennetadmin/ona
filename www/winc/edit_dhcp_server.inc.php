@@ -43,7 +43,7 @@ function ws_editor($window_name, $form='') {
         $subnet['name'] = $form['subnet'];
     }
     // Escape data for display in html
-    foreach(array_keys((array)$host) as $key)  { $host[$key]  = htmlentities($host[$key],  ENT_QUOTES); }
+    foreach(array_keys((array)$host) as $key)  { $host[$key]  = htmlentities($host[$key],  ENT_QUOTES, $conf['php_charset']); }
 
 
 

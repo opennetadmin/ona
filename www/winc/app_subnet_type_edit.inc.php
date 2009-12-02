@@ -48,7 +48,7 @@ EOL;
     }
     
     // Escape data for display in html
-    foreach(array_keys((array)$record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
     
     // Load some html into $window['html']
     $window['html'] .= <<<EOL

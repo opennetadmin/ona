@@ -27,7 +27,7 @@ print <<<EOL
 <html>
 <head>
     <title>{$conf['title']}</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="stylesheet" type="text/css" href="{$baseURL}/include/html_style_sheet.inc.php">
     <link rel="shortcut icon" type="image/ico" href="{$images}/favicon.ico">
     <script type="text/javascript" src="{$baseURL}/include/js/global.js" language="javascript"></script>

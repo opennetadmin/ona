@@ -141,7 +141,7 @@ EOL;
             $record['description_short'] = truncate($record['description'], 40);
 
             // Escape data for display in html
-            foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
+            foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
 
 
             // Format the date and colorize if its older than 2 months

@@ -44,7 +44,7 @@ function ws_display($window_name, $form='') {
     }
 
     // Create some javascript to refresh the current page
-    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
+    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES, $conf['php_charset']);
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
 
     // Convert IP and Netmask to a presentable format
@@ -68,7 +68,7 @@ function ws_display($window_name, $form='') {
 
 
     // Escape data for display in html
-    foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
+    foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
 
     // Create a div for workspace plugins to live
     $html .= "<div id='wsplugins' style='margin: 10px;'>";

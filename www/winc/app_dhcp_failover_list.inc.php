@@ -194,7 +194,7 @@ EOL;
 
         // Escape data for display in html
         foreach(array_keys($record) as $key) {
-            $record[$key] = htmlentities($record[$key], ENT_QUOTES);
+            $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']);
         }
 
         $html .= <<<EOL

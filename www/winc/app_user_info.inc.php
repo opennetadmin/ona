@@ -26,7 +26,7 @@ $output['ona_permissions'] = implode("\n", $permissions);
 
 
 // Escape data for display in html
-foreach(array_keys($output) as $key) { $output[$key] = nl2br(htmlentities($output[$key], ENT_QUOTES)); }
+foreach(array_keys($output) as $key) { $output[$key] = nl2br(htmlentities($output[$key], ENT_QUOTES, $conf['php_charset'])); }
 
 
 $window['html'] .= <<<EOL

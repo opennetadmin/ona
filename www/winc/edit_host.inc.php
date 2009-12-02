@@ -103,28 +103,33 @@ function ws_editor($window_name, $form='') {
 
         foreach ($dnsviews as $entry) {
             $selected = '';
-            $dnsviews['name'] = htmlentities($dnsviews['name']);
+            //$dnsviews['name'] = htmlentities($dnsviews['name']);
+
             // If this entry matches the record you are editing, set it to selected
-            if ($dns_record['id'] and $entry['id'] == $dns_record['dns_view_id']) {
+            if ($host['id'] and $entry['id'] == $host['dns_view_id']) {
                 $selected = "SELECTED=\"selected\"";
-            } elseif (!$dns_record['id'] and $entry['id'] == 0) {
+                $dns_view_name = $entry['name'].'/';
+            } elseif (!$host['id'] and $entry['id'] == 0) {
                 // Otherwise use the default record if we are adding a new entry
                 $selected = "SELECTED=\"selected\"";
+                $dns_view_name = $entry['name'].'/';
             }
             $dns_view_list .= "<option {$selected} value=\"{$entry['id']}\">{$entry['name']}</option>\n";
         }
     }
 
     // Escape data for display in html
-    foreach(array_keys((array)$host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES); }
-    foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES); }
-    foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$host) as $key) { $host[$key] = htmlentities($host[$key], ENT_QUOTES, $conf['php_charset']); }
+    foreach(array_keys((array)$subnet) as $key) { $subnet[$key] = htmlentities($subnet[$key], ENT_QUOTES, $conf['php_charset']); }
+    foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES, $conf['php_charset']); }
 
 
     // Set the window title:
     $window['title'] = "Add Host";
     if ($host['id'])
         $window['title'] = "Edit Host";
+    else
+        unset($dns_view_name);
 
     // Javascript to run after the window is built
     $window['js'] = <<<EOL
@@ -175,7 +180,7 @@ EOL;
 
     <!-- Host Edit Form -->
     <form id="{$window_name}_edit_form" onSubmit="return false;">
-    <input type="hidden" name="host" value="{$host['fqdn']}">
+    <input type="hidden" name="host" value="{$dns_view_name}{$host['fqdn']}">
     <input type="hidden" name="interface" value="{$interface['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">

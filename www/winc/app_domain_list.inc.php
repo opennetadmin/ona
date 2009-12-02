@@ -202,7 +202,7 @@ EOL;
         
         // Escape data for display in html
         foreach(array_keys($record) as $key) {
-            $record[$key] = htmlentities($record[$key], ENT_QUOTES);
+            $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']);
         }
 
         list($status, $usage_rows, $tmp) = db_get_records($onadb, 'dns', "domain_id = {$record['id']}", '', 0);

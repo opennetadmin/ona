@@ -59,7 +59,7 @@ function ws_editor($window_name, $form='') {
 
 
     // Escape data for display in html
-    foreach(array_keys((array)$failovergroup) as $key) { $failovergroup[$key] = htmlentities($failovergroup[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$failovergroup) as $key) { $failovergroup[$key] = htmlentities($failovergroup[$key], ENT_QUOTES, $conf['php_charset']); }
 
 
 

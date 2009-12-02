@@ -29,7 +29,7 @@ function ws_editor($window_name, $form='') {
         list($status, $rows, $record) = ona_get_location_record(array('id' => $form['id']));
 
     // Escape data for display in html
-    foreach(array_keys((array)$record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
+    foreach(array_keys((array)$record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
 
 
 

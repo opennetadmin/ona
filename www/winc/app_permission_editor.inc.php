@@ -86,7 +86,7 @@ EOL;
         $checked = '';
         if ($assigned[$permission['id']] == 1) { $checked = 'CHECKED'; }
         // Escape data for display in html
-        foreach(array_keys($permission) as $key) { $permission[$key] = htmlentities($permission[$key], ENT_QUOTES); }
+        foreach(array_keys($permission) as $key) { $permission[$key] = htmlentities($permission[$key], ENT_QUOTES, $conf['php_charset']); }
         $window['html'] .= <<<EOL
         <tr><td align="left" nowrap="true">
             <input type="checkbox" name="perms[{$permission['id']}]" value="{$permission['name']}" {$checked}> {$permission['name']}

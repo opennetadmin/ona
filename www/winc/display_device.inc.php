@@ -41,7 +41,7 @@ function ws_display($window_name, $form='') {
     }
 
     // Create some javascript to refresh the current page
-    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES);
+    $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES, $conf['php_charset']);
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
 
     // Interface (and find out how many there are)
@@ -87,7 +87,7 @@ EOL;
 EOL;
 
     // Escape data for display in html
-    foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
+    foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
     // force 300px width to Notes field if the length is longer than 50 characters and put Notes at the top of the td
     $notes_width = "";
     $notes_valign = "";

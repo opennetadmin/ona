@@ -185,7 +185,7 @@ EOL;
         list ($status, $usage_rows, $tmp) = db_get_records($onadb, 'subnets', "subnet_type_id = {$record['id']}", '', 0);
 
         // Escape data for display in html
-        foreach(array_keys($record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES);}
+        foreach(array_keys($record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']);}
 
         $html .= <<<EOL
         <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">

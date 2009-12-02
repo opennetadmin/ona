@@ -118,10 +118,11 @@ EOL;
 
             // Escape data for display in html
             foreach(array_keys($record) as $key) {
-                $record[$key] = htmlentities($record[$key], ENT_QUOTES);
+                $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']);
             }
 
-            $confsize = strlen($record['config_body']);
+            // MP: FIXME still not working right for encoded stings.. always returns 0
+            $confsize = mb_strlen(html_entity_decode($record['config_body'], ENT_QUOTES, $conf['php_charset']), $conf['php_charset']);
 
             $html .= <<<EOL
             <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">

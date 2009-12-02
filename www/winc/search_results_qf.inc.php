@@ -286,7 +286,7 @@ EOL;
 EOL;
     }
 
-    $subnet['name'] = htmlentities($subnet['name'], ENT_QUOTES);
+    $subnet['name'] = htmlentities($subnet['name'], ENT_QUOTES, $conf['php_charset']);
     foreach ($results as $ip) {
         $ip = ip_mangle($ip, 'dotted');
         $html .= <<<EOL
@@ -586,10 +586,10 @@ EOL;
 EOL;
     }
 
-    $campus['name'] = htmlentities($campus['name'], ENT_QUOTES);
+    $campus['name'] = htmlentities($campus['name'], ENT_QUOTES, $conf['php_charset']);
     foreach ($results as $record) {
         // Escape data for display in html
-        foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES); }
+        foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
         $html .= <<<EOL
 <tr onMouseOver="this.className='row-highlight';"
     onMouseOut="this.className='row-normal';"
