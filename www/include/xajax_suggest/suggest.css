@@ -6,6 +6,7 @@
     z-index: 4;
     background-color: #fff;
     border: 1px solid #9ac;
+    max-width: 300px;
 }
 
 .suggest div {

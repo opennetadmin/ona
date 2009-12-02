@@ -78,7 +78,7 @@ function suggest_setup(el_input, el_suggest) {
 function suggest_init(_input, _suggest) {
     _suggest.style.top   = calcOffset(_input, 'offsetTop') + _input.offsetHeight - 1 + 'px';
     _suggest.style.left  = calcOffset(_input, 'offsetLeft') + 'px';
-    _suggest.style.width = (_input.offsetWidth - 2) + 'px';
+    //_suggest.style.width = (_input.offsetWidth - 2) + 'px';
 }
 
 
@@ -250,7 +250,7 @@ function suggest_display(el_input, el_suggest) {
     // Display the suggestions!
     for (var i=0; i<suggestions.length; i++) {
         // FIXME: after a click we need to refocus the input element we just selected a value for
-        _suggest.innerHTML += '<div style="width:' + suggestion_width + 'px;" ' +
+        _suggest.innerHTML += '<div style="min-width:' + suggestion_width + 'px;" ' +
                               'onMouseOver="hoverSuggestion(' + i + ', hoveredSuggestion, document.getElementById(\'' + _suggest.id + '\'))" ' + 
                               'onClick="document.getElementById(\'' + _input.id + '\').value = this.innerHTML;' +
                                        'hoveredSuggestion = -1;' + 
