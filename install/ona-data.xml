@@ -15,6 +15,7 @@
 ('subnet_modify','Modify an existing subnet','ona/subnet.inc.php'),
 ('subnet_del','Delete an existing subnet','ona/subnet.inc.php'),
 ('subnet_display','Display an existing subnet','ona/subnet.inc.php'),
+('subnet_nextip','Return the next available IP address on a subnet','ona/subnet.inc.php'),
 ('host_add','Add a new host','ona/host.inc.php'),
 ('host_display','Display an existing host','ona/host.inc.php'),
 ('host_modify','Modify an existing host','ona/host.inc.php'),

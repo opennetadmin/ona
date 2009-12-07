@@ -938,4 +938,140 @@ EOM
 
 
 
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: subnet_nextip (string $options='')
+//
+//  Description:
+//    Return the next available IP address on a subnet.  Optionally
+//    start the search from a starting offset.
+//
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function.  0 on success, non-zero on
+//         error.  All errors messages are stored in $self['error'].
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = subnet_nextip('subnet=test');
+///////////////////////////////////////////////////////////////////////
+function subnet_nextip($options="") {
+    global $conf, $self, $onadb;
+
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+
+    printmsg('DEBUG => subnet_del('.$options.') called', 3);
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Sanitize options[commit] (default is no)
+    $options['commit'] = sanitize_YN($options['commit'], 'N');
+
+    // Return the usage summary if we need to
+    if ($options['help'] or !$options['subnet'] ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+subnet_del-v{$version}
+Return the next available IP address on a subnet.
+
+  Synopsis: subnet_nextip [KEY=VALUE] ...
+
+  Required:
+    subnet=IP or ID               select subnet by search string
+
+  Optional:
+    offset=NUMBER                 Starting offset to find next available IP
+    output=[dotted|numeric]       Return the number as a dotted or numeric value
+                                  DEFAULT: numeric
+\n
+EOM
+        ));
+    }
+
+
+    // Find the subnet record we're deleting
+    list($status, $rows, $subnet) = ona_find_subnet($options['subnet']);
+    if ($status or !$rows) {
+        $self['error'] = "ERROR => Subnet not found";
+        return(array(2, $self['error'] . "\n"));
+    }
+
+    // Create a few variables that will be handy later
+    $num_ips = 0xffffffff - $subnet['ip_mask'];
+    $last_ip = ($subnet['ip_addr'] + $num_ips) - 1;
+
+    // check that offset is a number
+    if (isset($options['offset']) and !is_numeric($options['offset'])) {
+        $self['error'] = "ERROR => Offset must be a numeric number";
+        return(array(3, $self['error'] . "\n"));
+    } else {
+        $offsetmsg = " beyond offset {$options['offset']}";
+    }
+
+    // make sure the offset does not extend beyond the specified subnet
+    if ($options['offset'] >= $num_ips - 1) {
+        $self['error'] = "ERROR => Offset extends beyond specified subnet boundary";
+        return(array(4, $self['error'] . "\n"));
+    }
+
+    if (!isset($options['output'])) {
+        $options['output'] = '1';
+    }
+
+    // check output option is dotted or numeric
+    else if ($options['output'] != 'dotted' && $options['output'] != 'numeric') {
+        $self['error'] = "ERROR => Output option must be 'dotted' or 'numeric'";
+        return(array(5, $self['error'] . "\n"));
+    }
+
+    // Find the first number based on our subnet and offset
+    $ip = $subnet['ip_addr'] + $options['offset'];
+
+    // Make sure we skip past the subnet IP to the first usable IP
+    if ($ip == $subnet['ip_addr']) $ip++;
+
+    // Start looping through our IP addresses until we find an available one
+    while ($ip <= $last_ip) {
+        // Find out if the ip is used in an interface
+        list($status, $rows, $interfaces) = db_get_records($onadb, 'interfaces', array('ip_addr' => $ip));
+
+        // If we find a free address.. check that it is not in a DHCP pool
+        if (!$rows) {
+            list($status, $rows, $pool) = db_get_record($onadb, 'dhcp_pools', "{$ip} >= ip_addr_start AND {$ip} <= ip_addr_end");
+            if ($rows) $ip = $pool['ip_addr_end'];
+                else break;
+        }
+        $ip++;  // increment by one and check again
+    }
+
+    // If we checked all the IPs, make sure we are not on the broadcast IP of the subnet
+    if ($ip == $last_ip + 1) {
+        $self['error'] = "ERROR => No available IP addresses found on subnet{$offsetmsg}";
+        return(array(5, $self['error'] . "\n"));
+    }
+
+    // return the IP
+    return(array(0, ip_mangle($ip,$options['output'])."\n"));
+
+
+}
+
+
+
+
+
+
+
 ?>
