@@ -162,7 +162,7 @@ EOL;
 
     // Check the usual directories, now inlucdes the local reports as well.
     // local plugins should override the builtin stuff if they are named the same.
-    $directories = array($base.'/local/plugins/');
+    $directories = array($base.'/local/plugins/',$base.'/plugins/');
 
     // Scan the directories to find the report include file
     foreach ($directories as $directory) {
@@ -182,7 +182,6 @@ EOL;
         $d->close();
         }
     }
-
 
     $count = count($records);
     sort($records);

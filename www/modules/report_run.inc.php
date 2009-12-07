@@ -9,7 +9,7 @@ function report_run($options="") {
     global $conf, $self, $onadb, $base;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => report_run({$options}) called", 3);
 
@@ -47,47 +47,49 @@ EOM
 
     $status=0;
 
+
+
     // Generate a list of reports available
-    $reportdir = dirname($base)."/www/local/reports";
     if ($options['list'] == 'Y') {
         $text .= sprintf("\n%-25s\n",'Report Name');
         $text .= sprintf("%'-80s\n",'');
         $files = array();
-        $reportdirs = array(dirname($base)."/www/reports",dirname($base)."/www/local/reports");
-        // Get a list of the files
-        foreach($reportdirs as $reportdir) {
-            if ($handle = opendir($reportdir)) {
-                while (false !== ($file = readdir($handle))) {
-                    if (strpos($file, ".inc.php") && $file != "listentries") {
-                        // Build an array of filenames
-                        array_push($files, $file);
-                    }
-                }
-                closedir($handle);
-            }
-        }
+
+        // Get the description info for the report items
+        $reportlist = plugin_list('report_item');
 
         // sort the file names
-        asort($files);
+        asort($reportlist);
 
-        // Loop through and display info about the files
-        foreach($files as $file) {
-            // Print the info
-            $text .= str_replace(".inc.php", '', $file)."\n";
-        }
+        // Loop through the list of reports and show its name and description
+        foreach ($reportlist as $entry) {
+            $report_description = '';
+            $record['name'] = $entry['name'];
+            $record['shortname'] = str_replace('.inc.php', '', $record['name']);
+            include_once $entry['path'];
+            $record['desc'] = $report_description;
+
+            $text .= sprintf("%-35s %s\n",$record['shortname'], $record['desc']);
+         }
 
         return(array(0, $text));
     }
 
-
-
     // default format will be text for the cli stuff
     if (!$options['format']) $options['format'] = 'text';
 
-    // Load the report include file
-    if (get_report_include($options['name'])) {
-        // Run the report and return the output
-        list($status, $report_output) = rpt_run($options, $options['format']);
+    // Get the actual report code list
+    $reports = plugin_list('report');
+
+    // Loop through the list of reports till we find the matching name
+    foreach($reports as $report) {
+        if ($report['name'] == $options['name']) {
+            // Load the report include file
+            if (require_once($report['path'])) {
+                // Run the report and return the output
+                list($status, $report_output) = rpt_run($options, $options['format']);
+            }
+        }
     }
 
     $text = $report_output;

@@ -45,7 +45,6 @@ function ws_display_list($window_name, $form='') {
 
 
 
-
     //
     // *** ADVANCED HOST SEARCH ***
     //       FIND RESULT SET
@@ -82,6 +81,14 @@ function ws_display_list($window_name, $form='') {
         // Find the domain name piece of the hostname assuming it was passed in as an fqdn.
         // FIXME: MP this was taken from the ona_find_domain function. make that function have the option
         // to NOT return a default domain.
+
+        // lets test out if it has a / in it to strip the view name portion
+        $view['id'] = 0;
+        if (strstr($form['hostname'],'/')) {
+            list($dnsview,$form['hostname']) = explode('/', $form['hostname']);
+            list($status, $viewrows, $view) = db_get_record($onadb, 'dns_views', array('name' => strtoupper($dnsview)));
+            if(!$viewrows) $view['id'] = 0;
+        }
 
         // Split it up on '.' and put it in an array backwards
         $parts = array_reverse(explode('.', $form['hostname']));

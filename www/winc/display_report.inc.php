@@ -16,10 +16,21 @@ function ws_display($window_name, $form='') {
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
 
-    // Load the report include file
-    if (!get_report_include($form['report'])) {
+    // Get the plugin location info.
+    $reportlist = plugin_list('report');
+
+    // Loop through the list of reports until we find the matching name
+    foreach($reportlist as $report) {
+        if ($report['name'] == $form['report']) {
+            // Load the report include file
+            $rpt_inc_path = $report['path'];
+        }
+    }
+
+    // try and include the report, fail otherwise
+    if (!@include_once($rpt_inc_path)) {
         array_pop($_SESSION['ona']['work_space']['history']);
-        $html .= "<br><center><font color=\"red\"><b>The report {$form['name']} doesn't exist!</b></font></center>";
+        $html .= "<br><center><font color=\"red\"><b>The report {$form['report']} doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
         $response->addAssign("work_space_content", "innerHTML", $html);
         return($response->getXML());
@@ -74,12 +85,18 @@ EOL;
 //////////////////////////////////////////////////////////////////////////////
 function ws_run_report($window_name, $form='') {
 
-    // Load the report include file (again!)
-    if (get_report_include($form['report'])) {
-        // Run the report and put it in the report_content box
-        list($status, $report_output) = rpt_run($form, 'html');
-//         if($status)
-//             $report_output .= "ERROR => There was a problem running this report!";
+    // Get the plugin location info.
+    $reportlist = plugin_list('report');
+
+    // Loop through the list of reports till we find the matching name
+    foreach($reportlist as $report) {
+        if ($report['name'] == $form['report']) {
+            // Load the report include file
+            if (require_once($report['path'])) {
+                // Run the report and put it in the report_content box
+                list($status, $report_output) = rpt_run($form, 'html');
+            }
+        }
     }
 
     // Insert the new html into the window

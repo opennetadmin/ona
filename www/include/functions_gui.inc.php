@@ -11,55 +11,6 @@
 
 
 
-
-
-
-/////////////////////////////////////////////
-// Function:
-//     get_report_include ($name)
-//
-// Description:
-//     Internally used function that searches several places for an include
-//     file containing information about a "report" named $name.
-//     Returns the filename if one is found.
-//
-/////////////////////////////////////////////
-function get_report_include($name){
-    if (!$name) { return(FALSE); }
-
-    $file = '';
-
-    // Check the usual directories, now inlucdes the local reports as well.
-    // local plugins should override the builtin stuff if they are named the same.
-    $directories = array('.',
-                         './local/reports/',
-                         './reports',
-                        );
-
-    // Scan the directories to find the report include file
-    foreach ($directories as $directory) {
-        $file = "{$directory}/{$name}.inc.php";
-        if (is_file($file)) {
-            printmsg("DEBUG => get_report_include() Report: {$name}", 2);
-            require_once($file);
-            return(TRUE);
-        }
-    }
-
-    // If we still have not found it, lets just try the report name as the file itself
-    if (is_file('.'.$name)) {
-        require_once('.'.$name);
-        return(TRUE);
-    }
-
-    // Couldn't find it :|
-    return(FALSE);
-}
-
-
-
-
-
 /////////////////////////////////////////////
 // Returns a list of available local plugins of given type
 //
@@ -74,18 +25,22 @@ function plugin_list($type=''){
   global $base;
   $plugins = array();
   $i=0;
-  if ($dh = @opendir($base."/local/plugins/")) {
-    while (false !== ($plugin = readdir($dh))) {
-      if ($plugin == '.' || $plugin == '..' || $plugin == 'tmp') continue;
-      if (is_file($base."/local/plugins/".$plugin)) continue;
+  // check local plugins, then builtin plugins
+  $plugin_paths = array($base."/local/plugins/",$base."/plugins/");
+  foreach ($plugin_paths as $plugin_path) {
+    if ($dh = @opendir($plugin_path)) {
+        while (false !== ($plugin = readdir($dh))) {
+            if ($plugin == '.' || $plugin == '..' || $plugin == 'tmp' || $plugin == '.svn'|| substr($plugin, -7) == '.tar.gz') continue;
+            if (is_file($plugin_path.$plugin)) continue;
 
-      if ($type=='' || @file_exists($base."/local/plugins/$plugin/$type.inc.php") and @!file_exists($base."/local/plugins/$plugin/plugin_disabled")){
-          $plugins[$i]['name'] = $plugin;
-          $plugins[$i]['path'] = $base."/local/plugins/$plugin/$type.inc.php";
-          $i++;
-      }
+            if ($type=='' || @file_exists($plugin_path."$plugin/$type.inc.php") and @!file_exists($plugin_path."$plugin/plugin_disabled")){
+                $plugins[$i]['name'] = $plugin;
+                $plugins[$i]['path'] = $plugin_path."$plugin/$type.inc.php";
+                $i++;
+            }
+        }
+        closedir($dh);
     }
-    closedir($dh);
   }
   return $plugins;
 }
@@ -111,11 +66,15 @@ function &plugin_load($type,$name){
   if($ONA_PLUGINS[$type][$name] != null){
     return $ONA_PLUGINS[$type][$name];
   }
-
-  //try to load the wanted plugin file if it is not disabled
-  if (!file_exists($base."/local/plugins/$name/plugin_disabled")){
-    if (file_exists($base."/local/plugins/$name/$type.inc.php")){
-        include_once($base."/local/plugins/$name/$type.inc.php");
+  // check local plugins, then builtin plugins
+  $plugin_paths = array($base."/local/plugins/",$base."/plugins/");
+  foreach ($plugin_paths as $plugin_path) {
+    //try to load the wanted plugin file if it is not disabled
+    if (!file_exists($plugin_path."$name/plugin_disabled")){
+        if (file_exists($plugin_path."$name/$type.inc.php")){
+            include_once($plugin_path."$name/$type.inc.php");
+            break;
+        }
     }
   }
 

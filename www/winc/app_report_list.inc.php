@@ -154,36 +154,20 @@ function ws_display_list($window_name, $form) {
 
 EOL;
 
-
     // Generate a list of reports available
-    $records = array();
-
-
-    // Check the usual directories, now inlucdes the local reports as well.
-    // local plugins should override the builtin stuff if they are named the same.
-    $directories = array($base.'/reports/listentries/',
-                         $base.'/local/reports/listentries/',
-                        );
-
-    // Scan the directories to find the report include file
-    foreach ($directories as $directory) {
-      if (is_dir($directory)) {
-        $d = dir($directory);
-        while (false!== ($filename = $d->read())) {
-            if (substr($filename, -8) == '.inc.php') {
-                 //include "$directory$filename";
-                if (is_array($form) and $form['filter']) {
-                    if (preg_match("/{$form['filter']}/i", str_replace('.inc.php', '', $filename)))
-                        array_push($records, $directory.$filename);
-                } else {
-                    array_push($records, $directory.$filename);
-                }
+    $reports = plugin_list('report_item');
+    $z=0;
+    // If we have a filter.. lets narrow down our list
+    if (is_array($form) and $form['filter']) {
+        foreach($reports as $report) {
+            if (preg_match("/{$form['filter']}/i",$report['name'])) {
+                $records[$z] = $report;
             }
+            $z++;
         }
-        $d->close();
-        }
+    } else {
+        $records = $reports;
     }
-
 
     $count = count($records);
     sort($records);
@@ -201,9 +185,9 @@ EOL;
     foreach ($records[$page-1] as $entry) {
 
         $report_description = '';
-        $record['name'] = basename($entry);
+        $record['name'] = $entry['name'];
         $record['shortname'] = str_replace('.inc.php', '', $record['name']);
-        include_once $entry;
+        @include_once $entry['path'];
         $record['desc'] = $report_description;
 
         // Escape data for display in html
