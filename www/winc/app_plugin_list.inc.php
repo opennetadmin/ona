@@ -160,7 +160,7 @@ EOL;
     $records = array();
 
 
-    // Check the usual directories, now inlucdes the local reports as well.
+    // Check the usual directories, now includes the local reports as well.
     // local plugins should override the builtin stuff if they are named the same.
     $directories = array($base.'/local/plugins/',$base.'/plugins/');
 

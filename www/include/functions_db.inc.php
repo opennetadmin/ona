@@ -157,7 +157,8 @@ function db_pconnect($type, $context_name) {
             // Otherwise return the object.
             else {
                 // MP: not sure how this behaves on other databases.. should work for mysql and postgres
-                $object->Execute("SET names '{$conf['charset']}'");
+                if ($conf['set_db_charset'])
+                    $object->Execute("SET names '{$conf['charset']}'");
                 return $object;
             }
         }

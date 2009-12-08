@@ -72,6 +72,10 @@ $conf = array (
     "charset"                => "utf8",
     "php_charset"            => "UTF-8",
 
+    // enable the setting of the database character set using the "set name 'charset'" SQL command
+    // This should work for mysql and postgres but may not work for Oracle.
+    // it will be set to the value in 'charset' above.
+    "set_db_charset"         => TRUE,
 );
 
 // Set multibyte encoding to UTF-8
