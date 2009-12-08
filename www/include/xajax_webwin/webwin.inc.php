@@ -212,6 +212,7 @@ function window_find_include($window_name) {
     $directories = array('.',
                          './local/plugins/'.$window_name,
                          './winc',
+                         './plugins/'.$window_name,
                          './inc',
                         );
 

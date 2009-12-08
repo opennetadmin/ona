@@ -199,7 +199,7 @@ print <<<EOL
 
 
         </tr>
-
+        <tr>
             <td nowrap="true" valign="top" style="padding: 15px;">
 EOL;
 
