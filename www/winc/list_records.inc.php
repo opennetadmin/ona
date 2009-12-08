@@ -291,6 +291,9 @@ EOL;
         list($status, $interfaces, $interface) = ona_get_interface_record(array('id' => $record['interface_id']), '');
 
         if($interfaces) {
+            // Get the host record so we know what the primary interface is
+            //list($status, $rows, $inthost) = ona_get_host_record(array('id' => $interface['host_id']), '');
+
             $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
 
             // Subnet description
@@ -556,6 +559,18 @@ EOL;
                     ><img src="{$images}/silk/font_go.png" border="0"></a>
 EOL;
             }
+        }
+
+
+        // display a view host button on the dns record search form list
+        if ($form['search_form_id'] == 'dns_record_search_form') {
+            $html .= <<<EOL
+
+                    <a title="View associated host record: {$interface['host_id']}"
+                       class="act"
+                       onClick="xajax_window_submit('display_host', 'host_id=>{$interface['host_id']}', 'display');"
+                    ><img src="{$images}/silk/computer_go.png" border="0"></a>&nbsp;
+EOL;
         }
 
         if (auth('dns_record_modify')) {
