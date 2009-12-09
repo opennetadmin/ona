@@ -1,0 +1,47 @@
+-- This is just a formatting example file
+--
+-- LONG_DESC: 
+--	This file provides an example of how you should format your
+--	SQL files that you place in the ona/sql directory.  These files
+--	are intended to be used by the ona_sql dcm module.  All comment
+--	lines are of course using the SQL standard comment of --.
+--
+--	The first line of this file is used as the short description
+--     	which is displayed when you use the "list" option.  It would
+--	be best to limit the comment sections to 80 chars so it displays
+--	well in terminals.
+--
+--	All QUESTION MARKS in this file will be replaced as bind
+--	variables.  They are replaced in sequencial order so you must
+--	provide them in the right order when you envoke the ona_sql
+--	module. You should not put QUESTION MARKS anywhere in the
+--	comment section, only in the SQL statement itself.
+--
+--	Since this is a standard SQL file, it can be ran from any other
+--	SQL tool you have available to you as well.
+--
+--	Due to the way the file is processed in PHP, you can only have one
+--	SQL statement. I.E. You can not use the ; to end and start a new
+--	statement.
+--
+--	These sql files must be named with a .sql suffix to be recognized
+--	by the ona_sql DCM module.  You can disable them by renaming them
+--	to something without the .sql suffix.
+--
+--	You can also store sql files in the www/local/sql directory.
+--	This will be a local only copy that will not ever get touched
+--	by an ONA install/upgrade process.  They will however be visible
+--	via a browser if someone knows the path.  Add .htaccess if desired
+--	to block that.
+--
+-- USAGE:
+--	You should provide a usage block that explains what each of the
+--	variables are that will be replaced in the SQL statement.
+--
+--	VARIABLES	DESC
+--	1=NUM		the row ID of the record you want
+--
+-- Your SQL statement would go below this line:
+
+SELECT * FROM domains WHERE id LIKE ?
+
