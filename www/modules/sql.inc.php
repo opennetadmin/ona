@@ -20,7 +20,7 @@ function ona_sql($options="") {
     global $conf, $onadb, $base;
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     // TODO: Maybe make this into a sys_config option
     $srvdir = dirname($base)."/sql";
@@ -96,6 +96,7 @@ Runs the specified SQL query on the database and prints the result
     * The SQL option will be tried first as a local file, then as a server
       file, then as a raw text SQL query.  Filenames are case sensitive.
     * Server based SQL files are located in {$srvdir}
+    * Some plugins may provide their own SQL dir inside the plugin directory
     * Use the show option to display contents of SQL files, this should contain
       a long description and any usage information that is needed.
 \n
@@ -106,43 +107,72 @@ EOM
 
     // TODO: check that the user has admin privs? or at least a ona_sql priv
 
+    // Get a list of the files
+    $plugins = plugin_list();
+    $files   = array();
+    $srvdirs = array();
+    array_push($srvdirs, $srvdir);
+    // add a local sql dir as well so they don't get overrriden by installs
+    array_push($srvdirs, dirname($base).'/www/local/sql');
+
+    // loop through the plugins and find files inside of their sql directories.
+    foreach($plugins as $plug) {
+        array_push($srvdirs, $plug['path'].'/sql');
+    }
+
+    // Loop through each of our plugin directories and the default directory to find .sql files
+    foreach ($srvdirs as $srvdir) {
+        if ($handle = @opendir($srvdir)) {
+            while (false !== ($file = readdir($handle))) {
+                if ($file != "." && $file != ".." && substr($file, -4) == '.sql') {
+                    // Build an array of filenames
+                    array_push($files, $srvdir.'/'.$file);
+                }
+            }
+            closedir($handle);
+        }
+    }
+
+    // sort the file names
+    asort($files);
+
     // List the sql files on the server side
     if ($options['list'] == 'Y') {
         $text .= sprintf("\n%-25s%s\n",'FILE','DESCRIPTION');
         $text .= sprintf("%'-80s\n",'');
-        $files = array();
-        // Get a list of the files
-        if ($handle = opendir($srvdir)) {
-            while (false !== ($file = readdir($handle))) {
-                if ($file != "." && $file != "..") {
-                    // Build an array of filenames
-                    array_push($files, $file);
-                }
-            }
-            closedir($handle);
 
-            // sort the file names
-            asort($files);
+        // Loop through and display info about the files
+        foreach($files as $file) {
+                // Open the file and get the first line, this is the short description
+                $fh = fopen($file, 'r');
+                $desc = rtrim(fgets($fh));
+                fclose($fh);
 
-            // Loop through and display info about the files
-            foreach($files as $file) {
-                    // Open the file and get the first line, this is the short description
-                    $fh = fopen($srvdir.'/'.$file, 'r');
-                    $desc = rtrim(fgets($fh));
-                    fclose($fh);
-
-                    // Print the info
-                    $text .= sprintf("%-25s%s\n",$file,$desc);
-            }
-            $text .= "\n";
+                // Print the info
+                $text .= sprintf("%-25s%s\n",basename($file),$desc);
         }
+        $text .= "\n";
+
 
         return(array(0, $text));
     }
 
     // Check that the sql variable passsed matches a file name locally, if it does, open it and replace $options['sql'] with it
-    if (file_exists($srvdir.'/'.$options['sql'])) {
-        $options['sql'] = trim(file_get_contents($srvdir.'/'.$options['sql']));
+    // Loop through files array till we find the right file
+    $foundfile=false;
+    foreach($files as $file) {
+        if (strstr($file,$options['sql'])) {
+            $options['sql'] = trim(file_get_contents($file));   
+            $foundfile=true;
+        }
+    }
+
+    // if we have not found a file on the server and the sql option does end in .sql then print a message that we coulnt find a file
+    // otherwise assume it is a sql statement being passed at the cli
+    if($foundfile==false and substr($options['sql'], -4) == '.sql') {
+        $self['error'] = "ERROR => Unable to find specified SQL stored on server: {$options['sql']}";
+        printmsg($self['error'],2);
+        return(array(10, $self['error']."\n"));
     }
 
     // Show the contents of the sql query for usage info etc.
@@ -227,7 +257,6 @@ EOM
 
     // If we want the recordset returned instead of the text
     if ($options['dataarray'] == 'Y') {
-        //print_r($dataarr);
         return(array(0, $dataarr));
     }
 
