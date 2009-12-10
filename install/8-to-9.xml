@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <schema version="0.3">
 <sql>
+    <query platform="mysql|mysqlt">INSERT INTO sys_config (name,value,description,field_validation_rule,editable,deleteable,failed_rule_text) VALUES ( 'disable_guest', '0', 'Disable the autologin of the guest user.', '', '1', '0', '') on duplicate key update name='disable_guest'</query>
     <query platform="mysql|mysqlt">INSERT INTO sys_config (name,value,description,field_validation_rule,editable,deleteable,failed_rule_text) VALUES ( 'log_to_db', '0', 'Log only level 0 messages to the database.', '', '1', '0', '') on duplicate key update name='log_to_db'</query>
     <query platform="mysql|mysqlt">INSERT INTO sys_config (name,value,description,field_validation_rule,editable,deleteable,failed_rule_text) VALUES ( 'dns_views', '0', 'Enable support for DNS views.', '', '1', '0', '') on duplicate key update name='dns_views'</query>
     <query platform="mysql|mysqlt">INSERT INTO dns_views (id, name, description) VALUES ( '0', 'DEFAULT', 'Default view for dns records') on duplicate key update name='DEFAULT'</query>

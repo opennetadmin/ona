@@ -106,6 +106,7 @@
 ('cookie_life', '172800', 'Sets the length of the session cookie.  It is in seconds', '', '', 1, 0),
 ('date_format', 'M jS, g:ia', 'PHP text format for date values', '', '', 1, 0),
 ('debug', '0', 'Debug output level, the higher the number the more it logs', '', '', 1, 0),
+('disable_guest', '0', 'Disable the autologin of the guest user.', '', '', 1, 0),
 ('dns_admin_email', 'hostmaster', 'per RFC 2412, defaults to hostmaster within the domain origin', '', '', 1, 0),
 ('dns_defaultdomain', 'example.com', 'Default DNS domain name', '', '', 1, 0),
 ('dns_default_ttl', '86400', 'this is the value of $TTL for the zone, used as the default value', '', '', 1, 0),
