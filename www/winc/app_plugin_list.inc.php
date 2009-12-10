@@ -169,7 +169,7 @@ EOL;
       if (is_dir($directory)) {
         $d = dir($directory);
         while (false!== ($filename = $d->read())) {
-            if ($filename != '.' and $filename != '..' and $filename != '.svn' and substr($filename, -7) != '.tar.gz') {
+            if ($filename != '.' and $filename != '..' and $filename != 'README' and $filename != '.svn' and substr($filename, -7) != '.tar.gz') {
                  //include "$directory$filename";
                 if (is_array($form) and $form['filter']) {
                     if (preg_match("/{$form['filter']}/i", $filename))
@@ -200,6 +200,7 @@ EOL;
 
         $plugin_description = '';
         $plugin_version = '';
+        $plugin_help_url = '';
         $record['name'] = basename($entry);
 
         @include_once $entry.'/plugin_info.php';
