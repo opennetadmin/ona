@@ -205,6 +205,7 @@ EOL;
         @include_once $entry.'/plugin_info.php';
         $record['desc'] = $plugin_description;
         $record['version'] = ($plugin_version) ? $plugin_version : 'Unknown';
+        $record['help_url'] = $plugin_help_url;
 
         $record['disabled'] = (file_exists($entry.'/plugin_disabled')) ? true : false;
         $record['installed'] = (file_exists($entry.'/install.php')) ? true : false;
@@ -238,6 +239,16 @@ EOL;
                     class="act"
                     onClick="toggle_window('{$record['name']}');"
                 ><img src="{$images}/silk/plugin_error.png" border="0"></a>&nbsp;
+EOL;
+        }
+
+        if ($record['help_url']) {
+            $html .= <<<EOL
+                <a title="Plugin help and info URL"
+                    class="act"
+                    target="_blank"
+                    href="{$record['help_url']}"
+                ><img src="{$images}/silk/help.png" border="0"></a>&nbsp;
 EOL;
         }
 

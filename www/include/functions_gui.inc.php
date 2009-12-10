@@ -35,7 +35,11 @@ function plugin_list($type=''){
 
             if ($type=='' || @file_exists($plugin_path."$plugin/$type.inc.php") and @!file_exists($plugin_path."$plugin/plugin_disabled")){
                 $plugins[$i]['name'] = $plugin;
-                $plugins[$i]['path'] = $plugin_path."$plugin/$type.inc.php";
+                //if we did not specify a type.. just get the path for the plugin
+                if($type=='')
+                    $plugins[$i]['path'] = $plugin_path."$plugin";
+                else
+                    $plugins[$i]['path'] = $plugin_path."$plugin/$type.inc.php";
                 $i++;
             }
         }
