@@ -1,0 +1,147 @@
+#!/bin/bash
+##############################################################################
+## nmap_scan_cron
+## Written by: Matt Pascoe <matt@opennetadmin.com>
+##
+## License:
+##  nmap_scan_cron (hereafter referred to as "program") is free software;
+##  you can redistribute it and/or modify it under the terms of the GNU General
+##  Public License as published by the Free Software Foundation; either version
+##  2 of the License, or (at your option) any later version.
+##  Note that when redistributing modified versions of this source code, you
+##  must ensure that this disclaimer and the above coder's names are included
+##  VERBATIM in the modified code.
+##
+## Disclaimer:
+##  This program is provided with no warranty of any kind, either expressed or
+##  implied.  It is the responsibility of the user (you) to fully research and
+##  comprehend the usage of this program.  As with any tool, it can be misused,
+##  either intentionally (you're a vandal) or unintentionally (you're a moron).
+##  THE AUTHOR(S) IS(ARE) NOT RESPONSIBLE FOR ANYTHING YOU DO WITH THIS PROGRAM
+##  or anything that happens because of your use (or misuse) of this program,
+##  including but not limited to anything you, your lawyers, or anyone else
+##  can dream up.  And now, a relevant quote directly from the GPL:
+##
+## NO WARRANTY
+##
+##  11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+##  FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
+##  OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+##  PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
+##  OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
+##  TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
+##  PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
+##  REPAIR OR CORRECTION.
+##
+## The GNU GPL can be found at http://www.fsf.org/copyleft/gpl.html
+##
+##############################################################################
+##
+## Description
+## Subversion info: $Id$
+##
+## This tool is meant to run via cron and will run nmap scans on all subnets
+## in the ONA database that do not have the nmap_scan custom attribute set to N.
+## The output of each scan will be stored in the local filesystem under
+## $ONABASE/www/local/nmap_scans/subnets/<baseip>.xml.
+##
+## If you choose to send the -u flag, it will update the "last response" column
+## in the interface table for each IP that shows as "up".
+##
+##
+##############################################################################
+# Get the config info
+[ ! -r /etc/onabase ] && echo "[$0] ERROR: Unable to read /etc/onabase." && exit 1
+ONABASE=`cat /etc/onabase`
+
+#### Process the commandline options
+function USAGE {
+cat <<-EOF
+
+Usage: `basename $0` [-u] [-l] [-n x.x.x.x/NN]
+
+  -u:  Update the last response timestamp for IPs that are up.
+  -l:  Display a list of subnets generated from the database
+  -n:  Specify a single subnet to scan. I.E. 10.1.1.0/24
+
+Description:
+  This tool is meant to run via cron and will run nmap scans on all subnets
+in the ONA database that do not have the nmap_scan custom attribute set to N.
+The output of each scan will be stored in the local filesystem under
+$ONABASE/www/local/nmap_scans/subnets/<baseip>.xml.
+
+  If you choose to send the -u flag, it will update the "last response" column
+in the interface table for each IP that shows as "up".
+
+EOF
+}
+
+#if [ $# -eq 0 ]; then
+#    USAGE
+#    exit 1
+#fi
+
+while getopts "n:ul" options; do
+  case $options in
+    u) UPDATE_LAST_RESPONSE=1;;
+    l ) LISTFLAG=1;;
+    n ) NETENTRY=$OPTARG;;
+    \? ) USAGE
+         exit 1;;
+    * ) USAGE
+         exit 1;;
+  esac
+done
+
+# Path to the nmap utility
+NMAPCOMMAND=/usr/bin/nmap
+
+# Path to the DCM commandline utility
+DCM_CMD="$ONABASE/bin/dcm.pl -l admin"
+
+NMAP_OUTPUT_DIR="$ONABASE/www/local/nmap_scans/subnets"
+
+if [ ! -d $NMAP_OUTPUT_DIR ]
+then
+    echo "ERROR => Unable to find directory $NMAP_OUTPUT_DIR. Try 'mkdir -p $NMAP_OUTPUT_DIR'"
+    exit 1
+fi
+
+
+#If they specify a single subnet to scan then go for it. otherwise get the list from the database
+if [ -n "$NETENTRY" ]
+then
+    NETLIST=$NETENTRY
+else
+    # Get a list of subnets from the database using the nmap_subnets.sql query
+    NETLIST=`$DCM_CMD -r ona_sql header=no sql=nmap_subnets.sql`
+    # MP: test checks for status 2.. commit option can fix this to 0 but could be risky.. may need to fix output of ona_sql module
+    #if [ $? -ne 2 ]
+    #then
+    #    echo "ERROR => Unable to retrieve subnet list using nmap_subnets.sql query."
+    #    exit 1
+    #fi
+fi
+
+# If they just want the list, show it and exit
+if [ -n "$LISTFLAG" ]
+then
+    echo "$NETLIST"
+    exit 0
+fi
+
+# Loop through each entry in the list and run a scan on it
+for NETENTRY in $NETLIST
+do
+    NETCLEAN=`echo $NETENTRY|sed "s/\//-/"`
+    echo "INFO => Running NMAP ping only scan on $NETENTRY..."
+    $NMAPCOMMAND --stylesheet nmap.xsl -sP -R -oX - $NETENTRY > $NMAP_OUTPUT_DIR/$NETCLEAN.xml
+
+    if [ -n "$UPDATE_LAST_RESPONSE" ]
+    then
+        [ -f $NMAP_OUTPUT_DIR/$NETCLEAN.xml ] && $DCM_CMD -r report_run name=ona_nmap_scans file=$NMAP_OUTPUT_DIR/$NETCLEAN.xml update_response 2>&1 > /dev/null
+    fi
+done
+
+exit 0

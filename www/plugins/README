@@ -1,0 +1,2 @@
+NOTICE: This directory is for default ONA supplied plugins.  You should install
+your plugins into the www/local/plugins directory, NOT here.
