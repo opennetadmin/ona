@@ -170,10 +170,10 @@ EOL;
     }
 
     $count = count($records);
-    sort($records);
+    @sort($records);
 
     // split the array into chunks of result size
-    $records = array_chunk($records, $conf['search_results_per_page']);
+    $records = @array_chunk($records, $conf['search_results_per_page']);
 
     if (!$records[0]) {
         $html .= <<<EOL
