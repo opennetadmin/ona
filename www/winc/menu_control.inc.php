@@ -485,16 +485,16 @@ EOL;
 //     Returns a two part array ($html, $js)
 //////////////////////////////////////////////////////////////////////////////
 function get_html_menu_button_plugins() {
-    global $conf, $images, $menuitem;
+    global $conf, $images, $menuitem, $base, $baseURL;
 
     $html = $js = '';
 
     // Get all the plugin menuitems
-    $pluginlist = plugin_list('menuitem');
+    $pluginlist = plugin_list('menu_item');
 
     // Load all the plugin menuitems and build a menu entry
     foreach ($pluginlist as $p) {
-        plugin_load('menuitem',$p['name']);
+        plugin_load('menu_item',$p['name']);
 
         // based on the menu cmd type, build the right command
         switch ($menuitem['type']) {
@@ -507,8 +507,8 @@ function get_html_menu_button_plugins() {
         }
 
         // Use a default image if we cant find the one specified.
-       if (!file_exists($menuitem['image'])){
-           $menuitem['image'] = "{$images}/silk/application.png";
+       if (!file_exists($base.$menuitem['image'])){
+           $menuitem['image'] = "/images/silk/plugin.png";
        }
 
         // Check the authorization and print the menuitem if the are authorized
@@ -520,7 +520,7 @@ function get_html_menu_button_plugins() {
      onMouseOut="this.className='row';"
      onClick="ona_menu_closedown(); {$menu_type_cmd};"
      title="{$menuitem['title']}"
- ><img style="vertical-align: middle;" src="{$menuitem['image']}" border="0"
+ ><img style="vertical-align: middle;" src="{$baseURL}{$menuitem['image']}" border="0"
  />&nbsp;{$menuitem['title']}</div>
 
 EOL;

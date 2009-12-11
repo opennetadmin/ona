@@ -171,9 +171,9 @@ if (is_dir($reqfile)) {
     $window['html'] .= "&nbsp;&nbsp;&nbsp;&nbsp;<img src='{$images}/silk/accept.png' border='0'> {$reqfile}<br>";
 } else {
     // make the dir
-    if (mkdir($reqfile)) {
+    if (@mkdir($reqfile)) {
         $window['html'] .= "&nbsp;&nbsp;&nbsp;&nbsp;<img src='{$images}/silk/accept.png' border='0'> {$reqfile}<br>";
-        mkdir($reqfile.'/subnets');
+        @mkdir($reqfile.'/subnets');
     } else {
         $stat++;
         $window['html'] .= "&nbsp;&nbsp;&nbsp;&nbsp;<img src='{$images}/silk/error.png' border='0'> <font color=\"red\">ERROR=> Unable to make required directory, try the following:</font><br>";
