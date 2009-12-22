@@ -933,7 +933,7 @@ EOM
     $options['set_name'] = trim($options['set_name']);
     $options['set_domain'] = trim($options['set_domain']);
     $options['set_txt'] = trim($options['set_txt']);
-    $options['set_view'] = trim($options['set_view']);
+    //$options['set_view'] = trim($options['set_view']);
     //
     // Find the dns record we're modifying
     //

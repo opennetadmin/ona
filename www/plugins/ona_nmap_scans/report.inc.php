@@ -138,9 +138,9 @@ if ($form['all']) {
     $rptdata['scansource'] = "Showing all scan data";
 
     $nmapdir = "{$base}/local/nmap_scans/subnets";
-    $dh  = opendir($nmapdir);
+    $dh  = @opendir($nmapdir);
     $c=0;
-    while (false !== ($filename = readdir($dh))) {
+    while (false !== ($filename = @readdir($dh))) {
         if(strpos($filename, 'xml')) {
             $xml[$c]=xml2ary(file_get_contents($nmapdir.'/'.$filename));
         }
@@ -280,7 +280,7 @@ EOL;
 
 
 
-    foreach ($form['ip'] as $record) {
+    foreach ((array)$form['ip'] as $record) {
 
         $act_status_fail = "<img src=\"{$images}/silk/stop.png\" border=\"0\">";
         $act_status_ok = "<img src=\"{$images}/silk/accept.png\" border=\"0\">";
