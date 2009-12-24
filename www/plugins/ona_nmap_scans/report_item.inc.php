@@ -11,7 +11,7 @@ if(file_exists("{$base}/local/nmap_scans/subnets/{$record['ip_address']}-{$recor
     $row_html .= <<<EOL
             <tr title="{$report_description}">
                 <td class="padding" align="right" nowrap="true">Nmap Scan:
-                <a onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_report\', \'report=>nmap_scan,subnet=>{$record['ip_address']}\', \'display\')');"
+                <a onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_report\', \'report=>ona_nmap_scans,subnet=>{$record['ip_address']}\', \'display\')');"
                 >View Report</a>
 
                 </td>

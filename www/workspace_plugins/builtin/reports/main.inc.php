@@ -22,24 +22,11 @@ global $base;
     $title_left_html = "Reports";
     $row_html = '';
 
-
-    // Check the usual directories, now inlucdes the local reports as well.
-    // local plugins should override the builtin stuff if they are named the same.
-    $directories = array($base.'/reports/listentries/',
-                         $base.'/local/reports/listentries/',
-                        );
-
-    // Scan the directories to find the report include file
-    foreach ($directories as $directory) {
-      if (is_dir($directory)) {
-        $d = dir($directory);
-        while (false!== ($filename = $d->read())) {
-            if (substr($filename, -8) == '.inc.php') {
-                 include "$directory$filename";
-            }
-        }
-        $d->close();
-        }
+    // Generate a list of reports available
+    $reports = plugin_list('report_item');
+    $z=0;
+    foreach ($reports as $report) {
+        @include_once $report['path'];
     }
 
     $modbodyhtml .= <<<EOL
