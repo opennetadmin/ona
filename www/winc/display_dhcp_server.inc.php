@@ -135,13 +135,13 @@ EOL;
                         ><img src="{$images}/silk/page_edit.png" border="0"></a>
                     </td>
                 </tr>
-            </table>
 EOL;
         }
     }
     // END FAILOVER GROUP INFO BOX
 
     $html .= <<<EOL
+            </table>
         <!-- END OF SECOND COLUMN OF SMALL BOXES -->
         </td>
 

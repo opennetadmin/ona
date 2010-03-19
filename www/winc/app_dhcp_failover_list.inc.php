@@ -199,11 +199,6 @@ EOL;
 
         $html .= <<<EOL
         <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
-            <form id="{$form['form_id']}_list_failover_{$record['id']}"
-                    ><input type="hidden" name="id" value="{$record['id']}"
-                    ><input type="hidden" name="js" value="{$refresh}"
-            ></form>
-
             <td class="list-row">
                 {$record['pri_server_name']}&nbsp;
             </td>
@@ -213,6 +208,10 @@ EOL;
             </td>
 
             <td align="right" class="list-row" nowrap="true">
+                <form id="{$form['form_id']}_list_failover_{$record['id']}">
+                        <input type="hidden" name="id" value="{$record['id']}">
+                        <input type="hidden" name="js" value="{$refresh}">
+                </form>
                 <a title="Edit failover group. ID: {$record['id']}"
                     class="act"
                     onClick="xajax_window_submit('edit_dhcp_failover_group', xajax.getFormValues('{$form['form_id']}_list_failover_{$record['id']}'), 'editor');"
@@ -238,7 +237,7 @@ EOL;
         <form id="{$form['form_id']}_add_failover_{$record['id']}"
                 ><input type="hidden" name="js" value="{$refresh}"
         ></form>
-        <!-- ADD zone LINK -->
+        <!-- EDIT LINK -->
         <a title="New failover group"
             class="act"
             onClick="xajax_window_submit('edit_dhcp_failover_group', xajax.getFormValues('{$form['form_id']}_add_failover_{$record['id']}'), 'editor');"

@@ -22,13 +22,15 @@ if ($rows) {
 
     // Gather info about this subnet and if it is assigned to any dhcp servers.
     list($status, $srows, $dhcp_servers) = db_get_records($onadb, 'dhcp_server_subnets', array('subnet_id' => $record['id']));
+    // find out if this subnet has any other pools that are part of failover groups
+    list($status, $fgrows, $dhcp_fg_servers) = db_get_records($onadb, 'dhcp_pools', "subnet_id = '{$record['id']}' and dhcp_failover_group_id > 0");
 
     foreach ($dhcp_pool as $pool) {
         // Test for a dhcp server subnet entry for the pool or that it is part of a failover group
         $hasserver = $rowstyle = '';
-        if (!$srows and $pool['dhcp_failover_group_id'] == 0) {
+        if (!$fgrows and !$srows and $pool['dhcp_failover_group_id'] == 0) {
             $hasserver = "<img src='{$images}/silk/error.png' border='0'>";
-            $rowstyle = 'style="background-color: #FFDDDD;" title="There is no DHCP server defined for this subnet!"';
+            $rowstyle = 'style="background-color: #FFDDDD;" title="There is no DHCP server defined for this pool!"';
         }
 
         $pool['ip_addr_start']   = ip_mangle($pool['ip_addr_start'], 'dotted');

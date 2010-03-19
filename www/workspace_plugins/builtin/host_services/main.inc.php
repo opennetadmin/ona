@@ -10,14 +10,14 @@ $title_left_html = 'Managed services on this host';
     $domain_rows = 0;
 
     // Determine if this is actaually a server by counting server "uses"
- //   if ($record['SERVER_ID']) {
-        // Is this a DNS server?
-        list($status, $domain_rows, $domain_server) = db_get_records($onadb, 'dns_server_domains', 'host_id = '. $onadb->qstr($record['id']));
-        if ($domain_rows >= 1) { $is_dns_server = 1; }
+    // Is this a DNS server?
+    list($status, $domain_rows, $domain_server) = db_get_records($onadb, 'dns_server_domains', 'host_id = '. $onadb->qstr($record['id']));
+    if ($domain_rows >= 1) { $is_dns_server = 1; }
 
-        // Is this a DHCP server?
-        list($status, $dhcp_rows, $dhcp_server) = db_get_records($onadb, 'dhcp_server_subnets', 'host_id = '. $onadb->qstr($record['id']));
-        if ($dhcp_rows >= 1) { $is_dhcp_server = 1; }
+    // Is this a DHCP server?
+    list($status, $dhcp_rows, $dhcp_server) = db_get_records($onadb, 'dhcp_server_subnets', 'host_id = '. $onadb->qstr($record['id']));
+    list($status, $dhcp_group_rows, $dhcp_group_server) = db_get_records($onadb, 'dhcp_failover_groups', 'primary_server_id = '. $onadb->qstr($record['id']).' or secondary_server_id = '. $onadb->qstr($record['id']), '');
+    if ($dhcp_rows or $dhcp_group_rows) { $is_dhcp_server = 1; $dhcp_rows = $dhcp_rows+$dhcp_group_rows;}
 
 
     if ($is_dhcp_server==1) {
