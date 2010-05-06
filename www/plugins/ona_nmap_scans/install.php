@@ -183,6 +183,16 @@ if (is_dir($reqfile)) {
     }
 }
 
+$reqfile = $onainstalldir.'/www/local/nmap_scans/subnets/nmap.xsl';
+if (file_exists($reqfile)) {
+    $window['html'] .= "&nbsp;&nbsp;&nbsp;&nbsp;<img src='{$images}/silk/accept.png' border='0'> {$reqfile}<br>";
+} else {
+    $stat++;
+    $window['html'] .= "&nbsp;&nbsp;&nbsp;&nbsp;<img src='{$images}/silk/error.png' border='0'> <font color=\"red\">ERROR=> Unable to find required file, try the following:</font><br>";
+    // Provide some information to the user on how to fix the problem manually
+    $window['html'] .= "<font color=\"orange\">Execute shell command:<br>cp {$installdir}/nmap.xsl {$reqfile}</font><br><br>";
+}
+
 $reqfile = $onainstalldir.'/bin/nmap_scan_cron';
 if (file_exists($reqfile)) {
     $window['html'] .= "&nbsp;&nbsp;&nbsp;&nbsp;<img src='{$images}/silk/accept.png' border='0'> {$reqfile}<br>";

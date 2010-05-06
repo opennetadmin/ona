@@ -249,7 +249,8 @@ function rpt_output_html($form) {
         return(array(0,$text));
     }
 
-    if (!$form['all']) { $text .=  "NMAP scan of {$form['totalhosts']} hosts done on {$form['runtime']}. {$form['scansource']} <a href=\"local/nmap_scans/subnets/{$form['netip']}-{$form['netcidr']}.xml\">Display RAW scan</a><br>";
+    if (!$form['all']) { 
+        if ($form['totalhosts']) $text .=  "NMAP scan of {$form['totalhosts']} hosts done on {$form['runtime']}. {$form['scansource']} <a href=\"local/nmap_scans/subnets/{$form['netip']}-{$form['netcidr']}.xml\">Display RAW scan</a><br>";
     } else {
         $text .= "Displaying records for ALL nmap scans in the system.  It also only shows issues, not entries that are OK.";
     }
