@@ -78,8 +78,6 @@ $conf = array (
     "set_db_charset"         => TRUE,
 );
 
-// Set multibyte encoding to UTF-8
-mb_internal_encoding("UTF-8");
 
 // Read in the version file to our conf variable
 // It must have a v<majornum>.<minornum>, no number padding, to match the check version code.
@@ -184,6 +182,13 @@ if (file_exists($base.'/local/config/run_install')) {
     // Process the install script
     require_once($base.'/../install/install.php');
     exit;
+}
+
+// Set multibyte encoding to UTF-8
+if (@function_exists('mb_internal_encoding')) {
+    mb_internal_encoding("UTF-8");
+} else {
+    printmsg("INFO => Missing 'mb_internal_encoding' function. Please install PHP 'mbstring' functions for proper UTF-8 encoding.", 0);
 }
 
 // If we dont have a ona_context set in the cookie, lets set a cookie with the default context
