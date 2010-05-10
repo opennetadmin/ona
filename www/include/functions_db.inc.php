@@ -1522,6 +1522,7 @@ function ona_find_host($search="") {
     if (strstr($search,'/')) {
         list($dnsview,$search) = explode('/', $search);
         list($status, $rows, $view) = db_get_record($onadb, 'dns_views', array('name' => strtoupper($dnsview)));
+        printmsg("DEBUG => ona_find_host: DNS view [{$dnsview}] was not found, using default", 2);
         if(!$rows) $view['id'] = 0;
     }
 
