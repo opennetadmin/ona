@@ -196,7 +196,7 @@ EOL;
             <td class="list-row">
                 <a title="Edit location. ID: {$record['id']}"
                    class="act"
-                   onClick="xajax_window_submit('edit_location', '{$record['id']}', 'editor');"
+                   onClick="xajax_window_submit('edit_location', 'id=>{$record['id']}', 'editor');"
                 >{$record['reference']}</a>&nbsp;
             </td>
 
