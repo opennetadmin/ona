@@ -677,7 +677,12 @@ EOM
         // This deletes the primary records only and expects dns_record_del to delete child records
         if ($rows) {
             foreach($records as $record) {
-                list($status, $output) = run_module('dns_record_del', array('name' => $record['id'], 'type' => $record['type'], 'commit' => 'Y', 'delete_by_module' => 'Y'));
+                $int_dns_deloptions = array('name' => $record['id'], 'type' => $record['type'], 'commit' => 'Y');
+                // If delete_by_module is passed in, add it to the dns_record_del option list
+                // This allows host/subnet deletes to delete what they need but does not allow you to delete a
+                // interface that is used in a primary dns record
+                if (isset($options['delete_by_module'])) $int_dns_deloptions['delete_by_module'] = 'Y';
+                list($status, $output) = run_module('dns_record_del', $int_dns_deloptions);
                 $add_to_error .= $output;
                 $add_to_status = $add_to_status + $status;
             }

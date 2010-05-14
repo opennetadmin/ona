@@ -1484,7 +1484,7 @@ MP: TODO:  this delete will not handle DNS views unless you use the ID of the re
         if (!isset($options['delete_by_module'])) {
             list($status, $rows, $srecord) = db_get_record($onadb, 'hosts', array('primary_dns_id' => $dns['id']));
             if ($rows) {
-                $self['error'] = "ERROR => dns_record_del() The DNS record, {$dns['name']}[{$dns['id']}], is a primary A record for a host! You can not delete it until you associate a new primary record.";
+                $self['error'] = "ERROR => dns_record_del() The DNS record, {$dns['name']}.{$dns['domain_fqdn']}[{$dns['id']}], is a primary A record for a host! You can not delete it until you associate a new primary record, or delete the host.";
                 printmsg($self['error'],0);
                 return(array(5, $self['error'] . "\n"));
             }
