@@ -6,6 +6,10 @@
 
 <query>INSERT INTO `configuration_types` VALUES (1,'IOS_CONFIG'),(2,'IOS_VERSION');</query>
 
+<query>INSERT INTO `custom_attribute_types` VALUES
+(1,'nmap_scan','Used to determine if this subnet should be scanned by Nmap based tools.','/^[Y|N]$/','Must be either Y or N');
+</query>
+
 <query>INSERT INTO `dcm_module_list` VALUES
 ('domain_display','Displays an existing domain','ona/domain.inc.php'),
 ('get_module_list','Returns the list of available modules','get_module_list.inc.php'),
@@ -115,7 +119,7 @@
 ('dns_primary_master', '', 'The fqdn of your default primary master DNS server, leave blank if not required', '', '', 1, 0),
 ('dns_refresh', '86400', 'DNS refresh time used in SOA', '', '', 1, 0),
 ('dns_retry', '3600', 'DNS retry time used in SOA', '', '', 1, 0),
-('dns_views', '0', 'Enable support for DNS views.', '', '', 1, 0),
+('dns_views', '0', 'Enable support for DNS views.', '', '', 0, 0),
 ('logfile', '/var/log/ona.log', 'Local filesystem path to log messages', '', '', 1, 0),
 ('log_to_db', '0', 'Log only level 0 messages to the database.', '', '', 1, 0),
 ('search_results_per_page', '10', 'Sets the amount of rows per page in list items', '', '', 1, 0),

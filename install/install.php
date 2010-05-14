@@ -16,8 +16,9 @@ $new_ver = trim(file_get_contents($onabase.'/VERSION'));
 $curr_ver = '';
 
 // Get some pre-requisite information
-$phpversion = phpversion() > '4.1' ? 'Yes' : '<font color="red">No</font>';
+$phpversion = phpversion() > '4.3' ? 'Yes' : '<font color="red">No</font>';
 $hasgmp = function_exists( 'gmp_init' ) ? 'Yes' : 'Recommended';
+$hasmbstring = function_exists( 'mb_internal_encoding' ) ? 'Yes' : 'Recommended';
 $dbconfwrite = @is_writable($onabase.'/www/local/config/') ? 'Yes' : '<font color="red">No</font>';
 
 $blankmain = "<script>el('main').style.display = 'none';</script>";
@@ -41,6 +42,7 @@ $requisitediv = <<<EOL
                     <tr><th colspan="5">Prerequisite checks</th></tr>
                     <tr><td>PHP version > 4.1:</td><td>{$phpversion}</td></tr>
                     <tr title="The PHP GMP modules provide extra functionality, but are not required."><td>Has GMP support:</td><td>{$hasgmp}</td></tr>
+                    <tr title="The PHP mbstring modules provide better text encoding for UTF etc, but are not required."><td>Has mbstring support:</td><td>{$hasmbstring}</td></tr>
                     <tr title="The local config directory must be writable by the web server user: {$_ENV['APACHE_RUN_USER']}"><td>{$onabase}/www/local/config dir writable by '{$_ENV['APACHE_RUN_USER']}':</td><td>{$dbconfwrite}</td></tr>
                 </table>
             </div>

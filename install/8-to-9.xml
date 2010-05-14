@@ -3,9 +3,12 @@
 <sql>
     <query platform="mysql|mysqlt">INSERT INTO sys_config (name,value,description,field_validation_rule,editable,deleteable,failed_rule_text) VALUES ( 'disable_guest', '0', 'Disable the autologin of the guest user.', '', '1', '0', '') on duplicate key update name='disable_guest'</query>
     <query platform="mysql|mysqlt">INSERT INTO sys_config (name,value,description,field_validation_rule,editable,deleteable,failed_rule_text) VALUES ( 'log_to_db', '0', 'Log only level 0 messages to the database.', '', '1', '0', '') on duplicate key update name='log_to_db'</query>
-    <query platform="mysql|mysqlt">INSERT INTO sys_config (name,value,description,field_validation_rule,editable,deleteable,failed_rule_text) VALUES ( 'dns_views', '0', 'Enable support for DNS views.', '', '1', '0', '') on duplicate key update name='dns_views'</query>
+    <query platform="mysql|mysqlt">INSERT INTO sys_config (name,value,description,field_validation_rule,editable,deleteable,failed_rule_text) VALUES ( 'dns_views', '0', 'Enable support for DNS views.', '', '0', '0', '') on duplicate key update name='dns_views'</query>
     <query platform="mysql|mysqlt">INSERT INTO dns_views (id, name, description) VALUES ( '0', 'DEFAULT', 'Default view for dns records') on duplicate key update name='DEFAULT'</query>
     <query platform="mysql|mysqlt">INSERT INTO dcm_module_list (name,description,file) VALUES ('subnet_nextip', 'Return the next available IP address on a subnet', 'ona/subnet.inc.php') on duplicate key update name='subnet_nextip'</query>;
+    <query platform="mysql|mysqlt">INSERT INTO dcm_module_list (name,description,file) VALUES ('report_run', 'Run a report', 'report_run.inc.php') on duplicate key update name='report_run'</query>;
+    <query platform="mysql|mysqlt">INSERT INTO custom_attribute_types VALUES (1,'nmap_scan','Used to determine if this subnet should be scanned by Nmap based tools.','/^[Y|N]$/','Must be either Y or N') on duplicate key update name='nmap_scan';</query>
+
 </sql>
 </schema>
 
