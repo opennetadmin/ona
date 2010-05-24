@@ -192,7 +192,7 @@ primary name for a host should be unique in all cases I'm aware of
 
 
     // Gather DNS view information
-    $add_viewid = 0;
+    $add_pointsto_viewid = $add_viewid = 0;
     if ($options['view']) {
         if (is_numeric($options['view'])) {
             $viewsearch = array('id' => $options['view']);
@@ -1350,22 +1350,24 @@ EOM
     list($status, $rows, $new_record) = ona_get_dns_record(array('id' => $dns['id']));
 
     // Return the success notice
-    $self['error'] = "INFO => DNS record UPDATED:{$dns['id']}: {$new_record['fqdn']}";
+    $self['error'] = "INFO => DNS record ---UPDATED:{$dns['id']}: {$new_record['fqdn']}";
 
     $log_msg = "INFO => DNS record UPDATED:{$dns['id']}: ";
     $more='';
-    foreach(array_keys($dns) as $key) {
-        if($dns['$key'] != $new_record['$key']) {
-            $log_msg .= "{$more}{$key}: {$dns['$key']} => {$new_record['$key']}";
+    foreach(array_keys($original_record) as $key) {
+        if($original_record['$key'] != $new_record['$key']) {
+            $log_msg .= "{$more}{$key}: {$original_record['$key']} => {$new_record['$key']}";
             $more= "; ";
+print_r($original_record);
+        printmsg($log_msg, 0);
         }
     }
 
     // only print to logfile if a change has been made to the record
-    if($more != '') {
-        printmsg($self['error'], 0);
+   // if($SET or $more) {
+        //printmsg($self['error'], 0);
         printmsg($log_msg, 0);
-    }
+   // }
 
     return(array(0, $self['error'] . "\n"));
 }
