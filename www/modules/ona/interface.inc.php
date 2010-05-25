@@ -576,7 +576,7 @@ function interface_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     printmsg("DEBUG => interface_del({$options}) called", 3);
 
@@ -672,9 +672,10 @@ EOM
         }
 
         // Delete any DNS records are associated with the host.
-        list($status, $rows, $records) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id'], 'dns_id' => 0));
+        list($status, $rows, $records) = db_get_records($onadb, 'dns', array('interface_id' => $interface['id']), 'dns_id desc');
         // Loop through all the records and delete them
-        // This deletes the primary records only and expects dns_record_del to delete child records
+        // This deletes the primary records last based on sort of dns_id and expects dns_record_del to delete child records
+        // but will pick up any PTR records when deleting interfaces with only PTR records.
         if ($rows) {
             foreach($records as $record) {
                 $int_dns_deloptions = array('name' => $record['id'], 'type' => $record['type'], 'commit' => 'Y');

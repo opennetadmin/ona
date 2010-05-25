@@ -1333,7 +1333,7 @@ EOM
             return(array(7, $self['error'] . "\n"));
         }
 
-        // TRIGGER: If we are chaning domains, lets flag the new domain as well, lets mark the domain for rebuild on its servers
+        // TRIGGER: If we are changing domains, lets flag the new domain as well, lets mark the domain for rebuild on its servers
         if($SET['domain_id']) {
             list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $SET['domain_id']), array('rebuild_flag' => 1));
             if ($status) {
@@ -1350,7 +1350,7 @@ EOM
     list($status, $rows, $new_record) = ona_get_dns_record(array('id' => $dns['id']));
 
     // Return the success notice
-    $self['error'] = "INFO => DNS record ---UPDATED:{$dns['id']}: {$new_record['fqdn']}";
+    $self['error'] = "INFO => DNS record UPDATED:{$dns['id']}: {$new_record['fqdn']}";
 
     $log_msg = "INFO => DNS record UPDATED:{$dns['id']}: ";
     $more='';
@@ -1358,7 +1358,6 @@ EOM
         if($original_record['$key'] != $new_record['$key']) {
             $log_msg .= "{$more}{$key}: {$original_record['$key']} => {$new_record['$key']}";
             $more= "; ";
-print_r($original_record);
         printmsg($log_msg, 0);
         }
     }
@@ -1402,7 +1401,7 @@ function dns_record_del($options="") {
     printmsg("DEBUG => dns_record_del({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -1506,7 +1505,7 @@ MP: TODO:  this delete will not handle DNS views unless you use the ID of the re
         if ($rows) {
             // log deletions
             // FIXME: do better logging here
-            printmsg("INFO => {$rows} child record(s) DELETED from {$dns['fqdn']}",0);
+            printmsg("INFO => {$rows} child DNS record(s) DELETED from {$dns['fqdn']}",0);
             $add_to_error .= "INFO => {$rows} child record(s) DELETED from {$dns['fqdn']}\n";
         }
 
@@ -1514,7 +1513,7 @@ MP: TODO:  this delete will not handle DNS views unless you use the ID of the re
         foreach($records as $record) {
             list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $record['domain_id']), array('rebuild_flag' => 1));
             if ($status) {
-                $self['error'] = "ERROR => dns_record_add() Unable to update rebuild flags for domain.: {$self['error']}";
+                $self['error'] = "ERROR => dns_record_del() Unable to update rebuild flags for domain.: {$self['error']}";
                 printmsg($self['error'],0);
                 return(array(7, $self['error'] . "\n"));
             }
@@ -1532,11 +1531,12 @@ MP: TODO:  this delete will not handle DNS views unless you use the ID of the re
         // TRIGGER: flag the current dnsrecords domain for rebuild
         list($status, $rows) = db_update_record($onadb, 'dns_server_domains', array('domain_id' => $dns['domain_id']), array('rebuild_flag' => 1));
         if ($status) {
-            $self['error'] = "ERROR => dns_record_add() Unable to update rebuild flags for domain.: {$self['error']}";
+            $self['error'] = "ERROR => dns_record_del() Unable to update rebuild flags for domain.: {$self['error']}";
             printmsg($self['error'],0);
             return(array(7, $self['error'] . "\n"));
         }
 
+        // FIXME: if it is a PTR or NS or something display a proper FQDN message here
 
         // Return the success notice
         $self['error'] = "INFO => DNS record DELETED: {$dns['fqdn']}";
