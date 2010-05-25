@@ -24,6 +24,10 @@ function ws_display_list($window_name, $form='') {
     // Build js to refresh this list
     $refresh = "xajax_window_submit('{$window_name}', xajax.getFormValues('{$form['form_id']}'), 'display_list');";
 
+    // If this is the display_host screen that called, add refresh for DNS records too
+    if ($form['content_id'] == 'display_host_list_interfaces' )
+        $refresh .= "xajax_window_submit('list_records', xajax.getFormValues('list_records_filter_form'), 'display_list');";
+
     // If it's not a new query, load the previous query from the session
     // into $form and save the current page and filter in the session.
     // Also find/set the "page" we're viewing
