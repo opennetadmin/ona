@@ -812,6 +812,10 @@ EOM
         }
         unset($interfaces);
 
+        // make sure we only have one reference for each host and interface
+        $interfaces_to_delete = array_unique($interfaces_to_delete);
+        $hosts_to_delete = array_unique($hosts_to_delete);
+
         // Delete interfaces we have selected
         foreach ($interfaces_to_delete as $interface_id) {
             list($status, $output) = run_module('interface_del', array('interface' => $interface_id, 'commit' => 'Y'));
@@ -911,6 +915,10 @@ EOM
             array_push($interfaces_to_delete, $interface['id']);
     }
     unset($interfaces);
+
+    // make sure we only have one reference for each host and interface
+    $interfaces_to_delete = array_unique($interfaces_to_delete);
+    $hosts_to_delete = array_unique($hosts_to_delete);
 
     // Display interfaces we would have deleted
     $rows = count($interfaces_to_delete);
