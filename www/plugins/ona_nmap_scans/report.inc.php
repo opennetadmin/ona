@@ -504,13 +504,6 @@ EOL;
         // check devices that are up
         if ($record['netstatus'] == "up") {
 
-            // If the device is in a dhcp pool range, then skip it.
-            if ($record['inpool'] == 1) {
-                $poolhostcount++;
-                continue;
-            }
-
-
             // update the database last response field.
             if ($form['update_response'] and $record['dbip'] != "NOT FOUND") {
                 //if (isset($options['dcm_output'])) { $text .=  "dcm.pl -r interface_modify interface={$record['ip']} set_last_response='{$runtime}'\n"; }
@@ -553,6 +546,12 @@ EOL;
                 list($status, $rows, $rptdnsrecord) = ona_find_dns_record($record['dbdnsname']);
             }
 
+            // If the device is in a dhcp pool range, then count it and identify it.
+            if ($record['inpool'] == 1) {
+                $poolhostcount++;
+                $record['dbip'] = 'DHCP Pooled';
+                $action = 'DHCP Pooled device';
+            }
         }
 
 /*
