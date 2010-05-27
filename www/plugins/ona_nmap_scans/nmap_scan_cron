@@ -55,20 +55,26 @@
 [ ! -r /etc/onabase ] && echo "[$0] ERROR: Unable to read /etc/onabase." && exit 1
 ONABASE=`cat /etc/onabase`
 
+# Define the default sql script to use
+SQLFILE=nmap_subnets_only_yes.sql
+
 #### Process the commandline options
 function USAGE {
 cat <<-EOF
 
-Usage: `basename $0` [-u] [-l] [-n x.x.x.x/NN]
+Usage: `basename $0` [-u] [-l] [-n x.x.x.x/NN] [-a]
 
   -u:  Update the last response timestamp for IPs that are up.
   -l:  Display a list of subnets generated from the database
   -n:  Specify a single subnet to scan. I.E. 10.1.1.0/24
+  -a:  Scan all subnets in DB not flagged as 'N'
 
 Description:
-  This tool is meant to run via cron and will run nmap scans on all subnets
-in the ONA database that do not have the nmap_scan custom attribute set to N.
-The output of each scan will be stored in the local filesystem under
+  This tool is meant to run via cron and by default will run nmap scans
+only on subnets in the ONA database that have the nmap_scan custom
+attribute set to Y.  If you wish to run the scan on any subnet in the
+database not marked as N, then use the -a flag.  The output of each
+scan will be stored in the local filesystem under
 $ONABASE/www/local/nmap_scans/subnets/<baseip>.xml.
 
   If you choose to send the -u flag, it will update the "last response" column
@@ -82,11 +88,12 @@ EOF
 #    exit 1
 #fi
 
-while getopts "n:ul" options; do
+while getopts "n:ula" options; do
   case $options in
     u) UPDATE_LAST_RESPONSE=1;;
     l ) LISTFLAG=1;;
     n ) NETENTRY=$OPTARG;;
+    a ) SQLFILE=nmap_subnets.sql;;
     \? ) USAGE
          exit 1;;
     * ) USAGE
@@ -115,11 +122,11 @@ then
     NETLIST=$NETENTRY
 else
     # Get a list of subnets from the database using the nmap_subnets.sql query
-    NETLIST=`$DCM_CMD -r ona_sql header=no sql=nmap_subnets.sql`
+    NETLIST=`$DCM_CMD -r ona_sql header=no sql=$SQLFILE`
     # MP: test checks for status 2.. commit option can fix this to 0 but could be risky.. may need to fix output of ona_sql module
     #if [ $? -ne 2 ]
     #then
-    #    echo "ERROR => Unable to retrieve subnet list using nmap_subnets.sql query."
+    #    echo "ERROR => Unable to retrieve subnet list using $SQLFILE query."
     #    exit 1
     #fi
 fi
