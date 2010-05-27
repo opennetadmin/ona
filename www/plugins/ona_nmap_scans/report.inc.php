@@ -318,11 +318,7 @@ EOL;
         // check devices that are up
         if ($record['netstatus'] == "up") {
 
-            // If the device is in a dhcp pool range, then skip it.
-            if ($record['inpool'] == 1) {
-                $poolhostcount++;
-                continue;
-            }
+
 
             // If this is the subnet address or broadcast then skip it.  Sometimes nmap shows them as up
             if ($record['netip'] == $form['netip']) continue;
@@ -372,6 +368,13 @@ EOL;
                             onClick="xajax_window_submit('edit_record', 'dns_record_id=>{$rptdnsrecord['id']},ip_addr=>{$record['dbip']},hostname=>{$hostname},domain_id=>{$domain['id']},js=>null', 'editor');"
                         >{$record['dbdnsname']}</a>
 EOL;
+            }
+
+            // If the device is in a dhcp pool range, then count it and identify it.
+            if ($record['inpool'] == 1) {
+                $poolhostcount++;
+                $record['dbip'] = 'DHCP Pooled';
+                $action = '&nbsp; DHCP Pooled device';
             }
 
         }
