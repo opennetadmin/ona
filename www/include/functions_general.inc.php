@@ -1488,6 +1488,16 @@ function run_module($module='', $options='', $transaction=1) {
         // If there was any sort of failure, make sure the status has incremented, this catches sub module output errors;
         if ($onadb->HasFailedTrans()) $status = $status + 1;
 
+        // If the user passed the rollback flag then dont commit the transaction
+// FIXME: not complete or tested.. it would be nice to have an ability for the user to pass
+//        a rollback flag to force the transaction to rollback.. good for testing adds/modify.
+//        The problem is sub modules will fire and then the whole thing stops so you wont see/test the full operation.
+//         if ($local_options['rollback']) {
+//             printmsg("INFO => The user requested to mark the transaction for a rollback, no changes made.", 0);
+//             $output .= "INFO => The user requested to mark the transaction for a rollback, no changes made.\n";
+//             $status = $status + 1;
+//         }
+
         printmsg("DEBUG => Commiting transaction", 2);
         $onadb->CompleteTrans();
     }
