@@ -32,6 +32,71 @@ body {
     min-height:100%;
 }
 
+.alertContainer {
+    display:block;
+    position:fixed;
+    top:1px;
+    z-index:100;
+    width:100%;
+    filter:alpha(opacity=50);
+    opacity: 0.5;
+    -moz-opacity:0.5;
+    background: #000;
+}
+
+.alertBox {
+    background-color: #E0F0FF;
+    border: 1px solid;
+    margin-top: 100px;
+    padding-bottom: 10px;
+    z-index: 200;
+    position:fixed;
+    top:1px;
+    width: 60%;
+    text-align: center;
+    -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
+.alertBox > P {
+    text-align: left;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.alertBox > H1 {
+    color: red;
+    border-bottom: 1px solid #000000;
+    margin: 0px;
+    background-image: -moz-linear-gradient(top, #69A6DE, #D3DBFF);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#69A6DE), to(#D3DBEE));
+    background-color: #D3DBFF;
+    text-align: center;
+}
+
+.alertBox > A {
+    border: 1px solid {$color['border']};
+    background-color: white;
+    vertical-align: middle;
+    text-align: center;
+    text-decoration:none;
+    cursor: pointer;
+    height: 22px !important;
+    max-height: 22px !important;
+    min-height: 22px !important;
+    display: inline;
+    margin-top: 0;
+    margin-bottom: .2em;
+    padding: 2px 10px 2px 10px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.alertBox > A:link {
+    text-decoration:none;
+}
+
 td {
     margin: 0px;
     font-family: {$style['font-family']};
@@ -93,6 +158,19 @@ a:hover      { cursor: pointer; text-decoration: underline; }
 /* ---------------  Used in the Site ---------------- */
 
 /* Bar with Nav Links at the top */
+
+/* This rule is to adjust height for chrome */
+body:nth-of-type(1) .bar {
+    height:26px;
+    background:{$color['bar_bg']};
+    border:1px solid {$color['border']};
+    border-left:0px;
+    padding-top: 8px;
+    padding-bottom: 0px;
+    margin:0px;
+    vertical-align: middle;
+}
+
 .bar {
     height:25px;
     background:{$color['bar_bg']};
@@ -558,7 +636,6 @@ div.wwTT_ca_info p
 
 
 .table-tab-active {
-    font-size: 10pt;
     white-space: nowrap;
     cursor: pointer;
     font-weight: bold;
@@ -569,7 +646,6 @@ div.wwTT_ca_info p
 }
 
 .table-tab-inactive {
-    font-size: 10pt;
     white-space: nowrap;
     cursor: pointer;
     font-weight: normal;

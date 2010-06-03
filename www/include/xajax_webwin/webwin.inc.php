@@ -17,7 +17,7 @@
 //////////////////////////////////////////////////////////////////////////////
 global $color;
 $color['window_title_bg']           = '#69A6DE';
-$color['window_title_font']         = '#F0F0F0';
+$color['window_title_font']         = '#294157';
 $color['window_tab_active_bg']      = '#E5E3F0';
 $color['window_tab_inactive_bg']    = '#FFFFFF';
 $color['window_content_bg']         = '#F2F2F2';
@@ -78,7 +78,7 @@ function window_open($window_name, $window=array()) {
         <td>
 
             <!-- Window bar and close button -->
-            <table id="{$window_name}_title_table" style="background-color: {$color['window_title_bg']};" width="100%" cellspacing="0" border="0" cellpadding="0">
+            <table id="{$window_name}_title_table" class="window_title" style="border-bottom: 1px solid #69A6DE;background-color: {$color['window_title_bg']};" width="100%" cellspacing="0" border="0" cellpadding="0">
             <tr>
 
                 <td id="{$window_name}_title"
@@ -87,7 +87,6 @@ function window_open($window_name, $window=array()) {
                     nowrap="true"
                     onMouseDown="focus_window('$window_name'); dragStart(event, '{$window_name}');"
                     style="cursor: move;
-                           color: {$color['window_title_font']};
                            white-space: nowrap;
                            font-weight: bold;
                            text-align: left;

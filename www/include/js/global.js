@@ -10,6 +10,58 @@
 //}
 
 
+
+
+// over-ride the alert method only if this a newer browser.
+// Older browser will see standard alerts
+if(document.getElementById) {
+    window.alert = function(txt) {
+        createONAAlert(txt);
+    }
+}
+
+function createONAAlert(txt) {
+    // shortcut reference to the document object
+    d = document;
+
+    // if the alertContainer object already exists in the DOM, bail out.
+    if(el('alertContainer')) return;
+
+    // create the alertContainer div as a child of the BODY element
+    mObj = d.getElementsByTagName("body")[0].appendChild(d.createElement("div"));
+    mObj.id = "alertContainer";
+    mObj.className = "alertContainer";
+    mObj.style.height = document.documentElement.scrollHeight + "px";
+
+    // create the DIV that will be the alert 
+    alertObj = d.getElementsByTagName("body")[0].appendChild(d.createElement("div"));
+    alertObj.id = "alertBox";
+    alertObj.className = "alertBox";
+    // MSIE doesnt treat position:fixed correctly, so this compensates for positioning the alert
+    if(d.all && !window.opera) alertObj.style.top = document.documentElement.scrollTop + "px";
+    alertObj.style.left = (d.documentElement.scrollWidth - alertObj.offsetWidth)/2 + "px";
+
+    h1 = alertObj.appendChild(d.createElement("h1"));
+    h1.appendChild(d.createTextNode("OpenNetAdmin Alert!"));
+
+    msg = alertObj.appendChild(d.createElement("p"));
+    msg.innerHTML = txt;
+
+    btn = alertObj.appendChild(d.createElement("a"));
+    btn.id = "closeBtn";
+    btn.appendChild(d.createTextNode("OK"));
+    btn.href = "#";
+
+    btn.onclick = function() { 
+        removeElement("alertBox");
+        removeElement("alertContainer");
+        return false;
+    }
+}
+
+
+
+
 // Add a "trim" function to Javascript's string object type
 String.prototype.trim = function() {
     // Strip leading and trailing white-space
@@ -93,6 +145,7 @@ function ona_menuTT(menu_name, menu_id) {
             var button_top    = calcOffset(el(menu_name+'_name'), 'offsetTop');
             var button_left   = calcOffset(el(menu_name+'_name'), 'offsetLeft');
             var button_height = el(menu_name+'_name').offsetHeight;
+            el('trace_history').style.display = 'none';
             /* Create the tool-tip menu */
             wwTT(this, ev,
                  'id', menu_id,
@@ -113,6 +166,7 @@ function ona_menuTT(menu_name, menu_id) {
 function ona_menu_closedown() {
     el('menu-apps-item').style.paddingBottom='3px';
     el('menu_bar_top').style.display = 'none';
+    el('trace_history').style.display = '';
     removeElement(wwTTobj.lastID);
 }
 

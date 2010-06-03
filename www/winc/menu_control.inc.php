@@ -48,6 +48,7 @@ EOL;
 
     // this shows the menu bar and makes a few things look pretty
     $js .= <<<EOL
+    el('trace_history').style.display = 'none';
     el('menu_bar_top').style.display = '';
     el('menu-apps-item').style.paddingBottom='5px';
 EOL;

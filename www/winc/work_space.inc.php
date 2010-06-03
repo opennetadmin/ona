@@ -97,7 +97,10 @@ $window['js'] .= <<<EOL
     el('{$window_name}_title_table').style.width = my_width  ;
 
     /* Gray the title bar */
+    el('{$window_name}_title_table').className = '';
     el('{$window_name}_title_table').style.backgroundColor = '#A6A6A6';
+    el('{$window_name}_title_table').style.borderBottom = 'none';
+    el('{$window_name}_title').style.color = '#F0F0F0';
 
     /* Make the content peice scroll */
     _el = el('{$window_name}_content');

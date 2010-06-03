@@ -125,16 +125,16 @@ print <<<EOL
         </div>
     </div>
 
-    <div id="menu_bar_top" style="display: none; float: left;width: 100%; font-size: smaller; background-color: #AABBFF;white-space: nowrap;font-weight: bold;border-left: 1px solid #555555;border-right: 1px solid #555555;border-bottom: 1px solid #555555;"></div>
+    <div id="menu_bar_top" style="display: none; width: 100%; height: 16px; font-size: smaller; background-color: #AABBFF;white-space: nowrap;font-weight: bold;border-left: 1px solid #555555;border-right: 1px solid #555555;border-bottom: 1px solid #555555;"></div>
 
-    <div id="trace_history" style="font-size: smaller; border-color: #555555;border-style: solid; border-width: 0px 1px 1px 1px; background-color: #EDEEFF;white-space: nowrap;">&nbsp;Trace:</div>
+    <div id="trace_history" style="font-size: smaller;height: 16px; border-color: #555555;border-style: solid; border-width: 0px 1px 1px 1px; background-color: #EDEEFF;white-space: nowrap;">&nbsp;Trace:</div>
 EOL;
 
 // If we have more than one context defined, lets create a context selector
 if (count($ona_contexts) > 1) {
 print <<<EOL
     <div style="position: fixed;width: 100%;z-index: 10;">
-    <center><div style="max-height: 1px;">
+    <center><div>
     <table class="context_select_table" cellspacing="0" border="0" cellpadding="0" style="background-color: {$self['context_color']};">
         <tr id="current_context" title="Click to change context" onclick="this.style.display='none'; el('change_context').style.display='';">
             <td onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='';">Context: {$self['context_name']}</td>

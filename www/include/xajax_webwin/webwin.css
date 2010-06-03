@@ -9,8 +9,16 @@
     border-bottom: 2px solid #69A6DE;
     border-left:   2px solid #69A6DE;
     border-right:  2px solid #69A6DE;
+    /* offset left, top, thickness, color with alpha */
+    -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
 }
 
+.window_title {
+    background-image: -moz-linear-gradient(top, #69A6DE, #D3DBFF);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#69A6DE), to(#D3DBEE));
+}
 
 /* ---------------------------- Tool-Tip Styles (used with webwinTT) --------------------------*/
 /*                                Copied from the domTT library                                */
