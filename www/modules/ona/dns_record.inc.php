@@ -850,7 +850,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.10';
+    $version = '1.11';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -1017,6 +1017,15 @@ EOM
         if (!$rows) {
             printmsg("ERROR => dns_record_modify() Unable to find IP interface: {$options['set_ip']}",3);
             $self['error'] = "ERROR => dns_record_modify() Unable to find IP interface: {$options['set_ip']}\n";
+            return(array(4, $self['error']));
+        }
+
+        // check for child records that would match our new values
+        // I think they will always be just PTR records?
+        list($status, $rows, $dnschild) = ona_get_dns_record(array('dns_id' => $dns['dns_id'], 'interface_id' => $interface['id']));
+        if (!$rows) {
+            printmsg("ERROR => dns_record_modify() This change results in a duplicate child DNS record: PTR {$options['set_ip']}. Delete existing PTR record first.",3);
+            $self['error'] = "<br>ERROR => dns_record_modify() This change results in a duplicate child DNS record: PTR {$options['set_ip']}.<br> Delete existing PTR record first.\n";
             return(array(4, $self['error']));
         }
 
@@ -1257,7 +1266,7 @@ EOM
             // If the interface id has changed, make sure any child records are updated first
             if ($SET['interface_id'] != $current_int_id) {
                 printmsg("DEBUG = > dns_record_modify() Updating child interfaces to new interface.", 2);
-                list($status, $rows) = db_update_record($onadb, 'dns', array('dns_id' => $dns['id']), array('interface_id' => $SET['interface_id']));
+                list($status, $rows) = db_update_record($onadb, 'dns', array('dns_id' => $dns['id'], 'interface_id' => $current_int_id), array('interface_id' => $SET['interface_id']));
                 if ($status) {
                     $self['error'] = "ERROR => dns_record_modify() SQL Query failed for dns record: " . $self['error'];
                     printmsg($self['error'], 0);
@@ -1355,18 +1364,14 @@ EOM
     $log_msg = "INFO => DNS record UPDATED:{$dns['id']}: ";
     $more='';
     foreach(array_keys($original_record) as $key) {
-        if($original_record['$key'] != $new_record['$key']) {
-            $log_msg .= "{$more}{$key}: {$original_record['$key']} => {$new_record['$key']}";
+        if($original_record[$key] != $new_record[$key]) {
+            $log_msg .= $more . $key . "[" .$original_record[$key] . "=>" . $new_record[$key] . "]";
             $more= "; ";
-        printmsg($log_msg, 0);
         }
     }
 
     // only print to logfile if a change has been made to the record
-   // if($SET or $more) {
-        //printmsg($self['error'], 0);
-        printmsg($log_msg, 0);
-   // }
+    if($more != '') printmsg($log_msg, 0);
 
     return(array(0, $self['error'] . "\n"));
 }
@@ -1401,7 +1406,7 @@ function dns_record_del($options="") {
     printmsg("DEBUG => dns_record_del({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -1536,10 +1541,18 @@ MP: TODO:  this delete will not handle DNS views unless you use the ID of the re
             return(array(7, $self['error'] . "\n"));
         }
 
-        // FIXME: if it is a PTR or NS or something display a proper FQDN message here
+        // FIXME: if it is a NS or something display a proper FQDN message here
+        // Display proper PTR information
+        if ($dns['type'] == 'PTR') {
+            list($status, $rows, $pointsto) = ona_get_dns_record(array('id' => $dns['dns_id']), '');
+            list($status, $rows, $ptrint) = ona_get_interface_record(array('id' => $dns['interface_id']), '');
+
+            $ipflip = ip_mangle($ptrint['ip_addr'],'flip');
+            $dns['fqdn'] = "{$ipflip}.in-addr.arpa -> {$pointsto['fqdn']}";
+        }
 
         // Return the success notice
-        $self['error'] = "INFO => DNS record DELETED: {$dns['fqdn']}";
+        $self['error'] = "INFO => DNS {$dns['type']} record DELETED: {$dns['fqdn']}";
         printmsg($self['error'], 0);
         return(array(0, $add_to_error . $self['error'] . "\n"));
     }
