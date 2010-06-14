@@ -159,18 +159,6 @@ a:hover      { cursor: pointer; text-decoration: underline; }
 
 /* Bar with Nav Links at the top */
 
-/* This rule is to adjust height for chrome */
-body:nth-of-type(1) .bar {
-    height:26px;
-    background:{$color['bar_bg']};
-    border:1px solid {$color['border']};
-    border-left:0px;
-    padding-top: 8px;
-    padding-bottom: 0px;
-    margin:0px;
-    vertical-align: middle;
-}
-
 .bar {
     height:25px;
     background:{$color['bar_bg']};
