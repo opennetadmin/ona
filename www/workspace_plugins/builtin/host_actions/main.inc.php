@@ -40,6 +40,32 @@ foreach ($conf[$modulename] as $hostaction=>$hval) {
 
 
 
+    // Get custom attributes if there is "%ca[.*]" string in URL
+    // Patch from Greg.  It allows custom attribute replacements in host actions
+    // if it does not find a CA it will check in the system_config table for that name
+    // beginning with "default_"
+    $found_ca_types = preg_match_all("#%ca\[(.*?)\]#",$hval['url'],$ca_types,PREG_PATTERN_ORDER);
+    if ( $found_ca_types ) {
+       foreach ($ca_types[1] as $name) {
+            $replace_with='';
+            // Get the CA value for this host
+            list($status, $rows, $attribute) = ona_get_record("custom_attribute_type_id in (select id from custom_attribute_types where name='".$name."') and table_id_ref = ".$record['id']." and table_name_ref = 'hosts'",'custom_attributes');
+            if ( $rows) {
+                $replace_with=$attribute['value'];
+            }
+            else {
+                // If there's no CA for this host, last chance search in system config
+                list($status,$conf_rows,$conf) = ona_get_record("name = 'default_".$name."'",'sys_config');
+                if ($conf_rows) {
+                    $replace_with=$conf['value'];
+                }
+            }
+            $hval['url'] = str_replace("%ca[$name]", $replace_with, $hval['url']);
+       }
+    }
+
+
+
     // If the URL has data in it, print.
     // TODO: MDP, maybe offer an $hval['icon'] option to use a different icon specified in the $conf['hostaction']['Name']['icon'] variable
     if ($hval['url']) {
