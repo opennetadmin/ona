@@ -335,7 +335,7 @@ and d.domain_id = ". $onadb->qstr($domain['id']). "
     if ($form['custom_attribute_type']) {
         $where .= $and . "h.id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' and custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type']) . "))";
         $and = " AND ";
-        $cavaluetype = "and h.custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type']) . ")";
+        $cavaluetype = "and custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type']) . ")";
 
     }
 
