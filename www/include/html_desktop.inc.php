@@ -133,7 +133,7 @@ EOL;
 // If we have more than one context defined, lets create a context selector
 if (count($ona_contexts) > 1) {
 print <<<EOL
-    <div style="position: fixed;width: 100%;z-index: 4;">
+    <div style="position: fixed;width: 88%;z-index: 4;">
     <center><div>
     <table class="context_select_table" cellspacing="0" border="0" cellpadding="0" style="background-color: {$self['context_color']};">
         <tr id="current_context" title="Click to change context" onclick="this.style.display='none'; el('change_context').style.display='';">
