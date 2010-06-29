@@ -2203,7 +2203,7 @@ function ona_find_device_type($search="") {
 
     // It's a string - do several sql queries and see if we can get a unique match
     list($manufmodel, $role) = split("\(",$search);
-    list($manuf, $model) = split(" ",$manufmodel);
+    list($manuf, $model) = split(", ",$manufmodel);
     $role = preg_replace(array('/\(/','/\)/'),'',"{$role}");
     list($status, $rows, $manu) = ona_get_manufacturer_record(array('name' => $manuf));
     list($status, $rows, $rol) = ona_get_role_record(array('name' => $role));
