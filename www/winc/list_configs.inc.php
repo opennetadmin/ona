@@ -98,8 +98,8 @@ function ws_display_list($window_name, $form='') {
 
             <!-- Table Header -->
             <tr>
-                <td class="list-header" align="center" style="{$style['borderR']};">Old</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">New</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">A</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">B</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Date</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Type</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">MD5 Checksum</td>
@@ -170,7 +170,7 @@ EOL;
 
                     <a title="View config. ID: {$record['id']}"
                        class="act"
-                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_config_text\', \'host_id=>{$record['host_id']},displayconf=>{$record['id']}\', \'display\')');"
+                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_config_text\', \'host_id=>{$record['host_id']},type_id=>{$record['configuration_type_id']},displayconf=>{$record['id']}\', \'display\')');"
                     ><img src="{$images}/silk/zoom.png" border="0"></a>&nbsp;
 
                     <a title="Download config"
