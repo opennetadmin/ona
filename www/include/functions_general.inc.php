@@ -1698,6 +1698,15 @@ function format_array($array=array()) {
             list($status, $rows, $interface) = ona_get_interface_record(array('id' => $array[$key]));
             $array[$key] = str_pad($array[$key], 20) . '(' .ip_mangle($interface['ip_addr'], 'dotted') . ')';
         }
+        else if ($key == 'device_type_id') {
+            list($status, $rows, $devtype) = ona_get_device_type_record(array('id' => $array[$key]));
+            if ($devtype['id']) {
+                list($status, $rows, $model) = ona_get_model_record(array('id' => $devtype['model_id']));
+                list($status, $rows, $role)  = ona_get_role_record(array('id' => $devtype['role_id']));
+                list($status, $rows, $manu)  = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
+                $array[$key] = str_pad($array[$key], 20) . "({$manu['name']}, {$model['name']} ({$role['name']}))";
+            }
+        }
         else if ($key == 'custom_attribute_type_id') {
             list($status, $rows, $ca) = ona_get_custom_attribute_type_record(array('id' => $array[$key]));
             if ($ca['id'])
