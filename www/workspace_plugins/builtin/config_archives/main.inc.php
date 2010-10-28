@@ -9,7 +9,7 @@
 if (auth('host_config_admin',$debug_val)) {
     list($status, $total_configs, $tmp) = db_get_records($onadb, 'configurations', array('host_id' => $record['id']), '', 0);
 
-    $title_left_html = "Config Archives&nbsp;&#040;{$total_configs}&#041";
+    $title_left_html = "Config Archives{$extravars['host_name']} &#040;{$total_configs}&#041";
 
 
     if ($total_configs) {
@@ -20,14 +20,17 @@ if (auth('host_config_admin',$debug_val)) {
             // See how many of this type the host has
             list($status, $rows, $tmp) = db_get_records($onadb, 'configurations', array('host_id' => $record['id'], 'configuration_type_id' => $type['id']), '', 0);
             if ($rows) {
+                // Select the first config record of the specified type and host
+                list($status, $rows, $config) = ona_get_config_record(array('host_id' => $record['id'],'configuration_type_id' => $type['id']));
+
                 // Escape data for display in html
                 foreach(array_keys($type) as $key) { $type[$key] = htmlentities($type[$key], ENT_QUOTES); }
                 $row_html .= <<<EOL
-        <tr title="View configs"
+        <tr title="View {$type['name']} archives"
             style="cursor: pointer;"
             onMouseOver="this.className='row-highlight';"
             onMouseOut="this.className='row-normal';"
-            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_config_text\', \'host_id=>{$record['id']},type_id=>{$type['id']}\', \'display\')');"
+            onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_config_text\', \'host_id=>{$record['id']},type_id=>{$type['id']},displayconf=>{$config['id']}\', \'display\')');"
         >
             <td align="left">{$type['name']} ({$rows})</td>
             <td align="right"><img src="{$images}/silk/zoom.png" border="0">&nbsp;</td>
