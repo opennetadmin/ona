@@ -14,6 +14,8 @@ error_reporting (E_ALL ^ E_NOTICE);
 // These store the output to be displayed
 $status = 1;
 $output = "ERROR => No module specified!\n";
+$type='DCM';
+
 
 // FIXME: Add IP Auth in Later --- or just use htaccess method
 // Disconnect the user if their IP address isn't in our allowed list
@@ -22,23 +24,37 @@ $output = "ERROR => No module specified!\n";
 
 printmsg("DEBUG => DCM_USER: {$_SERVER['PHP_AUTH_USER']}", 4);
 
-// FIXME: for now this hard codes the user.. this needs to pay attention to the user passed in and the password!
-// will this ever even happen?  it would come up as "unknown user" anyway
+// If no user name is passed in then use dcm.pl as the login name
+// be careful as this currently does not require a password.
+// FIXME: this needs to go away as it is a backdoor.  allow it to be configurable at least?
 if ($_SERVER['PHP_AUTH_USER'] == '') {
     $_SESSION['ona']['auth']['user']['username']='dcm.pl';
+    list($status, $js) = get_authentication('dcm.pl','dcm.pl');
     get_perms('dcm.pl');
+    printmsg("INFO => [{$type}] {$_SESSION['ona']['auth']['user']['username']} has logged in",3);
 }
 else {
-    $_SESSION['ona']['auth']['user']['username']=$_SERVER['PHP_AUTH_USER'];
-    $status = get_perms($_SERVER['PHP_AUTH_USER']);
-    if ($status == 1) {
-        printmsg("ERROR => DCM: Unknown user {$_SERVER['PHP_AUTH_USER']}", 4);
-        print "Unknown or unauthorized user: {$_SERVER['PHP_AUTH_USER']}\nSee -l and -p options within dcm.pl.\n";
+    // Set the cli user as the login user
+    $DCMUSER=$_SESSION['ona']['auth']['user']['username']=$_SERVER['PHP_AUTH_USER'];
+
+    printmsg("INFO => [{$type}] Attempting login as " . $DCMUSER, 4);
+
+    list($status, $js) = get_authentication($DCMUSER,$_SERVER['PHP_AUTH_PW']);
+
+    $errmsg = substr($js,27);
+
+    if ($status==0) {
+        $PERMSTAT = get_perms($DCMUSER);
+        printmsg("INFO => [{$type}] {$_SESSION['ona']['auth']['user']['username']} has logged in",3);
+    } else {
+        printmsg("ERROR => DCM: Unknown user {$DCMUSER}", 4);
+        print "ERROR => [{$DCMUSER}]: {$errmsg}\nSee -l and -p options within dcm.pl.\n";
         // clear the session
         // FIXME: should I do a sess_destroy or sess_close instead?  to clear crap from the DB
         unset($_SESSION['ona']['auth']);
         exit;
     }
+
 }
 
 

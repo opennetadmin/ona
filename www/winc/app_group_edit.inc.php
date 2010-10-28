@@ -49,15 +49,6 @@ EOL;
 
     // Build some html for selecting the groups the group is in
     $group_check_list = "";
-// FIXME: MP: this is strange.. why not get the group list from the database?
-
-
-//     foreach (array_keys($_SESSION['ona']['auth']['groups']) as $group) {
-//         $group_id = $_SESSION['ona']['auth']['groups'][$group];
-//         $group_check_list .= <<<EOL
-//             <input type="checkbox" name="groups[]" value="{$group}" checked="true"> {$group}<br>
-// EOL;
-//     }
 
     // Escape data for display in html
     foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
@@ -161,8 +152,8 @@ function ws_save($window_name, $form='') {
         $response->addScript($js);
         return($response->getXML());
     }
-    if (!preg_match('/^[A-Za-z0-9.\-_]+$/', $form['name'])) {
-        $js .= "alert('Invalid group name! Valid characters: A-Z 0-9 .-_');";
+    if (!preg_match('/^[A-Za-z0-9.\-_ ]+$/', $form['name'])) {
+        $js .= "alert('Invalid group name! Valid characters: A-Z 0-9 .-_ and space');";
         $response->addScript($js);
         return($response->getXML());
     }

@@ -14,10 +14,24 @@ error_reporting (E_ALL ^ E_NOTICE);
 // You can enable or disable this by setting the "disable_guest" sysconfig option
 if (!$_SESSION['ona']['auth']['user']['username'] and !$conf['disable_guest']) {
     $_SESSION['ona']['auth']['user']['username'] = 'guest';
+    list($status, $js) = get_authentication('guest','guest');
     get_perms('guest');
 }
 
-// // Redirect them to HTTPS if they're not already logged in
+// force https if required
+if (($_SERVER['SERVER_PORT'] != 443) and ($conf['force_https'] == 1)) {
+    echo <<<EOL
+<html><body>
+Redirecting you to: <a href="{$https}{$baseURL}">{$https}{$baseURL}</a>
+<script type="text/javascript"><!--
+    setTimeout("window.location = \"{$https}{$baseURL}\";", 10);
+--></script>
+</body></html>
+EOL;
+    exit;
+}
+
+// // Redirect them to login page if they're not already logged in
 if (!loggedIn()) {
     echo <<<EOL
 <html><body>

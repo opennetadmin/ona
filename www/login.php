@@ -10,88 +10,26 @@ require_once($base . '/config/config.inc.php');
 // I dont believe this will be impactful to anyone. keep an eye out for it however.
 error_reporting (E_ALL ^ E_NOTICE);
 
-//
-//
-//
-//
-//  MP: this login is not currently used.  login is directly on html_desktop
-//  This could later serve as a way to auth side apps/modules.  will probably
-//  need some rewrites to do that though
-//
-//
+// clear out existing session info
+$_SESSION['ona']['auth'] = array();
+
+// enforce the HTTPS page if required
+if (($_SERVER['SERVER_PORT'] != 443) and ($conf['force_https'] == 1)) {
+        echo <<<EOL
+<html><body>
+Redirecting you to: <a href="{$https}{$baseURL}/login.php">{$https}{$baseURL}/login.php</a>
+<script type="text/javascript"><!--
+    setTimeout("window.location = \"{$https}{$baseURL}/login.php\";", 10);
+--></script>
+</body></html>
+EOL;
+    exit;
+}
 
 //
 // Save a redirect url..
 if (!isset($_SESSION['redirect']))
-    $_SESSION['redirect'] = (!empty($_SERVER['HTTP_REFERER'])) ? $_SERVER['HTTP_REFERER'] : "{$baseURL}/"; 
-
-
-// See if they're logging in right now
-// MP: dont think this is getting used.. take it out after testing
-if (isset($_REQUEST['logon'])) {
-
-    // FIXME: Hard coded for now
-    $_SESSION['ona']['auth']['user']['username'] = "guest";
-    $_SESSION['ona']['auth']['user']['level'] = "0";
-
-    // Log insecure logins
-    if ($self['secure'] != 1)
-        printmsg("NOTICE => Insecure (http) login requested!", 0);
-    
-/*    
-    // Get the user record (usernames are case-insensitive .. all lower-case)
-    $_REQUEST['username'] = strtolower($_REQUEST['username']);
-    list($status, $rows, $user) = db_get_record($mysql, 'users', array('client_id' => $client['id'], 'username' => $_REQUEST['username'], 'active' => 1));
-    if ($status != 0 or $rows != 1) {
-        printmsg("NOTICE => Login failure! Invalid username: {$_REQUEST['username']} Client url: {$client_url}", 0);
-        $_SESSION['login_failure'] = 'Invalid username';
-        header("Location: {$https}/");
-        exit();
-    }
-    
-    // Get the MD5 of $passwd
-    $passwd = md5($_REQUEST['password']);
-    
-    // Compare the given password and the db password
-    if ($passwd != $user['passwd']) {
-        printmsg("NOTICE => Login failure!  Password mismatch.  Client url: {$client_url}", 0);
-        $_SESSION['login_failure'] = 'Incorrect password';
-        header("Location: {$https}/");
-        exit();
-    }
-    
-    // Otherwise auth succeeded, proceed.
-    
-    // Make sure their ACL is saved in $_SESSION for quick reference
-    save_users_acl_in_session();
-    
-
-    
-*/
-    
-    // Log that the user logged in
-    printmsg("INFO => Standalone login: Successful login as " . $_REQUEST['username'], 0);
-    
-    
-    // Redirect them to the admin section of the site (javascript redirect doesn't bring up the IE security warning)
-    // If they're an admin, redirect them to the https side - they might edit credit card info!
-    // $redirect = auth('admin') ? $https : $http;
-    $redirect = "{$http}{$baseURL}/";
-    echo <<<EOL
-    <html><body>
-    <script type="text/javascript"><!--
-        window.location = "{$redirect}";
-    --></script>
-    </body></html>
-EOL;
-
-}
-
-
-
-
-// Otherwise display a login dialog box
-else {
+    $_SESSION['redirect'] = (!empty($_SERVER['HTTP_REFERER'])) ? $_SERVER['HTTP_REFERER'] : "{$https}{$baseURL}/"; 
 
 // Include xajax stuff (ajax calls will never make it past this line)
 require_once($conf['inc_xajax_stuff']);
@@ -146,7 +84,7 @@ print <<<EOL
                 <tr>
                     <td class="menu-item" align="right">
                         <input id="loginbutton" class="button" style="font-size: smaller;" type="button" name="logon" value="Login"
-                                onClick="el('onapassword').value = make_md5(el('getpass').value);
+                                onClick="el('onapassword').value = el('getpass').value;
                                          xajax_window_submit('tooltips', xajax.getFormValues('standalone_loginform_form'), 'logingo');"
                         >
                     </td>
@@ -171,7 +109,5 @@ print <<<EOL
 EOL;
 
 
-
-}
 
 ?>

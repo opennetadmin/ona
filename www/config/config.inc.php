@@ -15,6 +15,10 @@
 $base;
 $include;
 
+
+//$baseURL = preg_replace('+' . dirname($_SERVER['DOCUMENT_ROOT']) . '+', '', $base);
+//$baseURL = preg_replace('+/$+', '', $baseURL);
+
 // Used in URL links
 $baseURL=dirname($_SERVER['SCRIPT_NAME']); $baseURL = rtrim($baseURL, '/');
 $images = "{$baseURL}/images";
@@ -223,6 +227,14 @@ ini_set("session.gc_maxlifetime", $conf['cookie_life']);
 
 // if search_results_per_page is in the session, set the $conf variable to it.  this fixes the /rows command
 if (isset($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
+
+// Set up our page to https if requested for our URL links
+if (($conf['force_https'] == 1) or ($_SERVER['SERVER_PORT'] == 443)) {
+    $https  = "https://{$_SERVER['SERVER_NAME']}";
+}
+else {
+    $https  = "http://{$_SERVER['SERVER_NAME']}";
+}
 
 // DON'T put whitespace at the beginning or end of included files!!!
 ?>

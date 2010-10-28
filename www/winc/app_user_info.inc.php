@@ -19,7 +19,7 @@ global $conf, $self;
 
 $output['ona_username']    = $_SESSION['ona']['auth']['user']['username'];
 $output['ona_user_level']  = $_SESSION['ona']['auth']['user']['level'];
-$groups = array_keys($_SESSION['ona']['auth']['groups']); sort($groups);
+$groups = array_keys($_SESSION['ona']['auth']['user']['grps']); sort($groups);
 $output['ona_groups']      = implode("\n", $groups);
 $permissions = array_keys($_SESSION['ona']['auth']['perms']); sort($permissions);
 $output['ona_permissions'] = implode("\n", $permissions);

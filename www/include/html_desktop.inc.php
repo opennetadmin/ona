@@ -169,8 +169,6 @@ print <<<EOL
         <!-- Parent element for all "windows" -->
         <span id="window_container"></span>
 
-        <div id="appbanner" style="font-size: xx-small;text-align:center;padding-top:1px;"></div>
-
         <!-- FORMATTING TABLE -->
         <div id="desktopmodules" valign="center" align="center" style="padding-left: 8px;overflow-x: auto;">
         <table cellspacing="0" border="0" cellpadding="0" width="100%" style="margin-top: 7px;"><tr>

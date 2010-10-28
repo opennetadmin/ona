@@ -118,219 +118,6 @@ function ws_tooltips_submit($window_name, $form='') {
 
 
 
-/*
-
-//////////////////////////////////////////////////////////////////////////////
-// Function: get_start_menu_html()
-//
-// Description:
-//     Builds HTML for displaying the start menu
-//     Returns a two part array ($html, $js)
-//////////////////////////////////////////////////////////////////////////////
-function get_start_menu_html() {
-    global $conf, $self, $onadb;
-    global $font_family, $color, $style, $images, $menuitem;
-
-    $html = $js = '';
-
-    if (auth('host_modify') and auth('host_add')) {
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('edit_host', ' ', 'editor');"
-     title="Add a new host"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add Host</div>
-EOL;
-    }
-
-    if (auth('subnet_add')) {
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('edit_subnet', ' ', 'editor');"
-     title="Add a new subnet"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add Subnet</div>
-EOL;
-    }
-
-    if (auth('vlan_add')) {
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('edit_vlan_campus', ' ', 'editor');"
-     title="Add a new VLAN campus"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add VLAN campus</div>
-EOL;
-    }
-
-    if (auth('vlan_add')) {
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('edit_vlan', ' ', 'editor');"
-     title="Add a new VLAN"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add VLAN</div>
-EOL;
-    }
-
-    if (auth('subnet_add')) {
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('edit_block', ' ', 'editor');"
-     title="Add a new block"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add Block</div>
-EOL;
-    }
-
-    if (auth('location_add')) {
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); xajax_window_submit('edit_location', ' ', 'editor');"
-     title="Add a new location"
- ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
- />&nbsp;Add Location</div>
-
-EOL;
-    }
-
-    if (auth('host_del')) {
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); toggle_window('app_report_list');"
-     title="List Reports"
- ><img style="vertical-align: middle;" src="{$images}/silk/application.png" border="0"
- />&nbsp;List Reports</div>
-
-EOL;
-    }
-
-    if (auth('dns_record_add')) {
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); toggle_window('app_domain_list');"
-     title="List DNS Domains"
- ><img style="vertical-align: middle;" src="{$images}/silk/application.png" border="0"
- />&nbsp;List DNS Domains</div>
-
-EOL;
-    }
-
-    if (auth('dns_record_add')) {
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); toggle_window('app_domain_servers_list');"
-     title="List DNS Domain Servers"
- ><img style="vertical-align: middle;" src="{$images}/silk/application.png" border="0"
- />&nbsp;List DNS Domain Servers</div>
-
-EOL;
-    }
-
-    if (auth('advanced')) {
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); toggle_window('app_dhcp_servers_list');"
-     title="List DHCP Servers"
- ><img style="vertical-align: middle;" src="{$images}/silk/application.png" border="0"
- />&nbsp;List DHCP Servers</div>
-
-EOL;
-    }
-
-    // Get all the plugin menuitems
-    $pluginlist = plugin_list('menuitem');
-
-    // Load all the plugin menuitems and build a menu entry
-    foreach ($pluginlist as $p) {
-        plugin_load('menuitem',$p['name']);
-
-        // based on the menu cmd type, build the right command
-        switch ($menuitem['type']) {
-            case 'work_space':
-                $menu_type_cmd = "xajax_window_submit('work_space', 'xajax_window_submit(\'{$p['name']}\', \'form=>fake\', \'display\')')";
-                break;
-            case 'window':
-                $menu_type_cmd = "toggle_window('{$p['name']}')";
-                break;
-        }
-
-        // Use a default image if we cant find the one specified.
-       if (!file_exists($menuitem['image'])){
-           $menuitem['image'] = "{$images}/silk/application.png";
-       }
-
-        // Check the authorization and print the menuitem if the are authorized
-        if (auth($menuitem['authname'],3) || !$menuitem['authname']) {
-        $html .= <<<EOL
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); {$menu_type_cmd};"
-     title="{$menuitem['title']}"
- ><img style="vertical-align: middle;" src="{$menuitem['image']}" border="0"
- />&nbsp;{$menuitem['title']}</div>
-
-EOL;
-        }
-    }
-
-
-
-
-
-
-
-
-    if (auth('advanced',3)) {
-        $html .= <<<EOL
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); toggle_window('app_admin_tools');"
-     title="Admin tools"
- ><img style="vertical-align: middle;" src="{$images}/silk/controller.png" border="0"
- />&nbsp;Admin Tools</div>
-
-EOL;
-    }
-
-    $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="removeElement('start_menu'); toggle_window('app_about');"
-     title="About"
- ><img style="vertical-align: middle;" src="{$images}/silk/information.png" border="0"
- />&nbsp;About</div>
-EOL;
-
-    return(array($html, $js));
-}*/
-
-
 
 
 
@@ -607,7 +394,7 @@ EOL;
                     type="button"
                     name="login"
                     value="Login"
-                    onClick="el('onapassword').value = make_md5(el('getpass').value);
+                    onClick="el('onapassword').value = el('getpass').value;
                              xajax_window_submit('tooltips', xajax.getFormValues('loginform_form'), 'logingo');"
             >
         </td>
@@ -646,7 +433,7 @@ function ws_logingo($window_name, $form='') {
 
     if ($form['standalone']) $type='Standalone';
 
-    printmsg("INFO => [{$type}] Attempting login as " . $form['onausername'] ."/". $form['onapassword'], 4);
+    printmsg("INFO => [{$type}] Attempting login as " . $form['onausername'], 4);
 
     list($status, $js) = get_authentication($form['onausername'],$form['onapassword']);
 
@@ -654,7 +441,7 @@ function ws_logingo($window_name, $form='') {
         get_perms($form['onausername']);
         if ($form['standalone'] == 'standalone') $js .= "window.location='{$http}{$baseURL}/';";
         $js .= "el('loggedin_user').innerHTML = '{$_SESSION['ona']['auth']['user']['username']}';";
-        printmsg("INFO => [{$type}] {$_SESSION['ona']['auth']['user']['username']} has logged in",0);
+        printmsg("INFO => [{$type}] {$_SESSION['ona']['auth']['user']['username']} has logged in via authtype: {$conf['authtype']}",0);
     }
 
     $response = new xajaxResponse();
