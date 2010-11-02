@@ -209,14 +209,15 @@ EOL;
 
         $html .= <<<EOL
         <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
-            <form id="{$form['form_id']}_list_domain_{$record['id']}"
-                    ><input type="hidden" name="id" value="{$record['id']}"
-                    ><input type="hidden" name="js" value="{$refresh}"
-            ></form>
+
 EOL;
         if (auth('advanced')) {
             $html .= <<<EOL
             <td class="list-row">
+                <form id="{$form['form_id']}_list_domain_{$record['id']}"
+                        ><input type="hidden" name="id" value="{$record['id']}"
+                        ><input type="hidden" name="js" value="{$refresh}"
+                ></form>
                 <a title="Edit DNS domain. ID: {$record['id']}"
                    class="act"
                    onClick="xajax_window_submit('edit_domain', xajax.getFormValues('{$form['form_id']}_list_domain_{$record['id']}'), 'editor');"
