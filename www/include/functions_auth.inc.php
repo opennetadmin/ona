@@ -33,6 +33,7 @@ function load_auth_class($authtype='') {
         require_once(ONA_AUTH.'/local.class.php');
         require_once(ONA_AUTH.'/'.$authtype.'.class.php');
 
+//FIXME: add some error logging in the web gui if we get failures here
         $auth_class = "auth_".$authtype;
         if (class_exists($auth_class)) {
             $auth = new $auth_class();
@@ -147,7 +148,7 @@ function get_perms($login_name='') {
 
 
     // Load the users permissions based on their group ids
-    foreach ($userinfo['grps'] as $group => $grpid) {
+    foreach ((array)$userinfo['grps'] as $group => $grpid) {
         // Look up the group id stored in local tables using the name
         list($status, $rows, $grp) = db_get_record($onadb, 'groups', array('name' => $group));
         // get permission assignments per group id
