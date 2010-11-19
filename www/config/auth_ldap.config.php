@@ -28,8 +28,14 @@ defining values below: http://www.dokuwiki.org/auth:ldap
 //$conf['auth']['ldap']['mapping']['grps'] = array('memberOf'=>'/cn=(.+?),/i');
 //$conf['auth']['ldap']['referrals'] = '0';
 
-
 // Novell E-Directory, anonymous bind example
 //$conf['auth']['ldap']['usertree'] = 'cn=%{user},ou=users,ou=example,o=com';
 //$conf['auth']['ldap']['mapping']['grps'] = array('groupmembership'=>'/cn=(.+?),/i');
 //$conf['auth']['ldap']['userfilter']  = '(&(!(loginDisabled=TRUE)))';
+
+//OpenLDAP with superuser bind
+//$conf['auth']['ldap']['binddn'] = 'cn=Manager,dc=my,dc=example,dc=com';
+//$conf['auth']['ldap']['bindpw']   = 'mysecretbindpassword';
+//$conf['auth']['ldap']['usertree'] = 'cn=%{user},ou=People,dc=my,dc=example,dc=com';
+//$conf['auth']['ldap']['grouptree']   = 'ou=Group,dc=my,dc=example,dc=com';
+//$conf['auth']['ldap']['groupfilter'] = '(&(objectClass=posixGroup)(|(memberUid=%{dn})(memberUid=%{user})))';
