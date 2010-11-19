@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<schema version="0.3">
+<sql>
+    <query platform="mysql|mysqlt">INSERT INTO sys_config (name,value,description,field_validation_rule,editable,deleteable,failed_rule_text) VALUES ( 'authtype', 'local', 'Define standard authentication module to use', '', '1', '0', '') on duplicate key update name='authtype'</query>
+    <query platform="mysql|mysqlt">INSERT INTO sequences VALUES ('permissions',100)</query>
+</sql>
+</schema>
+
+
