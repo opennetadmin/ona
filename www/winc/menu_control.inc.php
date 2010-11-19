@@ -8,7 +8,7 @@
 //     $form is a string array that should look something like this:
 //       "tooltip=>something,id=>element_id,something_id=>143324"
 //////////////////////////////////////////////////////////////////////////////
-function ws_menu_control_submit($window_name, $form='') {
+function ws_menu_control_submit($window_name, $ws) {
     global $conf, $images;
     $html = $js = '';
 
@@ -16,8 +16,6 @@ function ws_menu_control_submit($window_name, $form='') {
     //$form = parse_options_string($form);
 
     printmsg("DEBUG => Displaying main menu:", 5);
-
-
 
     $html .= <<<EOL
     <div style="float:left;margin-top: 0px;" title="Click to close menu" onclick="ona_menu_closedown();">
@@ -29,11 +27,14 @@ EOL;
     // they will be processed in order.
     $menulist = array('Edit','View','Plugins','Admin','ONA');
 
+    // If we have a workspace value passed in lets add that menu option first
+    if ("$ws" != 'FALSE') array_unshift($menulist, 'Workspace');
+
     foreach ($menulist as $item) {
         // A function must exist called $func
         $func = 'get_html_menu_button_'.$item;
         // run the function and test its output
-        list ($tmp, $tmpjs) = $func();
+        list ($tmp, $tmpjs) = $func(array('wsname' => $ws));
         if ($tmp) {
             // If it returned some HTML then build the menu item.
             $html .= <<<EOL
@@ -66,7 +67,7 @@ EOL;
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Function: ws_submit($input)
+// Function: ws_menu($input)
 //
 // Description:
 //     Inserts dynamic content into a tool-tip popup.
@@ -107,7 +108,7 @@ function ws_menu($window_name, $form='') {
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Function: get_start_menu_html()
+// Function: get_html_menu_button_ona()
 //
 // Description:
 //     Builds HTML for displaying the start menu
@@ -186,7 +187,7 @@ EOL;
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Function: get_start_menu_html()
+// Function: get_html_menu_button_admin()
 //
 // Description:
 //     Builds HTML for displaying the start menu
@@ -358,7 +359,7 @@ EOL;
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Function: get_start_menu_html()
+// Function: get_html_menu_button_edit()
 //
 // Description:
 //     Builds HTML for displaying the start menu
@@ -628,6 +629,68 @@ EOL;
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+// Function: get_plugin_menu_html()
+//
+// Description:
+//     Builds HTML for displaying the start menu
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function get_html_menu_button_workspace($form='') {
+    global $conf, $images, $wsmenuitem, $base, $baseURL;
+
+    $html = $js = '';
+
+    // Get all the plugin menuitems
+    $pluginlist = plugin_list('ws_menu_item');
+
+    // Load all the plugin menuitems and build a menu entry
+    foreach ($pluginlist as $p) {
+        plugin_load('ws_menu_item',$p['name']);
+
+      foreach ($wsmenuitem as $menuitem) {
+
+	// check if we should display this menu item on this workspace
+        foreach($menuitem['displayon'] as $display) {
+          if (($display == 'all') or ($display == $form['wsname'])) {
+
+          // based on the menu cmd type, build the right command
+          switch ($menuitem['type']) {
+              case 'work_space':
+                  $menu_type_cmd = "xajax_window_submit('work_space', 'xajax_window_submit(\'{$p['name']}\', \'form=>fake\', \'display\')')";
+                  break;
+              case 'window':
+                  $menu_type_cmd = "toggle_window('{$p['name']}')";
+                  break;
+          }
+  
+          // Use a default image if we cant find the one specified.
+          if (!file_exists($base.$menuitem['image'])){
+             $menuitem['image'] = "/images/silk/plugin.png";
+          }
+  
+          // Check the authorization and print the menuitem if the are authorized
+          if (auth($menuitem['authname'],3) || !$menuitem['authname']) {
+          $html .= <<<EOL
+
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="ona_menu_closedown(); {$menu_type_cmd};"
+     title="{$menuitem['title']}"
+ ><img style="vertical-align: middle;" src="{$baseURL}{$menuitem['image']}" border="0"
+ />&nbsp;{$menuitem['title']}</div>
+
+EOL;
+          }
+        }
+       }
+     }
+    }
+
+
+    return(array($html, $js));
+}
 
 
 ?>

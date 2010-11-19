@@ -37,8 +37,8 @@ print <<<EOL
 
     <!-- Top (Task) Bar -->
     <div class="menubar" id="bar_topmenu" style="background-color: {$self['context_color']}">
-        <!-- Button to open the "Start Menu" (Application Links) -->
-        <div id="menu-apps-item" class="main_menu_button" onmouseover="xajax_window_submit('menu_control', ' ');">Menu</div>
+        <!-- Button to open the "Start Menu" (Application Links), javascript passes in the workspace name for menu operations -->
+        <div id="menu-apps-item" class="main_menu_button" onmouseover="var wsname='FALSE';if (el('work_space')) {var wsname=el('work_space').getAttribute('wsname'); } xajax_window_submit('menu_control', wsname);">Menu</div>
     </div>
 
     <div class="bar" id="bar_top" onmouseover="ona_menu_closedown();" style="background-color: {$self['context_color']}">

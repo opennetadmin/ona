@@ -39,8 +39,6 @@ function ws_work_space_submit($window_name, $javascript='') {
     while (count($_SESSION['ona'][$window_name]['history']) > 7)
         array_shift($_SESSION['ona'][$window_name]['history']);
 
-
-
     // We're building the window in $window and will use window_open() to create the window
     $window = array(
         'title' => "Search Results",
@@ -111,6 +109,8 @@ $window['js'] .= <<<EOL
     {$javascript}
 
     el('{$window_name}').style.border='0px';
+
+    el('work_space').setAttribute('wsname', '{$title}');
 
 EOL;
 

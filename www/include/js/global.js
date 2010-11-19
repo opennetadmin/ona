@@ -146,6 +146,10 @@ function ona_menuTT(menu_name, menu_id) {
             var button_left   = calcOffset(el(menu_name+'_name'), 'offsetLeft');
             var button_height = el(menu_name+'_name').offsetHeight;
             el('trace_history').style.display = 'none';
+            var wsname='FALSE';
+            if (el('work_space')) {
+                var wsname=el('work_space').getAttribute('wsname');
+            }
             /* Create the tool-tip menu */
             wwTT(this, ev,
                  'id', menu_id,
@@ -156,7 +160,7 @@ function ona_menuTT(menu_name, menu_id) {
                  'delay', 0,
                  'lifetime', 0,
                  'styleClass', 'wwTT_ona_menu',
-                 'javascript', 'el(\''+menu_id+'\').style.visibility = \'hidden\'; xajax_window_submit(\'menu_control\', \'menu_name=>'+menu_name+',id=>'+menu_id+'\', \'menu\');'
+                 'javascript', 'el(\''+menu_id+'\').style.visibility = \'hidden\'; xajax_window_submit(\'menu_control\', \'menu_name=>'+menu_name+',id=>'+menu_id+',wsname=>'+wsname+'\', \'menu\');'
             );
             el(menu_name+'_name').className='menu-title-highlight';
         };
