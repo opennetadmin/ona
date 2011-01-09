@@ -45,7 +45,7 @@ function dhcp_pool_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => dhcp_pool_add({$options}) called", 3);
 
@@ -122,11 +122,11 @@ EOM
     }
 
     // check that start and end are not the same
-    if ($options['start'] == $options['end']) {
-        printmsg("DEBUG => The start and end IP addresses ({$options['start']}) cannot be the same!",3);
-        $self['error'] = "ERROR => The start and end IP addresses ({$options['start']}) cannot be the same!";
-        return(array(2, $self['error'] . "\n"));
-    }
+    //if ($options['start'] == $options['end']) {
+     //   printmsg("DEBUG => The start and end IP addresses ({$options['start']}) cannot be the same!",3);
+      //  $self['error'] = "ERROR => The start and end IP addresses ({$options['start']}) cannot be the same!";
+       // return(array(2, $self['error'] . "\n"));
+    //}
 
 
     $start_dec = ip_mangle($options['start'], 'numeric');
@@ -433,7 +433,7 @@ function dhcp_pool_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => dhcp_pool_modify({$options}) called", 3);
 
@@ -557,11 +557,11 @@ EOM
     }
 
     // check that start and end are not the same
-    if ($options['set_start'] and $options['set_end'] and $options['set_start'] == $options['set_end']) {
-        printmsg("DEBUG => The start and end IP addresses (" . ip_mangle($options['set_start'],'dotted') . ") cannot be the same!",3);
-        $self['error'] = "ERROR => The start and end IP addresses (" . ip_mangle($options['set_start'],'dotted') . ") cannot be the same!";
-        return(array(2, $self['error'] . "\n"));
-    }
+    //if ($options['set_start'] and $options['set_end'] and $options['set_start'] == $options['set_end']) {
+    //    printmsg("DEBUG => The start and end IP addresses (" . ip_mangle($options['set_start'],'dotted') . ") cannot be the same!",3);
+    //    $self['error'] = "ERROR => The start and end IP addresses (" . ip_mangle($options['set_start'],'dotted') . ") cannot be the same!";
+    //    return(array(2, $self['error'] . "\n"));
+    //}
 
     if($options['set_start'])
         $start_dec = ip_mangle($options['set_start'], 'numeric');
