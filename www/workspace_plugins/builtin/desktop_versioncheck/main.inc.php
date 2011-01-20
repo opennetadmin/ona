@@ -66,7 +66,7 @@ if ($extravars['window_name'] == 'html_desktop') {
     Your version &nbsp;&nbsp;&nbsp;= {$conf['version']}<br>
     Latest version = {$onaver}<br>
 <br>
-Please <a href="http://{$onachkserver}/docs/download">DOWNLOAD</a> the latest version.
+Please <a href="http://opennetadmin.com/docs/download">DOWNLOAD</a> the latest version.
 </div>
 EOL;
 
