@@ -11,6 +11,7 @@
 </query>
 
 <query>INSERT INTO `dcm_module_list` VALUES
+('add_permission', 'Add new security permission', 'permissions.inc.php'),
 ('domain_display','Displays an existing domain','ona/domain.inc.php'),
 ('get_module_list','Returns the list of available modules','get_module_list.inc.php'),
 ('mangle_ip','Converts between various IP address representations','mangle.inc.php'),
@@ -94,7 +95,7 @@
 <query>INSERT INTO `roles` VALUES (12,'Bulk loaded'),(13,'laptop'),(11,'Manually loaded'),(3,'printer'),(1,'router'),(4,'server'),(2,'switch'),(7,'wireless access point'),(5,'workstation');</query>
 
 
-<query>INSERT INTO `sequences` VALUES ('blocks',4),('configurations',1),('configuration_types',5),('custom_attribute_types',3),('devices',14),('device_types',7),('dhcp_options',14),('dhcp_option_entries',13),('dhcp_pools',3),('dhcp_server_subnets',6),('dns',62),('dns_server_domains',8),('domains',5),('hosts',22),('interfaces',28),('manufacturers',47),('models',11),('roles',14),('subnets',22),('subnet_types',14),('vlans',1),('vlan_campuses',5),('locations',1);</query>
+<query>INSERT INTO `sequences` VALUES ('blocks',4),('configurations',1),('configuration_types',5),('custom_attribute_types',3),('devices',14),('device_types',7),('dhcp_options',14),('dhcp_option_entries',13),('dhcp_pools',3),('dhcp_server_subnets',6),('dns',62),('dns_server_domains',8),('domains',5),('hosts',22),('interfaces',28),('manufacturers',47),('models',11),('roles',14),('subnets',22),('subnet_types',14),('vlans',1),('vlan_campuses',5),('locations',1),('permissions',100);</query>
 
 
 <query>INSERT INTO `subnet_types` VALUES (1,'loopback','Loopback','Loopback Interfaces (mostly for routers)'),(2,'','WAN',''),(7,'','VLAN',''),(10,'p2p','Point-to-Point',''),(11,'','VPN',''),(12,'','Wireless LAN',''),(13,'lan','LAN','Simple LAN');</query>
@@ -107,6 +108,7 @@
 
 
 <query>INSERT INTO `sys_config` (`name`, `value`, `description`, `field_validation_rule`, `failed_rule_text`, `editable`, `deleteable`) VALUES
+('authtype', 'local', 'Define standard authentication module to use', '', '', 1, 0)
 ('cookie_life', '172800', 'Sets the length of the session cookie.  It is in seconds', '', '', 1, 0),
 ('date_format', 'M jS, g:ia', 'PHP text format for date values', '', '', 1, 0),
 ('debug', '0', 'Debug output level, the higher the number the more it logs', '', '', 1, 0),
@@ -127,7 +129,7 @@
 ('suggest_max_results', '10', 'Limits the amount of rows returned by queries. (test impact of changing this first)', '', '', 1, 0),
 ('syslog', '0', 'Log via syslog, only works if debug is set to 0', '', '', 0, 0),
 ('version', 'not-set', 'Tracks current installed version, used to detect when upgrades should be done.', '', '', 0, 0),
-('upgrade_index', '9', 'Tracks current upgrade index, used to perform database upgrades.', '', '', 0, 0);</query>
+('upgrade_index', '10', 'Tracks current upgrade index, used to perform database upgrades.', '', '', 0, 0);</query>
 
 
 <query>INSERT INTO `users` VALUES (1,'guest','098f6bcd4621d373cade4e832627b4f6',0,'2007-10-30 02:55:37','2007-12-02 23:44:21'),(2,'admin','21232f297a57a5a743894a0e4a801fc3',0,'2007-10-30 03:00:17','2007-12-02 22:10:26');</query>

@@ -164,11 +164,6 @@
     </field>
     <field name="asset_tag" type="C" size="255"/>
     <field name="serial_number" type="C" size="255"/>
-    <index name="asset_tag">
-      <UNIQUE/>
-      <col>asset_tag</col>
-      <col>serial_number</col>
-    </index>
   </table>
 
 
