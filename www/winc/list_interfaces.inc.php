@@ -114,11 +114,18 @@ EOL;
             // Get additional info about each host record //
 
             // Check if this interface has an external NAT
-            unset($extnatint, $extnatdisplay);
+            unset($extnatint, $extnatdisplay, $extnatdisplay, $extnatsubdisplay);
             if ($record['nat_interface_id'] > 0) {
                 list($status, $rows, $extnatint) = ona_get_interface_record(array('id' => $record['nat_interface_id']));
+                // GDO: get the subnet object of the NATing interface, display it in both Interface and Subnet columns
+                list($status, $rows, $extnatintsub) = ona_get_subnet_record(array('id' => $extnatint['subnet_id']));
                 $extnatint['ip_addr'] = ip_mangle($extnatint['ip_addr'], 'dotted');
-                $extnatdisplay = "<span title='Interface is NATed to {$extnatint['ip_addr']}'> &nbsp;&nbsp;=> &nbsp;{$extnatint['ip_addr']}</span>";
+                //$extnatdisplay = "<span title='Interface is NATed to {$extnatint['ip_addr']}'> &nbsp;&nbsp;=> &nbsp;{$extnatint['ip_addr']}</span>";
+                $extnatdisplay = "<span title='Interface is NATed to {$extnatint['ip_addr']} (on {$extnatintsub['name']})'> &nbsp;&nbsp;=> &nbsp;{$extnatint['ip_addr']}</span>";
+                $extnatsubdisplay = " => <a title=\"View NATed subnet. ID: {$extnatintsub['id']}\"
+                                            class=\"nav\"
+                                            onClick=\"xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$extnatintsub['id']}\', \'display\')');\"
+                                         >{$extnatintsub['name']}</a>";
             }
 
             // Check if this interface is an external NAT for another interface
@@ -210,7 +217,7 @@ EOL;
                     <a title="View subnet. ID: {$subnet['id']}"
                        class="nav"
                        onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['id']}\', \'display\')');"
-                    >{$record['subnet_description']}</a>
+                    >{$record['subnet_description']}</a> {$extnatsubdisplay}
                 </td>
 
                 <td class="list-row" align="right">
