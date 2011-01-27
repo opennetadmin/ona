@@ -105,7 +105,7 @@ done
 NMAPCOMMAND=/usr/bin/nmap
 
 # Path to the DCM commandline utility
-DCM_CMD="$ONABASE/bin/dcm.pl -l admin"
+DCM_CMD="$ONABASE/bin/dcm.pl"
 
 NMAP_OUTPUT_DIR="$ONABASE/www/local/nmap_scans/subnets"
 

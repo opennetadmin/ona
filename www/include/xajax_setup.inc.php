@@ -90,9 +90,9 @@ function parse_options_string($input) {
 
     // If the user supplied an array in a string, build the array and store it in $array
     if (is_string($input) and preg_match('/=>/', $input)) {
-        $parts = split(',', $input);
+        $parts = explode(',', $input);
         foreach ($parts as $part) {
-            $part = split('=>', $part, 2);
+            $part = explode('=>', $part, 2);
             $array[trim($part[0])] = trim($part[1]);
         }
         return($array);

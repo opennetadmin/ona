@@ -20,7 +20,7 @@ function ona_sql($options="") {
     global $conf, $onadb, $base;
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     // TODO: Maybe make this into a sys_config option
     $srvdir = dirname($base)."/sql";
@@ -64,6 +64,13 @@ function ona_sql($options="") {
     // Otherwise sanitize it's value
     else {
         $options['header'] = sanitize_YN($options['header'], 'Y');
+    }
+
+    // Check permissions
+    if (!auth('ona_sql')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
     }
 
     // Return the usage summary if we need to

@@ -229,7 +229,7 @@ ini_set("session.gc_maxlifetime", $conf['cookie_life']);
 if (isset($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
 
 // Set up our page to https if requested for our URL links
-if (($conf['force_https'] == 1) or ($_SERVER['SERVER_PORT'] == 443)) {
+if (@($conf['force_https'] == 1) or ($_SERVER['SERVER_PORT'] == 443)) {
     $https  = "https://{$_SERVER['SERVER_NAME']}";
 }
 else {

@@ -304,7 +304,7 @@ function ws_delete($window_name, $form='') {
         printmsg($self['error'], 0);
     }
     else {
-        $self['error'] = "INFO => Group DELETED: {$user['username']} ";
+        $self['error'] = "INFO => User DELETED: {$user['username']} ";
         printmsg($self['error'], 0);
         // Refresh the current list of users.. it's changed!
         $js .= "xajax_window_submit('$window_name', xajax.getFormValues('{$window_name}_filter_form'), 'display_list');";

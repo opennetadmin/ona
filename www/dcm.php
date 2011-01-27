@@ -29,7 +29,8 @@ printmsg("DEBUG => DCM_USER: {$_SERVER['PHP_AUTH_USER']}", 4);
 // FIXME: this needs to go away as it is a backdoor.  allow it to be configurable at least?
 if ($_SERVER['PHP_AUTH_USER'] == '') {
     $_SESSION['ona']['auth']['user']['username']='dcm.pl';
-    list($status, $js) = get_authentication('dcm.pl','dcm.pl');
+    // create new local authentication class directly
+    $auth = load_auth_class('local');
     get_perms('dcm.pl');
     printmsg("INFO => [{$type}] {$_SESSION['ona']['auth']['user']['username']} has logged in",3);
 }

@@ -347,7 +347,7 @@ EOL;
 print <<<EOL
 
 <script>
-    var desktop_height = document.body.clientHeight - el('bar_top').clientHeight - el('trace_history').clientHeight - el('appbanner').clientHeight;
+    var desktop_height = document.body.clientHeight - el('bar_top').clientHeight - el('trace_history').clientHeight;
     if (browser.isIE) {
         desktop_height -= 20;
     }
