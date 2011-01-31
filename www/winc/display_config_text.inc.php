@@ -256,8 +256,7 @@ EOL;
         $config['config_body'] = htmlentities(str_replace(chr(03), "", $config['config_body']), ENT_QUOTES,$conf['php_charset']);
 
         $html .= <<<EOL
-        <div style="margin: 10px 20px; float: left; width: 96%; background-color: {$color['bar_bg']}; border: 1px solid;">
-
+        <div style="margin: 10px 20px; background-color: {$color['bar_bg']}; border: 1px solid; height: 60px;">
             <table cellspacing="0" border="0" cellpadding="2" align="left" style="font-size:small;">
                 <tr>
                     <td style="font-weight: bold;">Insert date:</td>
@@ -273,8 +272,9 @@ EOL;
                 </tr>
             </table>
         </div>
-        <div style="margin: 0px 20px; float: left;">
-            <pre style='font-family: monospace; font-size: large;'>{$config['config_body']}</pre>
+        <div style="clear: both;"></div>
+        <div id="confoutputdiv" style="border: 1px solid rgb(26, 26, 26); margin: 10px 20px;padding-left: 8px;overflow-y: auto;">
+            <pre style='font-family: monospace;width: 50px;' id="confoutput">{$config['config_body']}</pre>
         </div>
 EOL;
     }
