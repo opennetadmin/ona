@@ -56,6 +56,10 @@ function ws_display_list($window_name, $form='') {
     $and = "";
     $orderby = "";
 
+    // enable or disable wildcards
+    $wildcard = '%';
+    if ($form['nowildcard']) $wildcard = '';
+
     // RECORD ID
     if ($form['record_id']) {
         $where .= $and . "id = " . $onadb->qstr($form['record_id']);
@@ -78,7 +82,7 @@ function ws_display_list($window_name, $form='') {
 
     // DNS RECORD note
     if ($form['notes']) {
-        $where .= $and . "notes LIKE " . $onadb->qstr('%'.$form['notes'].'%');
+        $where .= $and . "notes LIKE " . $onadb->qstr($wildcard.$form['notes'].$wildcard);
         $and = " AND ";
     }
 
@@ -92,7 +96,7 @@ function ws_display_list($window_name, $form='') {
     if ($form['hostname']) {
         $where .= $and . "id IN (SELECT id " .
                                 "  FROM dns " .
-                                "  WHERE name LIKE " . $onadb->qstr('%'.$form['hostname'].'%') ." )";
+                                "  WHERE name LIKE " . $onadb->qstr($wildcard.$form['hostname'].$wildcard) ." )";
         $and = " AND ";
     }
 

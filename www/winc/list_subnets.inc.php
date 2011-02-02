@@ -54,6 +54,10 @@ function ws_display_list($window_name, $form='') {
     $where = "";
     $and = "";
 
+    // enable or disable wildcards
+    $wildcard = '%';
+    if ($form['nowildcard']) $wildcard = '';
+
     // DISPLAY ALL
     if ($form['all_flag']) {
         $where .= $and . "id > 0";
@@ -89,7 +93,7 @@ function ws_display_list($window_name, $form='') {
         // This field is always upper case
         $form['subnetname'] = strtoupper($form['subnetname']);
         //$where .= $and . "name LIKE " . $form['subnetname'];
-        $where .= $and . "name LIKE " . $onadb->qstr('%'.$form['subnetname'].'%');
+        $where .= $and . "name LIKE " . $onadb->qstr($wildcard.$form['subnetname'].$wildcard);
         $and = " AND ";
     }
 
@@ -128,7 +132,7 @@ function ws_display_list($window_name, $form='') {
 
     // custom attribute value
     if ($form['ca_value_net']) {
-        $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'subnets' {$cavaluetype} and value like " . $onadb->qstr('%'.$form['ca_value_net'].'%') . ")";
+        $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'subnets' {$cavaluetype} and value like " . $onadb->qstr($wildcard.$form['ca_value_net'].$wildcard) . ")";
         $and = " AND ";
     }
 

@@ -56,6 +56,11 @@ function ws_display_list($window_name, $form='') {
     $orderby = "";
     $from = 'hosts h';
 
+    // enable or disable wildcards
+    $wildcard = '%';
+    if ($form['nowildcard']) $wildcard = '';
+
+
     // DISPLAY ALL
     // MP: I dont think this is used.. remove it if you can
     if ($form['all_flag']) {
@@ -133,7 +138,7 @@ function ws_display_list($window_name, $form='') {
         // MP: Doing the many select IN statements was too slow.. I did this kludge:
         //  1. get a list of all the interfaces
         //  2. loop through the array and build a list of comma delimited host_ids to use in the final select
-        list($status, $rows, $tmp) = db_get_records($onadb, 'interfaces a, dns b', "a.id = b.interface_id and b.name LIKE '%{$hostname}%' {$withdomain}");
+        list($status, $rows, $tmp) = db_get_records($onadb, 'interfaces a, dns b', "a.id = b.interface_id and b.name LIKE '{$wildcard}{$hostname}{$wildcard}' {$withdomain}");
         $commait = '';
         $hostids = '';
         foreach ($tmp as $item) {
@@ -234,7 +239,7 @@ and d.domain_id = ". $onadb->qstr($domain['id']). "
         // We do a sub-select to find interface id's that match
         $where .= $and . "h.id IN ( SELECT host_id " .
                          "        FROM interfaces " .
-                         "        WHERE mac_addr LIKE " . $onadb->qstr('%'.$form['mac'].'%') . " ) ";
+                         "        WHERE mac_addr LIKE " . $onadb->qstr($wildcard.$form['mac'].$wildcard) . " ) ";
         $and = " AND ";
 
     }
@@ -263,7 +268,7 @@ and d.domain_id = ". $onadb->qstr($domain['id']). "
 
     // NOTES
     if ($form['notes']) {
-        $where .= $and . "h.notes LIKE " . $onadb->qstr('%'.$form['notes'].'%');
+        $where .= $and . "h.notes LIKE " . $onadb->qstr($wildcard.$form['notes'].$wildcard);
         $and = " AND ";
     }
 
@@ -341,7 +346,7 @@ and d.domain_id = ". $onadb->qstr($domain['id']). "
 
     // custom attribute value
     if ($form['ca_value']) {
-        $where .= $and . "h.id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' {$cavaluetype} and value like " . $onadb->qstr('%'.$form['ca_value'].'%') . ")";
+        $where .= $and . "h.id in (select table_id_ref from custom_attributes where table_name_ref like 'hosts' {$cavaluetype} and value like " . $onadb->qstr($wildcard.$form['ca_value'].$wildcard) . ")";
         $and = " AND ";
     }
 
