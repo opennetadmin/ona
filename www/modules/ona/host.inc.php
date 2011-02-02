@@ -356,6 +356,7 @@ Modify a host record
     set_notes=NOTES           Change the textual notes
     set_location=REF          Reference for location
     set_device=NAME|ID        Name or ID of the device this host is associated with
+
 EOM
         ));
     }
