@@ -68,7 +68,7 @@ function printmsg($msg="",$debugLevel=0) {
         // Print to syslogd if needed
         if ($conf['syslog']) {
             // MP: fix this up so it uses openlog and allows the user to set the facility?
-            syslog(LOG_INFO, "{$username}@{$_SERVER['REMOTE_ADDR']}: $msg");
+            syslog(LOG_INFO, "ONA {$username}@{$_SERVER['REMOTE_ADDR']}: [{$self['context_name']}] $msg");
         }
 
         // Print to stdout (i.e. the web page) if needed
@@ -251,9 +251,6 @@ function cleanText($text){
   $text = preg_replace("/(\015\012)|(\015)/","\012",$text);
   return $text;
 }
-
-
-
 
 
 
@@ -593,7 +590,7 @@ function ip_mangle_gmp($ip="", $format="default") {
         }
 
         // So create a binary string of 1's and 0's and convert it to an int
-        if($ip <= 32) { $cidr_bits = 32; }
+        if($matches[1] <= 32) { $cidr_bits = 32; }
         else { $cidr_bits = 128; }
         $ip = gmp_init(str_pad(str_pad("", $matches[1], "1"), $cidr_bits, "0"), 2);
         if ($format == "default") {
@@ -663,8 +660,9 @@ function ip_mangle_gmp($ip="", $format="default") {
     // Is output format 2 (dotted)?
     else if ($format == 2 or $format == 'dotted') {
         if(!is_ipv4($ip)) {
-            $self['error'] = "ERROR => Invalid IPv4 address";
-            return(-1);
+            return(ipv6gz(implode(":", str_split(str_pad(gmp_strval($ip, 16), 32, "0", STR_PAD_LEFT), 4))));
+           // $self['error'] = "ERROR => Invalid IPv4 address";
+           // return(-1);
         }
         return(long2ip(sprintf("%s", gmp_strval($ip))));
     }
@@ -1648,6 +1646,33 @@ EOL;
 
 
 
+
+/**
+ * show diff
+ *
+ * @author Matt Pascoe <matt@opennetadmin.com>
+ * Requires DifferenceEngine.php from dokuwiki.
+ *
+ * Input: two strings
+ * Output: unified text diff
+ */
+function text_diff($old, $new) {
+    global $conf;
+    $html = '';
+
+    if(!($old and $new)) return('ERROR => Insufficient parameters passed to text_diff()!');
+
+    // Load diff code
+    require_once($conf['inc_diff']);
+
+    $df = new Diff(split("\n",htmlspecialchars($old)),
+                   split("\n",htmlspecialchars($new)));
+    $tdf = new UnifiedDiffFormatter();
+
+    $text .= $tdf->format($df);
+
+    return($text);
+}
 
 
 
