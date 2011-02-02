@@ -3,6 +3,8 @@
 <sql>
     <query platform="mysql|mysqlt">INSERT INTO sys_config (name,value,description,field_validation_rule,editable,deleteable,failed_rule_text) VALUES ( 'authtype', 'local', 'Define standard authentication module to use', '', '1', '0', '') on duplicate key update name='authtype'</query>
     <query platform="mysql|mysqlt">INSERT INTO dcm_module_list (name,description,file) VALUES ('add_permission', 'Add new security permission', 'permissions.inc.php') on duplicate key update name='add_permission'</query> 
+    <query platform="mysql|mysqlt">INSERT INTO dcm_module_list (name,description,file) VALUES ('custom_attribute_display', 'Display a custom attribute', 'ona/custom_attribute.inc.php'), on duplicate key update name='custom_attribute_display'</query> 
+    <query platform="mysql|mysqlt">INSERT INTO dcm_module_list (name,description,file) VALUES ('vlan_campus_display','Display a VLAN campus record','ona/vlan_campus.inc.php'), on duplicate key update name='vlan_campus_display'</query> 
     <query platform="mysql|mysqlt">INSERT INTO sequences VALUES ('permissions',100)</query>
 </sql>
 </schema>

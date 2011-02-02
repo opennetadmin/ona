@@ -4,7 +4,7 @@
 
 <!-- This file populates default data to a brand new OpenNetAdmin install only -->
 
-<query>INSERT INTO `configuration_types` VALUES (1,'IOS_CONFIG'),(2,'IOS_VERSION');</query>
+<query>INSERT INTO `configuration_types` VALUES (1,'IOS_CONFIG'),(2,'IOS_VERSION'),(3,'NS_CONFIG'),(4,'NS_VERSION'),(5,'UCS_CONFIG'),(6,'UCS_VERSION');</query>
 
 <query>INSERT INTO `custom_attribute_types` VALUES
 (1,'nmap_scan','Used to determine if this subnet should be scanned by Nmap based tools.','/^[Y|N]$/','Must be either Y or N');
@@ -61,6 +61,7 @@
 ('vlan_campus_add','Add a VLAN campus (VTP Domain)','ona/vlan_campus.inc.php'),
 ('vlan_campus_del','Delete a VLAN campus','ona/vlan_campus.inc.php'),
 ('vlan_campus_modify','Modify a VLAN campus record','ona/vlan_campus.inc.php'),
+('vlan_campus_display','Display a VLAN campus record','ona/vlan_campus.inc.php'),
 ('vlan_add','Add a VLAN','ona/vlan.inc.php'),
 ('vlan_del','Delete a VLAN','ona/vlan.inc.php'),
 ('vlan_modify','Modify a VLAN','ona/vlan.inc.php'),
@@ -76,6 +77,7 @@
 ('custom_attribute_add', 'Add a custom attribute', 'ona/custom_attribute.inc.php'),
 ('custom_attribute_del', 'Delete a custom attribute', 'ona/custom_attribute.inc.php'),
 ('custom_attribute_modify', 'Modify a custom attribute', 'ona/custom_attribute.inc.php'),
+('custom_attribute_display', 'Display a custom attribute', 'ona/custom_attribute.inc.php'),
 ('add_module', 'Register a new DCM module', 'get_module_list.inc.php'),
 ('report_run', 'Run a report', 'report_run.inc.php'),
 ('ona_sql', 'Perform basic SQL operations on the database', 'sql.inc.php');</query>
@@ -108,7 +110,7 @@
 
 
 <query>INSERT INTO `sys_config` (`name`, `value`, `description`, `field_validation_rule`, `failed_rule_text`, `editable`, `deleteable`) VALUES
-('authtype', 'local', 'Define standard authentication module to use', '', '', 1, 0)
+('authtype', 'local', 'Define standard authentication module to use', '', '', 1, 0),
 ('cookie_life', '172800', 'Sets the length of the session cookie.  It is in seconds', '', '', 1, 0),
 ('date_format', 'M jS, g:ia', 'PHP text format for date values', '', '', 1, 0),
 ('debug', '0', 'Debug output level, the higher the number the more it logs', '', '', 1, 0),
