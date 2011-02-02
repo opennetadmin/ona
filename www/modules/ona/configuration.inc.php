@@ -6,8 +6,6 @@ require_once($conf['inc_functions_db']);
 
 
 
-
-
 ///////////////////////////////////////////////////////////////////////
 //  Function: find_config (array $search)
 //  
@@ -429,7 +427,7 @@ function config_diff($options="") {
     global $onadb;
     
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
     
     printmsg('DEBUG => config_diff('.$options.') called', 3);
     
@@ -459,60 +457,48 @@ Displays the difference between selected archive entries
     If you don't pass any IDs you will get the two most recent configs
     related to the host/type you provide.
 
-\n
 EOM
-
         ));
     }
-    
-    
+
     $text = "";
 
     // Compare arbitrary configs based on config IDs
-    // If we have ids, lets use those instead   
-    if ($options['ida'] and $options['idb']) {  
+    // If we have ids, lets use those instead
+    if ($options['ida'] and $options['idb']) {
         // get the two configs from the db
         list($status, $rows, $configs) = db_get_records($onadb,'configurations',
                                                "id in ({$options['ida']},{$options['idb']})",
                                                'ctime DESC',
                                                '2',
                                                ''
-                                           );   
+                                           );
     } else {
-        // Get a config record if there is one  
-        $self['error'] = "";
-        list($status, $rows, $config) = ona_find_config($options);
-        list($status, $rows, $configs) = db_get_records($onadb,'configurations',
+    // Get a config record if there is one
+    $self['error'] = "";
+    list($status, $rows, $config) = ona_find_config($options);
+    list($status, $rows, $configs) = db_get_records($onadb,'configurations',
                                                array('host_id' => $config['host_id'],'configuration_type_id' => $config['configuration_type_id']),
                                                'ctime DESC',
                                                '2',
                                                ''
                                            );
     }
-    
-    // Error if an error was returned or we didnt get two configs back
+
+    // Error if an error was returned
     if ($status or $rows != 2) {
         if ($self['error']) { $text = $self['error'] . "\n"; }
         $text .= "ERROR => One or more config text entries not found!\n";
         return(array(2, $text));
     }
-
-    // Compare the last two configurations based on the host and type specified
-    // requires the xdiff pecl module to be installed
-    if (!extension_loaded("xdiff")) { return(array(1, "ERROR => This command requires the xdiff pecl module, which is not installed, please see http://pecl.php.net/package/xdiff\nVerify 'xdiff' is listed in the output of the command 'php -m'\n")); }
-
-    // Run the xdiff function to display textual differences
-    $text .= xdiff_string_diff($configs[1]['config_body']."\n", $configs[0]['config_body']."\n");
     
+    // Get a unified text diff output
+    $text .= text_diff($configs[1]['config_body'], $configs[0]['config_body']);
 
     // Return the success notice
     return(array(0, $text));
     
 }
-
-
-
-
 
 
 ?>
