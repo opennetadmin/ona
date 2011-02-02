@@ -46,6 +46,9 @@ function ws_search_results_submit($window_name, $form='') {
         }
     }
 
+    // keep wildcard checkbox value
+    if ($form['nowildcard']) $wildchecked = 'checked="yes"';
+
     // Load some html into $window['html']
     $form_id = "{$window_name}_filter_form";
     $content_id = $_SESSION['ona'][$form_id]['content_id'] = "{$window_name}_list";
@@ -316,16 +319,16 @@ function ws_search_results_submit($window_name, $form='') {
     </td>
     </tr>
 
-    </form>
     <tr>
         <td colspan=4 align="right" class="asearch-line">
-            Disable Wildcards: <input class="button" type="checkbox" name="nowildcard" value="{$form['nowildcard']}" title="Disable usage of SQL wildcards in queries, you must supply your own in the search form as needed.">
+            Disable Wildcards: <input class="button" type="checkbox" name="nowildcard" {$wildchecked} title="Disable usage of SQL wildcards in queries, you must supply your own in the search form as needed.">
             <input class="button" type="button" name="reset" value="Clear" onClick="clearElements('host_search_form');">
             <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('host_search_form'));">
         </td>
     </tr>
 
     </table>
+    </form>
 
 
 
@@ -418,7 +421,7 @@ EOL;
             &nbsp;
         </td>
         <td align="right" class="asearch-line">
-            Disable Wildcards: <input class="button" type="checkbox" name="nowildcard" value="{$form['nowildcard']}" title="Disable usage of SQL wildcards in queries, you must supply your own in the search form as needed.">
+            Disable Wildcards: <input class="button" type="checkbox" name="nowildcard" {$wildchecked} title="Disable usage of SQL wildcards in queries, you must supply your own in the search form as needed.">
             <input class="button" type="button" name="clear" value="Clear" onClick="clearElements('dns_record_search_form');">
             <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('dns_record_search_form'));">
         </td>
@@ -496,7 +499,7 @@ EOL;
             &nbsp;
         </td>
         <td align="right" class="asearch-line">
-            Disable Wildcards: <input class="button" type="checkbox" name="nowildcard" value="{$form['nowildcard']}" title="Disable usage of SQL wildcards in queries, you must supply your own in the search form as needed.">
+            Disable Wildcards: <input class="button" type="checkbox" name="nowildcard" {$wildchecked} title="Disable usage of SQL wildcards in queries, you must supply your own in the search form as needed.">
             <input class="button" type="button" name="reset" value="Clear" onClick="clearElements('subnet_search_form');">
             <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('subnet_search_form'));">
         </td>
