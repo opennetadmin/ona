@@ -1697,7 +1697,7 @@ function format_array($array=array()) {
         if      ($key == 'ip_addr')        { $array[$key] = ip_mangle($array[$key], 'dotted'); }
         else if ($key == 'ip_addr_start')  { $array[$key] = ip_mangle($array[$key], 'dotted'); }
         else if ($key == 'ip_addr_end')    { $array[$key] = ip_mangle($array[$key], 'dotted'); }
-        else if ($key == 'ip_mask')    { $array[$key] = ip_mangle($array[$key]); }
+        else if ($key == 'ip_mask')    { $array[$key] = ip_mangle($array[$key]). '  (/'.ip_mangle($array[$key],'cidr').')'; }
         else if ($key == 'mac_addr') { $array[$key] = mac_mangle($array[$key]); if ($array[$key] == -1) $array[$key] = ''; }
         else if ($key == 'host_id')           {
             list($status, $rows, $host) = ona_find_host($array[$key]);
