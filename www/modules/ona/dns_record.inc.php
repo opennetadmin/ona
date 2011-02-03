@@ -850,7 +850,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.11';
+    $version = '1.12';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -1020,17 +1020,17 @@ EOM
             return(array(4, $self['error']));
         }
 
-        // check for child records that would match our new values
-        // I think they will always be just PTR records?
-        list($status, $rows, $dnschild) = ona_get_dns_record(array('dns_id' => $dns['dns_id'], 'interface_id' => $interface['id']));
-        if (!$rows) {
-            printmsg("ERROR => dns_record_modify() This change results in a duplicate child DNS record: PTR {$options['set_ip']}. Delete existing PTR record first.",3);
-            $self['error'] = "<br>ERROR => dns_record_modify() This change results in a duplicate child DNS record: PTR {$options['set_ip']}.<br> Delete existing PTR record first.\n";
-            return(array(4, $self['error']));
-        }
-
         // If they actually changed the ip address
         if ($interface['id'] != $dns['interface_id']) {
+            // check for child records that would match our new values
+            // I think they will always be just PTR records?
+            list($status, $rows, $dnschild) = ona_get_dns_record(array('dns_id' => $dns['dns_id'], 'interface_id' => $interface['id']));
+            if ($rows) {
+                printmsg("ERROR => dns_record_modify() This change results in a duplicate child DNS record: PTR {$options['set_ip']}. Delete existing PTR record first.",3);
+                $self['error'] = "<br>ERROR => dns_record_modify() This change results in a duplicate child DNS record: PTR {$options['set_ip']}.<br> Delete existing PTR record first.\n";
+                return(array(4, $self['error']));
+            }
+
             $changingint = 1;
             $SET['interface_id'] = $interface['id'];
 
@@ -1205,8 +1205,9 @@ EOM
     if (isset($options['set_ebegin']) and $options['set_ebegin'] != $dns['ebegin']) {
         // format the time that was passed in for the database, leave it as 0 if they pass it as 0
         $options['set_ebegin'] = ($options['set_ebegin'] == '0' ? 0 : date('Y-m-j G:i:s',strtotime($options['set_ebegin'])) );
-        // Force the SET variable
-        $SET['ebegin'] = $options['set_ebegin'];
+        // Force the SET variable if its ont 0 and the current record is not 0000:00:00 00:00
+        if (!(($options['set_ebegin'] == '0') and ($dns['ebegin'] == '0000-00-00 00:00:00')))
+            $SET['ebegin'] = $options['set_ebegin'];
     } else {
         // If I got no date, use right now as the date/time
         $options['set_ebegin'] = date('Y-m-j G:i:s');
@@ -1254,9 +1255,9 @@ EOM
     $original_record = $dns;
 
 
-
     // Update the host record if necessary
-    if(count($SET) > 0 and $options['set_ebegin'] != $dns['ebegin']) {
+    //if(count($SET) > 0 and $options['set_ebegin'] != $dns['ebegin']) {
+    if(count($SET) > 0) {
 
         // Use the ebegin value set above
         $SET['ebegin'] = $options['set_ebegin'];
