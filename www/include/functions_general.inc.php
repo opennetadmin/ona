@@ -1021,6 +1021,12 @@ function mac_mangle($input="", $format="default") {
 function ip_complete($ip='', $filler=0) {
     global $self;
 
+    // If it looks like ipv6 just return it
+// fill out :: with ffff:ffff .. need to figure out how many remaining octets there would be
+// :: is already masking it to all 0000:0000 so ipv6 auto does the default method here... may need a : to turn into :: though
+    if (strlen($ip) > 11) return($ip);
+    if (strpos($ip, ':')) return($ip);
+
     // Make sure it looks like a partial IP address
     if (!preg_match('/^(\d+)\.(\d+)?\.?(\d+)?\.?(\d+)?$/', $ip, $matches)) { return(-1); }
 
@@ -1665,8 +1671,8 @@ function text_diff($old, $new) {
     // Load diff code
     require_once($conf['inc_diff']);
 
-    $df = new Diff(split("\n",htmlspecialchars($old)),
-                   split("\n",htmlspecialchars($new)));
+    $df = new Diff(split("\n",$old),
+                   split("\n",$new));
     $tdf = new UnifiedDiffFormatter();
 
     $text .= $tdf->format($df);
