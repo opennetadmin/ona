@@ -1545,11 +1545,11 @@ function parse_options($options="") {
                );
 
     // Parse incoming options - split on '&'
-    foreach (split('&', $options) as $set) {
+    foreach (explode('&', $options) as $set) {
         $pair = array('','');
 
         // Now split on '='
-        $pair = split('=', $set);
+        $pair = explode('=', $set);
 
         // Replace previously escaped & and = characters with the real thing
         $pair = str_replace(
@@ -1625,8 +1625,8 @@ function html_diff($old, $new, $oldname='', $newname='', $stdout=1) {
     // Load diff code
     require_once($conf['inc_diff']);
 
-    $df = new Diff(split("\n",htmlspecialchars($old)),
-                   split("\n",htmlspecialchars($new)));
+    $df = new Diff(explode("\n",htmlspecialchars($old)),
+                   explode("\n",htmlspecialchars($new)));
     $tdf = new TableDiffFormatter();
 
     $html .= <<<EOL
@@ -1671,8 +1671,8 @@ function text_diff($old, $new) {
     // Load diff code
     require_once($conf['inc_diff']);
 
-    $df = new Diff(split("\n",$old),
-                   split("\n",$new));
+    $df = new Diff(explode("\n",$old),
+                   explode("\n",$new));
     $tdf = new UnifiedDiffFormatter();
 
     $text .= $tdf->format($df);
