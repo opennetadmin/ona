@@ -2031,7 +2031,12 @@ function ona_find_subnet($search="") {
         //   (2^32 - 1) == 4294967295 == a 32bit integer with all 1's.
         //   4294967295 - subnet_mask results in the number of hosts on that subnet.
         //   + the base ip_addr results in the top of the subnet.
-        $where = "$ip >= ip_addr AND $ip <= ((4294967295 - ip_mask) + ip_addr)";
+        if (strlen($ip) > 11) {
+            // IPv6.. had to check that it was above ipv4 space
+	    $where = "$ip between ip_addr AND ((340282366920938463463374607431768211455 - ip_mask) + ip_addr) and ip_addr > 4294967295";
+        } else {
+            $where = "$ip >= ip_addr AND $ip <= ((4294967295 - ip_mask) + ip_addr)";
+        }
 
         list($status, $rows, $record) = ona_get_subnet_record($where);
 

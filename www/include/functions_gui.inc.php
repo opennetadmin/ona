@@ -222,9 +222,14 @@ function get_subnet_usage($subnet_id) {
 
     list($status, $rows, $subnet) = db_get_record($onadb, 'subnets', array('id' => $subnet_id));
     if ($status or !$rows) { return(0); }
-    $subnet['size'] = (0xffffffff - ip_mangle($subnet['ip_mask'], 'numeric')) - 1;
-    if ($subnet['ip_mask'] == 4294967295) $subnet['size'] = 1;
-    if ($subnet['ip_mask'] == 4294967294) $subnet['size'] = 2;
+    if (strlen($subnet['ip_addr']) > 11) {
+        $sub = gmp_sub("340282366920938463463374607431768211455", $subnet['ip_mask']);
+        $subnet['size'] = gmp_strval($sub) - 1;
+    } else {
+    	$subnet['size'] = (0xffffffff - ip_mangle($subnet['ip_mask'], 'numeric')) - 1;
+    	if ($subnet['ip_mask'] == 4294967295) $subnet['size'] = 1;
+    	if ($subnet['ip_mask'] == 4294967294) $subnet['size'] = 2;
+    }
 
     // Calculate the percentage used (total size - allocated hosts - dhcp pool size)
     list($status, $hosts, $tmp) = db_get_records($onadb, 'interfaces', array('subnet_id' => $subnet['id']), "", 0);
@@ -436,6 +441,7 @@ function get_ip_suggestions($q, $max_results=10) {
     $formatted = $results = array();
 
     // Complete the (potentially incomplete) ip address
+    // MP: Need to figure out a good way to take a partial ipv6 and complete it out for start/end ips
     $ip = ip_complete($q, '0');
     $ip_end = ip_complete($q, '255');
 
