@@ -1917,7 +1917,7 @@ function ona_find_interface($search="") {
     if (is_numeric($search)) {
         // It's a number - do several sql queries and see if we can get a unique match
         foreach (array('id', 'host_id', 'ip_addr') as $field) {
-            list($status, $rows, $record) = ona_get_interface_record(array($field => $search));
+            list($status, $rows, $record) = ona_get_interface_record("{$field} like '{$search}'");
             // If we got it, return it
             if ($status == 0 and $rows == 1) {
                 printmsg("DEBUG => ona_find_interface() found interface record by {$field}", 2);
@@ -1929,7 +1929,7 @@ function ona_find_interface($search="") {
     // If it's an IP address...
     $ip = ip_mangle($search, 1);
     if ($ip != -1) {
-        list($status, $rows, $record) = ona_get_interface_record(array('ip_addr' => $ip));
+        list($status, $rows, $record) = ona_get_interface_record("ip_addr like '{$ip}'");
         // If we got it, return it
         if ($status == 0 and $rows == 1) {
             printmsg("DEBUG => ona_find_interface() found record by IP address", 2);

@@ -43,6 +43,11 @@ function createONAAlert(txt) {
 
     h1 = alertObj.appendChild(d.createElement("h1"));
     h1.appendChild(d.createTextNode("OpenNetAdmin Alert!"));
+    h1.onclick = function() { 
+        removeElement("alertBox");
+        removeElement("alertContainer");
+        return false;
+    }
 
     msg = alertObj.appendChild(d.createElement("p"));
     msg.innerHTML = txt;

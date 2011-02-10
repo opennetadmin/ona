@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.10';
+    $version = '1.11';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -220,8 +220,8 @@ primary name for a host should be unique in all cases I'm aware of
     // Set a message to display when using dns views
     if ($conf['dns_views']) $viewmsg = ' Ensure you are selecting the proper DNS view for this record.';
 
-    // Process A record types
-    if ($options['type'] == 'A') {
+    // Process A or AAAA record types
+    if ($options['type'] == 'A' or $options['type'] == 'AAAA') {
         // find the IP interface record,
         list($status, $rows, $interface) = ona_find_interface($options['ip']);
         if (!$rows) {
@@ -230,6 +230,12 @@ primary name for a host should be unique in all cases I'm aware of
             return(array(4, $self['error'] . "\n"));
         }
 
+        // Make the type correct based on the IP passed in
+        if (strlen($interface['ip_addr']) > 11) {
+            $options['type'] = 'AAAA';
+        } else {
+            $options['type'] = 'A';
+        }
 
         // Validate that there isn't already any dns record named $hostname in the domain $domain_id.
         list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'interface_id' => $interface['id'],'type' => 'A', 'dns_view_id' => $add_viewid));
@@ -330,16 +336,23 @@ but you still want to reverse lookup all the other interfaces to know they are o
 
         $ipflip = ip_mangle($interface['ip_addr'],'flip');
         $octets = explode(".",$ipflip);
+        if (count($octets) > 4) {
+            $arpa = '.ip6.arpa';
+            $octcount = 31;
+        } else {
+            $arpa = '.in-addr.arpa';
+            $octcount = 3;
+        }
         // Find a pointer zone for this record to associate with.
-        list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+        list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.$arpa);
 //         if (!$ptrdomain['id']) {
 //             printmsg("ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
 //             $self['error'] = "ERROR => Unable to find a reverse pointer domain for this IP! Add at least the following DNS domain: {$octets[3]}.in-addr.arpa";
 //             return(array(5, $self['error'] . "\n"));
 //         }
         if (!$ptrdomain['id']) {
-            printmsg("ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
-            $self['error'] = "ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa.  You could also create domains for class B or class C level reverse zones.";
+            printmsg("ERROR => This operation tried to create a PTR record that is the first in this address space.  You must first create at least the following DNS domain: {$octets[$octcount]}{$arpa}",3);
+            $self['error'] = "ERROR => This operation tried to create a PTR record that is the first in this address space.  You must first create at least the following DNS domain: {$octets[$octcount]}{$arpa}.  You could also create domains for deeper level reverse zones.";
                 return(array(9, $self['error'] . "\n"));
         }
 
@@ -850,7 +863,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.12';
+    $version = '1.13';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -1019,6 +1032,14 @@ EOM
             $self['error'] = "ERROR => dns_record_modify() Unable to find IP interface: {$options['set_ip']}\n";
             return(array(4, $self['error']));
         }
+
+        // Make the type correct based on the IP passed in
+        if (strlen($interface['ip_addr']) > 11) {
+            $SET['type'] = 'AAAA';
+        } else {
+            $SET['type'] = 'A';
+        }
+
 
         // If they actually changed the ip address
         if ($interface['id'] != $dns['interface_id']) {

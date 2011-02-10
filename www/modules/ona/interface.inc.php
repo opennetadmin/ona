@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.08';
+    $version = '1.09';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -89,7 +89,7 @@ EOM
     }
     printmsg("DEBUG => Host selected: {$options['host']}", 3);
 
-    // Translate IPv4 address to a number
+    // Translate IP address to a number
     $orig_ip= $options['ip'];
     $options['ip'] = ip_mangle($options['ip'], 1);
     if ($options['ip'] == -1) {
@@ -99,7 +99,7 @@ EOM
     }
 
     // Validate that there isn't already another interface with the same IP address
-    list($status, $rows, $interface) = ona_get_interface_record(array('ip_addr' => $options['ip']));
+    list($status, $rows, $interface) = ona_get_interface_record("ip_addr like '{$options['ip']}'");
     if ($rows) {
         printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!",3);
         $self['error'] = "ERROR => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!";
