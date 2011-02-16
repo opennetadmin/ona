@@ -95,7 +95,7 @@ function ws_editor($window_name, $form='') {
     // If its an A record,check to se if it has a PTR associated with it
     //FIXME: MP dont forget that if you change the ip of an A record that you must also update any PTR records reference to that interface
     $ptr_readonly = '';
-    if ($dns_record['type'] == 'A') {
+    if ($dns_record['type'] == 'A' or $dns_record['type'] == 'AAAA') {
         list($status, $rows, $hasptr) = ona_get_dns_record(array('interface_id' => $dns_record['interface_id'],'type' => 'PTR'));
         if ($rows) {
             $hasptr_msg = '<- Already has PTR record';
@@ -139,7 +139,7 @@ function ws_editor($window_name, $form='') {
     //$record_types = array('A','CNAME','TXT','NS','MX','AAAA','SRV');
     // FIXME: MP cool idea here-- support the loc record and have a google map popup to search for the location then have it populate the coords from that.
     // FIXME: MP it would probably be much better to use ajax to pull back the right form content than all this other javascript crap.
-    array_push($record_types,'A','CNAME','MX','NS','SRV','TXT','PTR');
+    array_push($record_types,'A','AAAA','CNAME','MX','NS','SRV','TXT','PTR');
     foreach (array_keys((array)$record_types) as $id) {
         $record_types[$id] = htmlentities($record_types[$id]);
         $selected = '';
@@ -260,8 +260,8 @@ EOL;
                         onchange="var selectBox = el('record_type_select');
                                 el('info_{$window_name}').innerHTML = '';
                                 el('ptr_info_{$window_name}').innerHTML = '';
-                                el('a_container').style.display     = (selectBox.value == 'A' || selectBox.value == 'PTR') ? '' : 'none';
-                                el('autoptr_container').style.display   = (selectBox.value == 'A') ? '' : 'none';
+                                el('a_container').style.display     = (selectBox.value == 'AAAA' || selectBox.value == 'A' || selectBox.value == 'PTR') ? '' : 'none';
+                                el('autoptr_container').style.display   = (selectBox.value == 'AAAA' || selectBox.value == 'A') ? '' : 'none';
                                 el('mx_container').style.display   = (selectBox.value == 'MX') ? '' : 'none';
                                 el('srv_container').style.display   = (selectBox.value == 'SRV') ? '' : 'none';
                                 el('txt_container').style.display   = (selectBox.value == 'TXT') ? '' : 'none';

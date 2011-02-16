@@ -135,6 +135,9 @@ primary name for a host should be unique in all cases I'm aware of
     $add_srv_weight = '';
     $add_srv_port = '';
 
+    // force AAAA to A to keep it consistant.. we'll display it properly as needed
+    if ($options['type'] == 'AAAA')  $options['type'] = 'A';
+
     // If the name we were passed has a leading or trailing . in it then remove the dot.
     $options['name'] = preg_replace("/^\./", '', $options['name']);
     $options['name'] = preg_replace("/\.$/", '', $options['name']);
@@ -183,9 +186,9 @@ primary name for a host should be unique in all cases I'm aware of
 
 
     // If we are using anything but in-addr.arpa for PTR or NS records, fail out!
-    if (strpos($domain['fqdn'], "in-addr.arpa") and $options['type'] != 'PTR' and $options['type'] != 'NS') {
-        printmsg("ERROR => Only PTR and NS records should use in-addr.arpa domains!", 3);
-        $self['error'] = "ERROR => Only PTR and NS records should use in-addr.arpa domains!";
+    if ((strpos($domain['fqdn'], "ip6.arpa") or strpos($domain['fqdn'], "in-addr.arpa")) and $options['type'] != 'PTR' and $options['type'] != 'NS') {
+        printmsg("ERROR => Only PTR and NS records should use in-addr.arpa or ip6.arpa domains!", 3);
+        $self['error'] = "ERROR => Only PTR and NS records should use in-addr.arpa or ip6.arpa domains!";
         return(array(4, $self['error'] . "\n"));
     }
 
@@ -228,13 +231,6 @@ primary name for a host should be unique in all cases I'm aware of
             printmsg("ERROR => dns_record_add() Unable to find existing IP interface: {$options['ip']}",3);
             $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}. A records must point to existing IP addresses. Please add an interface with this IP address first.";
             return(array(4, $self['error'] . "\n"));
-        }
-
-        // Make the type correct based on the IP passed in
-        if (strlen($interface['ip_addr']) > 11) {
-            $options['type'] = 'AAAA';
-        } else {
-            $options['type'] = 'A';
         }
 
         // Validate that there isn't already any dns record named $hostname in the domain $domain_id.
@@ -366,7 +362,7 @@ but you still want to reverse lookup all the other interfaces to know they are o
         // Dont print a dot unless hostname has a value
         if ($hostname) $hostname = $hostname.'.';
 
-        $info_msg = "{$ipflip}.in-addr.arpa -> {$hostname}{$domain['fqdn']}";
+        $info_msg = "{$ipflip}{$arpa} -> {$hostname}{$domain['fqdn']}";
 
     }
 
@@ -1033,14 +1029,6 @@ EOM
             return(array(4, $self['error']));
         }
 
-        // Make the type correct based on the IP passed in
-        if (strlen($interface['ip_addr']) > 11) {
-            $SET['type'] = 'AAAA';
-        } else {
-            $SET['type'] = 'A';
-        }
-
-
         // If they actually changed the ip address
         if ($interface['id'] != $dns['interface_id']) {
             // check for child records that would match our new values
@@ -1299,8 +1287,16 @@ EOM
 
             // Check the PTR record has the proper domain still
             $ipflip = ip_mangle($interface['ip_addr_text'],'flip');
+            $octets = explode(".",$ipflip);
+            if (count($octets) > 4) {
+                $arpa = '.ip6.arpa';
+                $octcount = 31;
+            } else {
+                $arpa = '.in-addr.arpa';
+                $octcount = 3;
+            }
             // Find a pointer zone for this record to associate with.
-            list($status, $prows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+            list($status, $prows, $ptrdomain) = ona_find_domain($ipflip.$arpa);
             list($status, $drrows, $dnsrec) = ona_get_dns_record(array('type' => 'PTR','interface_id' => $SET['interface_id'],'dns_view_id' => $check_dns_view_id));
 
             // TRIGGER: we made a change and need to update the CURRENT PTR record as well, only sets it if the ptrdomain changes
@@ -1347,6 +1343,10 @@ EOM
             // TRIGGER: yep I probably need one here  FIXME
 
         }
+
+
+       // Make sure we us A type for both A and AAAA
+       if ($SET['type'] == 'AAAA') $SET['type'] = 'A';
 
         // Change the actual DNS record
         list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $dns['id']), $SET);
@@ -1570,7 +1570,15 @@ MP: TODO:  this delete will not handle DNS views unless you use the ID of the re
             list($status, $rows, $ptrint) = ona_get_interface_record(array('id' => $dns['interface_id']), '');
 
             $ipflip = ip_mangle($ptrint['ip_addr'],'flip');
-            $dns['fqdn'] = "{$ipflip}.in-addr.arpa -> {$pointsto['fqdn']}";
+            $octets = explode(".",$ipflip);
+            if (count($octets) > 4) {
+                $arpa = '.ip6.arpa';
+                $octcount = 31;
+            } else {
+                $arpa = '.in-addr.arpa';
+                $octcount = 3;
+            }
+            $dns['fqdn'] = "{$ipflip}{$arpa} -> {$pointsto['fqdn']}";
         }
 
         // Return the success notice

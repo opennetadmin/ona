@@ -412,8 +412,16 @@ EOM
         // Make sure we update the ptr record domain if needed.
         // MP: TODO: would it be better to run the dns_modify module vs doing a direct db_update_record???
         $ipflip = ip_mangle($options['set_ip'],'flip');
+        $octets = explode(".",$ipflip);
+        if (count($octets) > 4) {
+            $arpa = '.ip6.arpa';
+            $octcount = 31;
+        } else {
+            $arpa = '.in-addr.arpa';
+            $octcount = 3;
+        }
         // Find a pointer zone for this record to associate with.
-        list($status, $prows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+        list($status, $prows, $ptrdomain) = ona_find_domain($ipflip.$arpa);
         if (isset($ptrdomain['id'])) {
             list($status, $rows, $dnsrec) = ona_get_dns_record(array('type' => 'PTR','interface_id' => $interface['id']));
 

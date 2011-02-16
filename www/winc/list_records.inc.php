@@ -298,6 +298,11 @@ EOL;
             // Get the host record so we know what the primary interface is
             //list($status, $rows, $inthost) = ona_get_host_record(array('id' => $interface['host_id']), '');
 
+            // Make the type correct based on the IP passed in
+            if (strlen($interface['ip_addr']) > 11 and $record['type'] == 'A') {
+                $record['type'] = 'AAAA';
+            }
+
             $record['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
 
             // Subnet description
@@ -354,6 +359,7 @@ EOL;
 
             // strip down the IP to just the "host" part as it relates to the domain its in
             $domain_part = preg_replace("/.in-addr.arpa$/", '', $record['domain']);
+            $domain_part = preg_replace("/.ip6.arpa$/", '', $record['domain']);
             $record['name'] = preg_replace("/$domain_part$/", '', $record['name']);
 
             $data = <<<EOL
@@ -552,7 +558,7 @@ EOL;
 EOL;
         if (auth('dns_record_modify')) {
             // If it is an A record but not the primary, display an option to make it primary. and only if we are dealing with a specific host
-            if ($record['type'] == 'A' and $host['primary_dns_id'] != $record['id'] and $form['host_id']) {
+            if (($record['type'] == 'A' or $record['type'] == 'AAAA') and $host['primary_dns_id'] != $record['id'] and $form['host_id']) {
                 $html .= <<<EOL
 
                     <a title="Make this the primary DNS record"
