@@ -192,7 +192,7 @@ EOL;
                     value="{$subnet['ip_addr']}"
                     class="edit"
                     type="text"
-                    size="35" maxlength="35"
+                    size="35" maxlength="40"
                 >
             </td>
         </tr>

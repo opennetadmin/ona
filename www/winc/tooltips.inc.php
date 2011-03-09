@@ -492,14 +492,34 @@ EOL;
     // If we didn't get one, tell them to add a record here
     if ($rows == 0 or $status) {
         // Calculate what the end of this block is so we can reccomend the max subnet size
-        list($status, $rows, $subnets) = db_get_records($onadb, "subnets", "ip_addr > " . ip_mangle($subnet_ip, 'numeric'), "ip_addr", 1);
-        $subnet_ip_end = $subnets[0]['ip_addr'] - 1;
-        $size = $subnet_ip_end - $subnet_ip + 1;
-        if (($size % 2) == 1) $size--;
-        $mask = ceil(32 - (log($size) / log(2)));
 
-        $subnet['ip_addr'] = ip_mangle($subnet_ip, 'dotted');
-        $subnet['ip_addr_end'] = ip_mangle($subnet_ip_end, 'dotted');
+        // GD: add IPv6 functionnality by imposing GMP use when not ipv4 subnet
+        
+        list($status, $rows, $subnets) = db_get_records($onadb, "subnets", "ip_addr > " . ip_mangle($subnet_ip, 'numeric'), "ip_addr", 1);
+        if (!is_ipv4($subnet_ip)) {
+	    $subnet_ip_end = gmp_sub(gmp_init($subnets[0]['ip_addr']), 1);
+	    $size = gmp_add(gmp_sub($subnet_ip_end, $subnet_ip), 1);
+	    if (gmp_mod($size,2) == 1) gmp_sub($size,1);
+            for ($mask=65;$mask > 48;$mask--) {
+		if (gmp_cmp($size,gmp_pow("2",$mask)) > 0) {
+                    $mask++;
+                    break;
+                }
+            }
+            $subnet['ip_addr'] = ip_mangle(gmp_strval($subnet_ip), 'dotted');
+            $subnet['ip_addr_end'] = ip_mangle(gmp_strval($subnet_ip_end), 'dotted');
+            $str_subnet_ip = gmp_strval($subnet_ip);
+            $size=gmp_strval($size);
+        }
+        else {
+            $subnet_ip_end = $subnets[0]['ip_addr'] - 1;
+            $size = $subnet_ip_end - $subnet_ip + 1;
+            if (($size % 2) == 1) $size--;
+            $mask = ceil(32 - (log($size) / log(2)));
+            $subnet['ip_addr'] = ip_mangle($subnet_ip, 'dotted');
+            $subnet['ip_addr_end'] = ip_mangle($subnet_ip_end, 'dotted');
+            $str_subnet_ip = $subnet_ip;
+	}
         $html .= <<<EOL
         <!-- NO SUBNET -->
         <table cellspacing="0" border="0" cellpadding="0">
@@ -508,7 +528,7 @@ EOL;
             <tr><td width=100% colspan="2" nowrap="true" style="{$style['label_box']}">
                 <a title="Add a new subnet here"
                    class="act"
-                   onClick="xajax_window_submit('edit_subnet', 'ip_addr=>{$subnet_ip}', 'editor');"
+                   onClick="xajax_window_submit('edit_subnet', 'ip_addr=>{$str_subnet_ip}', 'editor');"
                 >Add a subnet here</a>
             </td></tr>
 
@@ -518,47 +538,96 @@ EOL;
             </tr>
 
 EOL;
-        $ip = $subnet_ip;
         $largest_subnet = array(0, 0, 0);
-        while ($ip < $subnet_ip_end) {
+        // -- IPv4
+        if (is_ipv4($subnet_ip)) {
+            $ip = $subnet_ip;
+            while ($ip < $subnet_ip_end) {
 
-            // find the largest mask for the specified ip
-            $myip = ip_mangle($ip, 'dotted');
-            $mymask = $mask;
-            while ($mymask <= 30) {
-                $ip1 = ip_mangle($ip, 'binary');
-                $ip2 = str_pad(substr($ip1, 0, $mymask), 32, '0');
-                $mysize = pow(2, 32-$mymask);
-                $myhosts = $mysize - 2;
-
-                $ip1 = ip_mangle($ip1, 'dotted');
-                $ip2 = ip_mangle($ip2, 'dotted');
-                if ( $ip1 == $ip2 and (($ip + $mysize - 1) <= $subnet_ip_end) ) {
-                    break;
+                // find the largest mask for the specified ip
+                $myip = ip_mangle($ip, 'dotted');
+                $mymask = $mask;
+                while ($mymask <= 30) {
+                    $ip1 = ip_mangle($ip, 'binary');
+                    $ip2 = str_pad(substr($ip1, 0, $mymask), 32, '0');
+                    $mysize = pow(2, 32-$mymask);
+                    $myhosts = $mysize - 2;
+    
+                    $ip1 = ip_mangle($ip1, 'dotted');
+                    $ip2 = ip_mangle($ip2, 'dotted');
+                    if ( $ip1 == $ip2 and (($ip + $mysize - 1) <= $subnet_ip_end) ) {
+                        break;
+                    }
+                    $mymask++;
                 }
-                $mymask++;
+                if ($mymask == 31) break;
+                if ($mysize > $largest_subnet[2]) $largest_subnet = array(ip_mangle($ip, 'dotted'), $mymask, $mysize);
+    
+    
+                $html .= <<<EOL
+                <!--
+                <tr>
+                    <td align="right" nowrap="true" style="color: {$font_color};">&nbsp;</td>
+                    <td class="padding" align="left" style="color: {$font_color};">{$myip} /{$mymask}&nbsp;({$myhosts} hosts)</td>
+                </tr>
+                -->
+EOL;
+    
+                // Increment $ip
+                $ip += $mysize;
+
+
             }
-            if ($mymask == 31) break;
-            if ($mysize > $largest_subnet[2]) $largest_subnet = array(ip_mangle($ip, 'dotted'), $mymask, $mysize);
+            // remove 2 for gateway and broadcast
+            $largest_subnet[2] = $largest_subnet[2] - 2;
+        }
+        // -- IPV6
+        else {
+            /*
+            $ip = gmp_init($subnet_ip);
+            while (gmp_cmp($ip, $subnet_ip_end) < 0) {
+
+                // find the largest mask for the specified ip
+                $myip = ip_mangle(gmp_strval($ip), 'dotted');
+                $mymask = $mask;
+                while ($mymask <= 80) {
+                    $ip1 = ip_mangle(gmp_strval($ip), 'binary');
+                    $ip2 = str_pad(substr($ip1, 0, $mymask), 128, '0');
+                    $mysize = gmp_pow("2", 128-$mymask);
+                    $myhosts = gmp_sub($mysize,2);
+
+                    $ip1 = ip_mangle($ip1, 'dotted');
+                    $ip2 = ip_mangle($ip2, 'dotted');
+                    if ( $ip1 == $ip2 and (gmp_cmp(gmp_sub(gmp_add($ip, $mysize),1), $subnet_ip_end) <= 0 )) {
+                        break;
+                    }
+                    $mymask++;
+                }
+                if ($mymask == 122) break;
+                if (gmp_cmp($mysize,$largest_subnet[2]) > 0) $largest_subnet = array(ip_mangle(gmp_strval($ip), 'dotted'), $mymask, $mysize);
 
 
-            $html .= <<<EOL
-            <!--
-            <tr>
-                <td align="right" nowrap="true" style="color: {$font_color};">&nbsp;</td>
-                <td class="padding" align="left" style="color: {$font_color};">{$myip} /{$mymask}&nbsp;({$myhosts} hosts)</td>
-            </tr>
-            -->
+                $html .= <<<EOL
+                <!--
+                <tr>
+                    <td align="right" nowrap="true" style="color: {$font_color};">&nbsp;</td>
+                    <td class="padding" align="left" style="color: {$font_color};">{$myip} /{$mymask}&nbsp;({$myhosts} hosts)</td>
+                </tr>
+                -->
 EOL;
 
-            // Increment $ip
-            $ip += $mysize;
+                // Increment $ip
+                $ip = gmp_add($ip,$mysize);
 
 
+            }
+*/
+            $largest_subnet = array(ip_mangle($subnet_ip, 'dotted'),$mask,$size);
+            // remove 2 for gateway and broadcast
+            $largest_subnet[2] = gmp_strval(gmp_sub($largest_subnet[2],2));
+
+	
         }
-        // remove 2 for gateway and broadcast
-        $largest_subnet[2] = $largest_subnet[2] - 2;
-
         $html .= <<<EOL
 
             <tr>
@@ -570,6 +639,10 @@ EOL;
 EOL;
         return(array($html, $js));
     }
+
+    // -- 
+    // -- FOUND SUBNET IN DB
+    // -- 
 
     // Convert IP and Netmask to a presentable format
     $subnet['ip_addr'] = ip_mangle($subnet['ip_addr'], 'dotted');

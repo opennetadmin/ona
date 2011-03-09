@@ -217,7 +217,7 @@ EOM
        $ip1 = ip_mangle($ourip, 'bin128');
        $sub = gmp_sub("340282366920938463463374607431768211455", $options['netmask']);
        $num_hosts = gmp_strval($sub); 
-       $last_host = ($options['ip'] + $num_hosts);
+       $last_host = gmp_strval(gmp_add($options['ip'],$num_hosts));
     }
 
     // Validate that the subnet IP & netmask combo are valid together.

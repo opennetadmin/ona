@@ -2011,10 +2011,12 @@ function ona_find_subnet($search="") {
     if (preg_match('/^\d+$/', $search)) {
         // It's a number - do several sql queries and see if we can get a unique match
         foreach (array('id', 'ip_addr') as $field) {
-            list($status, $rows, $record) = ona_get_subnet_record(array($field => $search));
+            // list($status, $rows, $record) = ona_get_subnet_record(array($field => $search));
+            // GDO: don't use array() here, because it breaks ipv6 subnets
+            list($status, $rows, $record) = ona_get_subnet_record("$field = $search");
             // If we got it, return it
             if ($status == 0 and $rows == 1) {
-                printmsg("DEBUG => ona_find_subnet() found subnet record by $field", 2);
+                printmsg("DEBUG => ona_find_subnet() found subnet record by $field $search", 2);
                 return(array(0, $rows, $record));
             }
         }
