@@ -583,7 +583,9 @@ EOL;
         }
         // -- IPV6
         else {
+            // GDO FIXME: don't know what's the purpose of this block, and it times out ...
             /*
+          
             $ip = gmp_init($subnet_ip);
             while (gmp_cmp($ip, $subnet_ip_end) < 0) {
 
