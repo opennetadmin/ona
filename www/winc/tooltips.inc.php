@@ -500,6 +500,7 @@ EOL;
 	    $subnet_ip_end = gmp_sub(gmp_init($subnets[0]['ip_addr']), 1);
 	    $size = gmp_add(gmp_sub($subnet_ip_end, $subnet_ip), 1);
 	    if (gmp_mod($size,2) == 1) gmp_sub($size,1);
+            // GD: very bad way to get the mask ... but gmp_log() does not exist !
             for ($mask=65;$mask > 48;$mask--) {
 		if (gmp_cmp($size,gmp_pow("2",$mask)) > 0) {
                     $mask++;
