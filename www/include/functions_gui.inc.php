@@ -1285,6 +1285,10 @@ function suggest_masks_edit_subnet($q, $el_input, $el_suggest) {
     }
     else {
         $results = array(
+                        '/66',
+                        '/65',
+                        '/64',
+                        '/48',
                         '/32',
                         '/31',
                         '/30',
