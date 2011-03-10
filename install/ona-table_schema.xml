@@ -11,11 +11,11 @@
       <KEY/>
       <UNSIGNED/>
     </field>
-    <field name="ip_addr_start" type="I" size="10">
+    <field name="ip_addr_start" type="N" size="39.0">
       <NOTNULL/>
       <UNSIGNED/>
     </field>
-    <field name="ip_addr_end" type="I" size="10">
+    <field name="ip_addr_end" type="N" size="39.0">
       <NOTNULL/>
       <UNSIGNED/>
     </field>
@@ -316,11 +316,11 @@
       <KEY/>
       <UNSIGNED/>
     </field>
-    <field name="host_id" type="I" size="10">
+    <field name="host_id" type="N" size="39.0">
       <NOTNULL/>
       <UNSIGNED/>
     </field>
-    <field name="subnet_id" type="I" size="10">
+    <field name="subnet_id" type="N" size="39.0">
       <NOTNULL/>
       <UNSIGNED/>
     </field>
@@ -605,7 +605,7 @@
       <DEFAULT value="0"/>
       <UNSIGNED/>
     </field>
-    <field name="ip_addr" type="I" size="10">
+    <field name="ip_addr" type="N" size="39.0">
       <NOTNULL/>
       <UNSIGNED/>
     </field>
