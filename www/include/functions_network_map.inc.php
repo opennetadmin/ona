@@ -233,19 +233,21 @@ function ws_draw_block($window_name, $form='') {
         $response->addScript($js);
         return($response->getXML());
     }
-    if (is_ipv4($ip)) {
-       $string_size=15;
-    }
-    else {
-       $string_size=40;
-    }
 
     // Build a few variables
+    $label = ip_mangle($ip, 'dotted');
+    if (is_ipv4($ip)) {
+        $string_size = 15;
+    }
+    else {
+        $string_size = 20;
+    }
+
     $function   = "get_{$form['row_type']}_html";
     $row_zoom   = $form['row_zoom'];
     $row_height = $form['row_height'];
     $row_offset = $form['row_offset'];
-    // This is the number of pixels to leave for the label on the left (.45 * row height, * 15 possible characters)
+    // This is the number of pixels to leave for the label on the left (.45 * row height, * $string_size possible characters)
     $label_width = round($form['row_height'] * 0.45 * $string_size);
     $font_height = $form['row_height'] - 2;  // Label font-size
     if ($font_height < 8) $font_height = 8;
@@ -257,7 +259,6 @@ function ws_draw_block($window_name, $form='') {
     $el_name = $ip . '_row';
 
     // Add a row label
-    $label = ip_mangle($ip, 'dotted');
     $response->addCreate("{$window_name}_substrate", "div", $el_name . '_label');
     $response->addScript(<<<EOL
         var _el = el('{$el_name}_label');
@@ -342,7 +343,6 @@ function get_ipv6_64_html($ip=0, $zoom=2, $row_height) {
     $ips_per_block=gmp_init("18446744073709551615");
     $ip_end = gmp_add(gmp_init($ip),$ips_per_block);
     $display_factor = gmp_div($ips_per_block,"255");
-
                                    
     $x_px_per_ip = $zoom;
 
