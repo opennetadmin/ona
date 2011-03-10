@@ -316,11 +316,11 @@
       <KEY/>
       <UNSIGNED/>
     </field>
-    <field name="host_id" type="N" size="39.0">
+    <field name="host_id" type="I" size="10">
       <NOTNULL/>
       <UNSIGNED/>
     </field>
-    <field name="subnet_id" type="N" size="39.0">
+    <field name="subnet_id" type="I" size="10">
       <NOTNULL/>
       <UNSIGNED/>
     </field>
