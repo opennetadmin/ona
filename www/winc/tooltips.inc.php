@@ -584,8 +584,6 @@ EOL;
         }
         // -- IPV6
         else {
-            // GDO FIXME: don't know what's the purpose of this block, and it times out ...
-            /*
           
             $ip = gmp_init($subnet_ip);
             while (gmp_cmp($ip, $subnet_ip_end) < 0) {
@@ -593,41 +591,36 @@ EOL;
                 // find the largest mask for the specified ip
                 $myip = ip_mangle(gmp_strval($ip), 'dotted');
                 $mymask = $mask;
-                while ($mymask <= 80) {
-                    $ip1 = ip_mangle(gmp_strval($ip), 'binary');
+                while ($mymask <= 66) {
+                    $ip1 = ip_mangle(gmp_strval($ip), 'bin128');
                     $ip2 = str_pad(substr($ip1, 0, $mymask), 128, '0');
                     $mysize = gmp_pow("2", 128-$mymask);
-                    $myhosts = gmp_sub($mysize,2);
+                    $myhosts = gmp_strval(gmp_sub($mysize,2));
 
                     $ip1 = ip_mangle($ip1, 'dotted');
                     $ip2 = ip_mangle($ip2, 'dotted');
-                    if ( $ip1 == $ip2 and (gmp_cmp(gmp_sub(gmp_add($ip, $mysize),1), $subnet_ip_end) <= 0 )) {
+                    if ((strcmp($ip1, $ip2) == 0) and (gmp_cmp(gmp_sub(gmp_add($ip, $mysize),1), $subnet_ip_end) <= 0 )) {
                         break;
                     }
                     $mymask++;
                 }
-                if ($mymask == 122) break;
+                if ($mymask == 90) break;
                 if (gmp_cmp($mysize,$largest_subnet[2]) > 0) $largest_subnet = array(ip_mangle(gmp_strval($ip), 'dotted'), $mymask, $mysize);
-
 
                 $html .= <<<EOL
                 <!--
                 <tr>
                     <td align="right" nowrap="true" style="color: {$font_color};">&nbsp;</td>
-                    <td class="padding" align="left" style="color: {$font_color};">{$myip} /{$mymask}&nbsp;({$myhosts} hosts)</td>
+                    <td class="padding" align="left" style="color: {$font_color};">{$mask} {$myip} /{$mymask}&nbsp;({$myhosts} hosts)td>
                 </tr>
                 -->
 EOL;
 
                 // Increment $ip
                 $ip = gmp_add($ip,$mysize);
-
-
             }
-*/
-            $largest_subnet = array(ip_mangle($subnet_ip, 'dotted'),$mask,$size);
-            // remove 2 for gateway and broadcast
-            $largest_subnet[2] = gmp_strval(gmp_sub($largest_subnet[2],2));
+            // DON'T remove 2 for gateway and broadcast
+            $largest_subnet[2] = gmp_strval($largest_subnet[2]);
 
 	
         }

@@ -356,14 +356,14 @@ function get_ipv6_64_html($ip=0, $zoom=2, $row_height) {
             $where,
             "ip_addr ASC"
         );
+
     // If the first record isn't a subnet, see if the first IP is in another subnet
     if ($num_subnets > 0 && gmp_cmp(gmp_init($subnets[0]['ip_addr']), $ip) !=0) {
-        //$html = "GDO_was_here_".$subnets[0]['ip_addr'];
-        $where = "ip_addr < {$ip} AND ((340282366920938463463374607431768211455 - ip_mask) + ip_addr) >= {$ip}";
-        list ($status, $rows, $subnet) = db_get_record($onadb, 'subnets', $where);
+        $where = "ip_addr < {$ip} AND ((340282366920938463463374607431768211454 - ip_mask) + ip_addr) >= {$ip} AND ip_mask > 4294967296";
+        list ($status, $rows, $temp_subnet) = db_get_record($onadb, 'subnets', $where);
         if ($rows) {
             $num_subnets++;
-            array_unshift($subnets, $subnet);
+            array_unshift($subnets, $temp_subnet);
         }
     }
 
@@ -422,7 +422,6 @@ function get_ipv6_64_html($ip=0, $zoom=2, $row_height) {
 ></div>
 EOL;
 
-        // $html = "$str_block_start";
         $block_start = gmp_add($block_end,"1");
     }
 
