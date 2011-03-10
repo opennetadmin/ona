@@ -87,10 +87,11 @@ $modbodyhtml .= <<<EOL
 EOL;
 
     // For now, disabling subnet map on ipv6 subnets.. not sure its needed and it will take some work to fix.
-    if (!$extravars['isipv6']) {
+    // GD: Working now !
+    // if (!$extravars['isipv6']) {
     	// Requires the include of the functions_network_map.inc.php file at the beginning of this file
     	$wspl = workspace_plugin_loader('subnet_map',$record,$extravars);
-    }
+    // }
     $modbodyhtml .= $wspl[0]; $modjs .= $wspl[1];
 
 ?>
