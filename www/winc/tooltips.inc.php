@@ -496,31 +496,43 @@ EOL;
         // GD: add IPv6 functionnality by imposing GMP use when not ipv4 subnet
         
         list($status, $rows, $subnets) = db_get_records($onadb, "subnets", "ip_addr > " . ip_mangle($subnet_ip, 'numeric'), "ip_addr", 1);
-        if (!is_ipv4($subnet_ip)) {
-	    $subnet_ip_end = gmp_sub(gmp_init($subnets[0]['ip_addr']), 1);
-	    $size = gmp_add(gmp_sub($subnet_ip_end, $subnet_ip), 1);
-	    if (gmp_mod($size,2) == 1) gmp_sub($size,1);
-            // GD: very bad way to get the mask ... but gmp_log() does not exist !
-            for ($mask=65;$mask > 48;$mask--) {
-		if (gmp_cmp($size,gmp_pow("2",$mask)) > 0) {
-                    $mask++;
-                    break;
-                }
+	if (!is_ipv4($subnet_ip)) {
+	    if ($rows >= 1) {
+	        $subnet_ip_end = gmp_sub(gmp_init($subnets[0]['ip_addr']), 1);
+	        $size = gmp_add(gmp_sub($subnet_ip_end, $subnet_ip), 1);
+	        if (gmp_mod($size,2) == 1) gmp_sub($size,1);
+	        // GD: very bad way to get the mask ... but gmp_log() does not exist !
+	        for ($mask=65;$mask > 48;$mask--) {
+		    if (gmp_cmp($size,gmp_pow("2",$mask)) > 0) {
+		        $mask++;
+		        break;
+		    }
+	        }
+	        $subnet['ip_addr'] = ip_mangle(gmp_strval($subnet_ip), 'dotted');
+	        $subnet['ip_addr_end'] = ip_mangle(gmp_strval($subnet_ip_end), 'dotted');
+	        $str_subnet_ip = gmp_strval($subnet_ip);
+	        $size=gmp_strval($size);
             }
-            $subnet['ip_addr'] = ip_mangle(gmp_strval($subnet_ip), 'dotted');
-            $subnet['ip_addr_end'] = ip_mangle(gmp_strval($subnet_ip_end), 'dotted');
-            $str_subnet_ip = gmp_strval($subnet_ip);
-            $size=gmp_strval($size);
-        }
-        else {
-            $subnet_ip_end = $subnets[0]['ip_addr'] - 1;
-            $size = $subnet_ip_end - $subnet_ip + 1;
-            if (($size % 2) == 1) $size--;
-            $mask = ceil(32 - (log($size) / log(2)));
-            $subnet['ip_addr'] = ip_mangle($subnet_ip, 'dotted');
-            $subnet['ip_addr_end'] = ip_mangle($subnet_ip_end, 'dotted');
-            $str_subnet_ip = $subnet_ip;
+            else {
+                $subnet_ip_end = -1;
+                $size=0;
+            }
 	}
+	else {
+            if ($rows >= 1) {
+	        $subnet_ip_end = $subnets[0]['ip_addr'] - 1;
+	        $size = $subnet_ip_end - $subnet_ip + 1;
+	        if (($size % 2) == 1) $size--;
+	        $mask = ceil(32 - (log($size) / log(2)));
+	        $subnet['ip_addr'] = ip_mangle($subnet_ip, 'dotted');
+	        $subnet['ip_addr_end'] = ip_mangle($subnet_ip_end, 'dotted');
+	        $str_subnet_ip = $subnet_ip;
+            }
+            else {
+                $subnet_ip_end=-1;
+                $size=0;
+            }
+        }
         $html .= <<<EOL
         <!-- NO SUBNET -->
         <table cellspacing="0" border="0" cellpadding="0">
@@ -586,12 +598,26 @@ EOL;
         else {
           
             $ip = gmp_init($subnet_ip);
+	    // GD: trying to avoid falling into time/memory-trap
+	    // Won't enter in the loop if difference between IP and next subnet IP is too big
+	    // (more than 5 x /64)
+	    if (gmp_cmp(gmp_sub($subnet_ip_end,$ip),gmp_mul("18446744073709551616","5")) > 0) {
+
+		$html .= <<<EOL
+	<tr>
+	<td align="right" nowrap="true" style="color: {$font_color};">&nbsp;</td>
+	<td align="right" nowrap="true" style="color: {$font_color};">Next Subnet too far away</td>
+	<tr>
+EOL;
+		return(array($html, $js));
+	    }
+	
             while (gmp_cmp($ip, $subnet_ip_end) < 0) {
 
                 // find the largest mask for the specified ip
                 $myip = ip_mangle(gmp_strval($ip), 'dotted');
                 $mymask = $mask;
-                while ($mymask <= 66) {
+                while ($mymask <= 64) {
                     $ip1 = ip_mangle(gmp_strval($ip), 'bin128');
                     $ip2 = str_pad(substr($ip1, 0, $mymask), 128, '0');
                     $mysize = gmp_pow("2", 128-$mymask);
