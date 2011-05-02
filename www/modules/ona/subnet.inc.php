@@ -372,7 +372,7 @@ EOM
 ///////////////////////////////////////////////////////////////////////
 function subnet_modify($options="") {
     global $conf, $self, $onadb;
-    printmsg('DEBUG => subnet_modify('.$options.') called', 3);
+    printmsg('DEBUG => subnet_modify('.implode (";",$options).') called', 3);
 
     // Version - UPDATE on every edit!
     $version = '1.06';
@@ -471,14 +471,14 @@ EOM
        $padding = 32;
        $fmt = 'dotted';
        $ip1 = ip_mangle($setip, 'binary');
-       $num_hosts = 0xffffffff - $options['netmask'];
+       $num_hosts = 0xffffffff - $options['set_netmask'];
        $last_host = ($options['set_ip'] + $num_hosts);
     } else {
        // echo "ipv6";
        $padding = 128;
        $fmt = 'ipv6gz';
        $ip1 = ip_mangle($setip, 'bin128');
-       $sub = gmp_sub("340282366920938463463374607431768211455", $subnet['ip_mask']);
+       $sub = gmp_sub("340282366920938463463374607431768211455", $options['set_netmask']);
        $num_hosts = gmp_strval($sub); 
        $last_host = ($options['set_ip'] + $num_hosts);
     }
