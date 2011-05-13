@@ -850,7 +850,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.12';
+    $version = '1.13';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -1023,8 +1023,8 @@ EOM
         // If they actually changed the ip address
         if ($interface['id'] != $dns['interface_id']) {
             // check for child records that would match our new values
-            // I think they will always be just PTR records?
-            list($status, $rows, $dnschild) = ona_get_dns_record(array('dns_id' => $dns['dns_id'], 'interface_id' => $interface['id']));
+            // I think they will always be just PTR records so I am only selecting that type for now?
+            list($status, $rows, $dnschild) = ona_get_dns_record(array('dns_id' => $dns['id'], 'interface_id' => $interface['id'], 'type' => 'PTR'));
             if ($rows) {
                 printmsg("ERROR => dns_record_modify() This change results in a duplicate child DNS record: PTR {$options['set_ip']}. Delete existing PTR record first.",3);
                 $self['error'] = "<br>ERROR => dns_record_modify() This change results in a duplicate child DNS record: PTR {$options['set_ip']}.<br> Delete existing PTR record first.\n";
