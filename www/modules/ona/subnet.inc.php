@@ -473,14 +473,17 @@ EOM
        $ip1 = ip_mangle($setip, 'binary');
        $num_hosts = 0xffffffff - $options['set_netmask'];
        $last_host = ($options['set_ip'] + $num_hosts);
+       $str_last_host=$last_host;
+       $last_last_host=$last_host -1;
     } else {
        // echo "ipv6";
        $padding = 128;
        $fmt = 'ipv6gz';
        $ip1 = ip_mangle($setip, 'bin128');
        $sub = gmp_sub("340282366920938463463374607431768211455", $options['set_netmask']);
-       $num_hosts = gmp_strval($sub); 
-       $last_host = ($options['set_ip'] + $num_hosts);
+       $last_host = gmp_add($options['set_ip'] , $sub);
+       $str_last_host=gmp_strval($last_host);
+       $last_last_host=gmp_strval(gmp_sub($last_host ,1));
     }
 
     // Validate that the subnet IP & netmask combo are valid together.
@@ -517,7 +520,7 @@ EOM
         //    [ -- new subnet -- ]
         //           [ -- old subnet --]
         // Find last address of our subnet, and see if it's inside of any other subnet:
-        list($status, $rows, $record) = ona_find_subnet(ip_mangle($last_host, 'dotted'));
+        list($status, $rows, $record) = ona_find_subnet(ip_mangle($str_last_host, 'dotted'));
         if ($rows and $record['id'] != $subnet['id']) {
             $self['error'] = "ERROR => Subnet address conflict! New subnet ends inside an existing subnet.";
             return(array(8, $self['error'] . "\n" .
@@ -531,7 +534,7 @@ EOM
         //
         // Do a cool SQL query to find all subnets whose start address is >= or <= the
         // new subnet base address.
-        $where = "ip_addr >= {$options['set_ip']} AND ip_addr <= {$last_host}";
+        $where = "ip_addr >= {$options['set_ip']} AND ip_addr <= {$str_last_host}";
         list($status, $rows, $record) = ona_get_subnet_record($where);
         if ( ($rows > 1) or ($rows == 1 and $record['id'] != $subnet['id']) ) {
             $self['error'] = "ERROR => Subnet address conflict! New subnet would encompass an existing subnet.";
@@ -547,7 +550,7 @@ EOM
         //       [------- old subnet --------]
         //
         $where1 = "subnet_id = {$subnet['id']} AND ip_addr < " . ($options['set_ip'] + 1);
-        $where2 = "subnet_id = {$subnet['id']} AND ip_addr > " . ($last_host - 1);
+        $where2 = "subnet_id = {$subnet['id']} AND ip_addr > {$last_last_host}";
         list($status, $rows1, $record) = ona_get_interface_record($where1);
         list($status, $rows2, $record) = ona_get_interface_record($where2);
         if ($rows1 or $rows2) {
@@ -565,7 +568,7 @@ EOM
         //       [------- old subnet --------]
         //
         $where1 = "subnet_id = {$subnet['id']} AND ip_addr_start < {$options['set_ip']}";
-        $where2 = "subnet_id = {$subnet['id']} AND ip_addr_end > {$last_host}";
+        $where2 = "subnet_id = {$subnet['id']} AND ip_addr_end > {$str_last_host}";
         list($status, $rows1, $record) = ona_get_dhcp_pool_record($where1);
         list($status, $rows2, $record) = ona_get_dhcp_pool_record($where2);
         if ($rows1 or $rows2) {
@@ -648,7 +651,7 @@ EOM
         return(array(16, $self['error'] . "\n"));
 
     // Load the updated record for display
-    list($status, $rows, $subnet) = ona_get_subnet_record($subnet['id']);
+    list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $subnet['id']));
 
     // Return the (human-readable) success notice
     $text = format_array($SET);
