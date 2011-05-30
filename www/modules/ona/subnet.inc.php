@@ -472,6 +472,7 @@ EOM
        $fmt = 'dotted';
        $ip1 = ip_mangle($setip, 'binary');
        $num_hosts = 0xffffffff - $options['set_netmask'];
+       $first_host=$options['set_ip'] + 1;
        $last_host = ($options['set_ip'] + $num_hosts);
        $str_last_host=$last_host;
        $last_last_host=$last_host -1;
@@ -480,6 +481,7 @@ EOM
        $padding = 128;
        $fmt = 'ipv6gz';
        $ip1 = ip_mangle($setip, 'bin128');
+       $first_host=gmp_strval(gmp_add($options['set_ip'] , 1));
        $sub = gmp_sub("340282366920938463463374607431768211455", $options['set_netmask']);
        $last_host = gmp_add($options['set_ip'] , $sub);
        $str_last_host=gmp_strval($last_host);
@@ -549,7 +551,7 @@ EOM
         //         *      **   *            *   <-- Hosts: the first and last host would be a problem!
         //       [------- old subnet --------]
         //
-        $where1 = "subnet_id = {$subnet['id']} AND ip_addr < " . ($options['set_ip'] + 1);
+        $where1 = "subnet_id = {$subnet['id']} AND ip_addr < {$first_host}";
         $where2 = "subnet_id = {$subnet['id']} AND ip_addr > {$last_last_host}";
         list($status, $rows1, $record) = ona_get_interface_record($where1);
         list($status, $rows2, $record) = ona_get_interface_record($where2);
