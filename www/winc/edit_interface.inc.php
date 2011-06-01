@@ -138,29 +138,6 @@ function ws_editor($window_name, $form='') {
                          "input_id=>set_ip_{$window_name}');"
                 );
             };
-        /* Setup the Quick Find FREE NAT IP icon */
-        var _button_nat = el('qf_free_ip_{$window_name}');
-        _button_nat.style.cursor = 'pointer';
-        _button_nat.onclick =
-            function(ev) {
-                if (!ev) ev = event;
-                /* Create the popup div */
-                wwTT(this, ev,
-                     'id', 'tt_qf_free_ip_{$window_name}',
-                     'type', 'static',
-                     'direction', 'south',
-                     'delay', 0,
-                     'styleClass', 'wwTT_qf',
-                     'javascript',
-                     "xajax_window_submit('tooltips', '" +
-                         "tooltip=>qf_free_ip," +
-                         "id=>tt_qf_free_ip_{$window_name}," +
-                         "text_id=>associated_subnet_{$window_name}," +
-                         "text_value=>" + el('associated_subnet_{$window_name}').innerHTML + "," +
-                         "input_id=>set_natip_{$window_name}');"
-                );
-            };
-
 
         suggest_setup('hostname',  'suggest_int_hostname');
         el('hostname').focus();
@@ -253,31 +230,6 @@ EOL;
                 <div id="suggest_set_ip_{$window_name}" class="suggest"></div>
             </td>
         </tr>
-EOL;
-if (! $interface['id']) {
-    $window['html'] .= <<<EOL
-        <tr>
-            <td align="right" nowrap="true">
-                NAT IP Address
-            </td>
-            <td class="padding" align="left" width="100%" nowrap="true">
-                <input
-                    id="set_natip_{$window_name}"
-                    name="set_natip"
-                    alt="NAT IP Address"
-                    value="{$interface['natip_addr']}"
-                    class="edit"
-                    type="text"
-                    size="25" maxlength="64"
-                >
-                <span id="qf_free_ip_{$window_name}" title="Available IP Quick Search"><img src="{$images}/silk/find.png" border="0"/></span>
-                <div id="suggest_set_ip_{$window_name}" class="suggest"></div>
-            </td>
-        </tr>
-
-EOL;
-}
-    $window['html'] .= <<<EOL
         <tr>
             <td align="right" nowrap="true">
                 MAC Address
