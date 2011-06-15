@@ -99,7 +99,7 @@ EOM
     }
 
     // Validate that there isn't already another interface with the same IP address
-    list($status, $rows, $interface) = ona_get_interface_record("ip_addr like '{$options['ip']}'");
+    list($status, $rows, $interface) = ona_get_interface_record("ip_addr = '{$options['ip']}'");
     if ($rows) {
         printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!",3);
         $self['error'] = "ERROR => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!";
@@ -127,7 +127,7 @@ EOM
     // Validate that the IP address supplied isn't the base or broadcast of the subnet, as long as it is not /32 or /31
     if ($subnet['ip_mask'] < 4294967294) {
         if ($options['ip'] == $subnet['ip_addr']) {
-            printmsg("DEBUG => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!",3);
+            printmsg("DEBUG => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!{$subnet['ip_addr']}",3);
             $self['error'] = "ERROR => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!";
             return(array(7, $self['error'] . "\n"));
         }
@@ -263,7 +263,7 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.09';
+    $version = '1.10';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -352,8 +352,10 @@ EOM
             $self['error'] = "ERROR => Invalid IP address ({$orig_ip})";
             return(array(5, $self['error'] . "\n"));
         }
+
         // Validate that there isn't already another interface with the same IP address
-        list($status, $rows, $record) = ona_get_interface_record(array('ip_addr' => $options['set_ip']));
+        //list($status, $rows, $record) = ona_get_interface_record(array('ip_addr' => $options['set_ip']));
+        list($status, $rows, $record) = ona_get_interface_record("ip_addr = {$options['set_ip']}");
         if ($rows and $record['id'] != $interface['id']) {
             printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!",3);
             $self['error'] = "ERROR => IP conflict: specified IP (" . ip_mangle($orig_ip,'dotted') . ") is already in use!";
@@ -378,12 +380,14 @@ EOM
         }
 
         // Validate that the IP address supplied isn't the base or broadcast of the subnet
-        if ($options['set_ip'] == $subnet['ip_addr']) {
+        if ((is_ipv4($options['set_ip']) && ($options['set_ip'] == $subnet['ip_addr'])) || (!is_ipv4($options['set_ip']) && (!gmp_cmp(gmp_init($options['set_ip']),gmp_init($subnet['ip_addr'])))) ) {
             printmsg("DEBUG => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!",3);
             $self['error'] = "ERROR => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!";
             return(array(8, $self['error'] . "\n"));
         }
-        if ($options['set_ip'] == ((4294967295 - $subnet['ip_mask']) + $subnet['ip_addr']) ) {
+        if (is_ipv4($options['set_ip']) && ($options['set_ip'] == ((4294967295 - $subnet['ip_mask']) + $subnet['ip_addr']) )
+            || (!is_ipv4($options['set_ip']) && (!gmp_cmp(gmp_init($options['set_ip']),gmp_add(gmp_init($subnet['ip_addr']),gmp_sub("340282366920938463463374607431768211455", $subnet['ip_mask'])))))
+        ) {
             printmsg("DEBUG => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's broadcast address!",3);
             $self['error'] = "ERROR => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be the subnet broadcast address!";
             return(array(9, $self['error'] . "\n"));
@@ -539,7 +543,7 @@ EOM
 
     // Return the success notice
     $text = format_array($SET);
-    $self['error'] = "INFO => Interface UPDATED:{$interface['id']}: {$new_int['ip_addr_text']}";
+    $self['error'] = "GREG INFO => Interface UPDATED:{$interface['id']}: {$new_int['ip_addr_text']}";
 
     $log_msg = "INFO => Interface UPDATED:{$interface['id']}:{$new_int['ip_addr_text']}: ";
     $more="";
@@ -554,6 +558,7 @@ EOM
     if($more != '') printmsg($log_msg, 0);
 
     return(array(0, $self['error'] . "\n{$text}\n"));
+
 }
 
 
