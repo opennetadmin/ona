@@ -99,7 +99,7 @@ EOM
     }
 
     // Validate that there isn't already another interface with the same IP address
-    list($status, $rows, $interface) = ona_get_interface_record("ip_addr = '{$options['ip']}'");
+    list($status, $rows, $interface) = ona_get_interface_record("ip_addr = {$options['ip']}");
     if ($rows) {
         printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!",3);
         $self['error'] = "ERROR => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!";
