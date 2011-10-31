@@ -301,9 +301,9 @@ EOL;
 
         // Format the date and colorize if its older than 2 months
         if ($record['last_response']) {
-            $record['last_response_fmt'] = date($conf['date_format'],strtotime($record['last_response']));
+            $record['last_response'] = date($conf['date_format'],strtotime($record['last_response']));
             if (strtotime($record['last_response']) < strtotime('-2 month')) {
-                $record['last_response_fmt'] = "<span style=\"color: red;\">".$record['last_response_fmt']."</style>";
+                $record['last_response_fmt'] = 'style=color:red;';
             }
         }
 
@@ -358,7 +358,7 @@ EOL;
                     <span>{$clusterhtml}</span>
                 </td>
 
-                <td class="list-row">{$record['last_response_fmt']}&nbsp;</td>
+                <td class="list-row" {$record['last_response_fmt']}>{$record['last_response']}&nbsp;</td>
 
                 <td class="list-row">{$record['device']}&nbsp;</td>
 
