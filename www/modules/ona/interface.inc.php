@@ -263,7 +263,7 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.09';
+    $version = '1.10';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -517,7 +517,7 @@ EOM
     // Update the interface record
     if(count($SET) > 0) {
         list($status, $rows) = db_update_record($onadb, 'interfaces', array('id' => $interface['id']), $SET);
-        if ($status or !$rows) {
+        if ($status) {
             $self['error'] = "ERROR => interface_modify() SQL Query failed: " . $self['error'];
             printmsg($self['error'], 0);
             return(array(14, $self['error'] . "\n"));

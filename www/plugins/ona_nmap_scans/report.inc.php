@@ -105,7 +105,7 @@ EOL;
 
 
 function rpt_get_data($form) {
-    global $base;
+    global $base,$onadb;
 
 
 // If they want to perform a scan on an existing file
@@ -152,6 +152,7 @@ if ($form['all']) {
 // If they pass a file from the remote host via CLI
 if ($form['file']) {
     $rptdata['scansource'] = "Based on an uploaded XML file";
+
     $nmapxmlfile = $form['file'];
     // clean up escaped characters
     $nmapxmlfile = preg_replace('/\\\"/','"',$nmapxmlfile);
@@ -167,6 +168,13 @@ for($z=0;$z < count($xml); $z++) {
  $rptdata['totalhosts'] = $xml[$z]['nmaprun']['_c']['runstats']['_c']['hosts']['_a']['total'];
  $rptdata['runtime'] = $xml[$z]['nmaprun']['_c']['runstats']['_c']['finished']['_a']['timestr'];
 
+ // pull args to find subnet/cidr
+ $rptdata['args'] = $xml[$z]['nmaprun']['_a']['args'];
+
+ // process args
+ list($subnetaddr,$netcidr)=explode('/',preg_replace("/.* (.*)\/(\d+)$/","\\1/\\2",$rptdata['args']));
+ $netip = ip_mangle($subnetaddr,'dotted');
+ $netcidr = ip_mangle($netcidr,'cidr');
 
  // Process the array for the total amount of hosts reported
  for($i=0;$i < $rptdata['totalhosts']; $i++) {
@@ -175,6 +183,8 @@ for($z=0;$z < count($xml); $z++) {
     $ipaddr = $xml[$z]['nmaprun']['_c']['host'][$i]['_c']['address']['_a']['addr'];
     //$macaddr = $xml['nmaprun']['_c']['host'][$i]['_c']['address']['_a']['addr'];
     $dnsname = $xml[$z]['nmaprun']['_c']['host'][$i]['_c']['hostnames']['_c']['hostname']['_a']['name'];
+    $dnsrows=0;
+    $dns = array();
 
     // Try the older nmap format if no IP found.. not sure of what differences there are in the XSL used?
     if (!$ipaddr) {
@@ -183,23 +193,27 @@ for($z=0;$z < count($xml); $z++) {
     }
 
     // Lookup the IP address in the database
-    list($status, $introws, $interface) = ona_find_interface($ipaddr);
-    if (!$introws) {
-        $interface['ip_addr_text'] = 'NOT FOUND';
-        list($status, $introws, $tmp) = ona_find_subnet($ipaddr);
-        $interface['subnet_id'] = $tmp['id'];
+    if ($ipaddr) {
+        list($status, $introws, $interface) = ona_find_interface($ipaddr);
+        if (!$introws) {
+            $interface['ip_addr_text'] = 'NOT FOUND';
+            list($status, $introws, $tmp) = ona_find_subnet($ipaddr);
+            $interface['subnet_id'] = $tmp['id'];
+        } else {
+            // Lookup the DNS name in the database
+            list($status, $dnsrows, $dnscount) = db_get_records($onadb, 'dns', "interface_id = ${interface['id']}", "", 0);
+            list($status, $dnsptrrows, $dnsptr) = ona_get_dns_record(array('interface_id' => $interface['id'], 'type' => 'PTR'));
+            list($status, $dnsprows, $dns) = ona_get_dns_record(array('id' => $dnsptr['dns_id']));
+        }
     }
 
     // Find out if this IP falls inside of a pool
     $inpool = 0;
     $ip = ip_mangle($ipaddr,'numeric');
-    list($status, $poolrows, $pool) = ona_get_dhcp_pool_record("ip_addr_start <= '{$ip}' AND ip_addr_end >= '{$ip}'");
+    if ($ip > 0) { list($status, $poolrows, $pool) = ona_get_dhcp_pool_record("ip_addr_start <= '{$ip}' AND ip_addr_end >= '{$ip}'"); }
     if ($poolrows) {
         $inpool = 1;
     }
-
-    // Lookup the DNS name in the database
-    list($status, $dnsrows, $dns) = ona_get_dns_record(array('interface_id' => $interface['id'], 'type' => 'A'));
 
     // some base logic
     // if host is up in nmap but no db ip then put in $nodb
@@ -222,7 +236,36 @@ for($z=0;$z < count($xml); $z++) {
 
     $rptdata['ip'][$ipaddr]['dbip'] = $interface['ip_addr_text'];
     $rptdata['ip'][$ipaddr]['dbsubnetid'] = $interface['subnet_id'];
-    $rptdata['ip'][$ipaddr]['dbdnsname'] = $dns['fqdn'];
+
+    $rptdata['ip'][$ipaddr]['dbdnsrows'] = $dnsrows;
+
+    if (!$dns['fqdn']) {
+        // lets see if its a PTR record
+        if ($dnsptrrows) {
+            // If we have a PTR for this interface, use it (never if built from ona?)
+            $rptdata['ip'][$ipaddr]['dbdnsname'] = $dns['fqdn'];
+            $rptdata['ip'][$ipaddr]['dbdnsptrname'] = $dnsp['fqdn'];
+        } else {
+            // find the hosts primary DNS record
+            list($status, $hostrows, $host) = ona_get_host_record(array('id' => $interface['host_id']));
+            if ($host['fqdn']) $host['fqdn'] = "(${host['fqdn']})";
+            if ($dnsrows) {
+                list($status, $dnstmprows, $dnstmp) = ona_get_dns_record(array('interface_id' => $interface['id']));
+                $rptdata['ip'][$ipaddr]['dbdnsname'] = $dnstmp['fqdn'];
+            } else {
+                $rptdata['ip'][$ipaddr]['dbdnsname'] = 'NO PTR';
+            }
+            $rptdata['ip'][$ipaddr]['dbdnsptrname'] = $host['fqdn'];
+        }
+    } else {
+        if ($dnsptrrows > 1) {
+            $rptdata['ip'][$ipaddr]['dbdnsname'] = $dns['fqdn'];
+            $rptdata['ip'][$ipaddr]['dbdnsptrname'] = $dnsp['fqdn'];
+        } else {
+            $rptdata['ip'][$ipaddr]['dbdnsname'] = $dns['fqdn'];
+            $rptdata['ip'][$ipaddr]['dbdnsptrname'] = $dnsp['fqdn'];
+        }
+    }
     $rptdata['ip'][$ipaddr]['dbmacaddr'] = $interface['mac_addr'];
 
     $rptdata['netip'] = $netip;
@@ -282,6 +325,9 @@ EOL;
 
 
     foreach ((array)$form['ip'] as $record) {
+
+        // scans with only one row in them may show up wrong, skip them
+        if (!$record['netstatus'] and !$record['netip']) continue;
 
         $act_status_fail = "<img src=\"{$images}/silk/stop.png\" border=\"0\">";
         $act_status_ok = "<img src=\"{$images}/silk/accept.png\" border=\"0\">";
@@ -352,6 +398,7 @@ EOL;
                 $action = '&nbsp;'.$act_status_ok.' OK';
                 // But if the names are not the same then action is partial
                 if ($record['netdnsname'] != $record['dbdnsname']) { $action = '&nbsp;'.$act_status_partial.' Update DNS'; }
+                if (strstr($record['dbdnsname'], '(')) { $action = '&nbsp;'.$act_status_partial.' Update DNS PTR'; }
             }
 
 
@@ -385,6 +432,12 @@ TODO:
 * display info about last response time.. add option to update last response form file.. flag if db has newer times than the scan
 */
 
+        // If we have more than 2 dns records, display info about them
+        if ($record['dbdnsrows'] > 2) {
+                $dbdnsinfo = "<span style='font-weight: bold;'>{$record['dbdnsname']}&nbsp;{$record['dbdnsptrname']}</span>";
+	} else {
+                $dbdnsinfo = "{$record['dbdnsname']}&nbsp;{$record['dbdnsptrname']}";
+        }
 
 
         $txt = <<<EOL
@@ -394,7 +447,7 @@ TODO:
                 <td class="list-row" align="left">{$record['netdnsname']}&nbsp;</td>
                 <td class="list-row" align="left" style="{$style['borderR']};">{$record['netmacaddr']}&nbsp;</td>
                 <td class="list-row" align="left">{$record['dbip']}&nbsp;</td>
-                <td class="list-row" align="left">{$record['dbdnsname']}&nbsp;</td>
+                <td class="list-row" align="left">{$dbdnsinfo}</td>
                 <td class="list-row" align="left" style="{$style['borderR']};">{$record['dbmacaddr']}&nbsp;</td>
                 <td class="list-row" align="left">{$viewsubnet}{$action}&nbsp;</td>
             </tr>
@@ -453,8 +506,10 @@ Report: nmap_scan
     text
     csv
 
-NOTE: When running update_response, any entry that was updated will have a * indication
+NOTE: When running update_response, any entry that was updated will have a ~ indication
       at the beginning of the line.
+      DNS names with a * preceeding them indicate there are more than one name available
+      for this entry and it could have a more common name associated with it.
 
 EOL;
 
@@ -481,12 +536,14 @@ EOL;
     $poolhostcount = 0;
 
     // find out the broadcast IP for this subnet
+    // TODO: fix this for ipv6 stuff!
     $num_hosts = 0xffffffff - ip_mangle($form['netcidr'], 'numeric');
     $broadcastip = ip_mangle((ip_mangle($form['netip'], 'numeric') + $num_hosts),'dotted');
 
+    foreach ((array)$form['ip'] as $record) {
 
-
-    foreach ($form['ip'] as $record) {
+        // scans with only one row in them may show up wrong, skip them
+        if (!$record['netstatus'] and !$record['netip']) continue;
 
         $action='';
         $upresp=' ';
@@ -504,20 +561,20 @@ EOL;
         // check devices that are up
         if ($record['netstatus'] == "up") {
 
-            // update the database last response field.
-            if ($form['update_response'] and $record['dbip'] != "NOT FOUND") {
-                //if (isset($options['dcm_output'])) { $text .=  "dcm.pl -r interface_modify interface={$record['ip']} set_last_response='{$runtime}'\n"; }
-                list($status, $output) = run_module('interface_modify', array('interface' => $record['dbip'], 'set_last_response' => $form['runtime']));
-                if ($status) {
-                    $self['error'] = "ERROR => Failed to update response time for '{$record['dbip']}': " . $output;
-                    printmsg($self['error'], 1);
-                }
-                $upresp='*';
-            }
-
             // If this is the subnet address or broadcast then skip it.  Sometimes nmap shows them as up
             if ($record['netip'] == $form['netip']) continue;
             if ($record['netip'] == $broadcastip) continue;
+
+            // update the database last response field.
+            if ($form['update_response'] and $record['dbip'] != "NOT FOUND") {
+                //if (isset($options['dcm_output'])) { $text .=  "dcm.pl -r interface_modify interface={$record['ip']} set_last_response='{$runtime}'\n"; }
+                list($updatestatus, $output) = run_module('interface_modify', array('interface' => $record['dbip'], 'set_last_response' => $form['runtime']));
+                if ($updatestatus) {
+                    $self['error'] = "ERROR => Failed to update response time for '{$record['dbip']}': " . $output;
+                    printmsg($self['error'], 1);
+                }
+                $upresp='~';
+            }
 
             // Break out the host and domain parts of the name if we can
             if ($record['netdnsname']) {
@@ -534,6 +591,7 @@ EOL;
                 $action = 'OK';
                 // But if the names are not the same then action is partial
                 if ($record['netdnsname'] != $record['dbdnsname']) { $action = 'Update DNS'; }
+                if (strstr($record['dbdnsname'], '(')) { $action = 'Update DNS PTR'; }
             }
 
 
@@ -554,15 +612,20 @@ EOL;
             }
         }
 
+        // If we have more than 2 dns records, display info about them
+        if ($record['dbdnsrows'] > 2) {
+            $record['dbdnsname'] = '*'.$record['dbdnsname'];
+	}
+
 /*
 TODO:
 * more testing of mac address stuff
 * display info about last response time.. add option to update last response form file.. flag if db has newer times than the scan
 */
         if ($form['csv_output']) {
-            $txt = sprintf("%s,%s,%s,%s,%s,%s,%s,\"%s\"\n", $upresp.$record['netstatus'],$record['netip'],$record['netdnsname'],$record['netmacaddr'],$record['dbip'],$record['dbdnsname'],$record['dbmacaddr'],$action);
+            $txt = sprintf("%s,%s,%s,%s,%s,%s,%s,\"%s\"\n", $upresp.$record['netstatus'],$record['netip'],$record['netdnsname'],$record['netmacaddr'],$record['dbip'],$record['dbdnsname'].' '.$record['dbdnsptrname'],$record['dbmacaddr'],$action);
         } else {
-            $txt = sprintf("%-6s %-15s %-25s %-12s %-15s %-25s %-12s %s\n",$upresp.$record['netstatus'],$record['netip'],$record['netdnsname'],$record['netmacaddr'],$record['dbip'],$record['dbdnsname'],$record['dbmacaddr'],$action);
+            $txt = sprintf("%-6s %-15s %-25s %-12s %-15s %-25s %-12s %s\n",$upresp.$record['netstatus'],$record['netip'],$record['netdnsname'],$record['netmacaddr'],$record['dbip'],$record['dbdnsname'].' '.$record['dbdnsptrname'],$record['dbmacaddr'],$action);
         }
 
         // if we are in all mode, print only errors.. otherwise, print it all
