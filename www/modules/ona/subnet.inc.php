@@ -372,7 +372,7 @@ EOM
 ///////////////////////////////////////////////////////////////////////
 function subnet_modify($options="") {
     global $conf, $self, $onadb;
-    printmsg('DEBUG => subnet_modify('.implode (";",$options).') called', 3);
+    //printmsg('DEBUG => subnet_modify('.implode (";",$options).') called', 3);
 
     // Version - UPDATE on every edit!
     $version = '1.06';
@@ -467,7 +467,6 @@ EOM
     }
 
     if(is_ipv4($setip))  {
-       // echo "ipv4";
        $padding = 32;
        $fmt = 'dotted';
        $ip1 = ip_mangle($setip, 'binary');
@@ -477,7 +476,6 @@ EOM
        $str_last_host=$last_host;
        $last_last_host=$last_host -1;
     } else {
-       // echo "ipv6";
        $padding = 128;
        $fmt = 'ipv6gz';
        $ip1 = ip_mangle($setip, 'bin128');
