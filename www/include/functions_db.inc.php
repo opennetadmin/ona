@@ -1669,22 +1669,22 @@ function ona_find_domain($fqdn="", $returndefault=0) {
 //         // Set status to 0 (ok) since we are returning something
 //         $status=0;
 //     }
-
+/*  Disabling this for now.. it causes issues with building of zones and other PTR things
     //Per Synapse and bug #67, not fully tested but should be fine.
-    if ($status == 0 and $parts[0] === "arpa") { // check the PTR domain for classless (CIDR) subnet that suits the ip, for example ip=192.168.1.2, domain=0/25.1.168.192.in-addr.arpa
+    if ($status == 0 and $parts[0] === "arpa" and strstr($fqdn,'-') ) { // check the PTR domain for classless (CIDR) subnet that suits the ip, for example ip=192.168.1.2, domain=0-25.1.168.192.in-addr.arpa
         $ip = implode('.', $parts); // now we have something like arpa.in-addr.192.168.1.2
         $ip = str_replace("arpa.in-addr.", '', $ip); // get pure ip, for example 192.168.1.2. We gonna find a subnet for this ip
         list($localPart, $parent_domain) = explode('.', $fqdn,2); // taking the parent domain name, i.e. 1.168.192.in-addr.arpa
-        list($exit_status, $number_of_rows, $record) = ona_get_domain_record("name LIKE '%.{$parent_domain}'"); // grab classless sub-domains. Example: 0/25.1.168.192.in-addr.arpa
+        list($exit_status, $number_of_rows, $record) = ona_get_domain_record("name LIKE '%.{$parent_domain}'"); // grab classless sub-domains. Example: 0-25.1.168.192.in-addr.arpa
         $i=0;
         while($i < $number_of_rows) { // walk through all subdomains
             $i++;
-            list($subnet_def, $class_subnet) = explode('.', $record['fqdn'], 2); // get subnet defenition, i.e. $subnet_def='0/25', and $class_range=1.168.192.in-addr.arpa
+            list($subnet_def, $class_subnet) = explode('.', $record['fqdn'], 2); // get subnet defenition, i.e. $subnet_def='0-25', and $class_range=1.168.192.in-addr.arpa
             $split_characters = '\-'; // subnet defenition symbols. Currently only '-' can be used as '/' interfears with the usage of ONA views.
             #$split_characters = '\/\-'; // subnet defenition symbols. Currently '/' or '-' can be used
 
             if (1 == preg_match("/(\d+)[$split_characters](\d+)/", $subnet_def, $matches)) { // yes, we have a CIDR. Let's check if ip is within this CIDR
-                $subnet = $matches[1]; // here we pop '0' (last octet of the ip range) from '0/25' string
+                $subnet = $matches[1]; // here we pop '0' (last octet of the ip range) from '0-25' string
                 $subnet = implode('.', array_reverse(explode('.', $class_subnet)) ) . $subnet; // now we have something like arpa.in-addr.192.168.1.0
                 $subnet = str_replace("arpa.in-addr.",'',$ip); // finally we have normal subnet 192.168.1.0
                 $subnet_dec = ip2long($subnet); // convert 192.168.1.0 to its decimal representation
@@ -1704,6 +1704,7 @@ function ona_find_domain($fqdn="", $returndefault=0) {
             list($exit_status, $number_of_rows, $domain) = ona_get_domain_record("name LIKE '%.{$parent_domain}'"); // get the next row
         }
     }
+*/
 
     // FIXME: MP  rows is not right here..  need to look at fixing it.. rowsa/rowsb above doesnt translate.. do I even need that?
     return(array($status, $rows, $domain));
