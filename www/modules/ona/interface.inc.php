@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.08';
+    $version = '1.09';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -89,7 +89,7 @@ EOM
     }
     printmsg("DEBUG => Host selected: {$options['host']}", 3);
 
-    // Translate IPv4 address to a number
+    // Translate IP address to a number
     $orig_ip= $options['ip'];
     $options['ip'] = ip_mangle($options['ip'], 1);
     if ($options['ip'] == -1) {
@@ -99,7 +99,7 @@ EOM
     }
 
     // Validate that there isn't already another interface with the same IP address
-    list($status, $rows, $interface) = ona_get_interface_record(array('ip_addr' => $options['ip']));
+    list($status, $rows, $interface) = ona_get_interface_record("ip_addr = {$options['ip']}");
     if ($rows) {
         printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!",3);
         $self['error'] = "ERROR => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!";
@@ -127,7 +127,7 @@ EOM
     // Validate that the IP address supplied isn't the base or broadcast of the subnet, as long as it is not /32 or /31
     if ($subnet['ip_mask'] < 4294967294) {
         if ($options['ip'] == $subnet['ip_addr']) {
-            printmsg("DEBUG => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!",3);
+            printmsg("DEBUG => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!{$subnet['ip_addr']}",3);
             $self['error'] = "ERROR => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!";
             return(array(7, $self['error'] . "\n"));
         }
@@ -352,8 +352,10 @@ EOM
             $self['error'] = "ERROR => Invalid IP address ({$orig_ip})";
             return(array(5, $self['error'] . "\n"));
         }
+
         // Validate that there isn't already another interface with the same IP address
-        list($status, $rows, $record) = ona_get_interface_record(array('ip_addr' => $options['set_ip']));
+        //list($status, $rows, $record) = ona_get_interface_record(array('ip_addr' => $options['set_ip']));
+        list($status, $rows, $record) = ona_get_interface_record("ip_addr = {$options['set_ip']}");
         if ($rows and $record['id'] != $interface['id']) {
             printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!",3);
             $self['error'] = "ERROR => IP conflict: specified IP (" . ip_mangle($orig_ip,'dotted') . ") is already in use!";
@@ -378,12 +380,14 @@ EOM
         }
 
         // Validate that the IP address supplied isn't the base or broadcast of the subnet
-        if ($options['set_ip'] == $subnet['ip_addr']) {
+        if ((is_ipv4($options['set_ip']) && ($options['set_ip'] == $subnet['ip_addr'])) || (!is_ipv4($options['set_ip']) && (!gmp_cmp(gmp_init($options['set_ip']),gmp_init($subnet['ip_addr'])))) ) {
             printmsg("DEBUG => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!",3);
             $self['error'] = "ERROR => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's base address!";
             return(array(8, $self['error'] . "\n"));
         }
-        if ($options['set_ip'] == ((4294967295 - $subnet['ip_mask']) + $subnet['ip_addr']) ) {
+        if (is_ipv4($options['set_ip']) && ($options['set_ip'] == ((4294967295 - $subnet['ip_mask']) + $subnet['ip_addr']) )
+            || (!is_ipv4($options['set_ip']) && (!gmp_cmp(gmp_init($options['set_ip']),gmp_add(gmp_init($subnet['ip_addr']),gmp_sub("340282366920938463463374607431768211455", $subnet['ip_mask'])))))
+        ) {
             printmsg("DEBUG => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be a subnet's broadcast address!",3);
             $self['error'] = "ERROR => IP address (" . ip_mangle($orig_ip,'dotted') . ") can't be the subnet broadcast address!";
             return(array(9, $self['error'] . "\n"));
@@ -412,8 +416,16 @@ EOM
         // Make sure we update the ptr record domain if needed.
         // MP: TODO: would it be better to run the dns_modify module vs doing a direct db_update_record???
         $ipflip = ip_mangle($options['set_ip'],'flip');
+        $octets = explode(".",$ipflip);
+        if (count($octets) > 4) {
+            $arpa = '.ip6.arpa';
+            $octcount = 31;
+        } else {
+            $arpa = '.in-addr.arpa';
+            $octcount = 3;
+        }
         // Find a pointer zone for this record to associate with.
-        list($status, $prows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+        list($status, $prows, $ptrdomain) = ona_find_domain($ipflip.$arpa);
         if (isset($ptrdomain['id'])) {
             list($status, $rows, $dnsrec) = ona_get_dns_record(array('type' => 'PTR','interface_id' => $interface['id']));
 
@@ -517,7 +529,7 @@ EOM
     // Update the interface record
     if(count($SET) > 0) {
         list($status, $rows) = db_update_record($onadb, 'interfaces', array('id' => $interface['id']), $SET);
-        if ($status) {
+        if ($status or !$rows) {
             $self['error'] = "ERROR => interface_modify() SQL Query failed: " . $self['error'];
             printmsg($self['error'], 0);
             return(array(14, $self['error'] . "\n"));
@@ -531,7 +543,7 @@ EOM
 
     // Return the success notice
     $text = format_array($SET);
-    $self['error'] = "INFO => Interface UPDATED:{$interface['id']}: {$new_int['ip_addr_text']}";
+    $self['error'] = "GREG INFO => Interface UPDATED:{$interface['id']}: {$new_int['ip_addr_text']}";
 
     $log_msg = "INFO => Interface UPDATED:{$interface['id']}:{$new_int['ip_addr_text']}: ";
     $more="";
@@ -546,6 +558,7 @@ EOM
     if($more != '') printmsg($log_msg, 0);
 
     return(array(0, $self['error'] . "\n{$text}\n"));
+
 }
 
 

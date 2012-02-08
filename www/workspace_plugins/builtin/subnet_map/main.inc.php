@@ -9,10 +9,30 @@ $title_left_html = '';
 
 
 // Get the numeric IP address of our subnet (we replace the last quad with a .0)
-$ip = ip_mangle(preg_replace('/\.\d+$/', '.0', $record['ip_addr']), 'numeric');
 $ip_subnet = ip_mangle($record['ip_addr'], 'numeric');
+if (is_ipv4($ip_subnet)) {
+
+$end = '\.\d+$';
+$replace_end_by = '.0';
+$version=4;
+}
+else {
+$end = ':[0-9A-F]{0,4}$';
+// $replace_end_by = ':0000';
+$replace_end_by = ':';
+$version=6;
+}
+$ip = ip_mangle(preg_replace("/$end/", $replace_end_by, $record['ip_addr']), 'numeric');
+
 $ip_netmask = ip_mangle($record['ip_mask'], 'numeric');
-$net_end = ((4294967295 - $ip_netmask) + $ip_subnet);
+
+if ($version==4) {
+    $net_end = ((4294967295 - $ip_netmask) + $ip_subnet);
+}
+else {
+    $net_end = gmp_strval(gmp_add(gmp_sub(gmp_init("0xfffffffffffffffffffffffffffffffe"),$ip_netmask),$ip_subnet));
+}
+
 
 $title_left_html .= <<<EOL
     <a title="Display full sized subnet map"
@@ -86,7 +106,7 @@ EOL;
 
 // Get javascript to setup the map portal mouse handlers
 // Force ip end to be less than ip start to prevent Block highlighting
-$modjs .= get_portal_js($extravars['window_name'], $ip, $ip -1);
+$modjs .= get_portal_js($extravars['window_name'], $ip, $version);
 
 
 ?>

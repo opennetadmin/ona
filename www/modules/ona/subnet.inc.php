@@ -140,7 +140,7 @@ function subnet_add($options="") {
     printmsg('DEBUG => subnet_add('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -165,7 +165,7 @@ Adds a new subnet (subnet) record
   Required:
     name=TEXT               subnet name (i.e. "LAN-1234")
     ip=ADDRESS              dotted (10.0.0.0), IPv6, or numeric subnet address
-    netmask=MASK            dotted (255.0.0.0), IPv6, CIDR (/8), or numeric netmask
+    netmask=MASK            dotted (255.0.0.0), CIDR (/8), or numeric netmask
     type=TYPE               subnet type name or id
 
   Optional:
@@ -183,8 +183,8 @@ EOM
     $SET = array();
 
     // Prepare options[ip] - translate IP address to a number
-    $options['ip'] = ip_mangle($options['ip'], 1);
-    if ($options['ip'] == -1) {
+    $options['ip'] = $ourip = ip_mangle($options['ip'], 'numeric');
+    if ($ourip == -1) {
         $self['error'] = "ERROR => The IP address specified is invalid!";
         return(array(2, $self['error'] . "\n"));
     }
@@ -203,12 +203,27 @@ EOM
         return(array(4, $self['error'] . "\n"));
     }
 
+    if(is_ipv4($ourip))  {
+       // echo "ipv4";
+       $padding = 32;
+       $fmt = 'dotted';
+       $ip1 = ip_mangle($ourip, 'binary');
+       $num_hosts = 0xffffffff - $options['netmask'];
+       $last_host = ($options['ip'] + $num_hosts);
+    } else {
+       // echo "ipv6";
+       $padding = 128;
+       $fmt = 'ipv6gz';
+       $ip1 = ip_mangle($ourip, 'bin128');
+       $sub = gmp_sub("340282366920938463463374607431768211455", $options['netmask']);
+       $num_hosts = gmp_strval($sub); 
+       $last_host = gmp_strval(gmp_add($options['ip'],$num_hosts));
+    }
+
     // Validate that the subnet IP & netmask combo are valid together.
-    // FIXME: (later) needs to be IPv6-ified
-    $ip1 = ip_mangle($options['ip'], 'binary');
-    $ip2 = str_pad(substr($ip1, 0, $cidr), 32, '0');
-    $ip1 = ip_mangle($ip1, 'dotted');
-    $ip2 = ip_mangle($ip2, 'dotted');
+    $ip2 = str_pad(substr($ip1, 0, $cidr), $padding, '0');
+    $ip1 = ip_mangle($ip1, $fmt);
+    $ip2 = ip_mangle($ip2, $fmt);
     if ($ip1 != $ip2) {
         $self['error'] = "ERROR => Invalid subnet specified - did you mean: {$ip2}/{$cidr}?";
         return(array(5, $self['error'] . "\n"));
@@ -233,8 +248,6 @@ EOM
     //    [ -- new subnet -- ]
     //           [ -- old subnet --]
     // Find last address of our subnet, and see if it's inside of any other subnet:
-    $num_hosts = 0xffffffff - $options['netmask'];
-    $last_host = ($options['ip'] + $num_hosts);
     list($status, $rows, $subnet) = ona_find_subnet(ip_mangle($last_host, 'dotted'));
     if ($rows != 0) {
         $self['error'] = "ERROR => Subnet address conflict! New subnet ends inside an existing subnet.";
@@ -260,17 +273,6 @@ EOM
     // The IP/NETMASK look good, set them.
     $SET['ip_addr'] = $options['ip'];
     $SET['ip_mask'] = $options['netmask'];
-
-    // Before we go on, we must alert the user if this new subnet would require a new PTR zone.
-//     $ipflip = ip_mangle($SET['ip_addr'],'flip');
-//     $octets = explode(".",$ipflip);
-//     // Find a pointer zone for this ip to associate with.
-//     list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
-//     if (!$ptrdomain['id']) {
-//         printmsg("ERROR => This subnet is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
-//         $self['error'] = "ERROR => This subnet is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa";
-//             return(array(9, $self['error'] . "\n"));
-//     }
 
 
     // Find the type from $options[type]
@@ -308,7 +310,6 @@ EOM
     }
     $SET['name'] = $options['name'];
 
-
     // Check permissions
     if (!auth('subnet_add')) {
         $self['error'] = "Permission denied!";
@@ -336,13 +337,8 @@ EOM
     if ($status or !$rows)
         return(array(16, $self['error'] . "\n"));
 
-    // Get some info for display
-    $net = ip_mangle($options['ip'], 'dotted');
-    $bcast = ip_mangle($last_host, 'dotted');
-    if ($num_hosts > 1) $real_hosts = $num_hosts - 1;
-
     // Return the success notice
-    $self['error'] = "INFO => Subnet ADDED: {$net}/{$cidr} Bcast: {$bcast} Host addresses: {$real_hosts}";
+    $self['error'] = "INFO => Subnet ADDED: {$ip1}/{$cidr}";
     printmsg($self['error'], 0);
     return(array(0, $self['error'] . "\n"));
 }
@@ -376,10 +372,10 @@ EOM
 ///////////////////////////////////////////////////////////////////////
 function subnet_modify($options="") {
     global $conf, $self, $onadb;
-    printmsg('DEBUG => subnet_modify('.$options.') called', 3);
+    //printmsg('DEBUG => subnet_modify('.implode (";",$options).') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -446,7 +442,7 @@ EOM
     }
     else {
         $check_boundaries = 1;
-        $options['set_ip'] = ip_mangle($options['set_ip'], 'numeric');
+        $options['set_ip'] = $setip = ip_mangle($options['set_ip'], 'numeric');
         // FIXME: what if ip_mangle returns a GMP object?
             if ($options['set_ip'] == -1) {
             $self['error'] = "ERROR => The IP address specified is invalid!";
@@ -470,17 +466,34 @@ EOM
         }
     }
 
+    if(is_ipv4($setip))  {
+       $padding = 32;
+       $fmt = 'dotted';
+       $ip1 = ip_mangle($setip, 'binary');
+       $num_hosts = 0xffffffff - $options['set_netmask'];
+       $first_host=$options['set_ip'] + 1;
+       $last_host = ($options['set_ip'] + $num_hosts);
+       $str_last_host=$last_host;
+       $last_last_host=$last_host -1;
+    } else {
+       $padding = 128;
+       $fmt = 'ipv6gz';
+       $ip1 = ip_mangle($setip, 'bin128');
+       $first_host=gmp_strval(gmp_add($options['set_ip'] , 1));
+       $sub = gmp_sub("340282366920938463463374607431768211455", $options['set_netmask']);
+       $last_host = gmp_add($options['set_ip'] , $sub);
+       $str_last_host=gmp_strval($last_host);
+       $last_last_host=gmp_strval(gmp_sub($last_host ,1));
+    }
+
     // Validate that the subnet IP & netmask combo are valid together.
-    $ip1 = ip_mangle($options['set_ip'], 'binary');
-    $ip2 = str_pad(substr($ip1, 0, $cidr), 32, '0');
-    $ip1 = ip_mangle($ip1, 'dotted');
-    $ip2 = ip_mangle($ip2, 'dotted');
+    $ip2 = str_pad(substr($ip1, 0, $cidr), $padding, '0');
+    $ip1 = ip_mangle($ip1, $fmt);
+    $ip2 = ip_mangle($ip2, $fmt);
     if ($ip1 != $ip2) {
         $self['error'] = "ERROR => Invalid subnet specified - did you mean: {$ip2}/{$cidr}?";
         return(array(6, $self['error'] . "\n"));
     }
-
-
 
     // If our IP or netmask changed we need to make sure that
     // we won't abandon any host interfaces.
@@ -507,9 +520,7 @@ EOM
         //    [ -- new subnet -- ]
         //           [ -- old subnet --]
         // Find last address of our subnet, and see if it's inside of any other subnet:
-        $num_hosts = 0xffffffff - $options['set_netmask'];
-        $last_host = ($options['set_ip'] + $num_hosts);
-        list($status, $rows, $record) = ona_find_subnet(ip_mangle($last_host, 'dotted'));
+        list($status, $rows, $record) = ona_find_subnet(ip_mangle($str_last_host, 'dotted'));
         if ($rows and $record['id'] != $subnet['id']) {
             $self['error'] = "ERROR => Subnet address conflict! New subnet ends inside an existing subnet.";
             return(array(8, $self['error'] . "\n" .
@@ -523,7 +534,7 @@ EOM
         //
         // Do a cool SQL query to find all subnets whose start address is >= or <= the
         // new subnet base address.
-        $where = "ip_addr >= {$options['set_ip']} AND ip_addr <= {$last_host}";
+        $where = "ip_addr >= {$options['set_ip']} AND ip_addr <= {$str_last_host}";
         list($status, $rows, $record) = ona_get_subnet_record($where);
         if ( ($rows > 1) or ($rows == 1 and $record['id'] != $subnet['id']) ) {
             $self['error'] = "ERROR => Subnet address conflict! New subnet would encompass an existing subnet.";
@@ -538,8 +549,8 @@ EOM
         //         *      **   *            *   <-- Hosts: the first and last host would be a problem!
         //       [------- old subnet --------]
         //
-        $where1 = "subnet_id = {$subnet['id']} AND ip_addr < " . ($options['set_ip'] + 1);
-        $where2 = "subnet_id = {$subnet['id']} AND ip_addr > " . ($last_host - 1);
+        $where1 = "subnet_id = {$subnet['id']} AND ip_addr < {$first_host}";
+        $where2 = "subnet_id = {$subnet['id']} AND ip_addr > {$last_last_host}";
         list($status, $rows1, $record) = ona_get_interface_record($where1);
         list($status, $rows2, $record) = ona_get_interface_record($where2);
         if ($rows1 or $rows2) {
@@ -557,7 +568,7 @@ EOM
         //       [------- old subnet --------]
         //
         $where1 = "subnet_id = {$subnet['id']} AND ip_addr_start < {$options['set_ip']}";
-        $where2 = "subnet_id = {$subnet['id']} AND ip_addr_end > {$last_host}";
+        $where2 = "subnet_id = {$subnet['id']} AND ip_addr_end > {$str_last_host}";
         list($status, $rows1, $record) = ona_get_dhcp_pool_record($where1);
         list($status, $rows2, $record) = ona_get_dhcp_pool_record($where2);
         if ($rows1 or $rows2) {
@@ -640,7 +651,7 @@ EOM
         return(array(16, $self['error'] . "\n"));
 
     // Load the updated record for display
-    list($status, $rows, $subnet) = ona_get_subnet_record($subnet['id']);
+    list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $subnet['id']));
 
     // Return the (human-readable) success notice
     $text = format_array($SET);

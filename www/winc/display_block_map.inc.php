@@ -24,8 +24,24 @@ function ws_display($window_name, $form='') {
     $form['ip_block_start'] = ip_complete($form['ip_block_start'], '0');
 
     // Since we currently only display /24 (C) class networks, the
+    //GD Need to call ip_mangle() so we can use is_ipv4()
     // last quad needs to be a .0.
-    $ip = $form['ip_block_start'] = preg_replace('/\.\d+$/', '.0', $form['ip_block_start']);
+
+    $ip = ip_mangle($form['ip_block_start'],'numeric');
+    if (is_ipv4($ip)) {
+
+       $end = '\.\d+$';
+       $replace_end_by = '.0';
+       $version=4;
+    }
+    else {
+       $end = ':[0-9A-F]{0,4}$';
+       // $replace_end_by = ':0000';
+       $replace_end_by = ':';
+       $version=6;
+    }
+
+    $ip = $form['ip_block_start'] = preg_replace("/$end/", $replace_end_by, $form['ip_block_start']);
 
     // Find out if $ip is valid
     $ip = ip_mangle($ip, 'numeric');
@@ -83,7 +99,7 @@ EOL;
 EOL;
 
     // Get javascript to setup the map portal
-    $js .= get_portal_js($window_name, $ip);
+    $js .= get_portal_js($window_name, $ip,$version);
     //*** Send a fake mouseup event to draw the initial map view ***
     $js .= "el('{$window_name}_portal').myonmouseup('fake event');";
 
@@ -91,6 +107,8 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
+    // GDO need to use Big Int JS
+    $response->addIncludeScript('include/js/bignumber.js');
     $response->addAssign("work_space_content", "innerHTML", $html);
     if ($js) { $response->addScript($js); }
     return($response->getXML());

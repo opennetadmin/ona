@@ -596,11 +596,18 @@ function ws_save($window_name, $form='') {
     if ($module == 'add') {
         $ipflip = ip_mangle($form['ip'],'flip');
         $octets = explode(".",$ipflip);
-        list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+        if (count($octets) > 4 ) {
+            $arpa = '.ip6.arpa';
+            $octcount = 31;
+        } else {
+            $arpa = '.in-addr.arpa';
+            $octcount = 3;
+        }
+        list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.$arpa);
         if (!$ptrdomain['id']) {
-            printmsg("ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
-            $self['error'] = "ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa.  You could also create domains for class B or class C level reverse zones.  Click OK to open add domain dialog";
-            $response->addScript("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[3]}.in-addr.arpa', 'editor');");
+            printmsg("ERROR => This operation tried to create a PTR record that is the first in this IP address space.  You must first create at least the following DNS domain: {$octets[$octcount]}.in-addr.arpa",3);
+            $self['error'] = "ERROR => This operation tried to create a PTR record that is the first in this IP address space.<br>You must first create at least the following DNS domain: <b>{$octets[$octcount]}.in-addr.arpa</b>.<br>You could also create domains at deeper level reverse zones if desired.<br>We have opened the add domain dialog for you.";
+            $response->addScript("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[$octcount]}{$arpa}', 'editor');");
             return($response->getXML());
         }
     }

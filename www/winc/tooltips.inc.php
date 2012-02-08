@@ -492,14 +492,47 @@ EOL;
     // If we didn't get one, tell them to add a record here
     if ($rows == 0 or $status) {
         // Calculate what the end of this block is so we can reccomend the max subnet size
-        list($status, $rows, $subnets) = db_get_records($onadb, "subnets", "ip_addr > " . ip_mangle($subnet_ip, 'numeric'), "ip_addr", 1);
-        $subnet_ip_end = $subnets[0]['ip_addr'] - 1;
-        $size = $subnet_ip_end - $subnet_ip + 1;
-        if (($size % 2) == 1) $size--;
-        $mask = ceil(32 - (log($size) / log(2)));
 
-        $subnet['ip_addr'] = ip_mangle($subnet_ip, 'dotted');
-        $subnet['ip_addr_end'] = ip_mangle($subnet_ip_end, 'dotted');
+        // GD: add IPv6 functionnality by imposing GMP use when not ipv4 subnet
+        
+        list($status, $rows, $subnets) = db_get_records($onadb, "subnets", "ip_addr > " . ip_mangle($subnet_ip, 'numeric'), "ip_addr", 1);
+	if (!is_ipv4($subnet_ip)) {
+	    if ($rows >= 1) {
+	        $subnet_ip_end = gmp_sub(gmp_init($subnets[0]['ip_addr']), 1);
+	        $size = gmp_add(gmp_sub($subnet_ip_end, $subnet_ip), 1);
+	        if (gmp_mod($size,2) == 1) gmp_sub($size,1);
+	        // GD: very bad way to get the mask ... but gmp_log() does not exist !
+	        for ($mask=65;$mask > 48;$mask--) {
+		    if (gmp_cmp($size,gmp_pow("2",$mask)) > 0) {
+		        $mask++;
+		        break;
+		    }
+	        }
+	        $subnet['ip_addr'] = ip_mangle(gmp_strval($subnet_ip), 'dotted');
+	        $subnet['ip_addr_end'] = ip_mangle(gmp_strval($subnet_ip_end), 'dotted');
+	        $str_subnet_ip = gmp_strval($subnet_ip);
+	        $size=gmp_strval($size);
+            }
+            else {
+                $subnet_ip_end = -1;
+                $size=0;
+            }
+	}
+	else {
+            if ($rows >= 1) {
+	        $subnet_ip_end = $subnets[0]['ip_addr'] - 1;
+	        $size = $subnet_ip_end - $subnet_ip + 1;
+	        if (($size % 2) == 1) $size--;
+	        $mask = ceil(32 - (log($size) / log(2)));
+	        $subnet['ip_addr'] = ip_mangle($subnet_ip, 'dotted');
+	        $subnet['ip_addr_end'] = ip_mangle($subnet_ip_end, 'dotted');
+	        $str_subnet_ip = $subnet_ip;
+            }
+            else {
+                $subnet_ip_end=-1;
+                $size=0;
+            }
+        }
         $html .= <<<EOL
         <!-- NO SUBNET -->
         <table cellspacing="0" border="0" cellpadding="0">
@@ -508,7 +541,7 @@ EOL;
             <tr><td width=100% colspan="2" nowrap="true" style="{$style['label_box']}">
                 <a title="Add a new subnet here"
                    class="act"
-                   onClick="xajax_window_submit('edit_subnet', 'ip_addr=>{$subnet_ip}', 'editor');"
+                   onClick="xajax_window_submit('edit_subnet', 'ip_addr=>{$str_subnet_ip}', 'editor');"
                 >Add a subnet here</a>
             </td></tr>
 
@@ -518,47 +551,105 @@ EOL;
             </tr>
 
 EOL;
-        $ip = $subnet_ip;
         $largest_subnet = array(0, 0, 0);
-        while ($ip < $subnet_ip_end) {
+        // -- IPv4
+        if (is_ipv4($subnet_ip)) {
+            $ip = $subnet_ip;
+            while ($ip < $subnet_ip_end) {
 
-            // find the largest mask for the specified ip
-            $myip = ip_mangle($ip, 'dotted');
-            $mymask = $mask;
-            while ($mymask <= 30) {
-                $ip1 = ip_mangle($ip, 'binary');
-                $ip2 = str_pad(substr($ip1, 0, $mymask), 32, '0');
-                $mysize = pow(2, 32-$mymask);
-                $myhosts = $mysize - 2;
-
-                $ip1 = ip_mangle($ip1, 'dotted');
-                $ip2 = ip_mangle($ip2, 'dotted');
-                if ( $ip1 == $ip2 and (($ip + $mysize - 1) <= $subnet_ip_end) ) {
-                    break;
+                // find the largest mask for the specified ip
+                $myip = ip_mangle($ip, 'dotted');
+                $mymask = $mask;
+                while ($mymask <= 30) {
+                    $ip1 = ip_mangle($ip, 'binary');
+                    $ip2 = str_pad(substr($ip1, 0, $mymask), 32, '0');
+                    $mysize = pow(2, 32-$mymask);
+                    $myhosts = $mysize - 2;
+    
+                    $ip1 = ip_mangle($ip1, 'dotted');
+                    $ip2 = ip_mangle($ip2, 'dotted');
+                    if ( $ip1 == $ip2 and (($ip + $mysize - 1) <= $subnet_ip_end) ) {
+                        break;
+                    }
+                    $mymask++;
                 }
-                $mymask++;
+                if ($mymask == 31) break;
+                if ($mysize > $largest_subnet[2]) $largest_subnet = array(ip_mangle($ip, 'dotted'), $mymask, $mysize);
+    
+    
+                $html .= <<<EOL
+                <!--
+                <tr>
+                    <td align="right" nowrap="true" style="color: {$font_color};">&nbsp;</td>
+                    <td class="padding" align="left" style="color: {$font_color};">{$myip} /{$mymask}&nbsp;({$myhosts} hosts)</td>
+                </tr>
+                -->
+EOL;
+    
+                // Increment $ip
+                $ip += $mysize;
+
+
             }
-            if ($mymask == 31) break;
-            if ($mysize > $largest_subnet[2]) $largest_subnet = array(ip_mangle($ip, 'dotted'), $mymask, $mysize);
+            // remove 2 for gateway and broadcast
+            $largest_subnet[2] = $largest_subnet[2] - 2;
+        }
+        // -- IPV6
+        else {
+          
+            $ip = gmp_init($subnet_ip);
+	    // GD: trying to avoid falling into time/memory-trap
+	    // Won't enter in the loop if difference between IP and next subnet IP is too big
+	    // (more than 5 x /64)
+	    if (gmp_cmp(gmp_sub($subnet_ip_end,$ip),gmp_mul("18446744073709551616","5")) > 0) {
 
+		$html .= <<<EOL
+	<tr>
+	<td align="right" nowrap="true" style="color: {$font_color};">&nbsp;</td>
+	<td align="right" nowrap="true" style="color: {$font_color};">Next Subnet too far away</td>
+	<tr>
+EOL;
+		return(array($html, $js));
+	    }
+	
+            while (gmp_cmp($ip, $subnet_ip_end) < 0) {
 
-            $html .= <<<EOL
-            <!--
-            <tr>
-                <td align="right" nowrap="true" style="color: {$font_color};">&nbsp;</td>
-                <td class="padding" align="left" style="color: {$font_color};">{$myip} /{$mymask}&nbsp;({$myhosts} hosts)</td>
-            </tr>
-            -->
+                // find the largest mask for the specified ip
+                $myip = ip_mangle(gmp_strval($ip), 'dotted');
+                $mymask = $mask;
+                while ($mymask <= 64) {
+                    $ip1 = ip_mangle(gmp_strval($ip), 'bin128');
+                    $ip2 = str_pad(substr($ip1, 0, $mymask), 128, '0');
+                    $mysize = gmp_pow("2", 128-$mymask);
+                    $myhosts = gmp_strval(gmp_sub($mysize,2));
+
+                    $ip1 = ip_mangle($ip1, 'dotted');
+                    $ip2 = ip_mangle($ip2, 'dotted');
+                    if ((strcmp($ip1, $ip2) == 0) and (gmp_cmp(gmp_sub(gmp_add($ip, $mysize),1), $subnet_ip_end) <= 0 )) {
+                        break;
+                    }
+                    $mymask++;
+                }
+                if ($mymask == 90) break;
+                if (gmp_cmp($mysize,$largest_subnet[2]) > 0) $largest_subnet = array(ip_mangle(gmp_strval($ip), 'dotted'), $mymask, $mysize);
+
+                $html .= <<<EOL
+                <!--
+                <tr>
+                    <td align="right" nowrap="true" style="color: {$font_color};">&nbsp;</td>
+                    <td class="padding" align="left" style="color: {$font_color};">{$mask} {$myip} /{$mymask}&nbsp;({$myhosts} hosts)td>
+                </tr>
+                -->
 EOL;
 
-            // Increment $ip
-            $ip += $mysize;
+                // Increment $ip
+                $ip = gmp_add($ip,$mysize);
+            }
+            // DON'T remove 2 for gateway and broadcast
+            $largest_subnet[2] = gmp_strval($largest_subnet[2]);
 
-
+	
         }
-        // remove 2 for gateway and broadcast
-        $largest_subnet[2] = $largest_subnet[2] - 2;
-
         $html .= <<<EOL
 
             <tr>
@@ -570,6 +661,10 @@ EOL;
 EOL;
         return(array($html, $js));
     }
+
+    // -- 
+    // -- FOUND SUBNET IN DB
+    // -- 
 
     // Convert IP and Netmask to a presentable format
     $subnet['ip_addr'] = ip_mangle($subnet['ip_addr'], 'dotted');
@@ -1592,7 +1687,7 @@ function ws_interface_share_del($window_name, $form='') {
     global $base, $include, $conf, $self, $onadb;
 
     // Check permissions
-    if (! (auth('interface_del')) ) {
+    if (! (auth('advanced')) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
@@ -2094,7 +2189,7 @@ function get_custom_attribute_info_html($form) {
             <td align="right" nowrap="true" style="font-weight: bold;">
                 {$window['edit_type']}
             </td>
-            <td class="padding" align="left" >
+            <td class="padding" align="left" width="100%">
                 {$window['edit_type_value']}
             </td>
         </tr>
@@ -2103,7 +2198,7 @@ function get_custom_attribute_info_html($form) {
             <td align="right" nowrap="true" style="font-weight: bold;">
                 Type
             </td>
-            <td class="padding" align="left" >
+            <td class="padding" align="left" width="100%">
                     {$ca['name']}
             </td>
         </tr>
@@ -2112,15 +2207,29 @@ function get_custom_attribute_info_html($form) {
             <td align="right" nowrap="true" style="font-weight: bold;">
                 Value
             </td>
-            <td class="padding" align="left" >
-                <textarea
+            <td class="padding" align="left" width="100%">
+                <pre
                     name="value"
                     alt="Value"
                     style="font-family: inherit;background-color: white;"
-                    readonly="true"
-                    rows="6"
-                    cols="40"
-                >{$ca['value']}</textarea>
+                    rows="5"
+                    cols="25"
+                >{$ca['value']}</pre>
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" nowrap="true" style="font-weight: bold;">
+                Notes
+            </td>
+            <td class="padding" align="left" width="100%">
+                <pre
+                    name="value"
+                    alt="Value"
+                    style="font-family: inherit;background-color: white;"
+                    rows="5"
+                    cols="25"
+                >{$ca['notes']}</pre>
             </td>
         </tr>
 

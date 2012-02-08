@@ -33,15 +33,11 @@ foreach ($conf[$modulename] as $hostaction=>$hval) {
     // Skip the module title entry
     // Use the title if there is one, otherwise just use the arrayname
     $hval['title'] = ($hval['title']) ? $hval['title'] : $hostaction;
-    // Substitute %fqdn and %ip and %loc and %hostname and %onahostname
+    // Substitute %fqdn and %ip and %loc
     $hval['url'] = str_replace('%fqdn', $record['fqdn'], $hval['url']);
     $hval['url'] = str_replace('%ip', $record['ip_address'], $hval['url']);
     $hval['url'] = str_replace('%loc', $location['reference'], $hval['url']);
-    $nameparts = explode('.',$record['fqdn'],2);
-    $hval['url'] = str_replace('%hostname', $nameparts[0], $hval['url']);
-    $hval['url'] = str_replace('%onahostname', $record['name'], $hval['url']);
-    $hval['url'] = str_replace('%domain', $nameparts[1], $hval['url']);
-    $hval['url'] = str_replace('%onadomain', $record['domain_fqdn'], $hval['url']);
+
 
 
     // Get custom attributes if there is "%ca[.*]" string in URL

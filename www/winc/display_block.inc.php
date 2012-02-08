@@ -148,8 +148,21 @@ EOL;
     // SMALL SUBNET MAP
 
     // Get the numeric IP address of our subnet (we replace the last quad with a .0)
-    $ip = ip_mangle(preg_replace('/\.\d+$/', '.0', $record['ip_addr_start']), 'numeric');
+    
     $ip_subnet = ip_mangle($record['ip_addr_start'], 'numeric');
+    if (is_ipv4($ip_subnet)) {
+
+       $end = '\.\d+$';
+       $replace_end_by = '.0';
+       $version=4;
+    }
+    else {
+       $end = ':[0-9A-F]{0,4}$';
+       // $replace_end_by = ':0000';
+       $replace_end_by = ':';
+       $version=6;
+    }
+    $ip = ip_mangle(preg_replace("/$end/", $replace_end_by, $record['ip_addr_start']), 'numeric');
 
     $html .= <<<EOL
             <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
@@ -191,7 +204,7 @@ EOL;
 
     // Get javascript to setup the map portal mouse handlers
     // Force ip end to be less than ip start to prevent Block highlighting
-    $portal_js .= get_portal_js($window_name, $ip, $ip -1);
+    $portal_js .= get_portal_js($window_name, $ip, $version);
     //*** Send a fake mouseup event to draw the initial map view ***
     $portal_js .= "el('{$window_name}_portal').myonmouseup('fake event');";
 
@@ -287,7 +300,6 @@ EOL;
         </div>
 
     </div>
-
 EOL;
     $js .= <<<EOL
         /* Setup the quick filter */
@@ -303,6 +315,8 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
+    // GDO need to use Big Int JS
+    $response->addIncludeScript('include/js/bignumber.js');
     $response->addAssign("work_space_content", "innerHTML", $html);
     if ($js) { $response->addScript($js . $portal_js); }
     return($response->getXML());

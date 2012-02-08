@@ -97,7 +97,7 @@ EOL;
                     value="{$block['ip_addr_start']}"
                     class="edit"
                     type="text"
-                    size="17" maxlength="35"
+                    size="20" maxlength="40"
                 >
             </td>
         </tr>
@@ -113,7 +113,7 @@ EOL;
                     value="{$block['ip_addr_end']}"
                     class="edit"
                     type="text"
-                    size="17" maxlength="35"
+                    size="20" maxlength="40"
                 >
             </td>
         </tr>

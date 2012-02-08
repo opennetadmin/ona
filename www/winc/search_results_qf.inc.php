@@ -251,19 +251,30 @@ function ws_free_ip($window_name, $form='') {
             $used_ips["{$ip}"] = $pool['id'];
 
     // Create a few variables that will be handy later
-    $num_ips = 0xffffffff - $subnet['ip_mask'];
-    $last_ip = ($subnet['ip_addr'] + $num_ips) - 1;
+    if(strlen($subnet['ip_addr']) < 11)  {
+       // echo "ipv4";
+       $num_ips = 0xffffffff - $subnet['ip_mask'];
+       $last_ip = ($subnet['ip_addr'] + $num_ips) - 1;
+    } else {
+       // echo "ipv6";
+       $sub = gmp_sub("340282366920938463463374607431768211455", $subnet['ip_mask']);
+       $num_ips = gmp_strval($sub); 
+       $last_ip = ($subnet['ip_addr'] + $num_ips) - 1;
+    }
+
 
     // Search results go in here
     $results = array();
     $count = $num_ips - count($used_ips);
 
     // Create a list of available IP's
-    $ip = $subnet['ip_addr'] + 1;
+    $plusone = gmp_add("1", $subnet['ip_addr']);
+    $ip = gmp_strval($plusone); 
     while ($ip <= $last_ip and count($results) <= $form['max_results']) {
         if (!array_key_exists("{$ip}", $used_ips))
             $results[] = $ip;
-        $ip++;
+        $plusone = gmp_add("1", $ip);
+        $ip = gmp_strval($plusone); 
     }
 
 
@@ -288,7 +299,11 @@ EOL;
 
     $subnet['name'] = htmlentities($subnet['name'], ENT_QUOTES, $conf['php_charset']);
     foreach ($results as $ip) {
-        $ip = ip_mangle($ip, 'dotted');
+        if (strlen($ip) > 11) {
+            $ip = ip_mangle($ip, 'ipv6gz');
+        } else {
+            $ip = ip_mangle($ip, 'dotted');
+        }
         $html .= <<<EOL
 <tr onMouseOver="this.className='row-highlight';"
     onMouseOut="this.className='row-normal';"

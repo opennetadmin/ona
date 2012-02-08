@@ -24,7 +24,7 @@ function ws_display($window_name, $form='') {
     if ($form['subnet_id'])
         list($status, $rows, $record) = ona_get_subnet_record(array('id' => $form['subnet_id']));
     else if ($form['ip'])
-        list($status, $rows, $record) = ona_get_subnet_record(array('ip_addr' => ip_mangle($form['ip'], 'numeric')));
+        list($status, $rows, $record) = ona_get_subnet_record("ip_addr like '". ip_mangle($form['ip'], 'numeric')."'");
     else if ($form['subnet'])
         list($status, $rows, $record) = ona_get_subnet_record(array('name' => $form['subnet']));
     if ($status or !$rows) {
@@ -46,6 +46,9 @@ function ws_display($window_name, $form='') {
     // Create some javascript to refresh the current page
     $refresh = htmlentities(str_replace(array("'", '"'), array("\\'", '\\"'), $history['url']), ENT_QUOTES, $conf['php_charset']);
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
+
+    // is this an ipv6 subnet?
+    if (strlen($record['ip_addr']) > 11) $extravars['isipv6'] = TRUE;
 
     // Convert IP and Netmask to a presentable format
     $record['ip_addr'] = ip_mangle($record['ip_addr'], 'dotted');

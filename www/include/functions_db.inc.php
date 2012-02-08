@@ -1669,42 +1669,6 @@ function ona_find_domain($fqdn="", $returndefault=0) {
 //         // Set status to 0 (ok) since we are returning something
 //         $status=0;
 //     }
-/*  Disabling this for now.. it causes issues with building of zones and other PTR things
-    //Per Synapse and bug #67, not fully tested but should be fine.
-    if ($status == 0 and $parts[0] === "arpa" and strstr($fqdn,'-') ) { // check the PTR domain for classless (CIDR) subnet that suits the ip, for example ip=192.168.1.2, domain=0-25.1.168.192.in-addr.arpa
-        $ip = implode('.', $parts); // now we have something like arpa.in-addr.192.168.1.2
-        $ip = str_replace("arpa.in-addr.", '', $ip); // get pure ip, for example 192.168.1.2. We gonna find a subnet for this ip
-        list($localPart, $parent_domain) = explode('.', $fqdn,2); // taking the parent domain name, i.e. 1.168.192.in-addr.arpa
-        list($exit_status, $number_of_rows, $record) = ona_get_domain_record("name LIKE '%.{$parent_domain}'"); // grab classless sub-domains. Example: 0-25.1.168.192.in-addr.arpa
-        $i=0;
-        while($i < $number_of_rows) { // walk through all subdomains
-            $i++;
-            list($subnet_def, $class_subnet) = explode('.', $record['fqdn'], 2); // get subnet defenition, i.e. $subnet_def='0-25', and $class_range=1.168.192.in-addr.arpa
-            $split_characters = '\-'; // subnet defenition symbols. Currently only '-' can be used as '/' interfears with the usage of ONA views.
-            #$split_characters = '\/\-'; // subnet defenition symbols. Currently '/' or '-' can be used
-
-            if (1 == preg_match("/(\d+)[$split_characters](\d+)/", $subnet_def, $matches)) { // yes, we have a CIDR. Let's check if ip is within this CIDR
-                $subnet = $matches[1]; // here we pop '0' (last octet of the ip range) from '0-25' string
-                $subnet = implode('.', array_reverse(explode('.', $class_subnet)) ) . $subnet; // now we have something like arpa.in-addr.192.168.1.0
-                $subnet = str_replace("arpa.in-addr.",'',$ip); // finally we have normal subnet 192.168.1.0
-                $subnet_dec = ip2long($subnet); // convert 192.168.1.0 to its decimal representation
-                $ip_dec = ip2long($ip); // the same for IP
-                $netmask = $matches[2]; // get the netmask length, i.e. '25'
-
-                printmsg("DEBUG => ona_find_domain({$fqdn}). Subnet: {$subnet} Netmask: {$netmask} Matches: ".var_export($matches,true), 3);
-
-                $wildcard_dec = pow(2, (32-$netmask)) - 1;
-                $netmask_dec = ~ $wildcard_dec; // decimal netmask
-
-                if (($ip_dec & $netmask_dec) == ($subnet_dec & $netmask_dec)) { // check if both ip and subnet are within the netmask
-                    $domain = $record;
-                    printmsg("DEBUG => ona_find_domain({$fqdn}) Found: {$domain['fqdn']}", 3);
-                }
-            }
-            list($exit_status, $number_of_rows, $domain) = ona_get_domain_record("name LIKE '%.{$parent_domain}'"); // get the next row
-        }
-    }
-*/
 
     // FIXME: MP  rows is not right here..  need to look at fixing it.. rowsa/rowsb above doesnt translate.. do I even need that?
     return(array($status, $rows, $domain));
@@ -1953,7 +1917,7 @@ function ona_find_interface($search="") {
     if (is_numeric($search)) {
         // It's a number - do several sql queries and see if we can get a unique match
         foreach (array('id', 'host_id', 'ip_addr') as $field) {
-            list($status, $rows, $record) = ona_get_interface_record(array($field => $search));
+            list($status, $rows, $record) = ona_get_interface_record("{$field} like '{$search}'");
             // If we got it, return it
             if ($status == 0 and $rows == 1) {
                 printmsg("DEBUG => ona_find_interface() found interface record by {$field}", 2);
@@ -1965,7 +1929,7 @@ function ona_find_interface($search="") {
     // If it's an IP address...
     $ip = ip_mangle($search, 1);
     if ($ip != -1) {
-        list($status, $rows, $record) = ona_get_interface_record(array('ip_addr' => $ip));
+        list($status, $rows, $record) = ona_get_interface_record("ip_addr like '{$ip}'");
         // If we got it, return it
         if ($status == 0 and $rows == 1) {
             printmsg("DEBUG => ona_find_interface() found record by IP address", 2);
@@ -2047,10 +2011,12 @@ function ona_find_subnet($search="") {
     if (preg_match('/^\d+$/', $search)) {
         // It's a number - do several sql queries and see if we can get a unique match
         foreach (array('id', 'ip_addr') as $field) {
-            list($status, $rows, $record) = ona_get_subnet_record(array($field => $search));
+            // list($status, $rows, $record) = ona_get_subnet_record(array($field => $search));
+            // GDO: don't use array() here, because it breaks ipv6 subnets
+            list($status, $rows, $record) = ona_get_subnet_record("$field = $search");
             // If we got it, return it
             if ($status == 0 and $rows == 1) {
-                printmsg("DEBUG => ona_find_subnet() found subnet record by $field", 2);
+                printmsg("DEBUG => ona_find_subnet() found subnet record by $field $search", 2);
                 return(array(0, $rows, $record));
             }
         }
@@ -2067,7 +2033,12 @@ function ona_find_subnet($search="") {
         //   (2^32 - 1) == 4294967295 == a 32bit integer with all 1's.
         //   4294967295 - subnet_mask results in the number of hosts on that subnet.
         //   + the base ip_addr results in the top of the subnet.
-        $where = "$ip >= ip_addr AND $ip <= ((4294967295 - ip_mask) + ip_addr)";
+        if (strlen($ip) > 11) {
+            // IPv6.. had to check that it was above ipv4 space
+	    $where = "$ip between ip_addr AND ((340282366920938463463374607431768211455 - ip_mask) + ip_addr) and ip_addr > 4294967295";
+        } else {
+            $where = "$ip >= ip_addr AND $ip <= ((4294967295 - ip_mask) + ip_addr)";
+        }
 
         list($status, $rows, $record) = ona_get_subnet_record($where);
 

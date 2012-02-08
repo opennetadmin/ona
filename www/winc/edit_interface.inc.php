@@ -46,9 +46,13 @@ function ws_editor($window_name, $form='') {
         if ($rows) {
             list($status, $rows, $host) = ona_find_host($interface['host_id']);
             list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $interface['subnet_id']));
+            list($status, $rows_nat, $extnatint) = ona_get_interface_record(array('id' => $record['nat_interface_id']));
             $interface['ip_addr'] = ip_mangle($interface['ip_addr'], 'dotted');
             if ($interface['mac_addr']) {
                 $interface['mac_addr'] = mac_mangle($interface['mac_addr']);
+            }
+            if ($rows_nat > 0) {
+                $interface['natip_addr'] = ip_mangle($extnatint['ip_addr'], 'dotted');
             }
         }
     }
@@ -64,6 +68,7 @@ function ws_editor($window_name, $form='') {
         if (isset($form['name'])) $interface['name'] = $form['name'];
         if (isset($form['description'])) $interface['description'] = $form['description'];
         if (isset($form['mac_addr'])) $interface['mac_addr'] = $form['mac_addr'];
+        if (isset($form['natip_addr'])) $interface['natip_addr'] = $form['natip_addr'];
 
     }
 
@@ -225,14 +230,12 @@ EOL;
                 <div id="suggest_set_ip_{$window_name}" class="suggest"></div>
             </td>
         </tr>
-
         <tr>
             <td align="right" nowrap="true">
                 MAC Address
             </td>
             <td class="padding" align="left" width="100%">
                 <input
-                    id="set_mac"
                     name="set_mac"
                     alt="MAC Address"
                     value="{$interface['mac_addr']}"
@@ -431,13 +434,23 @@ function ws_save($window_name, $form='') {
 
     // Do a pre check of the ptr domain so we can prompt the user properly
     if ($module == 'interface_add') {
+	
         $ipflip = ip_mangle($form['ip'],'flip');
         $octets = explode(".",$ipflip);
-        list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
+        //GD: ipv6 IPs must be reversed in .ip6.arpa
+        if (count($octets) > 4) {
+            $arpa = '.ip6.arpa';
+            $octcount = 31;
+        } else {
+            $arpa = '.in-addr.arpa';
+            $octcount = 3;
+        }
+
+        list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.$arpa);
         if (!$ptrdomain['id']) {
-            printmsg("ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
-            $self['error'] = "ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa.  You could also create domains for class B or class C level reverse zones.  Click OK to open add domain dialog";
-            $response->addScript("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[3]}.in-addr.arpa', 'editor');");
+            printmsg("ERROR => You must first create at least the following DNS domain: {$octets[$octcount]}{$arpa}",3);
+            $self['error'] = "ERROR => You must first create at least the following DNS domain: {$octets[$octcount]}{$arpa}.  You could also create domains for class B or class C level reverse zones.  Click OK to open add domain dialog";
+            $response->addScript("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[$octcount]}{$arpa}', 'editor');");
             return($response->getXML());
         }
     }

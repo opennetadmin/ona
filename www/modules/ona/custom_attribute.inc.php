@@ -48,7 +48,7 @@ function custom_attribute_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.00';
 
     printmsg("DEBUG => custom_attribute_add({$options}) called", 3);
 
@@ -57,7 +57,7 @@ function custom_attribute_add($options="") {
 
     // Return the usage summary if we need to
     if ($options['help'] or
-       (!$options['subnet'] and !$options['host'] and !$options['vlan']) or
+       (!$options['subnet'] and !$options['host']) or
        (!$options['type'] and
         !$options['value'])) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
@@ -74,8 +74,6 @@ Adds the custom attribute to the host or subnet specified
     host=NAME[.DOMAIN]|IP     hostname or IP of the host
     OR
     subnet=NAME|IP            name or IP of the subnet
-    OR
-    vlan=NAME                 name of the VLAN
 
     type=ID|STRING            the name or ID of the attribute type
     value="STRING"            the value of the attribute
@@ -103,18 +101,10 @@ EOM
         $desc = $subnet['name'];
     }
 
-    // If they provided a vlan name
-    else if ($options['vlan']) {
-        list($status, $rows, $vlan) = ona_find_vlan($options['vlan']);
-        $table_name_ref = 'vlans';
-        $table_id_ref = $vlan['id'];
-        $desc = $vlan['name'];
-    }
-
     // If we didn't get a record then exit
-    if (!$host['id'] and !$subnet['id'] and !$vlan['id']) {
-        printmsg("DEBUG => No host, subnet or vlan found!",3);
-        $self['error'] = "ERROR => No host, subnet or vlan found!";
+    if (!$host['id'] and !$subnet['id']) {
+        printmsg("DEBUG => No host or subnet found!",3);
+        $self['error'] = "ERROR => No host or subnet found!";
         return(array(4, $self['error'] . "\n"));
     }
 
@@ -210,7 +200,7 @@ function custom_attribute_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.00';
 
     printmsg("DEBUG => custom_attribute_del({$options}) called", 3);
 
@@ -219,7 +209,7 @@ function custom_attribute_del($options="") {
 
     // Return the usage summary if we need to
     if ($options['help'] or
-       (!$options['subnet'] and !$options['host'] and !$options['vlan']) or
+       (!$options['subnet'] and !$options['host']) or
        (!$options['type'] )) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
         $self['error'] = 'ERROR => Insufficient parameters';
@@ -235,8 +225,6 @@ Deletes a custom attribute from the database
     host=NAME[.DOMAIN]|IP     hostname or IP of the host
     OR
     subnet=NAME|IP            name or IP of the subnet
-    OR
-    vlan=NAME                 name of the VLAN
 
     type=ID|STRING            the name or ID of the attribute type
 
@@ -269,18 +257,10 @@ EOM
         $desc = $subnet['name'];
     }
 
-    // If they provided a vlan name
-    else if ($options['vlan']) {
-        list($status, $rows, $vlan) = ona_find_vlan($options['vlan']);
-        $table_name_ref = 'vlans';
-        $table_id_ref = $vlan['id'];
-        $desc = $vlan['name'];
-    }
-
     // If we didn't get a record then exit
-    if (!$host['id'] and !$subnet['id'] and !$vlan['id']) {
-        printmsg("DEBUG => No host, subnet or vlan found!",3);
-        $self['error'] = "ERROR => No host, subnet or vlan found!";
+    if (!$host['id'] and !$subnet['id']) {
+        printmsg("DEBUG => No host or subnet found!",3);
+        $self['error'] = "ERROR => No host or subnet found!";
         return(array(1, $self['error'] . "\n"));
     }
 
@@ -593,7 +573,7 @@ function custom_attribute_display($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.00';
 
     printmsg("DEBUG => custom_attribute_display({$options}) called", 3);
 
@@ -601,7 +581,7 @@ function custom_attribute_display($options="") {
     $options = parse_options($options);
 
     // Return the usage summary if we need to
-    if ($options['help'] or (!$options['host'] and !$options['id'] and !$options['subnet'] and !$options['vlan'])) {
+    if ($options['help'] or (!$options['host'] and !$options['id'] and !$options['subnet'])) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
         $self['error'] = 'ERROR => Insufficient parameters';
         return(array(1,
@@ -618,8 +598,6 @@ Display the custom attribute specified or attributes for a host
     host=ID or NAME[.DOMAIN]  display custom attributes for specified host
     OR
     subnet=ID or NAME         display custom attributes for specified subnet
-    OR
-    vlan=NAME                 display custom attributes for specified VLAN
 
   Optional:
     type=ID or NAME           If you specify a type and a host or subnet you
@@ -693,28 +671,10 @@ EOM
                                             );
         }
 
-        $anchor = 'subnet';
+        $anchor = 'server';
         $desc = $subnet['description'];
     }
 
-    // Search for vlan
-    if ($options['vlan']) {
-        list($status, $rows, $vlan) = ona_find_vlan($options['vlan']);
-
-        // Error if the record doesn't exist
-        if (!$vlan['id']) {
-            $self['error'] = "ERROR => The VLAN specified, {$options['vlan']}, does not exist!";
-            return(array(3, $self['error']));
-        } else {
-                list($status, $rows, $cas) = db_get_records($onadb,'custom_attributes',
-                                                array('table_id_ref' => $vlan['id'], 'table_name_ref' => 'vlans')
-
-                                            );
-        }
-
-        $anchor = 'vlan';
-        $desc = $vlan['description'];
-    }
     if ($options['type']) {
         if ($cas[0]) {
             return(array(0, '1'));

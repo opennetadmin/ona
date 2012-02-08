@@ -23,19 +23,11 @@ if (auth('location_add')) {
 EOL;
     }
 
-// If coordinates are present for the location, use those for our map link,
-// else use the address information
-if ($location['latitude'] and $location['longitude']) {
-    $mapquery = "http://maps.google.com/maps?q={$location['latitude']},{$location['longitude']}+({$location['name']})&ll={$location['latitude']},{$location['longitude']}&z=19";
-} else {
-    $mapquery = "http://maps.google.com/maps?q={$location['address']},{$location['city']},{$location['state']},{$location['zip_code']}+({$location['name']})&z=18";
-}
-
 $title_left_html .= <<<EOL
         <a title="View map"
             class="act"
             onClick="window.open(
-                        '{$mapquery}',
+                        'http://maps.google.com/maps?q={$location['address']},{$location['city']},{$location['state']},{$location['zip_code']} ({$location['name']})',
                         'MapIT',
                         'toolbar=0,location=1,menubar=0,scrollbars=0,status=0,resizable=1,width=985,height=700')"
         ><img src="{$images}/silk/world_link.png" border="0"></a>

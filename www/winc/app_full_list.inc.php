@@ -112,9 +112,6 @@ EOL;
                 <td id="{$form_id}_{$tab}_tab" class="table-tab-active">
                    <b>{$window['subtitle']}</b>&nbsp;<span id="{$form_id}_{$tab}_count" />
                 </td>
-                <td>
-                    &nbsp;<a onclick="toggle_table_rows('{$form_id}_full_host_list','byip_available');" class="button" ><img src="{$images}/silk/arrow_rotate_clockwise.png" border="0"> Toggle Available IPs</a>
-                </td>
             </tr>
         </table>
          <div id='{$content_id}'>
@@ -143,6 +140,7 @@ function ws_display_list($window_name, $form='') {
     
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
+    printmsg("ws_display_list in app_full_list.inc.php called with: " . print_r($form,1), 3);
     
     // Find the "tab" we're on
     $tab = $_SESSION['ona'][$form['form_id']]['tab'];
@@ -156,43 +154,54 @@ function ws_display_list($window_name, $form='') {
     $count = 0;
    
     
+    // Start building the "where" clause for the sql query to find the hosts to display
+    $where = "";
+    $and = "";
+    $orderby = "ip_addr";
+    
+  
     // NETWORK ID
     if (is_numeric($form['subnet_id'])) {
+        // We do a sub-select to find interface id's that match
+        $where .= $and . "subnet_id = " . $onadb->qstr($form['subnet_id']) ;
+        $and = " AND ";
         
     }
     
+    
+    // IP ADDRESS
+    if ($form['ip']) {
+        // Build $ip and $ip_end from $form['ip'] and $form['ip_thru']
+        $ip = ip_complete($form['ip'], '0');
+        if ($form['ip_thru']) { $ip_end = ip_complete($form['ip_thru'], '255'); }
+        else { $ip_end = ip_complete($form['ip'], '255'); }
+        
+        // Find out if $ip and $ip_end are valid
+        $ip = ip_mangle($ip, 'numeric');
+        $ip_end = ip_mangle($ip_end, 'numeric');
+        if ($ip != -1 and $ip_end != -1) {
+            // We do a sub-select to find interface id's between the specified ranges
+            $where .= $and . "ip_addr >= " . $onadb->qstr($ip) . " AND ip_addr <= " . $onadb->qstr($ip_end);
+            $and = " AND ";
+        }
+    }
+   
+    
+
     // Do the SQL Query
-    list ($status, $count, $results) = 
+   
+    list ($status, $rows, $results) = 
         db_get_records(
             $onadb,
             'interfaces',
-            "subnet_id = " . $onadb->qstr($form['subnet_id']) ,
-            'ip_addr',
+            $where ,
+            $orderby,
             -1,
             -1
         );
-
-    // make an array of ips from our results
-    $iplist=array();
-    foreach($results as $record) {
-        $iplist["{$record['ip_addr']}"]='used';
-    }
+    $count = $rows;
    
-    list($status, $rows, $subnet) = ona_find_subnet($form['subnet_id']); 
-
-    // Create a few variables that will be handy later
-    $num_ips = 0xffffffff - $subnet['ip_mask'];
-    $last_ip = ($subnet['ip_addr'] + $num_ips) - 1;
-    $currip = $subnet['ip_addr'] + 1;
-
-    // Get a list of dhcp pools on the selected subnet
-    list($status, $rows, $pools) =
-        db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $subnet['id']));
-
-    // Add DHCP pool addresses into the list of used ips
-    foreach ($pools as $pool)
-        for ($ip = $pool['ip_addr_start']; $ip <= $pool['ip_addr_end']; $ip++)
-            $iplist["{$ip}"] = 'pool-'.$pool['id'];
+    
     
     // 
     // *** BUILD HTML LIST ***
@@ -203,164 +212,137 @@ function ws_display_list($window_name, $form='') {
             
             <!-- Table Header -->
             <tr>
-                <td class="list-header" align="center" style="{$style['borderR']};">IP Address</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Name</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Subnet</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Interface</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Last Response</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">[Name] Desc</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Host Name</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Device Type</td>
-                <td class="list-header" align="center" style="{$style['borderR']};">Host Notes</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Location</td>
+                <td class="list-header" align="center" style="{$style['borderR']};">Notes</td>
             </tr>
 EOL;
-    // Loop and display each ip on the subnet
-    while ($currip <= $last_ip) {
-
-        $loc=array();
-        $host=array();
-        $interface=array();
-        $interfaces=0;
-        $record=array();
-        $record['ip_addr'] = ip_mangle($currip, 'dotted');
-        $interface_style = '';
-        $clusterhtml = '';
-        $rowstyle='background-color: #E9FFE1';
-        $rowid='byip_available';
-        $currip_txt = ip_mangle($currip, 'dotted');
-        $interface['desc'] = '<span style="color: #aaaaaa;">AVAILABLE</span>';
-        $nameval=<<<EOL
-            <a title="Add host"
-               class="act"
-               onClick="xajax_window_submit('edit_host', 'ip_addr=>{$currip_txt}', 'editor');"
-            ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-
-            <a title="Add host"
-               class="act"
-               onClick="xajax_window_submit('edit_host', 'ip_addr=>{$currip_txt}', 'editor');"
-            >Add a new host</a>&nbsp;
-
-             <a title="Add interface"
-               class="act"
-               onClick="xajax_window_submit('edit_interface', 'ip_addr=>{$currip_txt}', 'editor');"
-            ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-
-            <a title="Add interface"
-               class="act"
-               onClick="xajax_window_submit('edit_interface', 'ip_addr=>{$currip_txt}', 'editor');"
-            >Add interface to an existing host</a>&nbsp;
-                 
-EOL;
-
-        // If the current ip is one allocated on this subnet lets do some stuff
-        if (array_key_exists($currip, $iplist)) { 
-            $rowid='byip_allocated';
-            $rowstyle='';
-
-            // check if it is a pool range
-            list($pooltype,$poolid) = explode('-',$iplist[$currip]);
-            if ($pooltype == 'pool') {
-                $interface['desc'] = '<span style="color: #aaaaaa;">DHCP Pool</span>';
-                $rowstyle='background-color: #FFFBD6';
-                $nameval=<<<EOL
-                    <a title="Edit Pool"
-                       class="act"
-                       onClick="xajax_window_submit('edit_dhcp_pool', 'subnet=>{$subnet['id']},id=>{$poolid}', 'editor');"
-                    ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
+    // Loop and display each record
+    foreach($results as $record) {
+        // Get host record
+        list($status, $rows, $host) = ona_find_host($record['host_id']); 
         
-                    <a title="Edit Pool"
-                       class="act"
-                       onClick="xajax_window_submit('edit_dhcp_pool', 'subnet=>{$subnet['id']},id=>{$poolid}', 'editor');"
-                    >Edit DHCP Pool</a>&nbsp;
-EOL;
-
-            } else {
-                // Get host record
-                list($status, $rows, $host) = ona_find_host($currip); 
-               
-                // Get the interface info 
-                list($status, $rows, $interface) = ona_find_interface($currip);
+        // If a network_id was passed use it as part of the search.  Used to display the IP of the network you searched
+        if (is_numeric($form['subnet_id'])) {
             
-                // Count how many interface rows this host hasand assign it back to the interfaces variable
-                list($status, $interfaces, $records) = db_get_records($onadb, 'interfaces', 'host_id = '. $onadb->qstr($host['id']), "", 0);
+            list($status, $rows, $interface) = ona_get_interface_record(array('host_id' => $host['id'], 'subnet_id' => $form['subnet_id']), 'ip_addr');
+            
+            // Count how many rows and assign it back to the interfaces variable
+            list($status, $interfaces, $records) = db_get_records($onadb,
+                                                            'interfaces',
+                                                            'host_id = '. $onadb->qstr($host['id']),
+                                                            "",
+                                                            0);
+            
+        } elseif (is_numeric($ip)) {
+            list($status, $rows, $interface) = db_get_record($onadb,
+                                                            'interfaces',
+                                                            'host_id = '. $onadb->qstr($host['id']) . 
+                                                            ' AND ip_addr >= ' . $onadb->qstr($ip) . 
+                                                            ' AND ip_addr <= ' . $onadb->qstr($ip_end),
+                                                            "",
+                                                            0);
+            
+            // Count how many rows and assign it back to the interfaces variable
+            list($status, $interfaces, $records) = db_get_records($onadb,
+                                                            'interfaces',
+                                                            'host_id = '. $onadb->qstr($host['id']),
+                                                            "",
+                                                            0);
+            
+        }  else {
+            // Interface (and find out how many there are)
+            list($status, $interfaces, $interface) = ona_get_interface_record(array('host_id' => $host['id']), 'ip_addr');
+        }
 
-                // get interface cluster info
-                list ($status, $intclusterrows, $intcluster) = db_get_records($onadb, 'interface_clusters', "interface_id = {$interface['id']}");
-                if ($intclusterrows>0) {
-                    $clusterscript= "onMouseOver=\"wwTT(this, event,
-                        'id', 'tt_interface_cluster_list_{$interface['id']}',
-                        'type', 'velcro',
-                        'styleClass', 'wwTT_niceTitle',
-                        'direction', 'south',
-                        'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>interface_cluster_list,id=>tt_interface_cluster_list_{$interface['id']},interface_id=>{$interface['id']}\');'
-                        );\"";
-                    $clusterhtml .= <<<EOL
-                    <img src="{$images}/silk/sitemap.png" {$clusterscript} />
+        // get interface cluster info
+        $clusterhtml = '';
+        list ($status, $intclusterrows, $intcluster) = db_get_records($onadb, 'interface_clusters', "interface_id = {$record['id']}");
+        if ($intclusterrows>0) {
+            $clusterscript= "onMouseOver=\"wwTT(this, event,
+                    'id', 'tt_interface_cluster_list_{$record['id']}',
+                    'type', 'velcro',
+                    'styleClass', 'wwTT_niceTitle',
+                    'direction', 'south',
+                    'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>interface_cluster_list,id=>tt_interface_cluster_list_{$record['id']},interface_id=>{$record['id']}\');'
+                    );\"";
+            $clusterhtml .= <<<EOL
+                <img src="{$images}/silk/sitemap.png" {$clusterscript} />
 EOL;
-                }
+        }
 
-                // set the name value for an allocated host
-                $nameval = <<<EOL
+
+        $record['ip_addr'] = ip_mangle($record['ip_addr'], 'dotted');
+        $interface_style = '';
+        if ($interfaces > 1) {
+            $interface_style = 'font-weight: bold;';
+        }
+
+        // Subnet description
+        list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $record['subnet_id']));
+        $record['subnet'] = $subnet['name'];
+        $record['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
+        $record['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
+
+        // Device Description
+        list($status, $rows, $device) = ona_find_device($host['device_id']);
+        list($status, $rows, $device_type) = ona_get_device_type_record(array('id' => $device['device_type_id']));
+        list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
+        list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
+        list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
+        $record['device'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
+        $record['device'] = str_replace('Unknown', '?', $record['device']);
+
+        $record['notes_short'] = truncate($host['notes'], 40);
+
+        // Format the date and colorize if its older than 2 months
+        if ($record['last_response']) {
+            $record['last_response_fmt'] = date($conf['date_format'],strtotime($record['last_response']));
+            if (strtotime($record['last_response']) < strtotime('-2 month')) {
+                $record['last_response_fmt'] = "<span style=\"color: red;\">".$record['last_response_fmt']."</style>";
+            }
+        }
+
+
+        // Get location info
+        list($status, $rows, $loc) = ona_get_location_record(array('id' => $device['location_id']));
+
+
+        // Escape data for display in html
+        foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
+
+        $primary_object_js = "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')');";
+        $html .= <<<EOL
+            <tr onMouseOver="this.className='row-highlight';" onMouseOut="this.className='row-normal';">
+                
+                <td class="list-row">
                     <a title="View host. ID: {$host['id']}"
                        class="nav"
-                       onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$host['id']}\', \'display\')');"
+                       onClick="{$primary_object_js}"
                     >{$host['name']}</a
                     >.<a title="View domain. ID: {$host['domain_id']}"
                          class="domain"
                          onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_domain\', \'domain_id=>{$host['domain_id']}\', \'display\')');"
                     >{$host['domain_fqdn']}</a>
-EOL;
-
-                // Make it bold if we have more than one interface on this host
-                if ($interfaces > 1) {
-                    $interface_style = 'font-weight: bold;';
-                }
-
-                // Device Description
-                list($status, $rows, $device) = ona_find_device($host['device_id']);
-                list($status, $rows, $device_type) = ona_get_device_type_record(array('id' => $device['device_type_id']));
-                list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
-                list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
-                list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
-                $record['device'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
-                $record['device'] = str_replace('Unknown', '?', $record['device']);
-                $record['ip_addr'] = $currip_txt;
-
-                $record['notes_short'] = truncate($host['notes'], 40);
-                $interface['description_short'] = truncate($interface['description'], 40);
-
-                if ($interface['name'] ) $interface['name'] = "[{$interface['name']}]";
-                $interface['desc'] = "{$interface['name']} {$interface['description_short']}";
-
-                // Format the date and colorize if its older than 2 months
-                if ($interface['last_response']) {
-                    $interface['last_response'] = date($conf['date_format'],strtotime($interface['last_response']));
-                    if (strtotime($interface['last_response']) < strtotime('-2 month')) {
-                        $interface['last_response_fmt'] = 'style=color:red;';
-                    }
-                }
-
-                // Get location info
-                list($status, $rows, $loc) = ona_get_location_record(array('id' => $device['location_id']));
-
-            }// end real host ifblock
-
-        } // end while loop
-
-        // Escape data for display in html
-        foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
-
-        $html .= <<<EOL
-            <tr {$rowid}=true style="{$rowstyle}" onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
+                </td>
                 
+                <td class="list-row">
+                    <a title="View subnet. ID: {$subnet['id']}"
+                         class="nav"
+                         onClick="xajax_window_submit('work_space', 'xajax_window_submit(\'display_subnet\', \'subnet_id=>{$subnet['id']}\', \'display\')');"
+                    >{$record['subnet']}</a>&nbsp;
+                </td>
+
                 <td class="list-row" align="left">
-EOL;
-        // if it is used, show an edit interface link
-        if ($rowid == 'byip_allocated') {
-            $html .= <<<EOL
-                    <a class="nav" style="{$interface_style}" title="Edit interface ID: {$interface['id']}"
-                          onClick="xajax_window_submit('edit_interface', 'interface_id=>{$interface['id']}', 'editor');"
+                    <span style="{$interface_style}"
 EOL;
 
-            if ($interfaces > 1) {
-                $html .= <<<EOL
+if ($interfaces > 1) {
+        $html .= <<<EOL
                           onMouseOver="wwTT(this, event,
                                             'id', 'tt_host_interface_list_{$host['id']}',
                                             'type', 'velcro',
@@ -369,34 +351,27 @@ EOL;
                                             'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>host_interface_list,id=>tt_host_interface_list_{$host['id']},host_id=>{$host['id']}\');'
                                            );"
 EOL;
-            }
-            $html .= '>';
-
-        }
-
-        //print out the IP address
-        $html .= $record['ip_addr'];
-
-        // close the A tag if used above
-        if ($rowid == 'byip_allocated') { $html .= '</a>';}
-
-        // Keep on goin with the rest of the line
+}
         $html .= <<<EOL
-
-                    &nbsp;<span>{$clusterhtml}</span>
+                    >{$record['ip_addr']}</span>&nbsp;
+                    <span title="{$record['ip_mask']}">/{$record['ip_mask_cidr']}</span>
+                    <span>{$clusterhtml}</span>
                 </td>
 
-                <td class="list-row" {$interface['last_response_fmt']}>{$interface['last_response']}&nbsp;</td>
-
-                <td class="list-row">
-                    <span title="{$interface['description']}">{$interface['desc']}</span>&nbsp;
-                </td>
-
-                <td class="list-row" style="border-left: 1px solid; border-left-color: #aaaaaa;">
-                   {$nameval}
-                </td>
+                <td class="list-row">{$record['last_response_fmt']}&nbsp;</td>
 
                 <td class="list-row">{$record['device']}&nbsp;</td>
+
+                <td class="list-row" align="right">
+                    <span onMouseOver="wwTT(this, event, 
+                                            'id', 'tt_location_{$device['location_id']}', 
+                                            'type', 'velcro',
+                                            'styleClass', 'wwTT_niceTitle',
+                                            'direction', 'south',
+                                            'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>location,id=>tt_location_{$device['location_id']},location_id=>{$device['location_id']}\');'
+                                           );"
+                    >{$loc['reference']}</span>&nbsp;
+                </td>
 
                 <td class="list-row">
                     <span title="{$host['notes']}">{$record['notes_short']}</span>&nbsp;
@@ -404,9 +379,6 @@ EOL;
 
             </tr>
 EOL;
-
-        // increment the currip
-        $currip++;
 
     }
 
@@ -419,16 +391,6 @@ EOL;
     $js .= <<<EOL
             /* Make sure this table is 100% wide */
             el('{$form['form_id']}_full_host_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
-
-function togglebyip(name) {
-    tr=document.getElementsByTagName('tr')
-    for (i=0;i<tr.length;i++){
-    if (tr[i].getAttribute(name)){
-        if (tr[i].style.display=='none'){tr[i].style.display = '';}
-        else {tr[i].style.display = 'none';}
-    }
-    }
-}
 EOL;
     
    

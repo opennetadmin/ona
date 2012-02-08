@@ -10,18 +10,6 @@
 //}
 
 
-// Toggle the display style for table rows of a given 'tablename'
-// based on an attribute setting of 'type'
-function toggle_table_rows(tablename,type) {
-    mytable=el(tablename)
-    tr=mytable.getElementsByTagName('tr')
-    for (i=0;i<tr.length;i++){
-      if (tr[i].getAttribute(type)){
-        if (tr[i].style.display=='none'){tr[i].style.display = '';}
-        else {tr[i].style.display = 'none';}
-      }
-    }
-}
 
 
 // over-ride the alert method only if this a newer browser.

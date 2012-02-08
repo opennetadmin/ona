@@ -711,8 +711,10 @@ function ip_mangle_gmp($ip="", $format="default") {
     // Is output format 8 (flipped IP string)?
     else if ($format == 8 or $format == 'flip') {
         if(!is_ipv4($ip)) {
-            $self['error'] = "ERROR => Invalid IPv4 address";
-            return(-1);
+            // Turn it into a ip6.arpa PTR record format with nibbles and all!
+            return(strrev(implode(".", str_split(str_pad(gmp_strval($ip, 16), 32, "0", STR_PAD_LEFT), 1))));
+            //$self['error'] = "ERROR => Invalid IPv4 address";
+            //return(-1);
         }
         $octet = explode('.',long2ip(sprintf("%s", gmp_strval($ip))));
         return(sprintf("%s.%s.%s.%s",$octet[3],$octet[2],$octet[1],$octet[0]));

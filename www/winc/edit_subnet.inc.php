@@ -33,16 +33,19 @@ function ws_editor($window_name, $form='') {
     if (is_numeric($form['subnet_id'])) {
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
         if ($rows) {
+            if (strlen($subnet['ip_addr']) > 11) {
+		$subnet['ip_mask'] = '/'.ip_mangle($subnet['ip_mask'], 'cidr');
+	    } else {
+            	$subnet['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
+            }
             $subnet['ip_addr'] = ip_mangle($subnet['ip_addr'], 'dotted');
-            $subnet['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
-            $subnet['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
 
             // Vlan Record
             list($status, $rows, $vlan) = ona_get_vlan_record(array('id' => $subnet['vlan_id']));
             $subnet['vlan_desc'] = $vlan['vlan_campus_name'] . ' / ' . $vlan['name'];
         }
     }
-    // If there is no subnet id in the form
+    // If there is no subnet id in the form but we are passing in data, clean it up
     else {
         if (strlen($form['ip_addr']) > 1) $subnet['ip_addr'] = ip_mangle($form['ip_addr'], 'dotted');
         if (strlen($form['ip_mask']) > 1) $subnet['ip_mask'] = ip_mangle($form['ip_mask'], 'dotted');
@@ -162,7 +165,7 @@ EOL;
                     value="{$subnet['name']}"
                     class="edit"
                     type="text"
-                    size="30" maxlength="30"
+                    size="35" maxlength="100"
                 >
             </td>
         </tr>
@@ -189,7 +192,7 @@ EOL;
                     value="{$subnet['ip_addr']}"
                     class="edit"
                     type="text"
-                    size="17" maxlength="17"
+                    size="35" maxlength="40"
                 >
             </td>
         </tr>
@@ -206,7 +209,7 @@ EOL;
                     value="{$subnet['ip_mask']}"
                     class="edit"
                     type="text"
-                    size="17" maxlength="17"
+                    size="35" maxlength="17"
                 >
                 <div id="suggest_masks_{$window_name}" class="suggest"></div>
             </td>
