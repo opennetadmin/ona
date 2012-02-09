@@ -3,3 +3,4 @@ run_install
 
 VERSION
 www/local/config
+www/local/plugins
