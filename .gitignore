@@ -1,0 +1,5 @@
+# dont process the run_install script
+run_install
+
+VERSION
+www/local/config
