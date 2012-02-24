@@ -5,4 +5,4 @@ www/local/config/run_install
 VERSION
 www/local/config
 www/local/plugins/*
-!www/local/plugins/.gitignore
+!www/local/plugins/README

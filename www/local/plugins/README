@@ -1,0 +1,7 @@
+Plugins
+=======
+
+This directory is the location to install plugins to enhance
+and add functionality to ONA.  Eache plugin lives in its
+own directory and can be 'installed' via the GUI using the
+plugin manager in the plugins menu.
