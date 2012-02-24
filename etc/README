@@ -1,0 +1,7 @@
+etc
+===
+
+This directory is used for various configurations related to
+programs installed into the bin directory.  Also build scripts
+such as build_bind and build_dhcp store their resulting configs
+here.
