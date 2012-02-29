@@ -182,7 +182,7 @@ require_once($conf['inc_functions_db']);
 
 // Check to see if the run_install file exists.
 // If it does, run the install process.
-if (file_exists($base.'/local/config/run_install')) {
+if (file_exists($base.'/local/config/run_install') or $runinstaller or $install_submit == 'Y') {
     // Process the install script
     require_once($base.'/../install/install.php');
     exit;

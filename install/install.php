@@ -372,9 +372,11 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
         $text .= $script_text;
         $text .= "You can now <a href='{$baseURL}'>CLICK HERE</a> to start using OpenNetAdmin! Enjoy!";
 
-        if (!@unlink($runinstall)) {
+        if (@file_exists($runinstall)) {
+          if (!@unlink($runinstall)) {
             $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to delete the file '{$runinstall}'.<br>";
             $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Please remove '{$runinstall}' manually.<br>";
+          }
         }
     } else {
         $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was a fatal error. Upgrade may be incomplete. Fix the issue and <a href=\"{$baseURL}\">try again</a>.<br>";
@@ -562,9 +564,11 @@ EOL;
             $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was a fatal error. Install may be incomplete. Fix the issue and <a href=\"{$baseURL}\">try again</a>.<br>";
         } else {
             // remove the run_install file in the install dir
-            if (!@unlink($runinstall)) {
+            if (@file_exists($runinstall)) {
+              if (!@unlink($runinstall)) {
                 $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to delete the file '{$runinstall}'.<br>";
                 $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Please remove '{$runinstall}' manually.<br>";
+              }
             }
             $text .= "You can now <a href='{$baseURL}'>CLICK HERE TO START</a> using OpenNetAdmin!<br>You can log in as 'admin' with a password of 'admin'<br>Enjoy!";
         }
