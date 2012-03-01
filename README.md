@@ -14,10 +14,10 @@ Please refer to the [Install page on the Github Wiki](https://github.com/opennet
 
 CONTACT
 -------
-http://opennetadmin.com/		-- Main website
-http://opennetadmin.com/community	-- Contact information
-http://opennetadmin.com/docs		-- Online documentation
-http://opennetadmin.com/forum	 	-- User discussion group
+  * http://opennetadmin.com/		-- Main website
+  * http://opennetadmin.com/community	-- Contact information
+  * http://opennetadmin.com/docs	-- Online documentation
+  * http://opennetadmin.com/forum	-- User discussion group
 
 LICENSE
 -------
