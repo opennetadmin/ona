@@ -252,14 +252,22 @@ function ws_free_ip($window_name, $form='') {
 
     // Create a few variables that will be handy later
     $num_ips = 0xffffffff - $subnet['ip_mask'];
-    $last_ip = ($subnet['ip_addr'] + $num_ips) - 1;
+    if ($subnet['ip_mask'] < 4294967294) {
+      $last_ip = ($subnet['ip_addr'] + $num_ips) - 1;
+    } else {
+      $last_ip = ($subnet['ip_addr'] + $num_ips);
+    }
 
     // Search results go in here
     $results = array();
     $count = $num_ips - count($used_ips);
 
     // Create a list of available IP's
-    $ip = $subnet['ip_addr'] + 1;
+    if ($subnet['ip_mask'] = 4294967296) {
+      $ip = $subnet['ip_addr'];
+    } else {
+      $ip = $subnet['ip_addr'] + 1;
+    }
     while ($ip <= $last_ip and count($results) <= $form['max_results']) {
         if (!array_key_exists("{$ip}", $used_ips))
             $results[] = $ip;
