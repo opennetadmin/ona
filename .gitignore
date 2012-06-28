@@ -1,0 +1,14 @@
+# dont process the run_install script
+run_install
+www/local/config/run_install
+
+VERSION
+www/local/config
+
+# Set up empty dirs
+www/local/plugins/*
+!www/local/plugins/README
+bin/*
+!bin/README
+etc/*
+!etc/README

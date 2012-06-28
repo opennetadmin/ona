@@ -158,17 +158,6 @@ $style['borderB'] = "border-bottom: 1px solid {$color['border']};";
 $style['borderL'] = "border-left: 1px solid {$color['border']};";
 $style['borderR'] = "border-right: 1px solid {$color['border']};";
 
-// Include the localized Database settings
-$dbconffile = "{$base}/local/config/database_settings.inc.php";
-if (file_exists($dbconffile)) {
-    if (substr(exec("php -l $dbconffile"), 0, 28) == "No syntax errors detected in") {
-        @include($dbconffile);
-    } else {
-        echo "Syntax error in your DB config file: {$dbconffile}<br>Please check that it contains a valid PHP formatted array, or check that you have the php cli tools installed.<br>You can perform this check maually using the command 'php -l {$dbconffile}'.";
-        exit;
-    }
-}
-
 // Include the localized configuration settings
 // MP: this may not be needed now that "user" configs are in the database
 @include("{$base}/local/config/config.inc.php");
@@ -180,9 +169,23 @@ require_once($conf['inc_functions']);
 // Include the basic database functions
 require_once($conf['inc_functions_db']);
 
+// Include the localized Database settings
+$dbconffile = "{$base}/local/config/database_settings.inc.php";
+if (file_exists($dbconffile)) {
+    if (substr(exec("php -l $dbconffile"), 0, 28) == "No syntax errors detected in") {
+        @include($dbconffile);
+    } else {
+        echo "Syntax error in your DB config file: {$dbconffile}<br>Please check that it contains a valid PHP formatted array, or check that you have the php cli tools installed.<br>You can perform this check maually using the command 'php -l {$dbconffile}'.";
+        exit;
+    }
+} else {
+    require_once($base.'/../install/install.php');
+    exit;
+}
+
 // Check to see if the run_install file exists.
 // If it does, run the install process.
-if (file_exists($base.'/local/config/run_install')) {
+if (file_exists($base.'/local/config/run_install') or $runinstaller or $install_submit == 'Y') {
     // Process the install script
     require_once($base.'/../install/install.php');
     exit;

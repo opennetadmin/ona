@@ -172,6 +172,7 @@ EOL;
             // Display cluster related information
             $clusterhtml='&nbsp;';
             $clusterstyle='';
+            $clusterscript='';
 
             if ($intclusterrows>0) {
                 $clusterstyle='font-weight: bold';

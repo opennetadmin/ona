@@ -883,11 +883,11 @@
       <NOTNULL/>
       <UNSIGNED/>
     </field>
-    <field name="ip_addr" type="I" size="10">
+    <field name="ip_addr" type="N" size="39.0">
       <NOTNULL/>
       <UNSIGNED/>
     </field>
-    <field name="ip_mask" type="I" size="10">
+    <field name="ip_mask" type="N" size="39.0">
       <NOTNULL/>
       <UNSIGNED/>
     </field>

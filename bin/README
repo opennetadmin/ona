@@ -1,0 +1,7 @@
+bin
+===
+
+This directory is for supporting scripts and tools used by
+ONA addons and plugins. It would be good to have it added
+to your shells $PATH.  Dcm.pl is one of the first you should
+install here.
