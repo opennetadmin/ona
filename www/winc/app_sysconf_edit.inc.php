@@ -111,7 +111,7 @@ EOL;
                     value="{$record['value']}"
                     class="edit"
                     type="text"
-                    size="30" maxlength="30"
+                    size="30" maxlength="256"
                 >
             </td>
         </tr>
