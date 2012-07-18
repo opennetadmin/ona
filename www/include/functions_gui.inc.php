@@ -441,7 +441,6 @@ function get_ip_suggestions($q, $max_results=10) {
     $formatted = $results = array();
 
     // Complete the (potentially incomplete) ip address
-    // MP: Need to figure out a good way to take a partial ipv6 and complete it out for start/end ips
     $ip = ip_complete($q, '0');
     $ip_end = ip_complete($q, '255');
 
@@ -468,9 +467,14 @@ function get_ip_suggestions($q, $max_results=10) {
         foreach ($records as $record) { $results[] = $record[$field]; }
     }
 
+
     // Format the ip's in dotted format
     sort($results);
-    foreach($results as $result) { $formatted[] = ip_mangle($result, 'dotted'); }
+    foreach($results as $result) {
+        // format ipv6 or regular
+        $format = ( is_ipv4($result) ? 'dotted' : 'ipv6' );
+        $formatted[] = ip_mangle($result, $format);
+    }
 
     unset($results, $result, $records, $record);
     return($formatted);

@@ -786,22 +786,41 @@ function ipcalc_info($ip='', $mask='') {
     // if the IP address does not fall on a proper boundary based on the provided mask
     // we will return the 'truenet' that it would fall into.
     $retarray['netboundary'] = 1;
-    $ip1 = $retarray['ip_binary'];
-    $ip2 = str_pad(substr($ip1, 0, $retarray['mask_cidr']), 32, '0');
-    $ip1 = ip_mangle($ip1, 'dotted');
-    $ip2 = ip_mangle($ip2, 'dotted');
+
+    if(is_ipv4($retarray['ip_numeric']))  {
+       // echo "ipv4";
+       $padding = 32;
+       $fmt = 'dotted';
+       $ip1 = ip_mangle($retarray['ip_numeric'], 'binary');
+       $ip2 = str_pad(substr($ip1, 0, $retarray['mask_cidr']), $padding, '0');
+       $total = (0xffffffff - $retarray['mask_numeric']) + 1;
+       $usable = $total - 2;
+       $lastip = ip_mangle($ip2, numeric) - 1 + $total;
+       $retarray['ip_last'] = ip_mangle($lastip, 'dotted');
+    } else {
+       // echo "ipv6";
+       $padding = 128;
+       $fmt = 'ipv6gz';
+       $ip1 = ip_mangle($retarray['ip_numeric'], 'bin128');
+       $ip2 = str_pad(substr($ip1, 0, $retarray['mask_cidr']), $padding, '0');
+       $sub = gmp_sub("340282366920938463463374607431768211455", $retarray['mask_numeric']);
+       $total = gmp_strval(gmp_add($sub,'1'));
+       $usable = gmp_strval(gmp_sub($total,'2'));
+       $lastip = gmp_strval(gmp_add(gmp_sub(ip_mangle($ip2, 'numeric'),'1'),$total));
+       $retarray['ip_last'] = ip_mangle($lastip, 'ipv6');
+    }
+
+    // Validate that the subnet IP & netmask combo are valid together.
+    $ip1 = ip_mangle($ip1, $fmt);
+    $ip2 = ip_mangle($ip2, $fmt);
     $retarray['truenet'] = $ip2; // this is the subnet IP that your IP would fall in given the mask provided.
     if ($ip1 != $ip2)
         $retarray['netboundary'] = 0;  // this means the IP passed in is NOT on a network boundary
 
     // Get IP address counts
-    $total = (0xffffffff - ip_mangle($retarray['in_mask'], 'numeric')) + 1;
-    $usable = $total - 2;
-    $lastip = ip_mangle($ip2, numeric) - 1 + $total;
 
     $retarray['ip_total'] = $total;
     $retarray['ip_usable'] = $usable;
-    $retarray['ip_last'] = ip_mangle($lastip, dotted);
 
 
     return($retarray);
@@ -1023,11 +1042,36 @@ function mac_mangle($input="", $format="default") {
 function ip_complete($ip='', $filler=0) {
     global $self;
 
-    // If it looks like ipv6 just return it
-// fill out :: with ffff:ffff .. need to figure out how many remaining octets there would be
-// :: is already masking it to all 0000:0000 so ipv6 auto does the default method here... may need a : to turn into :: though
+    // fix the : formats
+    $ip = rawurldecode($ip);
+// THOUGHT: fill out :: with ffff:ffff .. need to figure out how many remaining octets there would be
+
+    // This may break but leaving it in for now till testing can be done
+    // I think it can be deleted but it at least needs to pad out whatever is passed
     if (strlen($ip) > 11) return($ip);
-    if (strpos($ip, ':')) return($ip);
+
+    // pad IPv6 ips that have XXXX: format
+    // MP: FIXME: I would love to be able to search gz ipv6 addresses but its more complex to understand
+    // when to pad with 0 or not per section.  also when its compressed as :: how much is compressed?
+    // as a user types in chars it would have to be evaluated against all formats.  ugh
+    // for now, you can only quick search full form ipv6 addresses not compressed IPS.
+    if (strpos($ip, ':',3) !== false) {
+
+        if ($filler == '255') $filler = 'f';
+        $ip = str_replace(':','',$ip);
+
+        $startlen = strlen($ip);
+
+        // loop and fill all remaining chars
+        while ($startlen < 32) {
+            $startlen++;
+            $ip = $ip.$filler;
+        }
+
+        $ip = wordwrap($ip,4,':',true);
+
+        return(ip_mangle($ip, 'ipv6'));
+    }
 
     // Make sure it looks like a partial IP address
     if (!preg_match('/^(\d+)\.(\d+)?\.?(\d+)?\.?(\d+)?$/', $ip, $matches)) { return(-1); }
