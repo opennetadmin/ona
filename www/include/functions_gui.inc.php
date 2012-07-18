@@ -224,7 +224,7 @@ function get_subnet_usage($subnet_id) {
     if ($status or !$rows) { return(0); }
     if (strlen($subnet['ip_addr']) > 11) {
         $sub = gmp_sub("340282366920938463463374607431768211455", $subnet['ip_mask']);
-        $subnet['size'] = gmp_strval($sub) - 1;
+        $subnet['size'] = gmp_strval(gmp_sub($sub,1));
     } else {
     	$subnet['size'] = (0xffffffff - ip_mangle($subnet['ip_mask'], 'numeric')) - 1;
     	if ($subnet['ip_mask'] == 4294967295) $subnet['size'] = 1;
