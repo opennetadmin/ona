@@ -358,9 +358,12 @@ EOL;
             }
 
             // strip down the IP to just the "host" part as it relates to the domain its in
-            $domain_part = preg_replace("/.in-addr.arpa$/", '', $record['domain']);
-            $domain_part = preg_replace("/.ip6.arpa$/", '', $record['domain']);
-            $record['name'] = preg_replace("/$domain_part$/", '', $record['name']);
+            if (strstr($record['domain'],'in-addr.arpa')) {
+                $domain_part = preg_replace("/.in-addr.arpa$/", '', $record['domain']);
+            } else {
+                $domain_part = preg_replace("/.ip6.arpa$/", '', $record['domain']);
+            }
+            $record['name'] = preg_replace("/${domain_part}$/", '', $record['name']);
 
             $data = <<<EOL
                     <a title="Edit DNS A record"
