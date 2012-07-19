@@ -254,7 +254,11 @@ function ws_free_ip($window_name, $form='') {
     if(strlen($subnet['ip_addr']) < 11)  {
        // echo "ipv4";
        $num_ips = 0xffffffff - $subnet['ip_mask'];
-       $last_ip = ($subnet['ip_addr'] + $num_ips) - 1;
+       if ($subnet['ip_mask'] < 4294967294) {
+          $last_ip = ($subnet['ip_addr'] + $num_ips) - 1;
+       } else {
+          $last_ip = ($subnet['ip_addr'] + $num_ips);
+       }
     } else {
        // echo "ipv6";
        $sub = gmp_sub("340282366920938463463374607431768211455", $subnet['ip_mask']);
@@ -265,11 +269,15 @@ function ws_free_ip($window_name, $form='') {
 
     // Search results go in here
     $results = array();
-    $count = $num_ips - count($used_ips);
+    $allused = count($used_ips);
+    $count = gmp_strval(gmp_sub($num_ips, $allused));
 
     // Create a list of available IP's
-    $plusone = gmp_add("1", $subnet['ip_addr']);
-    $ip = gmp_strval($plusone); 
+    if ($subnet['ip_mask'] = 4294967296) {
+      $ip = $subnet['ip_addr'];
+    } else {
+      $ip = gmp_strval(gmp_add($subnet['ip_addr'],'1')); 
+    }
     while ($ip <= $last_ip and count($results) <= $form['max_results']) {
         if (!array_key_exists("{$ip}", $used_ips))
             $results[] = $ip;
