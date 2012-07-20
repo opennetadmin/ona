@@ -185,7 +185,7 @@ if (file_exists($dbconffile)) {
 
 // Check to see if the run_install file exists.
 // If it does, run the install process.
-if (file_exists($base.'/local/config/run_install') or $runinstaller or $install_submit == 'Y') {
+if (file_exists($base.'/local/config/run_install') or @$runinstaller or @$install_submit == 'Y') {
     // Process the install script
     require_once($base.'/../install/install.php');
     exit;

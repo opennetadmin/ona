@@ -17,7 +17,7 @@ $curr_ver = '';
 
 // Get some pre-requisite information
 $phpversion = phpversion() > '5.0' ? 'Yes' : '<font color="red">No</font>';
-$hasgmp = function_exists( 'gmp_init' ) ? 'Yes' : 'Recommended';
+$hasgmp = function_exists( 'gmp_init' ) ? 'Yes' : 'Recommended (IPv6)';
 $hasmysql = function_exists( 'mysql_connect' ) ? 'Yes' : 'Recommended';
 $hasmbstring = function_exists( 'mb_internal_encoding' ) ? 'Yes' : 'Recommended';
 $dbconfwrite = @is_writable($onabase.'/www/local/config/') ? 'Yes' : '<font color="red">No</font>';
@@ -43,7 +43,7 @@ $requisitediv = <<<EOL
                     <tr><th colspan="5">Prerequisite checks</th></tr>
                     <tr><td>PHP version > 5.0:</td><td>{$phpversion}</td></tr>
                     <tr title="The PHP mysql database modules are used to connect to mysql databases"><td>PHP mysql support:</td><td>{$hasmysql}</td></tr>
-                    <tr title="The PHP GMP modules provide extra functionality, but are not required."><td>Has GMP support:</td><td>{$hasgmp}</td></tr>
+                    <tr title="The PHP GMP modules are required for IPv6 support."><td>Has GMP support:</td><td>{$hasgmp}</td></tr>
                     <tr title="The PHP mbstring modules provide better text encoding for UTF etc, but are not required."><td>Has mbstring support:</td><td>{$hasmbstring}</td></tr>
                     <tr title="The local config directory must be writable by the web server user: {$_ENV['APACHE_RUN_USER']}"><td>{$onabase}/www/local/config dir writable by '{$_ENV['APACHE_RUN_USER']}':</td><td>{$dbconfwrite}</td></tr>
                 </table>
@@ -133,7 +133,7 @@ if (@file_exists($dbconffile)) {
                 <form id="upgradeform">
                     <input type='hidden' name='install_submit' value='Y' />
                     <input id='upgrade' type='hidden' name='upgrade' value='N' />
-                    <a style="text-decoration: none;" href="/"><input class='edit' type="button" value="Cancel upgrade" onclick="" /></a>
+                    <a style="text-decoration: none;" href="{$baseURL}"><input class='edit' type="button" value="Cancel upgrade" onclick="" /></a>
                     <input class='edit' type='button' name='upgrade' value='Perform the upgrade.' onclick="el('upgrade').value='Y';el('upgradeform').submit();" />
                 </form>
             </div>
