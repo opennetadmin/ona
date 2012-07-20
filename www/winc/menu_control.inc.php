@@ -60,6 +60,8 @@ EOL;
     $response = new xajaxResponse();
     $response->addAssign('menu_bar_top', "innerHTML", $html);
     $response->addScript($js);
+    // used to let menus pass in javascript
+    $response->addScript($tmpjs);
     return($response->getXML());
 }
 
@@ -630,63 +632,22 @@ EOL;
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Function: get_plugin_menu_html()
+// Function: get_plugin_menu_button_workspace()
 //
 // Description:
-//     Builds HTML for displaying the start menu
+//     Builds HTML for displaying the workspace menu
+//     Will copy contents of the wsmenu built on the workspace itself
 //     Returns a two part array ($html, $js)
 //////////////////////////////////////////////////////////////////////////////
 function get_html_menu_button_workspace($form='') {
-    global $conf, $images, $wsmenuitem, $base, $baseURL;
 
     $html = $js = '';
 
-    // Get all the plugin menuitems
-    $pluginlist = plugin_list('ws_menu_item');
+    // Create a div section to place any workspace menu items 
+    $html = "<div id='wsmenudiv'><div class='row'>No Available Actions</div></div>";
 
-    // Load all the plugin menuitems and build a menu entry
-    foreach ($pluginlist as $p) {
-        plugin_load('ws_menu_item',$p['name']);
-
-      foreach ($wsmenuitem as $menuitem) {
-
-	// check if we should display this menu item on this workspace
-        foreach($menuitem['displayon'] as $display) {
-          if (($display == 'all') or ($display == $form['wsname'])) {
-
-          // based on the menu cmd type, build the right command
-          switch ($menuitem['type']) {
-              case 'work_space':
-                  $menu_type_cmd = "xajax_window_submit('work_space', 'xajax_window_submit(\'{$p['name']}\', \'form=>fake\', \'display\')')";
-                  break;
-              case 'window':
-                  $menu_type_cmd = "toggle_window('{$p['name']}')";
-                  break;
-          }
-  
-          // Use a default image if we cant find the one specified.
-          if (!file_exists($base.$menuitem['image'])){
-             $menuitem['image'] = "/images/silk/plugin.png";
-          }
-  
-          // Check the authorization and print the menuitem if the are authorized
-          if (auth($menuitem['authname'],3) || !$menuitem['authname']) {
-          $html .= <<<EOL
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); {$menu_type_cmd};"
-     title="{$menuitem['title']}"
- ><img style="vertical-align: middle;" src="{$baseURL}{$menuitem['image']}" border="0"
- />&nbsp;{$menuitem['title']}</div>
-
-EOL;
-          }
-        }
-       }
-     }
-    }
+    // Copy our hidden div content created within the workspace itself to this menu
+    $js = "el('wsmenudiv').innerHTML = el('wsmenu').innerHTML;";
 
 
     return(array($html, $js));

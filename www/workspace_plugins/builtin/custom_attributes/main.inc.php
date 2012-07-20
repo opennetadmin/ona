@@ -15,14 +15,23 @@ else {
 // This adds an "s" at the end of the table name.  assumes all tables are plural
 list($status, $rows, $attributes) = db_get_records($onadb, 'custom_attributes', array('table_id_ref' => $record['id'], 'table_name_ref' => $kind.'s'), '');
 
+
+// create workspace menu items
+// This is where you list an array of menu items to display for this workspace
+$modwsmenu[0]['menutitle'] = 'Add Custom Attribute';
+$modwsmenu[0]['tooltip']   = "Add Custom Attribute to this {$kind}";
+$modwsmenu[0]['authname']  = 'custom_attribute_add';
+$modwsmenu[0]['commandjs'] = "xajax_window_submit('edit_custom_attribute', xajax.getFormValues('form_{$kind}_{$record['id']}'), 'editor');";
+$modwsmenu[0]['image'] = '/images/silk/tag_blue.png';
+
 // CUSTOM ATTRIBUTES LIST
+
+if ($rows) {
 $modbodyhtml .= <<<EOL
         <!-- CUSTOM ATTRIBUTES -->
         <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px; margin-top: 0px;">
 EOL;
 
-
-if ($rows) {
     foreach ($attributes as $entry) {
         list($status, $rows, $ca_type) = ona_get_custom_attribute_record(array('id' => $entry['id']));
 
@@ -82,11 +91,10 @@ EOL;
 
 EOL;
     }
-}
 
 
-if (auth('custom_attribute_add',$debug_val)) {
-    $modbodyhtml .= <<<EOL
+    if (auth('custom_attribute_add',$debug_val)) {
+        $modbodyhtml .= <<<EOL
             <tr>
                 <td colspan="5" align="left" valign="middle" nowrap="true" class="act-box">
 
@@ -107,9 +115,12 @@ if (auth('custom_attribute_add',$debug_val)) {
                 </td>
             </tr>
 EOL;
-}
+    }
 
 $modbodyhtml .= "</table>";
+
+}
+
 
 // END CUSTOM ATTRIBUTES LIST
 

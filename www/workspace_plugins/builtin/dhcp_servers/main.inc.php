@@ -7,9 +7,13 @@ $title_left_html = 'DHCP Servers';
 
 $title_right_html = '';
 
-$modbodyhtml .= <<<EOL
-        <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-EOL;
+// create workspace menu items
+// This is where you list an array of menu items to display for this workspace
+$modwsmenu[0]['menutitle'] = 'Add DHCP Server';
+$modwsmenu[0]['tooltip']   = 'Assign a DHCP Server for this subnet';
+$modwsmenu[0]['authname']  = 'advanced';
+$modwsmenu[0]['commandjs'] = "xajax_window_submit('edit_dhcp_server', xajax.getFormValues('form_subnet_{$record['id']}'), 'editor');";
+$modwsmenu[0]['image'] = '/images/silk/page_add.png';
 
 
 // Get a list of servers
@@ -33,6 +37,10 @@ list($status, $rows, $dhcpservers) = db_get_records($onadb,
                                                         );
 
 if ($rows) {
+    $modbodyhtml .= <<<EOL
+        <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
+EOL;
+
     foreach ($dhcpservers as $dhcphost) {
 
         list($status, $rows, $host) = ona_find_host($dhcphost['id']);
@@ -78,10 +86,9 @@ EOL;
             </tr>
 EOL;
     }
-}
 
-if (auth('advanced',$debug_val)) {
-    $modbodyhtml .= <<<EOL
+    if (auth('advanced',$debug_val)) {
+        $modbodyhtml .= <<<EOL
             <tr>
                 <td colspan="3" align="left" valign="middle" nowrap="true" class="act-box">
                     <form id="form_dhcp_server_{$record['id']}"
@@ -101,8 +108,9 @@ if (auth('advanced',$debug_val)) {
                 </td>
             </tr>
 EOL;
+    }
+    $modbodyhtml .= "        </table>";
 }
-$modbodyhtml .= "        </table>";
 
 
 

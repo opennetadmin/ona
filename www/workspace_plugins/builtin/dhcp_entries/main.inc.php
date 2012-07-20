@@ -34,19 +34,35 @@ if (isset($record['devicefull'])) {
     unset($title_description);
 }
 
-// DHCP ENTRIES LIST
-$modbodyhtml .= <<<EOL
+// create workspace menu items
+// This is where you list an array of menu items to display for this workspace
+$modwsmenu[0]['menutitle'] = 'Add DHCP Entry';
+$modwsmenu[0]['tooltip']   = 'Add DHCP Entries to this '.$kind;
+$modwsmenu[0]['authname']  = 'advanced';
+$modwsmenu[0]['commandjs'] = "xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_{$kind}_{$record['id']}'), 'editor');";
+$modwsmenu[0]['image'] = '/images/silk/page_add.png';
+if ($kind == 'server') {
+    $modwsmenu[1]['menutitle'] = 'Add GLOBAL DHCP Entry';
+    $modwsmenu[1]['tooltip']   = 'Add DHCP Entries to ALL DHCP servers';
+    $modwsmenu[1]['authname']  = 'advanced';
+    $modwsmenu[1]['commandjs'] = "xajax_window_submit('edit_dhcp_option_entry', xajax.getFormValues('form_global_{$record['id']}'), 'editor');";
+    $modwsmenu[1]['image'] = '/images/silk/page_add.png';
+}
+
+
+if ($rows) {
+    // DHCP ENTRIES LIST
+    $modbodyhtml .= <<<EOL
         <!-- DHCP INFORMATION -->
         <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px; margin-top: 0px;">
 EOL;
 
-if ($debug_display) {
-    $modbodyhtml .= <<<EOL
+    if ($debug_display) {
+        $modbodyhtml .= <<<EOL
         <tr><td><pre>{$rec_content}</pre><pre>{$extra_content}</pre></td></tr>
 EOL;
-}
+    }
 
-if ($rows) {
     foreach ($dhcp_entries as $entry) {
         list($status, $rows, $dhcp_type) = ona_get_dhcp_option_entry_record(array('id' => $entry['id']));
         foreach(array_keys($dhcp_type) as $key) { $dhcp_type[$key] = htmlentities($dhcp_type[$key], ENT_QUOTES); }
@@ -96,8 +112,8 @@ EOL;
 
 EOL;
     }
-}
-// If there are no DHCP entries but this is a subnet with a pool/and or dhcp servers, we need a gateway at least!
+
+    // If there are no DHCP entries but this is a subnet with a pool/and or dhcp servers, we need a gateway at least!
 
     if ($kind == 'subnet' and $hasgateway == 0) {
         // Gather info about this subnet and if it is assigned to any dhcp servers.
@@ -116,8 +132,8 @@ EOL;
     }
 
 
-if (auth('advanced',$debug_val)) {
-    $modbodyhtml .= <<<EOL
+    if (auth('advanced',$debug_val)) {
+        $modbodyhtml .= <<<EOL
             <tr>
                 <td colspan="5" align="left" valign="middle" nowrap="true" class="act-box">
 
@@ -138,9 +154,17 @@ if (auth('advanced',$debug_val)) {
                 </td>
             </tr>
 EOL;
+    }
+    $modbodyhtml .= "</table>";
 }
 
-$modbodyhtml .= "</table>";
+// Show a menu warning about gateway missing
+if ($kind == 'subnet' and $hasgateway == 0) {
+    list($status, $rows, $dhcp_servers)   = db_get_records($onadb, 'dhcp_server_subnets', array('subnet_id' => $record['id']));
+    if ($rows or $poolrows) {
+        $modwsmenu[0]['menutitle'] = "Add DHCP Entry <span style='background-color: #FFDDDD;'>(<img src='{$images}/silk/error.png' border='0'>Gateway)</span>";
+    }
+}
 
 // END DHCP ENTRIES LIST
 unset($rec_content);

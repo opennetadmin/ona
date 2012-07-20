@@ -9,15 +9,23 @@ $title_right_html = '';
 
 $haspool = 0;
 
-$modbodyhtml .= <<<EOL
-        <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
-EOL;
-
-
+// create workspace menu items
+// This is where you list an array of menu items to display for this workspace
+$modwsmenu[0]['menutitle'] = 'Add DHCP pool';
+$modwsmenu[0]['tooltip']   = 'Add DHCP pool range to this subnet';
+$modwsmenu[0]['authname']  = 'advanced';
+$modwsmenu[0]['commandjs'] = "xajax_window_submit('edit_dhcp_pool', xajax.getFormValues('form_subnet_{$record['id']}'), 'editor');";
+$modwsmenu[0]['image'] = '/images/silk/page_add.png';
 
 // get dhcp pool records
 list($status, $rows, $dhcp_pool) = db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $record['id']));
 if ($rows) {
+
+    $modbodyhtml .= <<<EOL
+        <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
+EOL;
+
+
     $haspool = 1;
 
     // Gather info about this subnet and if it is assigned to any dhcp servers.
@@ -96,10 +104,9 @@ EOL;
 EOL;
 
         }
-}
 
-if (auth('advanced',$debug_val)) {
-    $modbodyhtml .= <<<EOL
+    if (auth('advanced',$debug_val)) {
+        $modbodyhtml .= <<<EOL
             <tr>
                 <td colspan="2" align="left" valign="middle" nowrap="true" class="act-box">
                     <form id="form_pool_add_{$pool['id']}"
@@ -119,10 +126,11 @@ if (auth('advanced',$debug_val)) {
             </tr>
             </td>
 EOL;
+    }
+    $modbodyhtml .= "</table>";
 }
 
 
-$modbodyhtml .= "        </table>";
 
 
 

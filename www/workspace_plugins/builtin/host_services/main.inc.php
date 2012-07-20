@@ -125,6 +125,24 @@ EOL;
 
     }
 
+// create workspace menu items
+// This is where you list an array of menu items to display for this workspace
+if ($is_dhcp_server==0) {
+    $modwsmenu[0]['menutitle'] = 'Add DHCP Services';
+    $modwsmenu[0]['tooltip']   = 'Add DHCP Services to this host';
+    $modwsmenu[0]['authname']  = 'advanced';
+    $modwsmenu[0]['commandjs'] = "xajax_window_submit('edit_dhcp_server', xajax.getFormValues('form_host_{$record['id']}'), 'editor');";
+    $modwsmenu[0]['image'] = '/images/silk/page_add.png';
+}
+if ($is_dns_server==0) {
+    $modwsmenu[1]['menutitle'] = 'Add DNS Services';
+    $modwsmenu[1]['tooltip']   = 'Add DNS Services to this host';
+    $modwsmenu[1]['authname']  = 'advanced';
+    $modwsmenu[1]['commandjs'] = "xajax_window_submit('edit_domain_server', xajax.getFormValues('form_host_{$record['id']}'), 'editor');";
+    $modwsmenu[1]['image'] = '/images/silk/page_add.png';
+}
+
+if ($is_dhcp_server==1 or $is_dns_server==1) {
     $modbodyhtml .= <<<EOL
             <!-- SERVICES CONFIGURATION BOX -->
             <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
@@ -133,6 +151,7 @@ EOL;
                 </td></tr>
             </table>
 EOL;
+}
     // END SERVICE CONFIGURATION BOX
 
 

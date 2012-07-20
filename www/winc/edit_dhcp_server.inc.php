@@ -39,8 +39,16 @@ function ws_editor($window_name, $form='') {
         list($status, $rows, $host) = ona_find_host($form['server']);
     }
 
+    if ($form['host_id']) {
+        list($status, $rows, $host) = ona_find_host($form['host_id']);
+    }
+
+    if ($form['subnet_id']) {
+        list($status, $rows, $subnet) = ona_find_subnet($form['subnet_id']);
+    }
+
     if ($form['subnet']) {
-        $subnet['name'] = $form['subnet'];
+        list($status, $rows, $subnet) = ona_find_subnet($form['subnet']);
     }
     // Escape data for display in html
     foreach(array_keys((array)$host) as $key)  { $host[$key]  = htmlentities($host[$key],  ENT_QUOTES, $conf['php_charset']); }

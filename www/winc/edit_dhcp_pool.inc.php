@@ -25,6 +25,7 @@ function ws_editor($window_name, $form='') {
     // If an array in a string was provided, build the array and store it in $form
     $form = parse_options_string($form);
 
+    if ($form['subnet_id']) $form['subnet'] = $form['subnet_id'];
 
     // if it is a new pool, setup some things
     if (!$form['id']) {
@@ -180,7 +181,7 @@ EOL;
                     value="{$pool['start_ip']}"
                     class="edit"
                     type="text"
-                    size="15" maxlength="255"
+                    size="25" maxlength="255"
                 >
             </td>
         </tr>
@@ -196,7 +197,7 @@ EOL;
                     value="{$pool['end_ip']}"
                     class="edit"
                     type="text"
-                    size="15" maxlength="255"
+                    size="25" maxlength="255"
                 >
             </td>
         </tr>

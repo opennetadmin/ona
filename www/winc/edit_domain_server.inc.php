@@ -39,6 +39,10 @@ function ws_editor($window_name, $form='') {
         list($status, $rows, $host) = ona_find_host($form['server']);
     }
 
+    if ($form['host_id']) {
+        list($status, $rows, $host) = ona_find_host($form['host_id']);
+    }
+
     if ($form['domain']) {
         list($status, $rows, $domain) = ona_find_domain($form['domain']);
     }

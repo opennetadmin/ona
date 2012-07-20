@@ -151,19 +151,30 @@ EOL;
 EOL;
     // Start displaying all the ws plugins
     $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
-    $html .= $wspl[0]; $js .= $wspl[1];
+    $html .= $wspl[0]; $js .= $wspl[1]; //DONT add the, not needed $wsmenu{}=$wspl[2];
 
 
     // This will display the server level, not global level
     $extravars['dhcpserver_id'] = $host['id'];
     $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
-    $html .= $wspl[0]; $js .= $wspl[1];
+    $html .= $wspl[0]; $js .= $wspl[1]; $wsmenu[]=$wspl[2];
+
+    $wsmenuhtml = build_workspace_menu($wsmenu);
 
     $html .= <<<EOL
         </td>
         <!-- END OF THIRD COLUMN OF SMALL BOXES -->
     </tr></table>
     </div>
+    <form id="form_server_{$record['id']}"
+        ><input type="hidden" name="server_id" value="{$host['id']}"
+        ><input type="hidden" name="js" value="{$refresh}"
+    ></form>
+    <form id="form_global_{$record['id']}"
+        ><input type="hidden" name="global_id" value="0"
+        ><input type="hidden" name="js" value="{$refresh}"
+    ></form>
+    <div id='wsmenu' style='display:none;'>{$wsmenuhtml}</div>
     <!-- END OF TOP SECTION -->
 EOL;
 

@@ -77,27 +77,27 @@ function ws_display($window_name, $form='') {
     $html .= "<div id='wsplugins' style='margin: 10px;'>";
 
     $wspl = workspace_plugin_loader('subnet_detail',$record,$extravars);
-    $html .= $wspl[0]; $js .= $wspl[1];
+    $html .= $wspl[0]; $js .= $wspl[1]; $wsmenu[]=$wspl[2];
 
     $wspl = workspace_plugin_loader('dhcp_servers',$record,$extravars);
-    $html .= $wspl[0]; $js .= $wspl[1];
+    $html .= $wspl[0]; $js .= $wspl[1]; $wsmenu[]=$wspl[2];
 
     $wspl = workspace_plugin_loader('dhcp_pools',$record,$extravars);
-    $html .= $wspl[0]; $js .= $wspl[1];
+    $html .= $wspl[0]; $js .= $wspl[1]; $wsmenu[]=$wspl[2];
 
     $wspl = workspace_plugin_loader('dhcp_entries',$record,$extravars);
-    $html .= $wspl[0]; $js .= $wspl[1];
+    $html .= $wspl[0]; $js .= $wspl[1]; $wsmenu[]=$wspl[2];
 
     $wspl = workspace_plugin_loader('custom_attributes',$record,$extravars);
-    $html .= $wspl[0]; $js .= $wspl[1];
+    $html .= $wspl[0]; $js .= $wspl[1]; $wsmenu[]=$wspl[2];
 
     // Display messages
     $wspl = workspace_plugin_loader('messages',$record,$extravars);
-    $html .= $wspl[0]; $js .= $wspl[1];
+    $html .= $wspl[0]; $js .= $wspl[1]; $wsmenu[]=$wspl[2];
 
     // Display messages
     $wspl = workspace_plugin_loader('reports',$record,$extravars);
-    $html .= $wspl[0]; $js .= $wspl[1];
+    $html .= $wspl[0]; $js .= $wspl[1]; $wsmenu[]=$wspl[2];
 
     // Get all the plugin based worspace items
     $wspl_list = plugin_list('wspl_item');
@@ -105,8 +105,11 @@ function ws_display($window_name, $form='') {
     // Load all the dynamic plugins
     foreach ($wspl_list as $p) {
         $wspl = workspace_plugin_loader($p['path'],$record,$extravars);
-        $html .= $wspl[0]; $js .= $wspl[1];
+        $html .= $wspl[0]; $js .= $wspl[1]; $wsmenu[]=$wspl[2];
     }
+
+    // Gather our menuitems and build the HTML
+    $wsmenuhtml = build_workspace_menu($wsmenu);
 
     $html .= <<<EOL
 
@@ -117,6 +120,8 @@ function ws_display($window_name, $form='') {
         ><input type="hidden" name="subnet_id" value="{$record['id']}"
         ><input type="hidden" name="js" value="{$refresh}"
     ></form>
+
+    <div id='wsmenu' style='display:none;'>{$wsmenuhtml}</div>
 
 EOL;
 

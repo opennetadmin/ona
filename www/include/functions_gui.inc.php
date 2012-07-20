@@ -10,6 +10,45 @@
 // if (is_numeric($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
 
 
+/////////////////////////////////////////////
+// Returns HTML containing menu items based on the inbound array $menuarray 
+//
+/////////////////////////////////////////////
+function build_workspace_menu($menuarray=array()){
+    global $base;
+
+    foreach ($menuarray as $plmenu) {
+      if ($plmenu) {
+        foreach ($plmenu as $menuitem) {
+          // Use a default image if we cant find the one specified.
+          if (!file_exists($base.$menuitem['image']) or !$menuitem['image']){
+             $menuitem['image'] = '/images/silk/plugin.png';
+          }
+
+          if (!$menuitem['tooltip']){
+             $menuitem['tooltip'] = $menuitem['menutitle'];
+          }
+
+          // Check the authorization and print the menuitem if the are authorized
+          if (auth($menuitem['authname'],3) || !$menuitem['authname']) {
+              $wsmenuhtml .= <<<EOL
+
+<div class="row"
+     onMouseOver="this.className='hovered';"
+     onMouseOut="this.className='row';"
+     onClick="ona_menu_closedown(); {$menuitem['commandjs']};"
+     title="{$menuitem['tooltip']}"
+ ><img style="vertical-align: middle;" src="{$baseURL}{$menuitem['image']}" border="0"
+ />&nbsp;{$menuitem['menutitle']}</div>
+
+EOL;
+          }
+        }
+      }
+    }
+
+    return $wsmenuhtml;
+}
 
 /////////////////////////////////////////////
 // Returns a list of available local plugins of given type
@@ -103,6 +142,7 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     global $conf, $self, $base, $images, $color, $style, $onadb;
     $modhtml = '';
     $modjs = '';
+    $modwsmenu = '';
     $modbodyhtml = '';
     $ws_plugin_dir = "{$base}/workspace_plugins";
 
@@ -188,12 +228,13 @@ EOL;
 
     // If the module returns no body, then lets blank out what we have
     // and assume that the module determined it should not display itself
+    // But if it gives us some menu items, display those still
     if (!$modbodyhtml) {
         $modhtml = '';
         $modjs = '';
     }
 
-    return(array($modhtml,$modjs));
+    return(array($modhtml,$modjs,$modwsmenu));
 }
 
 
