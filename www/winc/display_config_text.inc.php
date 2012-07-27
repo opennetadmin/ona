@@ -252,8 +252,8 @@ EOL;
     if ($form['displayconf']) {
         list($status, $rows, $config) = ona_get_config_record(array('id' => $form['displayconf']));
 
-        // Remove characters that will not display properly in a browser.. specifically CTRL-C chars
-        $config['config_body'] = htmlentities(str_replace(chr(03), "", $config['config_body']), ENT_QUOTES,$conf['php_charset']);
+        // Remove characters that will not display properly in a browser.. specifically CTRL-C and CTRL-G chars
+        $config['config_body'] = htmlentities(str_replace(array(chr(03),chr(07)),'', $config['config_body']), ENT_QUOTES,$conf['php_charset']);
 
         $html .= <<<EOL
         <div style="margin: 10px 20px; background-color: {$color['bar_bg']}; border: 1px solid; height: 60px;">
