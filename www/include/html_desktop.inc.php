@@ -33,7 +33,7 @@ print <<<EOL
     <script type="text/javascript" src="{$baseURL}/include/js/global.js" language="javascript"></script>
     {$conf['html_headers']}
 </head>
-<body style="overflow: hidden;" bgcolor="{$color['bg']}" link="{$color['link']}" alink="{$color['alink']}" vlink="{$color['vlink']}">
+<body style="overflow: auto;" bgcolor="{$color['bg']}" link="{$color['link']}" alink="{$color['alink']}" vlink="{$color['vlink']}">
 
     <!-- Top (Task) Bar -->
     <div class="menubar" id="bar_topmenu" style="background-color: {$self['context_color']}">
