@@ -15,7 +15,7 @@
 //
 /////////////////////////////////////////////
 function build_workspace_menu($menuarray=array()){
-    global $base;
+    global $base, $baseURL;
 
     foreach ($menuarray as $plmenu) {
       if ($plmenu) {
