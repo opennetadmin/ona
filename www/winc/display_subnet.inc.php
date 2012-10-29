@@ -11,7 +11,7 @@ include('include/functions_network_map.inc.php');
 //   Displays a subnet record and all associated info in the work_space div.
 //////////////////////////////////////////////////////////////////////////////
 function ws_display($window_name, $form='') {
-    global $conf, $self, $onadb;
+    global $conf, $self, $onadb, $baseURL;
     global $images, $color, $style;
     $html = '';
     $js = '';
@@ -35,11 +35,19 @@ function ws_display($window_name, $form='') {
         return($response->getXML());
     }
 
+//if ($form['nohistpop']) {
+//echo duhh;
+//    array_push($_SESSION['ona'][$window_name]['history'], array('title' => $window_name, 'type' => $window_name, 'url' => 'none'));
+//}
+
+//echo "<pre>"; print_r($_SESSION['ona']['work_space']); echo "</pre>";
+
     // Update History Title
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
     if ($history['title'] == $window_name) {
         $history['title'] = $record['name'];
+        $history['qry']   = "subnet=${record['name']}";
         array_push($_SESSION['ona']['work_space']['history'], $history);
     }
 

@@ -320,7 +320,7 @@ print <<<EOL
 
 EOL;
 
-
+/*
 // Open the work_space that was requested
 if ($work_space) {
     // Take the query from the URL and process it for use in the window_submit
@@ -332,6 +332,7 @@ if ($work_space) {
 --></script>
 EOL;
 }
+*/
 
 // Process any search that was passed
 if ($search) {
@@ -347,6 +348,43 @@ EOL;
 print <<<EOL
 
 <script>
+
+    // Process history popstate so the back button works etc
+    // requires HTML5+ and history support
+    window.onpopstate = function(stackstate) {
+        // Gather url information
+        var ws  = '',
+            qry = '',
+            //ret = {},
+            seg = document.location.search.replace(/^\?/,'').split('&'),
+            len = seg.length, i = 0, s;
+        // loop through url and gather values
+        for (;i<len;i++) {
+            if (!seg[i]) { continue; }
+            s = seg[i].split('=');
+
+            // if this url part is the work_space field then store it in ws and remove it from the qry variable
+            if (s[0] == 'work_space') { var ws = s[1]; continue; }
+            qry = qry + s[0] + '=>' + s[1];
+
+            //ret[s[0]] = s[1];
+        }
+
+        // Process workspaces, with or without state
+	if (stackstate.state == null) {
+            // initial page load OR return to initial URL via e.g. back button/directly typed URL.
+            // If the workspace was passed, then create a workspace and display its contents
+            if (ws != '') {
+                xajax_window_submit('work_space',  'xajax_window_submit(\''+ ws + '\' ,\'' + qry + '\', \'display\');');
+            }
+	} else {
+            // If the workspace was passed and we have state, then assume a workspace exists and we just need to update its contents.
+            if (ws != '') {
+                xajax_window_submit( ws ,  qry + ',nohistpop=>true' , 'display');
+            }
+	}
+    };
+
     var desktop_height = document.body.clientHeight - el('bar_top').clientHeight - el('trace_history').clientHeight;
     if (browser.isIE) {
         desktop_height -= 20;

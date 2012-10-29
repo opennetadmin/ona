@@ -11,9 +11,10 @@
 //     back to the browser to execute after the window is built.
 //////////////////////////////////////////////////////////////////////////////
 function ws_work_space_submit($window_name, $javascript='') {
-    global $conf, $self, $color, $style, $images;
+    global $conf, $self, $color, $style, $images, $baseURL;
 
     /****     UPDATE THIS WINDOW'S "HISTORY"     ****/
+/*
     if (!is_array($_SESSION['ona'][$window_name]['history'])) {
         $_SESSION['ona'][$window_name]['history'] = array();
     }
@@ -34,25 +35,25 @@ function ws_work_space_submit($window_name, $javascript='') {
     // Add the current "URL"
     array_push($_SESSION['ona'][$window_name]['history'], array('title' => $title, 'type' => $title, 'url' => $javascript));
 
-
     // If there are to many url's in the history, trim some.
     while (count($_SESSION['ona'][$window_name]['history']) > 7)
         array_shift($_SESSION['ona'][$window_name]['history']);
+*/
 
     // We're building the window in $window and will use window_open() to create the window
     $window = array(
-        'title' => "Search Results",
-        'html'  => "",
-        'js'    => "",
+        'title' => 'Work Space',
+        'html'  => '',
+        'js'    => '',
     );
 
 
-    // Set the window title:
-    $window['title'] = "Work Space";
+    // Define javascript to run after the window is created
+    $window['js'] .= <<<EOL
 
-
-// Define javascript to run after the window is created
-$window['js'] .= <<<EOL
+    /* Push new history state into the history stack, will be replaced later when the workspace is drawn in */
+    var histstate = { work_space: 'work_space' }; history.pushState(histstate,'ONA - $title','${baseURL}');
+    //var histstate = { work_space: '${title}' }; history.pushState(histstate,'ONA - $title','${baseURL}/?work_space=${title}');
 
     /* Hide the 'Search Results' box if it's visible */
     var _el = el('search_results');
@@ -153,7 +154,7 @@ EOL;
 //     This also updates the work space window's title.
 //////////////////////////////////////////////////////////////////////////////
 function ws_rewrite_history($window_name, $null='', $return_html=0) {
-    global $conf, $self, $color, $style, $images;
+    global $conf, $self, $color, $style, $images, $baseURL;
 
     $html = $js = '';
 
@@ -161,6 +162,8 @@ function ws_rewrite_history($window_name, $null='', $return_html=0) {
     if ($null == 'clear') {
         $_SESSION['ona']['work_space']['history'] = '';
     }
+
+//echo "<pre>"; print_r($_SESSION['ona'][$window_name]); echo "</pre>";
 
     $html .= "<span title=\"Click to clear history\" onclick=\"xajax_window_submit('work_space', 'clear', 'rewrite_history');\">&nbsp;Trace: </span>";
     $and = '';
@@ -176,6 +179,11 @@ EOL;
     }
 
     if ($return_html) return($html);
+
+//    //Update URL and browser history link
+//    if ($history['qry']) {
+//        $js .= "var histstate = { work_space: '${history['title']}' }; history.replaceState(histstate,'ONA - ${history['type']} [${history['title']}]','${baseURL}/?work_space=${history['type']}&${history['qry']}');";
+//    }
 
     // Update the work_space window's title
     if($_SESSION['ona'][$window_name]['history']) { $history = end($_SESSION['ona'][$window_name]['history']); }
@@ -193,6 +201,7 @@ EOL;
     $response->addAssign("trace_history", "innerHTML", $html);
     $response->addAssign("work_space_title_r", "innerHTML", $new_buttons);
     $response->addAssign("work_space_title", "innerHTML", $new_title);
+    if ($js) { $response->addScript($js); }
     return($response->getXML());
 }
 

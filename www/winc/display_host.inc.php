@@ -9,7 +9,7 @@
 //   Displays a host record and all associated info in the work_space div.
 //////////////////////////////////////////////////////////////////////////////
 function ws_display($window_name, $form='') {
-    global $conf, $self, $onadb, $base;
+    global $conf, $self, $onadb, $base, $baseURL;
     global $images, $color, $style;
     $html = '';
     $js = '';
@@ -32,11 +32,15 @@ function ws_display($window_name, $form='') {
         return($response->getXML());
     }
 
+    //Update URL and browser history link
+//    $js .= "var histstate = { work_space: '${record['fqdn']}' }; history.replaceState(histstate,'ONA - $window_name [${record['fqdn']}]','${baseURL}/?work_space=$window_name&host=${record['fqdn']}');";
+
     // Update History Title (and tell the browser to re-draw the history div)
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
     if ($history['title'] == $window_name) {
         $history['title'] = $record['name'];
+        $history['qry'] = "host=${record['fqdn']}";
         array_push($_SESSION['ona']['work_space']['history'], $history);
     }
 
