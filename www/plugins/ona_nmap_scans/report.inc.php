@@ -170,6 +170,8 @@ for($z=0;$z < count($xml); $z++) {
 
  // Process the array for the total amount of hosts reported
  for($i=0;$i < $rptdata['totalhosts']; $i++) {
+    // Clear MAC each itteration of the loop
+    $macaddr = '';
     // Gather some info from the nmap XML file
     $netstatus = $xml[$z]['nmaprun']['_c']['host'][$i]['_c']['status']['_a']['state'];
     $ipaddr = $xml[$z]['nmaprun']['_c']['host'][$i]['_c']['address']['_a']['addr'];
