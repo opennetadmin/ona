@@ -221,7 +221,7 @@ function ws_save($window_name, $form='') {
     $js = '';
 
     // Validate input
-    if (!$form['type'] and !$form['value']) {
+    if (!$form['type'] and $form['value'] == '') {
         $response->addScript("alert('Please complete all fields to continue!');");
         return($response->getXML());
     }
