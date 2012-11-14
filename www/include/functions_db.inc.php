@@ -1435,7 +1435,7 @@ function ona_build_domain_name($search='') {
     $status = 0;
     while ($status == 0) {
         list($status, $rows, $domain) = db_get_record($onadb, 'domains', array('id' => $search));
-        if (!$domain_name) { // i.e. the first pass
+        if ($domain_name == '') { // i.e. the first pass
             $domain_name = $domain['name'];
             if ($domain['parent_id'] != 0) { $search = $domain['parent_id']; }
         } else {

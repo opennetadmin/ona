@@ -42,7 +42,7 @@ function domain_add($options="") {
     printmsg("DEBUG => domain_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.06';
+    $version = '1.07';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -129,10 +129,10 @@ EOM
 
 
 
-    if ($options['name']) {
+    if (is_string($options['name'])) {
         // FIXME: not sure if its needed but this was calling sanitize_domainname, which did not exist
         $domain_name = sanitize_hostname($options['name']);
-        if (!$domain_name) {
+        if (!is_string($domain_name)) {
             printmsg("DEBUG => The domain name ({$options['name']}) is invalid!", 3);
             $self['error'] = "ERROR => The domain name ({$options['name']}) is invalid!";
             return(array(4, $self['error'] . "\n"));
@@ -419,7 +419,7 @@ function domain_modify($options="") {
     printmsg("DEBUG => domain_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -523,7 +523,9 @@ EOM
         if ($entry['parent_id'] != 0) $SET['parent_id'] = 0;
     }
 
-    if ($options['set_name']) {
+    // FIXME: currently renaming zones may not work when using
+    // parent zones. https://github.com/opennetadmin/ona/issues/36
+    if (is_string($options['set_name'])) {
         // trim leading and trailing whitespace from 'value'
         if ($entry['name'] != trim($options['set_name'])) $SET['name'] = trim($options['set_name']);
 
