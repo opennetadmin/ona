@@ -136,7 +136,7 @@ function get_perms($login_name='') {
 
     // If this is the local auth type, check local user permissions
     // MP: This code should not be here but there is really not a better spot.
-    if ($conf['authtype'] == 'local') {
+    //if ($conf['authtype'] == 'local') {
         // Load the users permissions based on their user_id.
         // this is specific permissions for user, outside of group permissions
         list($status, $rows, $records) = db_get_records($onadb, 'permission_assignments', array('user_id' => $userinfo['id']));
@@ -144,7 +144,7 @@ function get_perms($login_name='') {
             list($status, $rows, $perm) = db_get_record($onadb, 'permissions', array('id' => $record['perm_id']));
             $permissions[$perm['name']] = $perm['id'];
         }
-    }
+    //}
 
 
     // Load the users permissions based on their group ids
