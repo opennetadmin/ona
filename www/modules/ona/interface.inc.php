@@ -543,7 +543,7 @@ EOM
 
     // Return the success notice
     $text = format_array($SET);
-    $self['error'] = "GREG INFO => Interface UPDATED:{$interface['id']}: {$new_int['ip_addr_text']}";
+    $self['error'] = "INFO => Interface UPDATED:{$interface['id']}: {$new_int['ip_addr_text']}";
 
     $log_msg = "INFO => Interface UPDATED:{$interface['id']}:{$new_int['ip_addr_text']}: ";
     $more="";

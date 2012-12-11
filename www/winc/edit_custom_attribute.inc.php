@@ -42,12 +42,19 @@ function ws_editor($window_name, $form='') {
         $window['edit_type_value'] = $subnet['name'];
     }
 
-    // If they are adding a new DHCP entry they will usually pass a host_id in
+    // If they are adding a new CA entry they will usually pass a host_id in
     if (is_numeric($form['host_id'])) {
         list($status, $rows, $host)  = ona_find_host($form['host_id']);
         // Setup a title description for this edit type
         $window['edit_type'] = "Host";
         $window['edit_type_value'] = $host['fqdn'];
+    }
+
+    if (is_numeric($form['vlan_id'])) {
+        list($status, $rows, $vlan)  = ona_find_vlan($form['vlan_id']);
+        // Setup a title description for this edit type
+        $window['edit_type'] = "Vlan";
+        $window['edit_type_value'] = $vlan['name'];
     }
 
     // Escape data for display in html
@@ -88,6 +95,7 @@ EOL;
     <form id="{$window_name}_form" onSubmit="return false;">
     <input type="hidden" name="host" value="{$host['id']}">
     <input type="hidden" name="subnet" value="{$subnet['id']}">
+    <input type="hidden" name="vlan" value="{$vlan['id']}">
     <input type="hidden" name="id" value="{$ca['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">

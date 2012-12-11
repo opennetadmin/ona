@@ -41,7 +41,7 @@ print <<<EOL
         <div id="menu-apps-item" class="main_menu_button" onmouseover="var wsname='FALSE';if (el('work_space')) {var wsname=el('work_space').getAttribute('wsname'); } xajax_window_submit('menu_control', wsname);">Menu</div>
     </div>
 
-    <div class="bar" id="bar_top" onmouseover="ona_menu_closedown();" style="background-color: {$self['context_color']}">
+    <div class="bar" id="bar_top" style="background-color: {$self['context_color']}">
         <!-- Left Side -->
         <div class="bar-left">
             <!-- Button to open the "search dialog" -->
@@ -52,7 +52,7 @@ print <<<EOL
             </span>
 
             <!-- Quick Search -->
-            <span class="topmenu-item" id='menu-qsearch-item'>
+            <span class="topmenu-item" id='menu-qsearch-item' onmouseover="ona_menu_closedown();">
                 <form id="qsearch_form" onSubmit="xajax_window_submit('search_results', xajax.getFormValues('qsearch_form')); return false;">
                     <input type="hidden" name="search_form_id" value="qsearch_form">
                     <input id="qsearch"
@@ -78,12 +78,12 @@ print <<<EOL
 
             <!-- Task Bar (i.e. Window List) -->
             <span class="topmenu-item" style="border-right: 1px solid {$color['border']};">&nbsp;</span>
-            <span class="topmenu-item" id="menu-window-list">&nbsp;</span>
+            <span class="topmenu-item" id="menu-window-list" onmouseover="ona_menu_closedown();">&nbsp;</span>
 
         </div>
 
         <!-- Right Side -->
-        <div class="bar-right">
+        <div class="bar-right" onmouseover="ona_menu_closedown();">
             <span class="topmenu-item"
                   title="Display system messages"
                   id="sys_alert"
@@ -322,7 +322,8 @@ EOL;
 
 
 // Open the work_space that was requested
-if ($work_space) {
+if ($work_space or $ws) {
+    if ($ws) $work_space = $ws;
     // Take the query from the URL and process it for use in the window_submit
     $ws_qry = str_replace('&',',',$_SERVER['QUERY_STRING']);
     $ws_qry = str_replace('=','=>',$ws_qry);
@@ -334,7 +335,8 @@ EOL;
 }
 
 // Process any search that was passed
-if ($search) {
+if ($search or $q) {
+    if ($q) $search = $q;
     print <<<EOL
 <script type="text/javascript"><!--
     el('qsearch').value = '{$search}';

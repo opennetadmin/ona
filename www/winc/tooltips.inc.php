@@ -1687,7 +1687,7 @@ function ws_interface_share_del($window_name, $form='') {
     global $base, $include, $conf, $self, $onadb;
 
     // Check permissions
-    if (! (auth('advanced')) ) {
+    if (! (auth('interface_del')) ) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
@@ -2189,7 +2189,7 @@ function get_custom_attribute_info_html($form) {
             <td align="right" nowrap="true" style="font-weight: bold;">
                 {$window['edit_type']}
             </td>
-            <td class="padding" align="left" width="100%">
+            <td class="padding" align="left" >
                 {$window['edit_type_value']}
             </td>
         </tr>
@@ -2198,7 +2198,7 @@ function get_custom_attribute_info_html($form) {
             <td align="right" nowrap="true" style="font-weight: bold;">
                 Type
             </td>
-            <td class="padding" align="left" width="100%">
+            <td class="padding" align="left" >
                     {$ca['name']}
             </td>
         </tr>
@@ -2207,29 +2207,15 @@ function get_custom_attribute_info_html($form) {
             <td align="right" nowrap="true" style="font-weight: bold;">
                 Value
             </td>
-            <td class="padding" align="left" width="100%">
-                <pre
+            <td class="padding" align="left" >
+                <textarea
                     name="value"
                     alt="Value"
                     style="font-family: inherit;background-color: white;"
-                    rows="5"
-                    cols="25"
-                >{$ca['value']}</pre>
-            </td>
-        </tr>
-
-        <tr>
-            <td align="right" nowrap="true" style="font-weight: bold;">
-                Notes
-            </td>
-            <td class="padding" align="left" width="100%">
-                <pre
-                    name="value"
-                    alt="Value"
-                    style="font-family: inherit;background-color: white;"
-                    rows="5"
-                    cols="25"
-                >{$ca['notes']}</pre>
+                    readonly="true"
+                    rows="6"
+                    cols="40"
+                >{$ca['value']}</textarea>
             </td>
         </tr>
 

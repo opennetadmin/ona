@@ -4,12 +4,15 @@ $title_left_html = 'Custom Attributes';
 
 
 
-// Determine if this is a host or a subnet we are dealing with
+// Determine if this is a host, a subnet or a vlan we are dealing with
 if (is_numeric($record['subnet_type_id'])) {
     $kind = 'subnet';
 }
-else {
+elseif (is_numeric($record['device_id'])) {
     $kind = 'host';
+}
+else {
+    $kind='vlan';
 }
 
 // This adds an "s" at the end of the table name.  assumes all tables are plural

@@ -62,15 +62,14 @@ EOL;
     // Escape data for display in html
     foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
 
+    // Create a div for workspace plugins to live
+    $html .= "<div id='wsplugins' style='margin: 10px;'>";
+
     $html .= <<<EOL
     <!-- FORMATTING TABLE -->
-    <div style="{$style['content_box']}">
-    <table cellspacing="0" border="0" cellpadding="0"><tr>
+      <div id="vlan_detail" class="ws_plugin_content">
 
-        <!-- START OF FIRST COLUMN OF SMALL BOXES -->
-        <td nowrap="true" valign="top" style="padding-right: 15px;">
 EOL;
-
 
     // VLAN INFORMATION
     $html .= <<<EOL
@@ -128,33 +127,22 @@ EOL;
                 </tr>
 
             </table>
+      </div>
 EOL;
     // END VLAN INFORMATION
 
 
-    $html .= <<<EOL
-        <!-- END OF FIRST COLUMN OF SMALL BOXES -->
-        </td>
+    // extra stuff to pass to ws_plugins
+    $extravars['refresh']=$refresh;
+    $extravars['window_name']=$window_name;
 
-        <!-- START OF SECOND COLUMN OF SMALL BOXES -->
-        <td valign="top" style="padding-right: 15px;">
-EOL;
-
-
-    $html .= <<<EOL
-        <!-- END OF SECOND COLUMN OF SMALL BOXES -->
-        </td>
-
-        <!-- START OF THIRD COLUMN OF SMALL BOXES -->
-        <td valign="top" style="padding-right: 15px;">
-EOL;
-
+    $wspl = workspace_plugin_loader('custom_attributes',$record,$extravars);
+    $html .= $wspl[0]; $js .= $wspl[1];
+    $html .="</div>";
 
     $html .= <<<EOL
-        </td>
-        <!-- END OF THIRD COLUMN OF SMALL BOXES -->
-    </tr></table>
     </div>
+    <br style="clear:both;">
     <!-- END OF TOP SECTION -->
 EOL;
 

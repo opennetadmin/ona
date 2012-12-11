@@ -120,12 +120,6 @@ EOL;
 
             $html .= <<<EOL
             <tr onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
-                <form id="{$form['form_id']}_list_domain_server_{$record['id']}"
-                    ><input type="hidden" name="id" value="{$record['id']}"
-                    ><input type="hidden" name="domain" value="{$record['id']}"
-                    ><input type="hidden" name="server" value="{$form['server_id']}"
-                    ><input type="hidden" name="js" value="{$refresh}"
-                ></form>
 
                 <td class="list-row" align="left">
                     <a title="View domain. ID: {$record['id']}"
@@ -146,6 +140,12 @@ EOL;
                 </td>
 
                 <td class="list-row" align="right">
+                    <form id="{$form['form_id']}_list_domain_server_{$record['id']}"
+                        ><input type="hidden" name="id" value="{$record['id']}"
+                        ><input type="hidden" name="domain" value="{$record['id']}"
+                        ><input type="hidden" name="server" value="{$form['server_id']}"
+                        ><input type="hidden" name="js" value="{$refresh}"
+                    ></form>
 EOL;
 
     if (auth('advanced',$debug_val)) {

@@ -236,6 +236,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="set_mac"
                     name="set_mac"
                     alt="MAC Address"
                     value="{$interface['mac_addr']}"

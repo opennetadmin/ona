@@ -136,6 +136,7 @@ a:hover      { cursor: pointer; text-decoration: underline; }
   padding-right: 4px;
   padding-left: 4px;
   text-align: left;
+  resize: both;
 }
 
 .ws_plugin_title_right {

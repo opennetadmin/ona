@@ -34,8 +34,8 @@ function ws_editor($window_name, $form='') {
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
         if ($rows) {
             if (strlen($subnet['ip_addr']) > 11) {
-		$subnet['ip_mask'] = '/'.ip_mangle($subnet['ip_mask'], 'cidr');
-	    } else {
+		        $subnet['ip_mask'] = '/'.ip_mangle($subnet['ip_mask'], 'cidr');
+	        } else {
             	$subnet['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
             }
             $subnet['ip_addr'] = ip_mangle($subnet['ip_addr'], 'dotted');
