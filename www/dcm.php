@@ -27,7 +27,9 @@ printmsg("DEBUG => DCM_USER: {$_SERVER['PHP_AUTH_USER']}", 4);
 // If no user name is passed in then use dcm.pl as the login name
 // be careful as this currently does not require a password.
 // FIXME: this needs to go away as it is a backdoor.  allow it to be configurable at least?
-if ($_SERVER['PHP_AUTH_USER'] == '') {
+// Start out the session as a guest with level 0 access.  This is for view only mode.
+// You can enable or disable this by setting the "disable_guest" sysconfig option
+if ($_SERVER['PHP_AUTH_USER'] == '' and !$conf['disable_guest']) {
     $_SESSION['ona']['auth']['user']['username']='dcm.pl';
     // create new local authentication class directly
     $auth = load_auth_class('local');
