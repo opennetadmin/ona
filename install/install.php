@@ -370,7 +370,7 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
 
     if($status == 0) {
         $text .= $script_text;
-        $text .= "You can now <a href='{$_SERVER['HTTP_REFERER']}'>CLICK HERE</a> to start using OpenNetAdmin! Enjoy!";
+        $text .= "You can now <a href='".parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH)."'>CLICK HERE</a> to start using OpenNetAdmin! Enjoy!";
 
         if (@file_exists($runinstall)) {
           if (!@unlink($runinstall)) {
@@ -570,7 +570,7 @@ EOL;
                 $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Please remove '{$runinstall}' manually.<br>";
               }
             }
-            $text .= "You can now <a href='{$_SERVER['HTTP_REFERER']}'>CLICK HERE TO START</a> using OpenNetAdmin!<br>You can log in as 'admin' with a password of 'admin'<br>Enjoy!";
+            $text .= "You can now <a href='".parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH)."'>CLICK HERE TO START</a> using OpenNetAdmin!<br>You can log in as 'admin' with a password of 'admin'<br>Enjoy!";
         }
 
         // Close the database connection

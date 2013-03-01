@@ -7,6 +7,7 @@ www/local/config
 
 # Set up empty dirs
 www/local/plugins/*
+www/local/nmap_scans
 !www/local/plugins/README
 bin/*
 !bin/README
