@@ -10,17 +10,16 @@ $title_left_html = '';
 
 // Get the numeric IP address of our subnet (we replace the last quad with a .0)
 $ip_subnet = ip_mangle($record['ip_addr'], 'numeric');
-if (is_ipv4($ip_subnet)) {
-
-$end = '\.\d+$';
-$replace_end_by = '.0';
-$version=4;
+if ($ip_subnet < 4294967295) {
+    $end = '\.\d+$';
+    $replace_end_by = '.0';
+    $version=4;
 }
 else {
-$end = ':[0-9A-F]{0,4}$';
-// $replace_end_by = ':0000';
-$replace_end_by = ':';
-$version=6;
+    $end = ':[0-9A-F]{0,4}$';
+    // $replace_end_by = ':0000';
+    $replace_end_by = ':';
+    $version=6;
 }
 $ip = ip_mangle(preg_replace("/$end/", $replace_end_by, $record['ip_addr']), 'numeric');
 

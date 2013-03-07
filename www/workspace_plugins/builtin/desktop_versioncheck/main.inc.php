@@ -14,7 +14,7 @@ if ($extravars['window_name'] == 'html_desktop') {
         //@ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']."-----".$conf['version']);
 
         // Define the URL we use to check what version is the latest release
-        $ona_check_version_url = 'http://opennetadmin.com/check_version.php';
+        $ona_check_version_url = 'http://checkversion.opennetadmin.com';
 
         if ($ona_check_version_url) {
             $stream_opts = array(
@@ -66,7 +66,7 @@ if ($extravars['window_name'] == 'html_desktop') {
     Your version &nbsp;&nbsp;&nbsp;= {$conf['version']}<br>
     Latest version = {$onaver}<br>
 <br>
-Please <a href="http://opennetadmin.com/docs/download">DOWNLOAD</a> the latest version.
+Please <a href="http://opennetadmin.com/download.html">DOWNLOAD</a> the latest version.
 </div>
 EOL;
 
