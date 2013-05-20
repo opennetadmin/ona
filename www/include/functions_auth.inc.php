@@ -67,7 +67,6 @@ function get_authentication($login_name='', $login_password='') {
 
     $js = "el('loginmsg').innerHTML = '<span style=\"color: green;\">Success!</span>'; setTimeout('removeElement(\'tt_loginform\')',1000);";
 
-
     // Validate the userid was passed and is "clean"
     if (!preg_match('/^[A-Za-z0-9.\-_]+$/', $login_name)) {
         $js = "el('loginmsg').innerHTML = 'Bad username format';";
@@ -75,11 +74,21 @@ function get_authentication($login_name='', $login_password='') {
         return(array(1, $js));
     }
 
-    // create new authentication class
-    $auth = load_auth_class();
+
+    // Force guest logins to only use local auth module
+    if ($login_name == 'guest') {
+        printmsg("DEBUG => Guest user login, forcing local auth.",1);
+        // create new authentication class
+        $auth = load_auth_class('local');
+        $conf['authtype']='local';
+    } else {
+        // create new authentication class
+        $auth = load_auth_class();
+    }
 
     // Check user/pass authentication
     $authresult = $auth->checkPass($login_name,$login_password);
+
     // If we do not find a valid user, fall back to local auth
     if ($auth->founduser === false) {
         // Fall back to local database to see if we have something there
@@ -100,12 +109,12 @@ function get_authentication($login_name='', $login_password='') {
     // If we do not get a positive authentication of user/pass then fail
     if ($authresult === false) {
         $js = "el('loginmsg').innerHTML = 'Password incorrect';";
-        printmsg("ERROR => Login failure for {$login_name}: Password incorrect", 0);
+        printmsg("ERROR => Login failure for {$login_name} using authtype {$conf['authtype']}: Password incorrect", 0);
         return(array(1, $js));
     }
 
     // If the password is good.. return success.
-    printmsg("INFO => Authentication Successful for {$login_name}", 1);
+    printmsg("INFO => Authentication Successful for {$login_name} using authtype: {$conf['authtype']}", 1);
     return(array(0, $js));
 }
 
