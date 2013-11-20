@@ -864,6 +864,8 @@ EOM
         if ($rows) {
             $text .= "\nASSOCIATED DNS RECORDS ({$rows}) ON INTERFACE (" . ip_mangle($record['ip_addr'], 'dotted') . "):\n";
             foreach ($dnsrec as $rec) {
+                // show AAAA or A type as needed
+                if ($record['ip_addr'] > 4294967295 and $rec['type'] == 'A') $rec['type'] = 'AAAA';
                 $text .= "  TYPE: [ID:{$rec['id']}] {$rec['type']}, {$rec['name']} -> " . ip_mangle($record['ip_addr'], 'dotted') . "\n";
             }
         }
