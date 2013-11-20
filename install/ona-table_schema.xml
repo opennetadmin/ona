@@ -834,7 +834,7 @@
 
   <table name="sessions">
    <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
-    <field name="sesskey" type="C" size="32">
+    <field name="sesskey" type="C" size="128">
       <KEY/>
     </field>
     <field name="expiry" type="I" size="11">
