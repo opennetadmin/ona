@@ -237,9 +237,12 @@ and d.domain_id = ". $onadb->qstr($domain['id']). "
         $form['mac'] = preg_replace('/[^%0-9A-F]/', '', $form['mac']);
 
         // We do a sub-select to find interface id's that match
-        $where .= $and . "h.id IN ( SELECT host_id " .
+ 	$from = 'hosts h LEFT JOIN interfaces i ON i.host_id = h.id';
+        $where .= $and . " WHERE i.mac_addr LIKE " . $onadb->qstr($wildcard.$form['mac'].$wildcard) . " ) ";
+/*	$where .= $and . "h.id IN ( SELECT host_id " .
                          "        FROM interfaces " .
                          "        WHERE mac_addr LIKE " . $onadb->qstr($wildcard.$form['mac'].$wildcard) . " ) ";
+*/
         $and = " AND ";
 
     }
