@@ -69,6 +69,7 @@ $conf = array (
     /* Defaults for some user definable options normally in sys_config table */
     "debug"                  => "2",
     "syslog"                 => "0",
+    "log_to_db"              => "0",
     "stdout"                 => "0",
     "logfile"                => "/var/log/ona.log",
 
@@ -158,9 +159,95 @@ $style['borderB'] = "border-bottom: 1px solid {$color['border']};";
 $style['borderL'] = "border-left: 1px solid {$color['border']};";
 $style['borderR'] = "border-right: 1px solid {$color['border']};";
 
-// Include the localized configuration settings
+// Include the local version of configuration settings
 // MP: this may not be needed now that "user" configs are in the database
 @include("{$base}/local/config/config.inc.php");
+
+
+
+
+
+
+
+// Set up internationalization/localization with gettext
+$langs = array();
+$locale_dir = dirname(__FILE__).'/../Locale'; // your .po and .mo files should be at $locale_dir/$locale/LC_MESSAGES/messages.{po,mo}
+
+//Get list of supported languages in our Localdir
+$d = dir($locale_dir);
+while (false !== ($entry = $d->read())) {
+  $supported_langs[$entry] = $entry;
+}
+$d->close();
+
+// Gather accepted language list from browser and sort it
+if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+  // break up string into pieces (languages and q factors)
+  preg_match_all('/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $lang_parse);
+
+  if (count($lang_parse[1])) {
+    // create a list like "en" => 0.8
+    $langs = array_combine($lang_parse[1], $lang_parse[4]);
+    
+    // set default to 1 for any without q factor
+    foreach ($langs as $lang => $val) {
+      if ($val === '') $langs[$lang] = 1;
+    }
+
+    // sort list based on value 
+    arsort($langs, SORT_NUMERIC);
+  }
+}
+
+//print_r($supported_langs);
+//echo "<br>";
+//print_r($langs);
+//echo "<br>";
+
+// Select one of the requested languages from available supported languages
+// Fall back to 'en_US' as a default
+foreach($langs as $lang => $langval){
+
+  // switch the - to an _ and upper case after the _.. kinda lame
+  if (strstr($lang, '-')) {
+    list($l1,$l2) = explode('-',$lang);
+    $lang = $l1.'_'.strtoupper($l2);
+  }
+
+  // Try to match exactly the lang requested
+  if (isset($supported_langs[$lang])) {
+    $locale=$lang;
+    break;
+  }
+
+  // If we didnt find an exact match, try just the first part
+  // this could lead to issues.  If the user wants something specific
+  // then they will have to set their browser to the specific lang
+  foreach ($supported_langs as $slkey => $slvalue) {
+    if (substr($slkey, 0, strlen($lang)) == $lang) {
+      $locale=$slkey;
+      break 2;
+    }
+  }
+
+  // Fall back to the default language
+  $locale='en_US';
+}
+
+// Set up environment and bindings for the 'messages' domain
+$codeset='UTF8';
+putenv("LANGUAGE=$locale.$codeset");
+putenv("LANG=$locale.$codeset");
+setlocale(LC_ALL, $locale.'.'.$codeset);
+bindtextdomain("messages", $locale_dir);
+bind_textdomain_codeset("messages", $codeset);
+textdomain("messages");
+
+//echo gettext("test string");
+
+
+
+
 
 // Include the basic system functions
 // any $conf settings used in this "require" should not be user adjusted in the sys_config table
@@ -168,6 +255,9 @@ require_once($conf['inc_functions']);
 
 // Include the basic database functions
 require_once($conf['inc_functions_db']);
+
+// Just so we know, lets log the locale we have chosen.
+printmsg("INFO => Using the following language type: $locale", 0);
 
 // Include the localized Database settings
 $dbconffile = "{$base}/local/config/database_settings.inc.php";

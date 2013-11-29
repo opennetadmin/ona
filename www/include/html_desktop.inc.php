@@ -20,6 +20,11 @@ foreach (array_keys($ona_contexts) as $entry) {
     if ($entry) {$context_list .= "<option {$selected} value=\"{$entry}\">{$entry}</option>\n";}
 }
 
+// Locale text substitution
+$_menu = _('Menu');
+$_search = _('Search');
+$_quicksearch = _('Quick Search...');
+
 // Lets start building the page!
 print <<<EOL
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
@@ -38,7 +43,7 @@ print <<<EOL
     <!-- Top (Task) Bar -->
     <div class="menubar" id="bar_topmenu" style="background-color: {$self['context_color']}">
         <!-- Button to open the "Start Menu" (Application Links), javascript passes in the workspace name for menu operations -->
-        <div id="menu-apps-item" class="main_menu_button" onmouseover="var wsname='FALSE';if (el('work_space')) {var wsname=el('work_space').getAttribute('wsname'); } xajax_window_submit('menu_control', wsname);">Menu</div>
+        <div id="menu-apps-item" class="main_menu_button" onmouseover="var wsname='FALSE';if (el('work_space')) {var wsname=el('work_space').getAttribute('wsname'); } xajax_window_submit('menu_control', wsname);">{$_menu}</div>
     </div>
 
     <div class="bar" id="bar_top" style="background-color: {$self['context_color']}">
@@ -48,7 +53,7 @@ print <<<EOL
             <span class="topmenu-item" title="Advanced search" id="search-item" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form'); return false;">
                 <a id="search-button"
                    class="button"
-                ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0" />&nbsp;Search&nbsp;</a>
+                ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0" />&nbsp;{$_search}&nbsp;</a>
             </span>
 
             <!-- Quick Search -->
@@ -61,7 +66,7 @@ print <<<EOL
                            style="width: 150px;"
                            type="text"
                            title="Quick Search for IP, MAC, DNS"
-                           value="Quick Search..."
+                           value="{$_quicksearch}"
                            name="q"
                            maxlength="100"
                            onFocus="this.value='';"
@@ -161,6 +166,7 @@ print <<<EOL
     </div>
 EOL;
 }
+
 
 print <<<EOL
     <!-- Workspace div -->
