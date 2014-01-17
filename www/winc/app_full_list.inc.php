@@ -185,6 +185,9 @@ function ws_display_list($window_name, $form='') {
     $last_ip = ($subnet['ip_addr'] + $num_ips) - 1;
     $currip = $subnet['ip_addr'] + 1;
 
+    // Get a list of blocks that touches this subnet
+    list($status, $blockrows, $blocks) = db_get_records($onadb, 'blocks', "{$subnet['ip_addr']} BETWEEN ip_addr_start AND ip_addr_end OR {$last_ip} BETWEEN ip_addr_start AND ip_addr_end OR ip_addr_start BETWEEN {$subnet['ip_addr']} and {$last_ip}");
+
     // Get a list of dhcp pools on the selected subnet
     list($status, $rows, $pools) =
         db_get_records($onadb, 'dhcp_pools', array('subnet_id' => $subnet['id']));
@@ -203,6 +206,7 @@ function ws_display_list($window_name, $form='') {
             
             <!-- Table Header -->
             <tr>
+                <td class="list-header" align="center" style="{$style['borderR']};" title="IP Block Association">B</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">IP Address</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">Last Response</td>
                 <td class="list-header" align="center" style="{$style['borderR']};">[Name] Desc</td>
@@ -219,7 +223,6 @@ EOL;
         $interface=array();
         $interfaces=0;
         $record=array();
-        $record['ip_addr'] = ip_mangle($currip, 'dotted');
         $interface_style = '';
         $clusterhtml = '';
         $rowstyle='background-color: #E9FFE1';
@@ -230,7 +233,7 @@ EOL;
             <a title="Add host"
                class="act"
                onClick="xajax_window_submit('edit_host', 'ip_addr=>{$currip_txt}', 'editor');"
-            ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
+            ></a>&nbsp;
 
             <a title="Add host"
                class="act"
@@ -240,7 +243,7 @@ EOL;
              <a title="Add interface"
                class="act"
                onClick="xajax_window_submit('edit_interface', 'ip_addr=>{$currip_txt}', 'editor');"
-            ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
+            ></a>&nbsp;
 
             <a title="Add interface"
                class="act"
@@ -321,7 +324,6 @@ EOL;
                 list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
                 $record['device'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
                 $record['device'] = str_replace('Unknown', '?', $record['device']);
-                $record['ip_addr'] = $currip_txt;
 
                 $record['notes_short'] = truncate($host['notes'], 40);
                 $interface['description_short'] = truncate($interface['description'], 40);
@@ -350,6 +352,26 @@ EOL;
         $html .= <<<EOL
             <tr {$rowid}=true style="{$rowstyle}" onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
                 
+EOL;
+
+        // Print color info for any matching blocks
+        $c=0;
+        $blockcolors=array('#CD5C5C','#588C7E','#8C4646','#FFD700','#1E90F0','#8A2BE2','#32CD32','#D96459');
+        if ($blockrows) {
+          $html .= "<td class='list-row' nowrap style='padding:0'>";
+          foreach ($blocks as $block) {
+            if ($currip >= $block['ip_addr_start'] && $currip <= $block['ip_addr_end']) {
+              $html .= "<span title='{$block['name']}' style='background-color:{$blockcolors[$c]};padding-bottom:4px;float:left;'>&nbsp;&nbsp</span> ";
+            }
+            $c++;
+          }
+        } else {
+          // print an empty table cell
+          $html .= "<td class='list-row'>";
+        }
+
+        $html .= <<<EOL
+                </td>
                 <td class="list-row" align="left">
 EOL;
         // if it is used, show an edit interface link
@@ -374,8 +396,9 @@ EOL;
 
         }
 
+
         //print out the IP address
-        $html .= $record['ip_addr'];
+        $html .= $currip_txt;
 
         // close the A tag if used above
         if ($rowid == 'byip_allocated') { $html .= '</a>';}
@@ -423,10 +446,10 @@ EOL;
 function togglebyip(name) {
     tr=document.getElementsByTagName('tr')
     for (i=0;i<tr.length;i++){
-    if (tr[i].getAttribute(name)){
+      if (tr[i].getAttribute(name)){
         if (tr[i].style.display=='none'){tr[i].style.display = '';}
         else {tr[i].style.display = 'none';}
-    }
+      }
     }
 }
 EOL;
