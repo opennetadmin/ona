@@ -2475,7 +2475,7 @@ function ona_find_vlan($vlan_search="", $campus_search="") {
     if ($campus_search) {
         // Do a few sql queries and see if we can get a unique match
         $search = $campus_search;
-        foreach (array('NAME', 'ID') as $field) {
+        foreach (array('name', 'id') as $field) {
             list($status, $rows, $campus) = ona_get_vlan_campus_record(array($field => $search));
             if (!$status and $rows == 1) {
                 printmsg("DEBUG => ona_find_vlan() found vlan campus record by $field", 2);
@@ -2488,7 +2488,7 @@ function ona_find_vlan($vlan_search="", $campus_search="") {
 
     // Search for a vlan by ID
     if (is_numeric($vlan_search)) {
-        list($status, $rows, $vlan) = ona_get_vlan_record(array('ID' => $vlan_search));
+        list($status, $rows, $vlan) = ona_get_vlan_record(array('id' => $vlan_search));
         if (!$status and $rows == 1) {
             printmsg("DEBUG => ona_find_vlan() found vlan record by ID", 2);
             return(array($status, $rows, $vlan));
@@ -2496,8 +2496,8 @@ function ona_find_vlan($vlan_search="", $campus_search="") {
     }
 
     // Search for a vlan by NAME, use the campus[ID] if we have one
-    $where = array('NAME' => $vlan_search);
-    if ($campus['ID']) $where['VLAN_CAMPUS_ID'] = $campus['ID'];
+    $where = array('name' => $vlan_search);
+    if ($campus['id']) $where['vlan_campus_id'] = $campus['id'];
     list($status, $rows, $vlan) = ona_get_vlan_record($where);
     if (!$status and $rows == 1) {
         printmsg("DEBUG => ona_find_vlan() found vlan record by VLAN name", 2);
