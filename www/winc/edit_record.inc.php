@@ -70,6 +70,8 @@ function ws_editor($window_name, $form='') {
     foreach(array_keys((array)$dns_record) as $key) { $dns_record[$key] = htmlentities($dns_record[$key], ENT_QUOTES, $conf['php_charset']); }
     foreach(array_keys((array)$interface) as $key) { $interface[$key] = htmlentities($interface[$key], ENT_QUOTES, $conf['php_charset']); }
 
+    // set the type to AAAA if it is an ipv6 address
+    if ($dns_record['type'] == 'A' and strstr($interface['ip_addr'],':')) { $dns_record['type'] = 'AAAA'; }
 
     // If its a CNAME, get the dns name for the A record it points to
     if ($dns_record['type'] == 'CNAME' or $dns_record['type'] == 'MX' or $dns_record['type'] == 'PTR' or $dns_record['type'] == 'NS' or $dns_record['type'] == 'SRV') {
@@ -444,7 +446,7 @@ EOL;
                         value="{$interface['ip_addr']}"
                         class="edit"
                         type="text"
-                        size="25" maxlength="64"
+                        size="45" maxlength="64"
                         onblur="updatednsinfo('{$window_name}');"
                     />
                 </td>
@@ -579,7 +581,7 @@ EOL;
                         value="{$dns_record['notes']}"
                         class="edit"
                         type="text"
-                        size="25" maxlength="64"
+                        size="45" maxlength="64"
                     />
                 </td>
             </tr>
