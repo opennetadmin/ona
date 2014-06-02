@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.09';
+    $version = '1.10';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -152,11 +152,12 @@ EOM
 
         // Unless they have opted to allow duplicate mac addresses ...
         if ($options['force'] == 'N') {
-            // Validate that there isn't already another interface with the same MAC address
-            list($status, $rows, $interface) = ona_get_interface_record(array('mac_addr' => $options['mac']));
+            // Validate that there isn't already another interface with the same MAC address on another host
+            // Assume duplicate macs on the same host are ok
+            list($status, $rows, $interface) = db_get_record($onadb, 'interfaces', "mac_addr LIKE '{$options['mac']}' AND host_id != {$host['id']}");
             if ($status or $rows) {
-                printmsg("DEBUG => MAC conflict: That MAC address ({$options['mac']}) is already in use!",3);
-                $self['error'] = "WARNING => MAC conflict: That MAC address ({$options['mac']}) is already in use";
+                printmsg("DEBUG => MAC conflict: That MAC address ({$options['mac']}) is already in use on another host!",3);
+                $self['error'] = "WARNING => MAC conflict: That MAC address ({$options['mac']}) is already in use on another host!";
                 return(array(11, $self['error'] . "\n" .
                                 "NOTICE => You may ignore this warning and add the interface anyway with the \"force=yes\" option.\n" .
                                 "INFO => Conflicting interface record ID: {$interface['id']}\n"));
@@ -263,7 +264,7 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.10';
+    $version = '1.11';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -354,7 +355,6 @@ EOM
         }
 
         // Validate that there isn't already another interface with the same IP address
-        //list($status, $rows, $record) = ona_get_interface_record(array('ip_addr' => $options['set_ip']));
         list($status, $rows, $record) = ona_get_interface_record("ip_addr = {$options['set_ip']}");
         if ($rows and $record['id'] != $interface['id']) {
             printmsg("DEBUG => IP conflict: That IP address (" . ip_mangle($orig_ip,'dotted') . ") is already in use!",3);
@@ -484,11 +484,12 @@ EOM
 
             // Unless they have opted to allow duplicate mac addresses ...
             if ($options['force'] != 'Y') {
-                // Validate that there isn't already another interface with the same MAC address
-                list($status, $rows, $record) = ona_get_interface_record(array('mac_addr' => $options['set_mac']));
+                // Validate that there isn't already another interface with the same MAC address on another host
+                // Assume duplicate macs on the same host are ok
+                list($status, $rows, $record) = db_get_record($onadb, 'interfaces', "mac_addr LIKE '{$options['set_mac']}' AND host_id != {$interface['host_id']}");
                 if (($rows and $record['id'] != $interface['id']) or $rows > 1) {
-                    printmsg("DEBUG => MAC conflict: That MAC address ({$options['set_mac']}) is already in use!",3);
-                    $self['error'] = "ERROR => MAC conflict: That MAC address ({$options['set_mac']}) is already in use!";
+                    printmsg("DEBUG => MAC conflict: That MAC address ({$options['set_mac']}) is already in use on another host!",3);
+                    $self['error'] = "ERROR => MAC conflict: That MAC address ({$options['set_mac']}) is already in use on another host!";
                     return(array(12, $self['error'] . "\n" .
                                     "NOTICE => You may ignore this error and update the interface anyway with the \"force=yes\" option.\n" .
                                     "INFO => Conflicting interface record ID: {$record['id']}\n"));
