@@ -43,7 +43,7 @@ function dhcp_entry_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => dhcp_entry_add({$options}) called", 3);
 
@@ -96,6 +96,13 @@ EOM
         ));
     }
 
+    // trim leading and trailing whitespace from 'value' and check that a value exists
+    $dhcp_option_value = trim($options['value']);
+    if (strlen($dhcp_option_value) == 0 ) {
+        printmsg("DEBUG => The DHCP value was blank",3);
+        $self['error'] = "ERROR => DHCP value was blank";
+        return(array(2, $self['error'] . "\n"));
+    }
 
     if ($options['global'] == 'Y') {
         $anchor = 'global';
@@ -161,9 +168,6 @@ EOM
         $host['id'] = 0;
         $subnet['id'] = 0;
     }
-
-    // trim leading and trailing whitespace from 'value'
-    $dhcp_option_value = trim($options['value']);
 
     // Determine the type is valid
     list($status, $rows, $type) = ona_find_dhcp_option($options['option']);
@@ -444,7 +448,7 @@ function dhcp_entry_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     printmsg("DEBUG => dhcp_entry_modify({$options}) called", 3);
 
@@ -533,6 +537,13 @@ EOM
     if (array_key_exists('set_value', $options)) {
         // trim leading and trailing whitespace from 'value'
         $SET['value'] = trim($options['set_value']);
+        // trim leading and trailing whitespace from 'value' and check that a value exists
+        $SET['value'] = trim($options['set_value']);
+        if (strlen($SET['value']) == 0 ) {
+            printmsg("DEBUG => The DHCP value was blank",3);
+            $self['error'] = "ERROR => DHCP value was blank";
+            return(array(2, $self['error'] . "\n"));
+        }
     }
 
 
