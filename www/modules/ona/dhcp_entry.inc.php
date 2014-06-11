@@ -87,7 +87,7 @@ Adds a dhcp entry into the database pointing to the specified identifier
     global                                  global entry for all subnets/hosts etc
 
   Options (both required):
-    option=DHCP option                      DHCP option name
+    option=DHCP option name                 DHCP option name (as identified in ONA)
     value=STRING                            string value for the DHCP type
 
 \n
