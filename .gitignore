@@ -3,7 +3,12 @@ run_install
 www/local/config/run_install
 
 VERSION
+
+www/local/*
 www/local/config
+!www/local/plugins
+!www/local/plugins/README
+!www/local/config/motd.txt.example
 
 # Set up empty dirs
 www/local/plugins/*
@@ -13,3 +18,9 @@ bin/*
 !bin/README
 etc/*
 !etc/README
+sql/*
+!sql/EXAMPLE.sql.disable
+!sql/list_all_hosts.sql
+
+cfg_archive_local
+
