@@ -1,7 +1,14 @@
 <?php
-// The following checks with the opennetadmin server to see what the most current version is.
-// It will do this each time the interface is opened so the traffic should be very minimal.
 
+/*
+The following checks with the opennetadmin server to see what the most current version is.
+It will do this each time the interface is opened so the traffic should be very minimal.
+
+Since fopen is required, I had been getting 'unable to determine' messages.
+I was able to fix it by adding the following to my apache config for the ona site
+
+php_admin_flag allow_url_fopen on
+*/
 
 $title_right_html = '';
 $title_left_html  = '';
