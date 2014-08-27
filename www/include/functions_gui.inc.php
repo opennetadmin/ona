@@ -9,7 +9,6 @@
 // The other half of this is in search_results.inc.php
 // if (is_numeric($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
 
-
 /////////////////////////////////////////////
 // Returns HTML containing menu items based on the inbound array $menuarray 
 //
@@ -567,6 +566,12 @@ function get_role_suggestions($q, $max_results=10) {
 
 function get_manufacturer_suggestions($q, $max_results=10) {
     return(get_text_suggestions($q . '%', 'manufacturers', 'name', $max_results));
+}
+
+// This could get slow as more tags are addded, there is no ability to do
+// a distinct or group by operation here.. 
+function get_tag_suggestions($q, $max_results=10) {
+    return(get_text_suggestions($q . '%', 'tags', 'name', $max_results));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1154,6 +1159,50 @@ function suggest_model($q, $el_input, $el_suggest) {
     $response->addScript($js);
     return($response->getXML());
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xajax server
+// This function is called by the suggest() function.
+//////////////////////////////////////////////////////////////////////////////
+function suggest_tag($q, $el_input, $el_suggest) {
+    global $conf;
+
+    // Instantiate the xajaxResponse object
+    $response = new xajaxResponse();
+    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    $js = "";
+
+    // Search the DB
+    $results = get_tag_suggestions($q);
+    $results = array_merge($results, get_tag_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
+    $results = array_unique($results);
+
+    // Build the javascript to return
+    $js .= "suggestions = Array(";
+    $comma = "";
+    foreach ($results as $suggestion) {
+        $suggestion = str_replace("'", "\\'", $suggestion);
+        $js .= $comma . "'{$suggestion}'";
+        if (!$comma) { $comma = ", "; }
+    }
+    $js .= ");";
+
+    // Tell the browser to execute the javascript in $js by sending an XML response
+    $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
+    $response->addScript($js);
+    return($response->getXML());
+}
+function suggest_tag_qf($q, $el_input, $el_suggest) {
+    return(suggest_tag($q, $el_input, $el_suggest));
+}
+function suggest_tag_host($q, $el_input, $el_suggest) {
+    return(suggest_tag($q, $el_input, $el_suggest));
+}
+function suggest_tag_net($q, $el_input, $el_suggest) {
+    return(suggest_tag($q, $el_input, $el_suggest));
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // xajax server

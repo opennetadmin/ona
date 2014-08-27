@@ -922,6 +922,23 @@
     </field>
   </table>
 
+  <table name="tags">
+   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="25">
+      <NOTNULL/>
+    </field>
+    <field name="type" type="C" size="25">
+      <NOTNULL/>
+    </field>
+    <field name="reference" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+  </table>
 
   <table name="users">
    <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>

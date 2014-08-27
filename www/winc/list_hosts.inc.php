@@ -335,6 +335,12 @@ and d.domain_id = ". $onadb->qstr($domain['id']). "
         }
     }
 
+    // tag
+    if ($form['tag_host']) {
+        $where .= $and . "h.id in (select reference from tags where type like 'host' and name like " . $onadb->qstr($form['tag_host']) . ")";
+        $and = " AND ";
+      
+    }
 
     // custom attribute type
     if ($form['custom_attribute_type']) {

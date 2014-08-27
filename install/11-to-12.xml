@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<schema version="0.3">
+
+-- Add new tags table
+  <table name="tags">
+   <opt platform="mysql|mysqlt">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+    <field name="id" type="I" size="10">
+      <KEY/>
+      <UNSIGNED/>
+    </field>
+    <field name="name" type="C" size="25">
+      <NOTNULL/>
+    </field>
+    <field name="type" type="C" size="25">
+      <NOTNULL/>
+    </field>
+    <field name="reference" type="I" size="10">
+      <NOTNULL/>
+      <UNSIGNED/>
+    </field>
+  </table>
+
+  <sql>
+    <query platform="mysql|mysqlt">INSERT INTO sequences VALUES ('tags',1)</query>
+    <query platform="mysql|mysqlt">INSERT INTO dcm_module_list (name,description,file) VALUES ('tag_add', 'Add a tag to an object', 'ona/tag.inc.php') on duplicate key update name='tag_add'</query>;
+    <query platform="mysql|mysqlt">INSERT INTO dcm_module_list (name,description,file) VALUES ('tag_del', 'Delete a tag from an object', 'ona/tag.inc.php') on duplicate key update name='tag_del'</query>;
+  </sql>
+
+</schema>

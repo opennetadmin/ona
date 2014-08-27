@@ -34,6 +34,51 @@ $title_right_html .= <<<EOL
 EOL;
 
 
+// Define the tag type
+$tagtype = 'subnet';
+
+// setup a tag quickfind button
+$modjs .= <<<EOL
+
+    xajax_window_submit('tooltips', 'type => {$tagtype}, reference => {$record['id']}, updateid => taglist_{$extravars['window_name']}', 'tag_html');
+
+    /* Setup the Quick Find Tag icon */
+    var _button = el('qf_tag_{$extravars['window_name']}');
+    _button.style.cursor = 'pointer';
+    _button.onclick =
+        function(ev) {
+            if (!ev) ev = event;
+            /* Create the popup div */
+            wwTT(this, ev,
+                 'id', 'tt_qf_tag_{$extravars['window_name']}',
+                 'type', 'static',
+                 'direction', 'south',
+                 'delay', 0,
+                 'styleClass', 'wwTT_qf',
+                 'javascript',
+                 "xajax_window_submit('tooltips', '" +
+                     "tooltip=>qf_tag," +
+                     "type=>{$tagtype}," +
+                     "updateid=>taglist_{$extravars['window_name']}," +
+                     "reference=>{$record['id']}," +
+                     "id=>tt_qf_tag_{$extravars['window_name']}," +
+                     "input_id=>set_tag_{$extravars['window_name']}');"
+            )
+        };
+EOL;
+
+// print the tag section into the workspace
+$taghtml = <<<EOL
+                <tr>
+                    <td align="right" nowrap="true"><b>Tags</b>&nbsp;</td>
+                    <td nowrap="true" class="tag" align="left" >
+                       <span id="qf_tag_{$extravars['window_name']}">
+                        <img title="Add a tag" src="{$images}/silk/tag_blue.png" border="0"
+                       /></span>
+                       <span id='taglist_{$extravars['window_name']}'></span>
+                    </td>
+                </tr>
+EOL;
 
 
 $modbodyhtml .= <<<EOL
@@ -83,6 +128,7 @@ $modbodyhtml .= <<<EOL
                 <td class="padding" align="left">{$record['type']}&nbsp;</td>
             </tr>
 
+            $taghtml
         </table>
 EOL;
 

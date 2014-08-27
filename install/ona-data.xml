@@ -80,6 +80,8 @@
 ('custom_attribute_display', 'Display a custom attribute', 'ona/custom_attribute.inc.php'),
 ('add_module', 'Register a new DCM module', 'get_module_list.inc.php'),
 ('report_run', 'Run a report', 'report_run.inc.php'),
+('tag_add', 'Add a tag to an object', 'ona/tag.inc.php'),
+('tag_del', 'Delete a tag from an object', 'ona/tag.inc.php'),
 ('ona_sql', 'Perform basic SQL operations on the database', 'sql.inc.php');</query>
 
 <query>INSERT INTO `device_types` VALUES (1,1,1),(2,9,11),(3,2,13),(4,4,2),(5,5,3),(6,9,12);</query>
@@ -97,7 +99,7 @@
 <query>INSERT INTO `roles` VALUES (12,'Bulk loaded'),(13,'laptop'),(11,'Manually loaded'),(3,'printer'),(1,'router'),(4,'server'),(2,'switch'),(7,'wireless access point'),(5,'workstation');</query>
 
 
-<query>INSERT INTO `sequences` VALUES ('blocks',4),('configurations',1),('configuration_types',5),('custom_attribute_types',3),('devices',14),('device_types',7),('dhcp_options',14),('dhcp_option_entries',13),('dhcp_pools',3),('dhcp_server_subnets',6),('dns',62),('dns_server_domains',8),('domains',5),('hosts',22),('interfaces',28),('manufacturers',47),('models',11),('roles',14),('subnets',22),('subnet_types',14),('vlans',1),('vlan_campuses',5),('locations',1),('permissions',100);</query>
+<query>INSERT INTO `sequences` VALUES ('blocks',4),('configurations',1),('configuration_types',5),('custom_attribute_types',3),('devices',14),('device_types',7),('dhcp_options',14),('dhcp_option_entries',13),('dhcp_pools',3),('dhcp_server_subnets',6),('dns',62),('dns_server_domains',8),('domains',5),('hosts',22),('interfaces',28),('manufacturers',47),('models',11),('roles',14),('subnets',22),('subnet_types',14),('vlans',1),('vlan_campuses',5),('locations',1),('permissions',100),('tags',1);</query>
 
 
 <query>INSERT INTO `subnet_types` VALUES (1,'loopback','Loopback','Loopback Interfaces (mostly for routers)'),(2,'','WAN',''),(7,'','VLAN',''),(10,'p2p','Point-to-Point',''),(11,'','VPN',''),(12,'','Wireless LAN',''),(13,'lan','LAN','Simple LAN');</query>

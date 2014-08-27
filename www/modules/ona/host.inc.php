@@ -542,7 +542,7 @@ function host_del($options="") {
     printmsg("DEBUG => host_del({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.18';
+    $version = '1.19';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -741,6 +741,25 @@ EOM
         }
 
 
+        // Delete tag entries
+        list($status, $rows, $records) = db_get_records($onadb, 'tags', array('type' => 'host', 'reference' => $host['id']));
+        $log=array(); $i=0;
+        foreach ($records as $record) {
+            $log[$i]= "INFO => Tag DELETED: {$record['name']} from {$host['fqdn']}";
+            $i++;
+        }
+        //do the delete
+        list($status, $rows) = db_delete_records($onadb, 'tags', array('type' => 'host', 'reference' => $host['id']));
+        if ($status) {
+            $self['error'] = "ERROR => host_del() Tag delete SQL Query failed: {$self['error']}";
+            printmsg($self['error'],0);
+            return(array(5, $add_to_error . $self['error'] . "\n"));
+        }
+        //log deletions
+        foreach($log as $log_msg) {
+            printmsg($log_msg,0);
+            $add_to_error .= $log_msg . "\n";
+        }
 
         // Delete custom attribute entries
         // get list for logging
@@ -885,6 +904,13 @@ EOM
         $text .= "  [ID:{$int['id']}] {$int['ip_addr_text']}\n";
     }
 
+    // Display associated tags
+    list($status, $rows, $records) = db_get_records($onadb, 'tags', array('type' => 'host', 'reference' => $host['id']));
+    if ($rows) $text .= "\nASSOCIATED TAG RECORDS ({$rows}):\n";
+    foreach ($records as $record) {
+        $text .= "  {$record['name']}\n";
+    }
+
     // Display associated custom attributes
     list($status, $rows, $records) = db_get_records($onadb, 'custom_attributes', array('table_name_ref' => 'hosts', 'table_id_ref' => $host['id']));
     if ($rows) $text .= "\nASSOCIATED CUSTOM ATTRIBUTE RECORDS ({$rows}):\n";
@@ -938,7 +964,7 @@ function host_display($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => host_display({$options}) called", 3);
 
@@ -1004,6 +1030,15 @@ EOM
         if ($rows >= 1) {
             $text .= "\nASSOCIATED DEVICE RECORD\n";
             $text .= format_array($device);
+        }
+
+        // Tag records
+        list($status, $rows, $tags) = db_get_records($onadb, 'tags', array('type' => 'host', 'reference' => $host['id']));
+        if ($rows) {
+            $text .= "\nASSOCIATED TAG RECORDS\n";
+            foreach ($tags as $tag) {
+                $text .= "  {$tag['name']}\n";
+            }
         }
 
     }

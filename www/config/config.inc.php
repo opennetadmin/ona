@@ -70,6 +70,7 @@ $conf = array (
     "debug"                  => "2",
     "syslog"                 => "0",
     "stdout"                 => "0",
+    "log_to_db"              => "0",
     "logfile"                => "/var/log/ona.log",
 
     /* The output charset to be used in htmlentities() and htmlspecialchars() filtering */
@@ -236,7 +237,11 @@ if (@($conf['force_https'] == 1) or ($_SERVER['SERVER_PORT'] == 443)) {
     $https  = "https://{$_SERVER['SERVER_NAME']}";
 }
 else {
-    $https  = "http://{$_SERVER['SERVER_NAME']}";
+    if ($_SERVER['SERVER_PORT'] != 80) {
+      $https  = "http://{$_SERVER['SERVER_NAME']}:{$_SERVER['SERVER_PORT']}";
+    } else {
+      $https  = "http://{$_SERVER['SERVER_NAME']}";
+    }
 }
 
 // DON'T put whitespace at the beginning or end of included files!!!

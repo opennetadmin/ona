@@ -122,6 +122,13 @@ function ws_display_list($window_name, $form='') {
        }
     }
 
+    // tag
+    if ($form['tag_net']) {
+        $where .= $and . "id in (select reference from tags where type like 'subnet' and name like " . $onadb->qstr($form['tag_net']) . ")";
+        $and = " AND ";
+
+    }
+
     // custom attribute type
     if ($form['custom_attribute_type_net']) {
         $where .= $and . "id in (select table_id_ref from custom_attributes where table_name_ref like 'subnets' and custom_attribute_type_id = (SELECT id FROM custom_attribute_types WHERE name = " . $onadb->qstr($form['custom_attribute_type_net']) . "))";

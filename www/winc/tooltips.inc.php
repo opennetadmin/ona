@@ -82,6 +82,10 @@ function ws_tooltips_submit($window_name, $form='') {
            list ($html, $js) = quick_interface_share($form);
            break;
 
+        case 'qf_tag':
+           list ($html, $js) = quick_tag_add($form);
+           break;
+
         case 'host_interface_list':
            list ($html, $js) = get_host_interface_list_html($form);
            break;
@@ -115,8 +119,56 @@ function ws_tooltips_submit($window_name, $form='') {
 }
 
 
+///////////////////////////////////////
+// Function for usort to sort tag list, used by ws_tag_html
+// Example: usort($array, 'tagsort');
+///////////////////////////////////////
+function tagsort($a, $b) {
+  return strcmp($a["name"], $b["name"]);
+}
 
+///////////////////////////////////////
+// Update HTML list of tags for specified type
+// the tag lists will have 5 items per line
+// The output will be placed in the innerHTML of the 'updateid' dom element
+// 
+// Form needs to have, type, reference, updateid
+///////////////////////////////////////
+function ws_tag_html($window_name, $form='') {
+  global $conf, $self, $base, $onadb;
 
+  $html = $js = '';
+
+  // If the user supplied an array in a string, build the array and store it in $form
+  $form = parse_options_string($form);
+
+  $c=1;
+  // Gather a list of tags to display
+  list($status, $rows, $tags) = db_get_records($onadb, 'tags', "type = '{$form['type']}' and reference = {$form['reference']}");
+  usort($tags, 'tagsort');
+  foreach ( $tags as $tag ) {
+    $html .= <<<EOL
+<span id="tagname_{$tag['name']}{$tag['id']}"
+      class="tag"
+      onmouseover="el('tagdel_{$tag['name']}{$tag['id']}').style.display='';"
+      onmouseout="el('tagdel_{$tag['name']}{$tag['id']}').style.display='none';"
+      >{$tag['name']}<span id="tagdel_{$tag['name']}{$tag['id']}"
+                           class="tagdel"
+                           style="display:none"
+                           onClick="xajax_window_submit('edit_tag', 'id => {$tag['id']}', 'delete');el('tagname_{$tag['name']}{$tag['id']}').style.display='none';">x</span></span>
+EOL;
+
+    // print a new line each $c tags
+    $c++;
+    if ( $c > 5 ) { $html .= "<br>"; $c=1; }
+  }
+
+  $response = new xajaxResponse();
+  $response->addAssign($form['updateid'], "innerHTML", $html);
+  // set extra width in the table so the delete button looks better
+  $response->addScript("tagTdWidth=el('tagname_{$tag['name']}{$tag['id']}').parentNode.parentNode.offsetWidth+8;el('tagname_{$tag['name']}{$tag['id']}').parentNode.parentNode.setAttribute('style','width:'+tagTdWidth+'px');");
+  return($response->getXML());
+}
 
 
 
@@ -984,6 +1036,77 @@ EOL;
 
 
 
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Function: quick_tag_add($form)
+//
+// Description:
+//     Builds HTML for displaying a quick popup.
+//     Returns a two part array ($html, $js)
+//////////////////////////////////////////////////////////////////////////////
+function quick_tag_add($form) {
+    global $conf, $self, $onadb;
+    global $font_family, $color, $style, $images;
+    $html = $js = '';
+    $font_color = '#FFFFFF';
+
+    $style['content_box'] = <<<EOL
+        padding: 2px 4px;
+        vertical-align: top;
+EOL;
+
+    // WARNING: this one's different than most of them!
+    $style['label_box'] = <<<EOL
+        font-weight: bold;
+        cursor: move;
+        color: #FFFFFF;
+EOL;
+
+    $html .= <<<EOL
+
+    <!-- QUICK TAG ADD -->
+    <form id="quick_tag_add_form" onSubmit="return(false);">
+    <input type="hidden" name="type" value="{$form['type']}">
+    <input type="hidden" name="reference" value="{$form['reference']}">
+    <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
+
+    <tr><td align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
+        Add {$form['type']} tag
+    </td></tr>
+
+    <tr>
+        <td align="left" class="qf-search-line">
+            <input id="tag_qf" name="name" type="text" class="edit" size="24" accesskey="t" onClick="el('qf_tag_results').style.display = 'none';" onkeypress="if (event.keyCode == 13) { el('tagaddbutton').click();clearInterval(inter_exec); }" />
+            <div id="suggest_tag_qf" class="suggest"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td align="right" class="qf-search-line">
+            <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
+            <input id="tagaddbutton"
+                   class="button" 
+                   type="button" 
+                   name="add"
+                   value="Add"
+                   accesskey="a"
+                   onClick="xajax_window_submit('edit_tag', xajax.getFormValues('quick_tag_add_form'), 'save');removeElement('{$form['id']}');xajax_window_submit('tooltips', 'type => {$form['type']}, reference => {$form['reference']}, updateid => {$form['updateid']}', 'tag_html');">
+        </td>
+    </tr>
+
+    </table>
+    </form>
+EOL;
+
+    // Javascript to run after the window is built
+    $js = <<<EOL
+        suggest_setup('tag_qf', 'suggest_tag_qf');
+        el('tag_qf').focus();
+EOL;
+
+    return(array($html, $js));
+}
 
 
 

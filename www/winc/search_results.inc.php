@@ -314,6 +314,16 @@ function ws_search_results_submit($window_name, $form='') {
             </td>
         </tr>
 
+        <tr>
+            <td align="right" class="asearch-line">
+                <u>T</u>ag
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="tag_host" type="text" name="tag_host" size="20" class="edit" accesskey="t" value="{$form['tag_host']}">
+                <div id="suggest_tag_host" class="suggest"></div>
+            </td>
+        </tr>
+
       </table>
 
     </td>
@@ -494,6 +504,16 @@ EOL;
             </td>
         </tr>
 
+        <tr>
+            <td align="right" class="asearch-line">
+                <u>T</u>ag
+            </td>
+            <td align="left" class="asearch-line">
+                <input id="tag_net" type="text" name="tag_net" size="20" class="edit" accesskey="t" value="{$form['tag_net']}">
+                <div id="suggest_tag_net" class="suggest"></div>
+            </td>
+        <tr>
+
     <tr>
         <td align="right" class="asearch-line">
             &nbsp;
@@ -598,6 +618,8 @@ EOL;
         suggest_setup('role', 'suggest_role');
         suggest_setup('model', 'suggest_model');
         suggest_setup('manufacturer', 'suggest_manufacturer');
+        suggest_setup('tag_host', 'suggest_tag_host');
+        suggest_setup('tag_net', 'suggest_tag_net');
 
 
         el('host_search_form').onsubmit = function() { return false; };

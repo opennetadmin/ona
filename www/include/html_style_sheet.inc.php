@@ -372,7 +372,32 @@ a.button:hover {
     white-space: nowrap;
 }
 
+td.tag {
+  line-height: 24px;
+  padding: 2px 4px;
+  margin: 0px;
+  font-size: small;
+}
 
+span.tag {
+  cursor: pointer;
+  color: #444444;
+  background: #CDDEFA;
+  padding: 2px 4px;
+  margin-right: 4px;
+  -moz-border-radius:4px;
+  -webkit-border-radius:4px;
+  border-radius:4px;
+  border:1px solid #ccc;
+}
+
+span.tagdel  {
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 3px;
+  padding-left: 5px;
+  border-left: 1px solid;
+}
 /* --------------- AJAX Boxes --------------- */
 
 a.nav          { color: {$color['link_nav']};  cursor: pointer; text-decoration: none; }

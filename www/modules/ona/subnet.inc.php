@@ -33,7 +33,7 @@ function subnet_display($options="") {
     printmsg('DEBUG => subnet_display('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -86,6 +86,15 @@ EOM
 
     // If 'verbose' is enabled, grab some additional info to display
     if ($options['verbose'] == 'Y') {
+
+        // Tag records
+        list($status, $rows, $tags) = db_get_records($onadb, 'tags', array('type' => 'subnet', 'reference' => $subnet['id']));
+        if ($rows) {
+            $text .= "\nASSOCIATED TAG RECORDS\n";
+            foreach ($tags as $tag) {
+                $text .= "  {$tag['name']}\n";
+            }
+        }
 
         // VLAN record
         list($status, $rows, $vlan) = ona_get_vlan_record(array('id' => $subnet['vlan_id']));
@@ -690,7 +699,7 @@ function subnet_del($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     printmsg('DEBUG => subnet_del('.$options.') called', 3);
 
@@ -777,6 +786,25 @@ EOM
             return(array(5, $self['error'] . "\n"));
         }
 
+        // Delete tag entries
+        list($status, $rows, $records) = db_get_records($onadb, 'tags', array('type' => 'subnet', 'reference' => $subnet['id']));
+        $log=array(); $i=0;
+        foreach ($records as $record) {
+            $log[$i]= "INFO => Tag DELETED: {$record['name']} from {$subnet['name']}";
+            $i++;
+        }
+        //do the delete
+        list($status, $rows) = db_delete_records($onadb, 'tags', array('type' => 'subnet', 'reference' => $subnet['id']));
+        if ($status) {
+            $self['error'] = "ERROR => subnet_del() Tag delete SQL Query failed: {$self['error']}";
+            printmsg($self['error'],0);
+            return(array(5, $add_to_error . $self['error'] . "\n"));
+        }
+        //log deletions
+        foreach($log as $log_msg) {
+            printmsg($log_msg,0);
+            $add_to_error .= $log_msg . "\n";
+        }
 
         // Delete custom attribute entries
         // get list for logging
@@ -898,6 +926,13 @@ EOM
     foreach ($records as $record) {
         list($status, $rows, $dhcp) = ona_get_dhcp_option_entry_record(array('id' => $record['id']));
         $text .= "  {$dhcp['display_name']} => {$dhcp['value']}\n";
+    }
+
+    // Display associated tags
+    list($status, $rows, $records) = db_get_records($onadb, 'tags', array('type' => 'subnet', 'reference' => $subnet['id']));
+    if ($rows) $text .= "\nASSOCIATED TAG RECORDS ({$rows}):\n";
+    foreach ($records as $record) {
+        $text .= "  {$record['name']}\n";
     }
 
     // Display associated custom attributes
