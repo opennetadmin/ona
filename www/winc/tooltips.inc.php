@@ -150,8 +150,17 @@ function ws_tag_html($window_name, $form='') {
     $html .= <<<EOL
 <span id="tagname_{$tag['name']}{$tag['id']}"
       class="tag"
-      onmouseover="el('tagdel_{$tag['name']}{$tag['id']}').style.display='';"
-      onmouseout="el('tagdel_{$tag['name']}{$tag['id']}').style.display='none';"
+EOL;
+
+    // only show delete button when you have permission
+    if (auth('host_del') or auth('subnet_del')) {
+      $html .= <<<EOL
+        onmouseover="el('tagdel_{$tag['name']}{$tag['id']}').style.display='';"
+        onmouseout="el('tagdel_{$tag['name']}{$tag['id']}').style.display='none';"
+EOL;
+    }
+
+    $html .= <<<EOL
       >{$tag['name']}<span id="tagdel_{$tag['name']}{$tag['id']}"
                            class="tagdel"
                            style="display:none"
@@ -1069,6 +1078,7 @@ EOL;
     <form id="quick_tag_add_form" onSubmit="return(false);">
     <input type="hidden" name="type" value="{$form['type']}">
     <input type="hidden" name="reference" value="{$form['reference']}">
+    <input type="hidden" name="updateid" value="{$form['updateid']}">
     <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
 
     <tr><td align="center" class="qf-search-line" style="{$style['label_box']}; padding-top: 0px;" onMouseDown="dragStart(event, '{$form['id']}', 'savePosition', 0);">
@@ -1077,11 +1087,12 @@ EOL;
 
     <tr>
         <td align="left" class="qf-search-line">
-            <input id="tag_qf" name="name" type="text" class="edit" size="24" accesskey="t" onClick="el('qf_tag_results').style.display = 'none';" onkeypress="if (event.keyCode == 13) { el('tagaddbutton').click();clearInterval(inter_exec); }" />
+            <input id="tag_qf" name="name" type="text" class="edit" size="25" maxlength="127"ccesskey="t" onClick="el('qf_tag_results').style.display = 'none';" onkeypress="if (event.keyCode == 13) { el('tagaddbutton').click();clearInterval(inter_exec); }" />
             <div id="suggest_tag_qf" class="suggest"></div>
+<br>
+<br>
         </td>
     </tr>
-
     <tr>
         <td align="right" class="qf-search-line">
             <input class="button" type="button" name="cancel" value="Cancel" onClick="removeElement('{$form['id']}');">
@@ -1091,7 +1102,7 @@ EOL;
                    name="add"
                    value="Add"
                    accesskey="a"
-                   onClick="xajax_window_submit('edit_tag', xajax.getFormValues('quick_tag_add_form'), 'save');removeElement('{$form['id']}');xajax_window_submit('tooltips', 'type => {$form['type']}, reference => {$form['reference']}, updateid => {$form['updateid']}', 'tag_html');">
+                   onClick="xajax_window_submit('edit_tag', xajax.getFormValues('quick_tag_add_form'), 'save');removeElement('{$form['id']}');">
         </td>
     </tr>
 

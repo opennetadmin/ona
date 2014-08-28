@@ -37,11 +37,15 @@ EOL;
 // Define the tag type
 $tagtype = 'host';
 
-// setup a tag quickfind button
+// Print tag list
 $modjs .= <<<EOL
-
     xajax_window_submit('tooltips', 'type => {$tagtype}, reference => {$record['id']}, updateid => taglist_{$extravars['window_name']}', 'tag_html');
+EOL;
 
+// print the add tag button if you have access
+if (auth('host_add') or auth('subnet_add') ) {
+  // setup a tag quickfind button
+  $modjs .= <<<EOL
     /* Setup the Quick Find Tag icon */
     var _button = el('qf_tag_{$extravars['window_name']}');
     _button.style.cursor = 'pointer';
@@ -67,14 +71,19 @@ $modjs .= <<<EOL
         };
 EOL;
 
+  $addtaghtml .= <<<EOL
+                       <span id="qf_tag_{$extravars['window_name']}">
+                        <img title="Add a tag" src="{$images}/silk/tag_blue.png" border="0"
+                       /></span>
+EOL;
+}
+
 // print the tag section into the workspace
 $taghtml = <<<EOL
                 <tr>
                     <td align="right" nowrap="true"><b>Tags</b>&nbsp;</td>
                     <td nowrap="true" class="tag" align="left" >
-                       <span id="qf_tag_{$extravars['window_name']}">
-                        <img title="Add a tag" src="{$images}/silk/tag_blue.png" border="0"
-                       /></span>
+                       {$addtaghtml}
                        <span id='taglist_{$extravars['window_name']}'></span>
                     </td>
                 </tr>

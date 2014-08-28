@@ -30,7 +30,7 @@ function tag_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => tag_add({$options}) called", 3);
 
@@ -38,8 +38,6 @@ function tag_add($options="") {
     $options = parse_options($options);
 
     // Possible types
-    //$allowed_types = array('subnet', 'host', 'vlan', 'interface', 'device', 'domain');
-    // lets start simple
     $allowed_types = array('subnet', 'host');
 
     $typetext=implode(', ',$allowed_types);
@@ -56,7 +54,7 @@ Adds a tag into the database assigned to the specified type of data.
   Synopsis: tag_add [KEY=VALUE] ...
 
   Required:
-    name=STRING            Name of new tag. No spaces.
+    name=STRING            Name of new tag.
     type=STRING            Type of thing to tag, Possible types listed below.
     reference=ID|STRING    Reference to apply the tag to. ID or name used to find
                            a record to attatch to.
@@ -70,11 +68,20 @@ EOM
     }
 
     // Check if provided type is in the allowed types
-//TODO
+    $options['type'] = strtolower(trim($options['type']));
+    if (!in_array($options['type'], $allowed_types)) {
+        $self['error'] = "ERROR => Invalid tag type: {$options['type']}";
+        printmsg($self['error'], 0);
+        return(array(1, $self['error'] . "\n"));
+    }
 
     // The formatting rule on tag input
     $options['name'] = preg_replace('/\s+/', '-', trim($options['name']));
-    $options['type'] = strtolower(trim($options['type']));
+    if (preg_match('/[@$%^*!\|,`~<>{}]+/', $options['name'])) {
+        $self['error'] = "ERROR => Invalid character in tag name";
+        printmsg($self['error'], 0);
+        return(array(1, $self['error'] . "\n"));
+    }
     $options['reference'] = (trim($options['reference']));
 
     // Use the find functions based on the type 
@@ -82,7 +89,7 @@ EOM
     eval("list(\$status, \$rows, \$reference) = ona_find_".$options['type']."('".$options['reference']."');");
 
     if ($status or !$rows) {
-        $self['error'] = "ERROR => Unable to find a {$options['type']} type matching {$options['reference']}";
+        $self['error'] = "ERROR => Unable to find a {$options['type']} matching {$options['reference']}";
         printmsg($self['error'], 0);
         return(array(1, $self['error'] . "\n"));
     }

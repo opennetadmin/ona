@@ -8,7 +8,7 @@
       <KEY/>
       <UNSIGNED/>
     </field>
-    <field name="name" type="C" size="25">
+    <field name="name" type="C" size="127">
       <NOTNULL/>
     </field>
     <field name="type" type="C" size="25">
