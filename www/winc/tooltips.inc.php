@@ -2485,4 +2485,34 @@ function ws_ping($window_name, $form='') {
     return(window_open("{$window_name}_results", $window));
 }
 
+/////////////////////////
+// Setup empty window with a progress bar in it
+//
+// usage:
+//
+// xajax_window_submit('tooltips', 'name=>edit_host', 'window_progressbar');
+//
+// Name => is the value of the window that is going to be submitted that will fill this window when done
+// This usually preceeds a command like xajax_window_submit('edit_host', xajax.getFormValues('form_host_{$record['id']}'), 'delete');
+/////////////////////////
+// Setup empty window with a progress bar in it
+function ws_window_progressbar($window_name, $form='') {
+    global $images;
+
+    // If an array in a string was provided, build the array and store it in $form
+    $form = parse_options_string($form);
+
+    $window_name = $form['name'];
+
+    $output = "<center>Working on the results, please wait<br><img src={$images}/loading.gif></center>";
+
+    $window['title'] = 'Processing...';
+    $window['js'] = "el('{$window_name}_extras').innerHTML='<br>';";
+    $build_commit_html = 0;
+    $commit_function = '';
+    include(window_find_include('module_results'));
+    return(window_open("{$window_name}_results", $window));
+}
+
+
 ?>

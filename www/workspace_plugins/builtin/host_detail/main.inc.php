@@ -14,7 +14,7 @@ if (auth('host_del',$debug_val)) {
     $title_left_html .= <<<EOL
                 <a title="Delete host"
                 class="act"
-                onClick="xajax_window_submit('edit_host', xajax.getFormValues('form_host_{$record['id']}'), 'delete');"
+                onClick="xajax_window_submit('tooltips', 'name=>edit_host', 'window_progressbar');xajax_window_submit('edit_host', xajax.getFormValues('form_host_{$record['id']}'), 'delete');"
                 ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
 }

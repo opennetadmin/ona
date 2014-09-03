@@ -122,7 +122,7 @@ if ($form['subnet']) {
         if(file_exists($nmapxmlfile)) {
             $xml[0]=xml2ary(file_get_contents($nmapxmlfile));
         } else {
-            $self['error'] = "ERROR => The subnet '{$form['subnet']}' does not have an nmap scan XML file on this server.";
+            $self['error'] = "ERROR => The subnet '{$form['subnet']}' does not have an nmap scan XML file on this server. {$nmapxmlfile}";
             return(array(2, $self['error']."\n"));
         }
     } else {
@@ -355,7 +355,7 @@ EOL;
                         {$act_status_partial}
                         <a title="Ping"
                             class="act"
-                            onClick="xajax_window_submit('tooltips', 'ip=>{$record['dbip']}', 'ping');"
+                            onClick="xajax_window_submit('tooltips', 'name=>tooltips', 'window_progressbar');xajax_window_submit('tooltips', 'ip=>{$record['dbip']}', 'ping');"
                         >Ping to verify</a> then delete as desired
 EOL;
             }

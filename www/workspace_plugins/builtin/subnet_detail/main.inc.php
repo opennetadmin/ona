@@ -17,7 +17,7 @@ if (auth('subnet_del',$debug_val)) {
     $title_left_html .= <<<EOL
                 <a title="Delete subnet. ID: {$record['id']}"
                     class="act"
-                    onClick="xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'delete');"
+                    onClick="xajax_window_submit('tooltips', 'name=>edit_subnet', 'window_progressbar');xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'delete');"
                 ><img src="{$images}/silk/delete.png" border="0"></a>
 EOL;
 }
