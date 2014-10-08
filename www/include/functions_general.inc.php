@@ -3,8 +3,10 @@
 
 
 // Debugging: lets print what's in $_REQUEST
-printmsg("Get/Post vars:", 3);
-foreach (array_keys($_REQUEST) as $key) printmsg("Name: $key    Value: $_REQUEST[$key]", 3);
+if ( 6 <= $conf['debug'] ) {
+  printmsg("Get/Post vars:", 6);
+  foreach (array_keys($_REQUEST) as $key) printmsg("Name: $key    Value: $_REQUEST[$key]", 6);
+}
 
 // MP: moved this stuff to config.inc.php
 
