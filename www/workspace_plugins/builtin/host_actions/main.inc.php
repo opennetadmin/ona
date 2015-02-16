@@ -78,6 +78,7 @@ foreach ($conf[$modulename] as $hostaction=>$hval) {
                 <a title="{$hval['title']}"
                     class="act"
                     href="{$hval['url']}"
+                    target="_blank"
                 ><img src="{$images}/silk/lightning_go.png" border="0">{$hostaction}</a>&nbsp;
             </span><br>
 EOL;
