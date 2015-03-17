@@ -12,7 +12,7 @@ $supported_langs = array(
 	'fr' => 'fr_FR.UTF-8'
 );
 
-$hal = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+$hal = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER["HTTP_ACCEPT_LANGUAGE"] : '';
 $langs = explode(',', $hal);
 foreach($langs as $lang){
 	$lang_prefix = substr($lang, 0, 2);
