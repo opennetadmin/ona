@@ -1108,6 +1108,7 @@ function ona_get_host_record($array='', $order='') {
     list($status_dns, $rows_dns, $dns) = ona_get_dns_record(array('id' => $record['primary_dns_id']));
     $record['name'] = $dns['name'];
     $record['fqdn'] = $dns['fqdn'];
+    $record['primary_interface_id'] = $dns['interface_id'];
     $record['dns_view_id'] = $dns['dns_view_id'];
     $record['domain_id'] = $dns['domain_id'];
     $record['domain_fqdn'] = $dns['domain_fqdn'];
