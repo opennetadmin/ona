@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.10';
+    $version = '1.11';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -292,6 +292,10 @@ Modify an interface record
     interface=ID or IP or MAC     interface ID or IP address
      or
     host=NAME[.DOMAIN] or ID      find interface by hostname or host_id
+     or
+    primary=yes                   (case sensitive) pick the host's primary
+                                  interface, only applies when "host" parameter
+                                  is used
 
   Update:
     set_ip=IP                     change IP address (numeric or dotted format)
@@ -321,11 +325,17 @@ EOM
             return(array(2, $self['error'] . "\n"));
         }
         // If we got one, load an associated interface
-        list($status, $rows, $interface) = ona_get_interface_record(array('host_id' => $host['id']));
-        if ($rows > 1) {
-            printmsg("DEBUG => Specified host ({$options['host']}) has more than one interface!",3);
-            $self['error'] = "ERROR => Specified host ({$options['host']}) has more than one interface!";
-            return(array(3, $self['error'] . "\n"));
+        // ... or the primary interface, if the primary option is set to 'yes'
+        if ($options['primary'] == 'yes') {
+            list($status, $rows, $interface) = ona_get_interface_record(array('id' => $host['primary_interface_id']));
+        }
+        else {
+            list($status, $rows, $interface) = ona_get_interface_record(array('host_id' => $host['id']));
+            if ($rows > 1) {
+                printmsg("DEBUG => Specified host ({$options['host']}) has more than one interface!",3);
+                $self['error'] = "ERROR => Specified host ({$options['host']}) has more than one interface!";
+                return(array(3, $self['error'] . "\n"));
+            }
         }
     }
 
