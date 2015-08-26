@@ -269,6 +269,12 @@ function interface_modify($options="") {
     // Parse incoming options string to an array
     $options = parse_options($options);
 
+    // Set options[use_primary] to N if they're not set
+    $options['use_primary'] = sanitize_YN($options['use_primary'], 'N');
+    
+    // Set options[force] to N if it's not set
+    $options['force'] = sanitize_YN($options['force'], 'N');
+
     // Return the usage summary if we need to
     if ($options['help'] or
        (!$options['interface'] and !$options['host']) or
@@ -288,21 +294,20 @@ Modify an interface record
 
   Synopsis: interface_modify [KEY=VALUE] ...
 
-  Where:
+  Required:
     interface=ID or IP or MAC     interface ID or IP address
      or
     host=NAME[.DOMAIN] or ID      find interface by hostname or host_id
-     or
-    primary=yes                   (case sensitive) pick the host's primary
-                                  interface, only applies when "host" parameter
-                                  is used
 
-  Update:
     set_ip=IP                     change IP address (numeric or dotted format)
     set_mac=ADDRESS               change the mac address (most formats ok)
     set_name=NAME                 interface name (i.e. "FastEthernet0/1.100")
     set_description=TEXT          description (i.e. "VPN link to building 3")
     set_last_response=DATE        date ip was last seen
+
+  Optional:
+    use_primary                   use the host's primary interface (only applies
+                                  when "host" option is used!)
 \n
 EOM
         ));
@@ -325,8 +330,8 @@ EOM
             return(array(2, $self['error'] . "\n"));
         }
         // If we got one, load an associated interface
-        // ... or the primary interface, if the primary option is set to 'yes'
-        if ($options['primary'] == 'yes') {
+        // ... or the primary interface, if the use_primary option is present
+        if ($options['use_primary'] == 'Y') {
             list($status, $rows, $interface) = ona_get_interface_record(array('id' => $host['primary_interface_id']));
         }
         else {
@@ -345,10 +350,6 @@ EOM
         $self['error'] = "ERROR => Interface not found ({$options['interface']})!";
         return(array(4, $self['error'] . "\n"));
     }
-
-
-    // Set options[force] to N if it's not set
-    $options['force'] = sanitize_YN($options['force'], 'N');
 
     // This array will contain the updated info we'll insert into the DB
     $SET = array();
