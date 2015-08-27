@@ -306,8 +306,9 @@ Modify an interface record
     set_last_response=DATE        date ip was last seen
 
   Optional:
-    use_primary                   use the host's primary interface (only applies
-                                  when "host" option is used!)
+    use_primary[=Y]               use the host's primary interface (only applies
+                                  when "host" option is used!). NOTE: dcm.pl
+                                  requires a value ("Y").
 \n
 EOM
         ));
