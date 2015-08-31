@@ -21,6 +21,7 @@ etc/*
 sql/*
 !sql/EXAMPLE.sql.disable
 !sql/list_all_hosts.sql
+www/*.htm
 
 cfg_archive_local
 

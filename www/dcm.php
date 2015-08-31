@@ -71,13 +71,44 @@ if (isset($_REQUEST['module'])) {
     list($status, $output) = run_module($_REQUEST['module'], $_REQUEST['options']);
 }
 
+// process various types of output formats
+if (strstr($_REQUEST['options'], "format=json")) {
+  output_formatter('json','json_encode');
+} elseif (strstr($_REQUEST['options'], "format=yaml")) {
+  output_formatter('yaml','yaml_emit');
+} else {
+  // Assume default text format
+  // Send the module status code and output to dcm.pl
+  print $status . "\r\n";
+  print $output;
+}
 
-// Send the module status code and output to dcm.pl
-print $status . "\r\n";
-print $output;
+
 
 // clear the session
 // FIXME: should I do a sess_destroy or sess_close instead?  to clear crap from the DB
 unset($_SESSION['ona']['auth']);
+
+
+// Given a format and format function, execute that output conversion on the $output array
+function output_formatter($format='',$function='') {
+  global $status, $output;
+  // Check that the function exists
+  if (!function_exists($function)) {
+      print "998\r\n";
+      print "ERROR => Format output type missing required php function: ${function}";
+  } else {
+    // Output needs to be an array
+    if (is_array($output))  {
+      $output['module_exit_status'] = $status;
+      eval('print '.$function.'($output);');
+    } else {
+      $out['module_exit_status'] = $status;
+      $out['module_exit_message'] = $output;
+      eval('print '.$function.'($out);');
+    }
+  }
+}
+
 
 ?>
