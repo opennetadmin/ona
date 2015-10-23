@@ -1,0 +1,45 @@
+html,body {
+  height:100%;
+}
+
+body > .onacontainer {
+  height:100%;
+  padding-top: 48px;
+  background-color: white;
+}
+
+.ws_panel {
+  height:100%;
+  margin-bottom:0px;
+}
+
+.ws_list_table {
+  margin-left:10px;
+}
+
+.ws_plugin_content {
+  margin-bottom: 8px;
+  float: left;
+  padding-right: 4px;
+  padding-left: 4px;
+  text-align: left;
+  resize: both;
+}
+
+.ws_plugin_title_right {
+  font-weight: bold;
+  padding: 2px 4px;
+  border: solid 1px #555555;
+  background-color: #F2F2F2;
+  border-right: 0px;
+}
+
+.ws_plugin_title_left {
+  font-weight: bold;
+  padding: 2px 4px;
+  border: solid 1px #555555;
+  background-color: #F2F2F2;
+  border-left: 0px;
+  text-align: right;
+}
+
