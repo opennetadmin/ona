@@ -45,7 +45,7 @@ require($include.'/desktop.inc.php');
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Menu <span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="test.php" class="ajax" data-replace=".ws_plugin_content">Add Subnet</a></li>
+                <li><a href="test.php?blah=more" class="ajax" data-method="post" data-replace=".onacontainer">Add Subnet</a></li>
                 <li><a href="#">Add Host</a></li>
                 <li><a href="#">Stuff</a></li>
                 <li role="separator" class="divider"></li>
@@ -78,6 +78,7 @@ require($include.'/desktop.inc.php');
   
     <!-- start container for main content under navbar -->
     <div class="onacontainer"> 
+stuff here
     </div>
     <!-- end container for main content under navbar -->
 
@@ -86,7 +87,7 @@ require($include.'/desktop.inc.php');
     <script src="js/bootstrap.min.js"></script>
     <script src="js/bootstrap-table.js"></script>
     <script src="js/eldarion-ajax.min.js"></script>
-    <script src="js/typeahead.bundle.js"></script>
+    <script src="js/typeahead.bundle.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/autocomplete.js"></script>
   </body>
