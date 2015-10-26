@@ -123,12 +123,11 @@ then
 else
     # Get a list of subnets from the database using the nmap_subnets.sql query
     NETLIST=`$DCM_CMD -r ona_sql header=no sql=$SQLFILE`
-    # MP: test checks for status 2.. commit option can fix this to 0 but could be risky.. may need to fix output of ona_sql module
-    #if [ $? -ne 2 ]
-    #then
-    #    echo "ERROR => Unable to retrieve subnet list using $SQLFILE query."
-    #    exit 1
-    #fi
+    if [[ $NETLIST == *"no records"* ]]
+    then
+        echo "ERROR => Unable to retrieve subnet list using $SQLFILE query."
+        exit 1
+    fi
 fi
 
 # If they just want the list, show it and exit
