@@ -15,6 +15,8 @@
 $base;
 $include;
 
+$onabase = dirname($base);
+
 
 //$baseURL = preg_replace('+' . dirname($_SERVER['DOCUMENT_ROOT']) . '+', '', $base);
 //$baseURL = preg_replace('+/$+', '', $baseURL);
