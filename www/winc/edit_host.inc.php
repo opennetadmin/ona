@@ -86,6 +86,7 @@ function ws_editor($window_name, $form='') {
     list($status, $rows, $location) = ona_get_location_record(array('id' => $device['location_id']));
 
     $host['location'] = $location['reference'];
+    $host['asset_tag'] = $device['asset_tag'];
 
     $device_model_list = "<option value=\"\"></option>\n";
     foreach (array_keys((array)$device_types) as $id) {
@@ -289,6 +290,22 @@ EOL;
                 >
                 <div id="suggest_set_location_{$window_name}" class="suggest"></div>
                 <span id="qf_location_{$window_name}" title="Location Quick Search"><img src="{$images}/silk/find.png" border="0"/></span>
+            </td>
+        </tr>
+        <tr>
+            <td align="right" nowrap="true">
+                Asset Tag
+            </td>
+            <td class="padding" align="left" width="100%">
+                <input
+                    id="set_asset_tag_{$window_name}"
+                    name="set_asset_tag"
+                    alt="Asset Tag"
+                    value="{$host['asset_tag']}"
+                    class="edit"
+                    type="text"
+                    size="7" maxlength="64"
+                >
             </td>
         </tr>
 EOL;
@@ -571,6 +588,7 @@ function ws_save($window_name, $form='') {
 
         // Device options
         $form['type'] = $form['set_type'];              unset($form['set_type']);
+        $form['asset_tag'] = $form['set_asset_tag'];    unset($form['set_asset_tag']);
         $form['location'] = $form['set_location'];      unset($form['set_location']);
 
         // Host options

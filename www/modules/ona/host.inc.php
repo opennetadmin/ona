@@ -52,6 +52,7 @@ Add a new host
   Optional:
     notes=NOTES               Textual notes
     location=REF              Reference of location
+    asset_tag=TAG             Asset tag for device
     device=NAME|ID            The device this host is associated with
 
   Optional, add an interface too:
@@ -210,8 +211,9 @@ EOM
             'id'                => $host['device_id'],
             'device_type_id'    => $device_type['id'],
             'location_id'       => $loc['id'],
-            'primary_host_id'   => $id
-            // FIXME: (MP) add in the asset tag and serial number stuff too
+            'primary_host_id'   => $id,
+            // FIXME: (MP) add in the serial number stuff too
+            'asset_tag'         => $devid['asset_tag']
         )
     );
     if ($status or !$rows) {
@@ -334,6 +336,7 @@ function host_modify($options="") {
        (!$options['set_host'] and
         !$options['set_type'] and
         !$options['set_location'] and
+        !$options['set_asset_tag'] and
         !$options['set_notes']
        ) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
@@ -355,6 +358,7 @@ Modify a host record
     set_type=TYPE or ID       Change device/model type or ID
     set_notes=NOTES           Change the textual notes
     set_location=REF          Reference for location
+    set_asset_tag=TAG         Asset tag for device
     set_device=NAME|ID        Name or ID of the device this host is associated with
 
 EOM
@@ -455,6 +459,17 @@ EOM
             }
             // If location is changing, then set the variable
             if ($device['location_id'] != $loc['id']) $SET_DEV['location_id'] = $loc['id'];
+        }
+    }
+
+    if (array_key_exists('set_asset_tag', $options)) {
+        if (!$options['set_asset_tag'])
+            unset($SET_DEV['asset_tag']);
+        else {
+            // FIXME: sanity checks for asset tags ...
+            // If asset_tag is changing, then set the variable
+            if ($device['asset_tag'] != $options['set_asset_tag'])
+                $SET_DEV['asset_tag'] = $options['set_asset_tag'];
         }
     }
 

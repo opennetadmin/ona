@@ -89,6 +89,14 @@ $taghtml = <<<EOL
                 </tr>
 EOL;
 
+if ($record['asset_tag']) {
+    $assettaghtml = <<<EOL
+                <tr>
+                    <td align="right" nowrap="true"><b>Asset Tag</b>&nbsp;</td>
+                    <td nowrap="true" class="padding" align="left">{$record['asset_tag']}</td>
+                </tr>
+EOL;
+}
 
 $modbodyhtml .= <<<EOL
             <table width=100% cellspacing="0" border="0" cellpadding="0" style="margin-bottom: 8px;">
@@ -96,6 +104,8 @@ $modbodyhtml .= <<<EOL
                     <td align="right" nowrap="true" title="Device type ID: {$record['device_type_id']}"><b>Device Type</b>&nbsp;</td>
                     <td nowrap="true" class="padding" align="left" title="{$record['devicefull']}">{$record['device']}</td>
                 </tr>
+
+                $assettaghtml
 
                 $taghtml
 
