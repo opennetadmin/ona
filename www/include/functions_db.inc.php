@@ -2468,12 +2468,9 @@ function ona_find_vlan($vlan_search="", $campus_search="") {
     global $self;
     if (!$vlan_search and !$campus_search) return(array(1, 0, array()));
 
-    // All vlan and vlan campus names should be upper case
-    $vlan_search = strtoupper($vlan_search);
-    $campus_search = strtoupper($campus_search);
-
     // If we got a vlan campus search string, let's look for that first.
     if ($campus_search) {
+        $campus_search = strtoupper($campus_search);
         // Do a few sql queries and see if we can get a unique match
         $search = $campus_search;
         foreach (array('name', 'id') as $field) {
@@ -2487,22 +2484,19 @@ function ona_find_vlan($vlan_search="", $campus_search="") {
         }
     }
 
-    // Search for a vlan by ID
+    // Search by a vlan number
     if (is_numeric($vlan_search)) {
-        list($status, $rows, $vlan) = ona_get_vlan_record(array('id' => $vlan_search));
-        if (!$status and $rows == 1) {
-            printmsg("DEBUG => ona_find_vlan() found vlan record by ID", 2);
-            return(array($status, $rows, $vlan));
-        }
+      $where = array('number' => $vlan_search);
+    } else {
+      // Search for a vlan by NAME, use the campus[ID] if we have one
+      $vlan_search = strtoupper($vlan_search);
+      $where = array('name' => $vlan_search);
     }
 
-    // Search for a vlan by NAME, use the campus[ID] if we have one
-    $where = array('name' => $vlan_search);
     if ($campus['id']) $where['vlan_campus_id'] = $campus['id'];
     list($status, $rows, $vlan) = ona_get_vlan_record($where);
     if (!$status and $rows == 1) {
-        printmsg("DEBUG => ona_find_vlan() found vlan record by VLAN name", 2);
-        return(array($status, $rows, $vlan));
+      return(array($status, $rows, $vlan));
     }
 
     // We didn't find it - return and error code, 0 matches, and an empty record.

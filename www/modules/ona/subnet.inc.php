@@ -149,7 +149,7 @@ function subnet_add($options="") {
     printmsg('DEBUG => subnet_add('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -178,7 +178,7 @@ Adds a new subnet (subnet) record
     type=TYPE               subnet type name or id
 
   Optional:
-    vlan=VLAN               vlan name, number, or id
+    vlan=VLAN               vlan name, number
     campus=CAMPUS           vlan campus name or id to help identify vlan
 \n
 EOM
@@ -384,7 +384,7 @@ function subnet_modify($options="") {
     //printmsg('DEBUG => subnet_modify('.implode (";",$options).') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.06';
+    $version = '1.07';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -419,7 +419,7 @@ Modify a subnet (subnet) record
     set_name=TEXT      change subnet name (i.e. "LAN-1234")
     set_type=TYPE             change subnet type by name or id
     set_location=LOCATION             change location/location by number or id
-    set_vlan=VLAN             change vlan by name, number, or id
+    set_vlan=VLAN             change vlan by name, number
     campus=CAMPUS             vlan campus name or id to help identify vlan
     set_security_level=LEVEL  numeric security level ({$conf['ona_lvl']})
 
