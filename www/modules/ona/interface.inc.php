@@ -820,8 +820,10 @@ EOM
 function interface_display($options="") {
     global $conf, $self;
 
+    $text_array = array();
+
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => interface_display({$options}) called", 3);
 
@@ -887,6 +889,7 @@ EOM
         return(array(4, $self['error'] . "\n"));
     }
 
+    $text_array = $interface;
 
     // Build text to return
     $text  = "INTERFACE RECORD\n";
@@ -916,6 +919,14 @@ EOM
             $text .= format_array($device);
         }
 
+    }
+
+    // change the output format if other than default
+    if ($options['format'] == 'json') {
+        $text = $text_array;
+    }
+    if ($options['format'] == 'yaml') {
+        $text = $text_array;
     }
 
     // Return the success notice
