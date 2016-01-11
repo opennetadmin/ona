@@ -963,8 +963,10 @@ EOM
 function host_display($options="") {
     global $conf, $self, $onadb;
 
+    $text_array = array();
+
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     printmsg("DEBUG => host_display({$options}) called", 3);
 
@@ -1008,12 +1010,16 @@ EOM
         return(array(2, $self['error'] . "\n"));
     }
 
+    $text_array = $host;
+
     // Build text to return
     $text  = "HOST RECORD ({$host['fqdn']})\n";
     $text .= format_array($host);
 
     // If 'verbose' is enabled, grab some additional info to display
     if ($options['verbose'] == 'Y') {
+
+// TODO: if it is a nat interface, maybe process that IP and make it visible?
 
         // Interface record(s)
         $i = 0;
@@ -1023,11 +1029,26 @@ EOM
             $i++;
             $text .= "\nASSOCIATED INTERFACE RECORD ({$i} of {$rows})\n";
             $text .= format_array($interface);
+            $text_array['interfaces'][$i] = $interface;
+            unset($text_array['interfaces'][$i]['host_id']);
         } while ($i < $rows);
+
+        $text_array['interface_count'] = $rows;
 
         // Device record
         list($status, $rows, $device) = ona_get_device_record(array('id' => $host['device_id']));
         if ($rows >= 1) {
+            // Fill out some other device info
+            list($status, $rows, $device_type) = ona_get_device_type_record(array('id' => $device['device_type_id']));
+            list($status, $rows, $role) = ona_get_role_record(array('id' => $device_type['role_id']));
+            list($status, $rows, $model) = ona_get_model_record(array('id' => $device_type['model_id']));
+            list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $model['manufacturer_id']));
+            $device['device_type'] = "{$manufacturer['name']}, {$model['name']} ({$role['name']})";
+
+            list($status, $rows, $location) = ona_get_location_record(array('id' => $device['location_id']));
+
+            $text_array['location'] = $location;
+            $text_array['device'] = $device;
             $text .= "\nASSOCIATED DEVICE RECORD\n";
             $text .= format_array($device);
         }
@@ -1037,10 +1058,25 @@ EOM
         if ($rows) {
             $text .= "\nASSOCIATED TAG RECORDS\n";
             foreach ($tags as $tag) {
+                $text_array['tags'][] = $tag['name'];
                 $text .= "  {$tag['name']}\n";
             }
         }
 
+    }
+
+    // Cleanup unused info
+    unset($text_array['device_id']);
+    unset($text_array['device']['asset_tag']);
+    unset($text_array['device']['location_id']);
+    unset($text_array['device']['serial_number']);
+
+    // change the output format if other than default
+    if ($options['format'] == 'json') {
+        $text = $text_array;
+    }
+    if ($options['format'] == 'yaml') {
+        $text = $text_array;
     }
 
     // Return the success notice
