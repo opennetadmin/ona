@@ -142,7 +142,12 @@ EOL;
                     type="hidden"
                     id="set_vlan_{$window_name}"
                     name="set_vlan"
-                    value="{$subnet['vlan_id']}">
+                    value="{$vlan['number']}">
+                <input
+                    type="hidden"
+                    id="vlan_campus_{$window_name}"
+                    name="campus"
+                    value="{$vlan['vlan_campus_id']}">
 
                 <span id="qf_vlan_{$window_name}">
                     <a id="vlan_text_{$window_name}"
