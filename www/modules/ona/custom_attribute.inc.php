@@ -757,4 +757,93 @@ EOM
 }
 
 
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: custom_attribute_type_display (string $options='')
+//
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function (0 on success, non-zero on error)
+//      2. A textual message for display on the console or web interface.
+//
+//  Example: list($status, $result) = custom_attribute_modify('host=test');
+//
+//  Exit codes:
+//    0  :: No error
+//    1  :: Help text printed - Insufficient or invalid input received
+//
+//
+//  History:
+//
+//
+///////////////////////////////////////////////////////////////////////
+function custom_attribute_type_display($options="") {
+
+    // The important globals
+    global $conf, $self, $onadb;
+
+    // Version - UPDATE on every edit!
+    $version = '1.0';
+
+    printmsg("DEBUG => custom_attribute_type_display({$options}) called", 3);
+
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+
+    // Return the usage summary if we need to
+    if ($options['help'] or !$options['name']) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        $self['error'] = 'ERROR => Insufficient parameters';
+        return(array(1,
+<<<EOM
+
+custom_attribute_type_display-v{$version}
+Display the custom attribute type specified
+
+  Synopsis: custom_attribute_type_display [KEY=VALUE] ...
+
+  Where:
+    name=NAME or ID       custom attribute type name or ID
+
+EOM
+
+        ));
+    }
+
+
+
+    // Now find the ID or NAME of the record
+    if ($options['name']) {
+        $field = (is_numeric($options['name'])) ? 'id' : 'name';
+        list($status, $rows, $catype) = ona_get_custom_attribute_type_record(array($field => $options['name']));
+        if (!$catype['id']) {
+            $self['error'] = "ERROR => The custom attribute type specified, {$options['name']}, is invalid!";
+            return(array(2, $self['error'] . "\n"));
+        }
+
+        $text .= "CUSTOM ATTRIBUTE TYPE ENTRY RECORD ({$catype['id']})\n";
+        $text .= format_array($catype);
+
+        // change the output format if other than default
+        if ($options['format'] == 'json') {
+            $text = $catype;
+        }
+        if ($options['format'] == 'yaml') {
+            $text = $catype;
+        }
+
+        // Return the success notice
+        return(array(0, $text));
+    }
+}
+
+
+
 ?>

@@ -78,6 +78,7 @@
 ('custom_attribute_del', 'Delete a custom attribute', 'ona/custom_attribute.inc.php'),
 ('custom_attribute_modify', 'Modify a custom attribute', 'ona/custom_attribute.inc.php'),
 ('custom_attribute_display', 'Display a custom attribute', 'ona/custom_attribute.inc.php'),
+('custom_attribute_type_display', 'Display a custom attribute type', 'ona/custom_attribute.inc.php'),
 ('add_module', 'Register a new DCM module', 'get_module_list.inc.php'),
 ('report_run', 'Run a report', 'report_run.inc.php'),
 ('tag_add', 'Add a tag to an object', 'ona/tag.inc.php'),
@@ -133,7 +134,7 @@
 ('suggest_max_results', '10', 'Limits the amount of rows returned by queries. (test impact of changing this first)', '', '', 1, 0),
 ('syslog', '0', 'Log via syslog, only works if debug is set to 0', '', '', 0, 0),
 ('version', 'not-set', 'Tracks current installed version, used to detect when upgrades should be done.', '', '', 0, 0),
-('upgrade_index', '11', 'Tracks current upgrade index, used to perform database upgrades.', '', '', 0, 0);</query>
+('upgrade_index', '13', 'Tracks current upgrade index, used to perform database upgrades.', '', '', 0, 0);</query>
 
 
 <query>INSERT INTO `users` VALUES (1,'guest','098f6bcd4621d373cade4e832627b4f6',0,'2007-10-30 02:55:37','2007-12-02 23:44:21'),(2,'admin','21232f297a57a5a743894a0e4a801fc3',0,'2007-10-30 03:00:17','2007-12-02 22:10:26');</query>
