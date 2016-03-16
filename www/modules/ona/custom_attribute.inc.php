@@ -812,7 +812,7 @@ Display the custom attribute type specified
   Where:
     id=ID           custom attribute type ID
       OR
-    name=text       custom attribute type name
+    name=NAME       custom attribute type name
 
 EOM
 
