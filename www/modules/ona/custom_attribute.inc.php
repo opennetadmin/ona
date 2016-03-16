@@ -789,8 +789,6 @@ function custom_attribute_type_display($options="") {
     // The important globals
     global $conf, $self, $onadb;
 
-    $text_array = array();
-
     // Version - UPDATE on every edit!
     $version = '1.0';
 
