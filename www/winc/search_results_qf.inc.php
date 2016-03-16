@@ -616,7 +616,7 @@ EOL;
         $html .= <<<EOL
 <tr onMouseOver="this.className='row-highlight';"
     onMouseOut="this.className='row-normal';"
-    onClick="el('{$form['input_id']}').value = '{$record['id']}'; el('{$form['text_id']}').innerHTML = '{$campus['name']} / {$record['name']}'; removeElement('{$form['id']}');">
+    onClick="el('{$form['input_id']}').value = '{$record['number']}'; el('{$form['text_id']}').innerHTML = '{$campus['name']} / {$record['name']}'; removeElement('{$form['id']}');">
     <td style="font-size: 10px; padding: 0px 2px;">{$campus['name']} / [{$record['number']}] {$record['name']}</td>
 </tr>
 EOL;

@@ -592,8 +592,10 @@ function custom_attribute_display($options="") {
     // The important globals
     global $conf, $self, $onadb;
 
+    $text_array = array();
+
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => custom_attribute_display({$options}) called", 3);
 
@@ -625,27 +627,12 @@ Display the custom attribute specified or attributes for a host
     type=ID or NAME           If you specify a type and a host or subnet you
                               will only get back a 1 or a 0 indicating that
                               that type is set or not set for the host or subnet
+
 EOM
 
         ));
     }
 
-
-
-
-    // Now find the ID of the record
-    if ($options['id']) {
-        list($status, $rows, $ca) = ona_get_custom_attribute_record(array('id' => $options['id']));
-        if (!$ca['id']) {
-            $self['error'] = "ERROR => The custom attribute specified, {$options['id']}, is invalid!";
-            return(array(4, $self['error']));
-        }
-
-        $text .= "CUSTOM ATTRIBUTE ENTRY RECORD ({$ca['id']})\n";
-        $text .= format_array($ca);
-        // Return the success notice
-        return(array(0, $text));
-    }
 
     // if a type was set, check if it is associated with the host or subnet and return 1 or 0
     if ($options['type']) {
@@ -669,13 +656,14 @@ EOM
             $self['error'] = "ERROR => The host specified, {$options['host']}, does not exist!";
             return(array(2, $self['error']));
         } else {
-                $where['table_id_ref'] = $host['id'];
-                $where['table_name_ref'] = 'hosts';
-                list($status, $rows, $cas) = db_get_records($onadb,'custom_attributes', $where );
+            $where['table_id_ref'] = $host['id'];
+            $where['table_name_ref'] = 'hosts';
+            list($status, $rows, $cas) = db_get_records($onadb,'custom_attributes', $where );
         }
 
         $anchor = 'host';
         $desc = $host['fqdn'];
+
     }
 
     // Search for subnet
@@ -687,14 +675,14 @@ EOM
             $self['error'] = "ERROR => The subnet specified, {$options['subnet']}, does not exist!";
             return(array(3, $self['error']));
         } else {
-                list($status, $rows, $cas) = db_get_records($onadb,'custom_attributes',
-                                                array('table_id_ref' => $subnet['id'], 'table_name_ref' => 'subnets')
-
-                                            );
+            $where['table_id_ref'] = $subnet['id'];
+            $where['table_name_ref'] = 'subnets';
+            list($status, $rows, $cas) = db_get_records($onadb,'custom_attributes', $where );
         }
 
         $anchor = 'subnet';
         $desc = $subnet['description'];
+
     }
 
     // Search for vlan
@@ -706,33 +694,62 @@ EOM
             $self['error'] = "ERROR => The VLAN specified, {$options['vlan']}, does not exist!";
             return(array(3, $self['error']));
         } else {
-                list($status, $rows, $cas) = db_get_records($onadb,'custom_attributes',
-                                                array('table_id_ref' => $vlan['id'], 'table_name_ref' => 'vlans')
-
-                                            );
+            $where['table_id_ref'] = $vlan['id'];
+            $where['table_name_ref'] = 'vlans';
+            list($status, $rows, $cas) = db_get_records($onadb,'custom_attributes', $where );
         }
 
         $anchor = 'vlan';
         $desc = $vlan['description'];
+
     }
-    if ($options['type']) {
-        if ($cas[0]) {
-            return(array(0, '1'));
-        } else {
-            return(array(0, '0'));
+
+    // Now find the ID of the record, returns a specific record only
+    if ($options['id']) {
+        list($status, $rows, $ca) = ona_get_custom_attribute_record(array('id' => $options['id']));
+        if (!$ca['id']) {
+            $self['error'] = "ERROR => The custom attribute specified, {$options['id']}, is invalid!";
+            return(array(4, $self['error']));
         }
+
+	$text_array = $ca;
+
+        $text .= "CUSTOM ATTRIBUTE ENTRY RECORD ({$ca['id']})\n";
+        $text .= format_array($ca);
+    } elseif ($options['type']) {
+        // If we requested type, now is the time to return a response if it is found associated.
+        if ($cas[0]) {
+            $text .= '1';
+            $text_array['has_attribute'] = 'Y';
+        } else {
+            $text .= '0';
+            $text_array['has_attribute'] = 'N';
+        }
+    } else {
+
+        // Build text to return
+        $text  .= strtoupper($anchor) . " CUSTOM ATTRIBUTE RECORDS ({$desc})\n";
+
+        // Display the record(s)
+        $i = 0;
+        do {
+            $text .= "\nASSOCIATED CUSTOM ATTRIBUTE ENTRY RECORD ({$i} of {$rows})\n";
+            $text .= format_array($cas[$i]);
+    
+            list($status, $carows, $ca) = ona_get_custom_attribute_type_record(array('id' => $cas[$i]['custom_attribute_type_id']));
+            $text_array[$ca['name']]=$cas[$i]['value'];
+    
+            $i++;
+        } while ($i < $rows);
     }
 
-    // Build text to return
-    $text  = strtoupper($anchor) . " CUSTOM ATTRIBUTE RECORDS ({$desc})\n";
-
-    // Display the record(s)
-    $i = 0;
-    do {
-        $i++;
-        $text .= "\nASSOCIATED CUSTOM ATTRIBUTE ENTRY RECORD ({$i} of {$rows})\n";
-        $text .= format_array($cas[$i - 1]);
-    } while ($i < $rows);
+    // change the output format if other than default
+    if ($options['format'] == 'json') {
+        $text = $text_array;
+    } 
+    if ($options['format'] == 'yaml') {
+        $text = $text_array;
+    }
 
     // Return the success notice
     return(array(0, $text));

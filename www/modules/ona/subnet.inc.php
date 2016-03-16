@@ -32,8 +32,10 @@ function subnet_display($options="") {
     global $conf, $self, $onadb;
     printmsg('DEBUG => subnet_display('.$options.') called', 3);
 
+    $text_array = array();
+
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -75,10 +77,21 @@ EOM
         return(array(2, $self['error'] . "\n"));
     }
 
-    //FIXME: delete this
-    // Convert numbers to human-readable form
-    //$subnet['ip_addr'] = ip_mangle($subnet['ip_addr'], 'dotted');
-    //$subnet['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
+    // Gather sizing
+    list($percent,$total_used,$size) = get_subnet_usage($subnet['id']);
+    $subnet['total_allocated_percent'] = $percent;
+    $subnet['total_allocated'] = $total_used;
+    $subnet['total_available'] = $size;
+
+    // get subnet type name
+    list($status, $rows, $sntype) = ona_get_subnet_type_record(array('id' => $subnet['subnet_type_id']));
+    $subnet['subnet_type_name'] = $sntype['display_name'];
+
+    // Convert some data
+    $text_array = $subnet;
+    $text_array['ip_addr_text'] = ip_mangle($subnet['ip_addr'], 'dotted');
+    $text_array['ip_mask_text'] = ip_mangle($subnet['ip_mask'], 'dotted');
+    $text_array['ip_mask_cidr'] = ip_mangle($subnet['ip_mask'], 'cidr');
 
     // Build text to return
     $text  = "SUBNET RECORD\n";
@@ -92,6 +105,7 @@ EOM
         if ($rows) {
             $text .= "\nASSOCIATED TAG RECORDS\n";
             foreach ($tags as $tag) {
+                $text_array['tags'][] = $tag['name'];
                 $text .= "  {$tag['name']}\n";
             }
         }
@@ -99,17 +113,23 @@ EOM
         // VLAN record
         list($status, $rows, $vlan) = ona_get_vlan_record(array('id' => $subnet['vlan_id']));
         if ($rows) {
+            $text_array['vlan'] = $vlan;
             $text .= "\nASSOCIATED VLAN RECORD\n";
             $text .= format_array($vlan);
         }
 
-        // Location record
-        list($status, $rows, $location) = ona_get_location_record(array('LOCATION_ID' => $subnet['location_id']));
-        if ($rows) {
-            $text .= "\nASSOCIATED LOCATION RECORD\n";
-            $text .= format_array($location);
-        }
+    }
 
+    // cleanup some un-used junk
+    unset($text_array['network_role_id']);
+    unset($text_array['vlan_id']);
+
+    // change the output format if other than default
+    if ($options['format'] == 'json') {
+        $text = $text_array;
+    }
+    if ($options['format'] == 'yaml') {
+        $text = $text_array;
     }
 
     // Return the success notice
@@ -149,7 +169,7 @@ function subnet_add($options="") {
     printmsg('DEBUG => subnet_add('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -178,7 +198,7 @@ Adds a new subnet (subnet) record
     type=TYPE               subnet type name or id
 
   Optional:
-    vlan=VLAN               vlan name, number, or id
+    vlan=VLAN               vlan name, number
     campus=CAMPUS           vlan campus name or id to help identify vlan
 \n
 EOM
@@ -384,7 +404,7 @@ function subnet_modify($options="") {
     //printmsg('DEBUG => subnet_modify('.implode (";",$options).') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.06';
+    $version = '1.08';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -395,7 +415,6 @@ function subnet_modify($options="") {
         !($options['set_ip'] or
           $options['set_netmask'] or
           $options['set_type'] or
-          $options['set_location'] or
           $options['set_name'] or
           array_key_exists('set_vlan', $options) or
           $options['set_security_level'])
@@ -418,8 +437,7 @@ Modify a subnet (subnet) record
     set_netmask=MASK          change subnet netmask
     set_name=TEXT      change subnet name (i.e. "LAN-1234")
     set_type=TYPE             change subnet type by name or id
-    set_location=LOCATION             change location/location by number or id
-    set_vlan=VLAN             change vlan by name, number, or id
+    set_vlan=VLAN             change vlan by name, number
     campus=CAMPUS             vlan campus name or id to help identify vlan
     set_security_level=LEVEL  numeric security level ({$conf['ona_lvl']})
 
@@ -762,7 +780,6 @@ EOM
         //   Delete subnet Record
         //   Delete custom attributes
         //
-        //   FIXME: display a warning if there are no more subnets for the associated location?
         //   FIXME: display a warning if there are no more subnets that a dhcp server is serving dhcp for?
 
         // Delete DHCP server assignments
