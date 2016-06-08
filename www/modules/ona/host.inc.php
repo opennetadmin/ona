@@ -25,7 +25,7 @@ function host_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.11';
+    $version = '1.12';
 
     printmsg("DEBUG => host_add({$options}) called", 3);
 
@@ -227,7 +227,8 @@ EOM
         'hosts',
         array(
             'id'                   => $id,
-            'primary_dns_id'       => '',  // Unknown at this point.. needs to be added afterwards
+            'parent_id'            => 0,  // set to 0 for now until feature is implemented TODO
+            'primary_dns_id'       => 0,  // Unknown at this point.. needs to be added afterwards
             'device_id'            => $host['device_id'],
             'notes'                => $options['notes']
         )

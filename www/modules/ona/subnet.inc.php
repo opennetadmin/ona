@@ -169,7 +169,7 @@ function subnet_add($options="") {
     printmsg('DEBUG => subnet_add('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.06';
+    $version = '1.07';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -210,6 +210,13 @@ EOM
     //
     // This variable will contain the info we'll insert into the DB
     $SET = array();
+
+    // Set vlan_id to 0 initially
+    $SET['vlan_id'] = 0;
+
+    // TODO: remove this column from db
+    $SET['network_role_id'] = 0;
+
 
     // Prepare options[ip] - translate IP address to a number
     $options['ip'] = $ourip = ip_mangle($options['ip'], 'numeric');
@@ -404,7 +411,7 @@ function subnet_modify($options="") {
     //printmsg('DEBUG => subnet_modify('.implode (";",$options).') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.08';
+    $version = '1.09';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -658,7 +665,7 @@ EOM
     // Set options['set_vlan']?
     if (array_key_exists('set_vlan', $options) or $options['campus']) {
         if (!$options['set_vlan'])
-            $SET['vlan_id'] = '';
+            $SET['vlan_id'] = 0;
         else {
             // Find the VLAN ID from $options[set_vlan] and $options[campus]
             list($status, $rows, $vlan) = ona_find_vlan($options['set_vlan'], $options['campus']);
