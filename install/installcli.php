@@ -1,55 +1,151 @@
 <?php
-// get adodb xml processing
-require_once($conf['inc_adodb_xml']);
-
+/* -------------------- COMMON HEADER ---------------------- */
 $base = dirname(__FILE__);
+$onabase = dirname($base);
+////while ($base and (!is_dir($base.'/include'))) $base = preg_replace('+/[^/]*$+', '', $base);
+$include = $onabase . '/www/include';
+if (!is_dir($include)) { print "ERROR => Couldn't find include folder!\n"; exit; }
+
+$conf = array (
+    /* General Setup */
+    // Database Context
+    // For possible values see the $ona_contexts() array  in the database_settings.inc.php file
+    "default_context"        => 'DEFAULT',
+
+    /* Include Files: Functions */
+    "inc_functions"          => "$include/functions_general.inc.php",
+    "inc_functions_db"       => "$include/functions_db.inc.php",
+    "inc_functions_auth"     => "$include/functions_auth.inc.php",
+    "inc_db_sessions"        => "$include/adodb_sessions.inc.php",
+    "inc_adodb"              => "$include/adodb/adodb.inc.php",
+    "inc_adodb_xml"          => "$include/adodb/adodb-xmlschema03.inc.php",
+
+    /* Defaults for some user definable options normally in sys_config table */
+    "debug"                  => "2",
+    "logfile"                => "/var/log/ona.log",
+
+);
+
+// Include the basic system functions
+// any $conf settings used in this "require" should not be user adjusted in the sys_config table
+require_once("{$include}/functions_general.inc.php");
+
+// Include the basic database functions
+#require_once("{$include}/functions_db.inc.php");
+
+// Include the localized Database settings
+$dbconffile = "{$onabase}/www/local/config/database_settings.inc.php";
+if (file_exists($dbconffile)) {
+    if (substr(exec("php -l $dbconffile"), 0, 28) == "No syntax errors detected in") {
+        @include($dbconffile);
+    } else {
+        echo "Syntax error in your DB config file: {$dbconffile}<br>Please check that it contains a valid PHP formatted array, or check that you have the php cli tools installed.<br>You can perf
+orm this check maually using the command 'php -l {$dbconffile}'.";
+        exit;
+    }
+} else {
+#    require_once($base.'/../install/install.php');
+#    exit;
+}
+
+#// If it does, run the install process.
+#if (file_exists($base.'/local/config/run_install') or @$runinstaller or @$install_submit == 'Y') {
+#    // Process the install script
+#    require_once($base.'/../install/install.php');
+#    exit;
+#}
+
+
+
+
+
+
+// get adodb xml processing
+@require_once($conf['inc_adodb_xml']);
+/* --------------------------------------------------------- */
+
 
 // Init and setup some variables.
 $text = '';
 $status = 0;
-$onabase = dirname($base);
 $runinstall = $onabase.'/www/local/config/run_install';
 $xmlfile_tables = $base.'/ona-table_schema.xml';
 $xmlfile_data = $base.'/ona-data.xml';
-$license_text = file_get_contents($base.'/../docs/LICENSE');
 $new_ver = trim(file_get_contents($onabase.'/VERSION'));
 $curr_ver = '';
 
-// Get some pre-requisite information
-$phpversion = phpversion() > '5.0' ? 'Yes' : '<font color="red">No</font>';
-$hasgmp = function_exists( 'gmp_init' ) ? 'Yes' : '<font color="red">No</font>';
-$hasmysql = function_exists( 'mysqli_connect' ) ? 'Yes' : 'Recommended';
-$hasmbstring = function_exists( 'mb_internal_encoding' ) ? 'Yes' : 'Recommended';
-$dbconfwrite = @is_writable($onabase.'/www/local/config/') ? 'Yes' : '<font color="red">No</font>';
+# junk output from included functions
+$stdout = '';
+$syslog = '';
+$log_to_db = '';
 
-$blankmain = "<script>el('main').style.display = 'none';</script>";
+$install_complete=1;
 
-// This is the div that contains the license
-$licensediv = <<<EOL
-            <div id="license">
-                <center><b>OpenNetAdmin is released under the following license:</b></center>
-                <textarea class="edit" rows="25" cols="75">{$license_text}</textarea><br><br>
-                <center>
-                    <input class='edit' type="button" value="I Agree!" onclick="el('work').style.display = '';el('input1').focus();el('license').style.display = 'none';" />&nbsp;&nbsp;
-                    <a style="text-decoration: none;" href="/"><input class='edit' type="button" value="I don't like free stuff?" onclick="" /></a>
-                </center>
-            </div>
+// Start the menu loop
+while($install_complete){
+
+  echo "\nWELCOME TO THE OPENNETADMIN INSTALLER..\n";
+
+  // License info
+  echo "ONA is licensed under GPL v2.0.\n";
+  $showlicense = promptUser("Would you like to view license? [y/N] ", 'n');
+  if ($showlicense == 'y') { system("more -80 {$base}/../docs/LICENSE"); }
+  // TODO: Do you agree to the license
+
+  #while(empty($name)){
+  #  $name = promptUser(" Enter server name");
+  #}
+
+  check_requirements();
+
+  // Check if it is a fresh install or upgrade
+  if (@file_exists($dbconffile)) {
+     
+  } else {
+    new_install();
+  }
+
+  exit;
+
+}
+
+
+
+
+
+// Gather requirement information
+function check_requirements() {
+
+  global $onabase;
+
+  system('clear');
+  // Get some pre-requisite information
+  $phpversion = phpversion() > '5.0' ? 'PASS' : 'FAIL';
+  $hasgmp = function_exists( 'gmp_init' ) ? 'PASS' : 'FAIL';
+  //echo function_exists( 'gmp_init' ) ? '' : 'PHP GMP module is missing.';
+  $hasmysql = function_exists( 'mysqli_connect' ) ? 'PASS' : 'FAIL';
+  $hasxml = function_exists( 'xml_parser_create' ) ? 'PASS' : 'FAIL';
+  $hasmbstring = function_exists( 'mb_internal_encoding' ) ? 'PASS' : 'FAIL';
+  $dbconfwrite = @is_writable($onabase.'/www/local/config/') ? 'PASS' : 'FAIL';
+
+  echo <<<EOL
+
+CHECKING PREREQUISITES...
+
+  PHP version greater than 5.0:               $phpversion
+  PHP GMP module:                             $hasgmp
+  PHP XML module:                             $hasxml
+  PHP mysqli function:                        $hasmysql
+  PHP mbstring function:                      $hasmbstring
+  $onabase/www/local/config dir writable:     $dbconfwrite
+
 EOL;
+}
 
-// Div with the prerequisite checks
-$requisitediv = <<<EOL
-            <div id="checksdiv">
-                <table id="checks">
-                    <tr><th colspan="5">Prerequisite checks</th></tr>
-                    <tr><td>PHP version > 5.0:</td><td>{$phpversion}</td></tr>
-                    <tr title="The PHP mysqli database modules are used to connect to mysql databases"><td>PHP mysqli support:</td><td>{$hasmysql}</td></tr>
-                    <tr title="The PHP GMP modules are required for IPv6 support."><td>Has GMP support:</td><td>{$hasgmp}</td></tr>
-                    <tr title="The PHP mbstring modules provide better text encoding for UTF etc, but are not required."><td>Has mbstring support:</td><td>{$hasmbstring}</td></tr>
-                    <tr title="The local config directory must be writable by the web server user: {$_ENV['APACHE_RUN_USER']}"><td>{$onabase}/www/local/config dir writable by '{$_ENV['APACHE_RUN_USER']}':</td><td>{$dbconfwrite}</td></tr>
-                </table>
-            </div>
-EOL;
 
+
+
+/*
 // Initial text for the greeting div
 $greet_txt = "It looks as though this is your first time running OpenNetAdmin. Please answer a few questions and we'll initialize the system for you. We've pre-populated some of the fields with suggested values.  If the database you specify below already exists, it will be overwritten entirely.";
 
@@ -203,7 +299,6 @@ $main = <<<EOL
                 </script>
             </div>
 EOL;
-
 
 
 
@@ -385,13 +480,28 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
 }
 
 
+*/
 
 
 
 
 
 // This is the section for an brand new install
-if ($install_submit == 'Y' && !isset($upgrade)) {
+function new_install() {
+
+  echo "\n\n";
+  global $text,$xmlfile_data,$xmlfile_tables,$dbconffile;
+
+  // Gather info
+  $dbtype = 'mysqli'; $adotype = $dbtype;
+  $database_host = promptUser("Database host? ", 'localhost');
+  $admin_login = promptUser("Database admin? ", 'root');
+  $admin_passwd = promptUser("Database admin password? ", '');
+  $sys_login = promptUser("Application Database user name? ", 'ona_sys');
+  $sys_passwd = promptUser("Application Database user password? ", 'changeme');
+  $database_name = promptUser("Database name? ona_", 'default');
+  $default_domain = promptUser("Default DNS domain? ", 'example.com');
+
 
     // Just to keep things a little bit grouped, lets prepend the database with ona_
     $database_name = 'ona_'.$database_name;
@@ -407,31 +517,27 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
     $ona_contexts[$context_name]['description']   = 'Default data context';
     $ona_contexts[$context_name]['context_color'] = '#D3DBFF';
 
-    // switch from mysqlt to mysql becuase of adodb problems with innodb and opt stuff when doing xml
-    $adotype = $dbtype;
-   // if ($adotype == 'mysqlt') $adotype = 'mysql';
 
     // Make an initial connection to a DB server without specifying a database
     $db = ADONewConnection($adotype);
-$db->debug = true;
     $db->NConnect( $database_host, $admin_login, $admin_passwd, '' );
 
     if (!$db->IsConnected()) {
         $status++;
-        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to connect to '{$database_host}' as '{$admin_login}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+        $text .= "Failed to connect to '{$database_host}' as '{$admin_login}'.\n".$db->ErrorMsg()."\n";
         printmsg("INFO => Unable to connect to server '$database_host'. ".$db->ErrorMsg(),0);
     } else {
-        $text .= "<script>el('mainform').style.display = 'none';</script><img src=\"{$images}/silk/accept.png\" border=\"0\" /> Connected to '{$database_host}' as '{$admin_login}'.<br>";
+        $text .= "Connected to '{$database_host}' as '{$admin_login}'.\n";
 
         // Drop out any existing database and user
         if (@$db->Execute("DROP DATABASE IF EXISTS {$database_name}")) {
             //@$db->Execute("DROP USER IF EXISTS '{$sys_login}'@'%'");
-            $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Dropped existing instance of '{$database_name}'.<br>";
+            $text .= "Dropped existing instance of '{$database_name}'.\n";
             printmsg("INFO => Dropped existing DB: $database_name",0);
         }
         else {
             $status++;
-            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to drop existing instance of '{$database_name}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+            $text .= "Failed to drop existing instance of '{$database_name}'.\n".$db->ErrorMsg()."\n";
         }
 
         // MP TODO: when this is done as part of an add conext, we must copy the system_config data from the default context to populate it
@@ -441,12 +547,12 @@ $db->debug = true;
         $datadict = NewDataDictionary($db);
         $sqlarray = $datadict->CreateDatabase($database_name);
         if ($datadict->ExecuteSQLArray($sqlarray) == 2) {
-            $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created new database '{$database_name}'.<br>";
+            $text .= "Created new database '{$database_name}'.\n";
             printmsg("INFO => Added new DB: $database_name",0);
         }
         else {
             $status++;
-            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to create new database '{$database_name}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+            $text .= "Failed to create new database '{$database_name}'.\n".$db->ErrorMsg()."\n";
             printmsg("ERROR => Failed to create new database '{$database_name}'. ".$db->ErrorMsg(),0);
         }
 
@@ -455,7 +561,7 @@ $db->debug = true;
         $db->Close();
         if ($db->NConnect( $database_host, $admin_login, $admin_passwd, $database_name)) {
 
-            $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Selected existing DB: '{$database_name}'.<br>";
+            $text .= "Selected existing DB: '{$database_name}'.\n";
 
             // create new tables in our database
             // create a schema object and build the query array.
@@ -464,11 +570,11 @@ $db->debug = true;
             $sql = $schema->ParseSchema($xmlfile_tables);
             // Execute the SQL on the database
             if ($schema->ExecuteSchema( $sql ) == 2) {
-                $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Creating and updating tables within database '{$database_name}'.<br>";
+                $text .= "Creating and updating tables within database '{$database_name}'.\n";
                 printmsg("INFO => Creating and updating tables within new DB: {$database_name}",0);
             } else {
                 $status++;
-                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was an error processing tables.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                $text .= "There was an error processing tables.\n".$db->ErrorMsg()."\n";
                 printmsg("ERROR => There was an error processing tables: ".$db->ErrorMsg(),0);
             }
 
@@ -480,32 +586,33 @@ $db->debug = true;
                 //$text .= "<pre>".$schema->PrintSQL('TEXT')."</pre>";
                 // Execute the SQL on the database
                 if ($schema->ExecuteSchema( $sql ) == 2) {
-                    $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Loaded tables with default data.<br>";
+                    $text .= "Loaded tables with default data.\n";
                     printmsg("INFO => Loaded data to new DB: {$database_name}",0);
                 } else {
                     $status++;
-                    $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed load default data.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                    $text .= "Failed load default data.\n".$db->ErrorMsg()."\n";
                     printmsg("ERROR => There was an error loading the data: ".$db->ErrorMsg(),0);
                 }
             }
 
             // Add the system user to the database
             // Run the query
-
           if ($status == 0) {
+
             // it is likely that this method here is mysql only?
-            if(@$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}'")) {
-                @$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'%' IDENTIFIED BY '{$sys_passwd}'");
-                @$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}'");
-                @$db->Execute("FLUSH PRIVILEGES");
-                $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created system user '{$sys_login}'.<br>";
+            if($db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}'")) {
+                $db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'%' IDENTIFIED BY '{$sys_passwd}'");
+                $db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}'");
+                $db->Execute("FLUSH PRIVILEGES");
+                $text .= "Created system user '{$sys_login}'.\n";
                 printmsg("INFO => Created new DB user: {$sys_login}",0);
             }
             else {
                 $status++;
-                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to create system user '{$sys_login}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                $text .= "Failed to create system user '{$sys_login}'.\n".$db->ErrorMsg()."\n";
                 printmsg("ERROR => There was an error creating DB user: ".$db->ErrorMsg(),0);
             }
+
 
             // add the default domain to the system
             // This is a manual add with hard coded values for timers.
@@ -513,7 +620,7 @@ $db->debug = true;
 <?xml version="1.0"?>
 <schema version="0.3">
 <sql>
-    <query>INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600)</query>
+    <query>INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum,parent_id,serial,primary_master) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600,0,0,0)</query>
     <query>UPDATE sys_config SET value='{$default_domain}' WHERE name like 'dns_defaultdomain'</query>
 </sql>
 </schema>
@@ -525,22 +632,22 @@ EOL;
 
             // Execute the SQL on the database
             if ($schema->ExecuteSchema( $domainsql ) == 2) {
-                $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created default DNS domain '{$default_domain}'.<br>";
+                $text .= "Created default DNS domain '{$default_domain}'.\n";
             } else {
                 $status++;
-                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to create default DNS domain '{$default_domain}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                $text .= "Failed to create default DNS domain '{$default_domain}'.\n".$db->ErrorMsg()."\n";
             }
 
 
             // Open the database config and write the contents to it.
             if (!$fh = @fopen($dbconffile, 'w')) {
                 $status++;
-                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to open config file for writing: '{$dbconffile}'.<br>";
+                $text .= "Failed to open config file for writing: '{$dbconffile}'.\n";
             }
             else {
                 fwrite($fh, "<?php\n\n\$ona_contexts=".var_export($ona_contexts,TRUE).";\n\n?>");
                 fclose($fh);
-                $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created database connection config file.<br>";
+                $text .= "Created database connection config file.\n";
             }
 
             // Update the version element in the sys_config table
@@ -549,139 +656,44 @@ EOL;
             }
             else {
                 $status++;
-                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to update version info in table 'sys_config'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                $text .= "Failed to update version info in table 'sys_config'.\n".$db->ErrorMsg()."\n";
             }
           }
 
         } else {
             $status++;
-            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to select DB '{$database_name}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+            $text .= "Failed to select DB '{$database_name}'.\n".$db->ErrorMsg()."\n";
             printmsg("ERROR => Failed to select DB: {$database_name}.  ".$db->ErrorMsg(),0);
         }
 
 
 
+//TODO: fix this
         if ($status > 0) {
-            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was a fatal error. Install may be incomplete. Fix the issue and <a href=\"{$baseURL}\">try again</a>.<br>";
+            $text .= "There was a fatal error. Install may be incomplete. Fix the issue and try again\n";
         } else {
             // remove the run_install file in the install dir
             if (@file_exists($runinstall)) {
               if (!@unlink($runinstall)) {
-                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to delete the file '{$runinstall}'.<br>";
-                $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Please remove '{$runinstall}' manually.<br>";
+                $text .= "Failed to delete the file '{$runinstall}'.\n";
+                $text .= "Please remove '{$runinstall}' manually.\n";
               }
             }
-            $text .= "You can now <a href='".parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH)."'>CLICK HERE TO START</a> using OpenNetAdmin!<br>You can log in as 'admin' with a password of 'admin'<br>Enjoy!";
+            $text .= "You can now go the following URL in your browser: ".parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH)."' using OpenNetAdmin!\nYou can log in as 'admin' with a password of 'admin'\nEnjoy!";
         }
 
         // Close the database connection
         @$db->Close();
     }
 
+// Print out the text to the end user
+echo $text;
+
 }
 
 
 
-// Start printing the html
-print <<<EOL
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-        <script type="text/javascript" src="{$baseURL}/include/js/global.js" language="javascript"></script>
-    </head>
-    <style type="text/css">
 
-        body {
-            margin: 0px;
-            font-family: Arial, Sans-Serif;
-            color: 000000;
-            background-color: FFFFFF;
-            vertical-align: top;
-        }
-
-        textarea.edit {
-            font-family: monospace;
-            border: 1px solid #8CACBB;
-            color: Black;
-            background-color: white;
-            padding: 3px;
-            width:100%;
-        }
-
-        table {
-            font-size: small;
-            font-family: Arial, Sans-Serif;
-        }
-        td {
-            margin: 0px;
-            font-family: {$style['font-family']};
-            color: {$color['font_default']};
-            vertical-align: top;
-        }
-        input.edit,select.edit {
-            border: 1px solid #8CACBB;
-            color: Black;
-            background-color: white;
-            vertical-align: middle;
-            padding: 1px;
-            display: inline;
-        }
-        #checks {
-            font-size: small;
-            border: 1px solid;
-            margin-top: 15px;
-        }
-        #license {
-            width: 550px;
-            padding: 35px 0px;
-            text-align: left;
-        }
-        #greeting, #upgreeting {
-            width: 450px;
-            padding: 20px 0px;
-            text-align: left;
-        }
-        #help {
-            -moz-border-radius: 6;
-            padding: 5px;
-            border: 1px solid;
-            text-align: left;
-            width:500px;
-        }
-        #maintitle {
-            background-color: #D3DBFF;
-            font-size: xx-large;
-            width: 100%;
-            padding: 0px 60px;
-            -moz-border-radius-bottomleft: 10;
-            -moz-border-radius-bottomright: 10;
-        }
-        #status {
-            padding: 5px;
-            border: 1px solid;
-            text-align: left;
-            width:500px;
-        }
-
-    </style>
-    <body>
-        <div align="center" style="width:100%;">
-            <span id="maintitle">OpenNetAdmin Install</span><br>
-EOL;
-
-
-
-
-// print the GPL license and have them "ok" it to continue.
-if ($install_submit != 'Y' and $overwrite != 'Y') { echo $licensediv; }
-
-// Print a status to the user
-print <<<EOL
-            <div id="work" style="display: none;">
-                <div id="prereq">{$requisitediv}</div>
-                <div id="Greeting">{$greet_txt}</div>
-EOL;
 
 if ($install_submit == 'Y') { print "<script>el('work').style.display = '';</script>"; }
 
@@ -698,18 +710,37 @@ if ($install_submit == 'Y') {print "<div id='status'>{$text}</div><br>"; }
 if ($install_submit == 'Y') {print '<div id="help">Thanks for using ONA. Please visit <a href="http://opennetadmin.com">http://opennetadmin.com</a></div>';}
 if ($upgrademain == '' and $install_submit != 'Y') {print '<div id="help"></div>';}
 
-print <<<EOL
-                </div>
-            </div>
-    </body>
-</html>
-EOL;
 
 
 
 
 
 
+//#######################################################################
+//# Function: Prompt user and get user input, returns value input by user.
+//#           Or if return pressed returns a default if used e.g usage
+//# $name = promptUser("Enter your name");
+//# $serverName = promptUser("Enter your server name", "localhost");
+//# Note: Returned value requires validation 
+// from http://wiki.uniformserver.com/index.php/PHP_CLI:_User_Input
+//#.......................................................................
+function promptUser($promptStr,$defaultVal=false){;
+
+  if($defaultVal) {                             // If a default set
+     echo $promptStr. "[". $defaultVal. "] : "; // print prompt and default
+  }
+  else {                                        // No default set
+     echo $promptStr. ": ";                     // print prompt only
+  } 
+  $name = chop(fgets(STDIN));                   // Read input. Remove CR
+  if(empty($name)) {                            // No value. Enter was pressed
+     return $defaultVal;                        // return default
+  }
+  else {                                        // Value entered
+     return $name;                              // return value
+  }
+}
+//========================================= End promptUser ============
 
 
 
