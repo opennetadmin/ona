@@ -1,9 +1,20 @@
 <?php
+// TODO: have the includes reference language dir.  if there is a dir, use that file in that dir.  if not, fall back to english?
 $base = dirname(__FILE__);
 while ($base and (!is_dir($base.'/include'))) $base = preg_replace('+/[^/]*$+', '', $base);
 $include = $base . '/include';
+
+$pagetitle = "ONA - Home";
+$workspace = 'home';
+
+require_once($include . '/config.inc.php');
+
 //require_once($base . '/config/config.inc.php');
-require($include.'/desktop.inc.php');
+//require($include.'/functions_gui.inc.php');
+//
+#process_auth();
+// Look at the URL and do something.
+process_urlnew();
 ?>
 
 <!DOCTYPE html>
@@ -37,6 +48,12 @@ require($include.'/desktop.inc.php');
           <a class="navbar-brand" href="#">
             <span class="glyphicon glyphicon-record" aria-hidden="true"></span>
           </a>
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
         </div>
   
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -45,8 +62,8 @@ require($include.'/desktop.inc.php');
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Menu <span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="test.php?blah=more" class="ajax" data-method="post" data-replace=".onacontainer">Add Subnet</a></li>
-                <li><a href="#">Add Host</a></li>
+                <li><a href="test.php?blah=more" class="ajax" data-method="post" data-replace=".onacontainer">Test ajax</a></li>
+                <li><a href="?ws=host&name=testhost.example.com">View Host</a></li>
                 <li><a href="#">Stuff</a></li>
                 <li role="separator" class="divider"></li>
                 <li><a href="#">Separated link</a></li>
@@ -77,9 +94,7 @@ require($include.'/desktop.inc.php');
     </nav>
   
     <!-- start container for main content under navbar -->
-    <div class="onacontainer"> 
-stuff here
-    </div>
+    <div class="onacontainer"><?php include("${include}/workspaces/${workspace}.inc.php"); ?></div>
     <!-- end container for main content under navbar -->
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

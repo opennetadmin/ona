@@ -43,3 +43,16 @@ body > .onacontainer {
   text-align: right;
 }
 
+# bootstrap overrides
+.bars.pull-left {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.form-control {
+  padding: 0px 6px;
+}
+
+.panel-heading {
+  color: blue;
+}
