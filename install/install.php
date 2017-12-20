@@ -108,7 +108,6 @@ if (@file_exists($dbconffile)) {
 
                     $levelinfo = $upgrade_index;
 
-                    if ($curr_ver == '') { $curr_ver = 'PRE-v08.02.18'; }
                     if ($upgrade_index < 8) { $levelinfo = "<span style='background-color:#FF7375;'>Must upgrade to at least v09.09.15 first!</span>"; }
                 } else {
                     $status++;
@@ -413,7 +412,7 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
 
     // Make an initial connection to a DB server without specifying a database
     $db = ADONewConnection($adotype);
-$db->debug = true;
+#$db->debug = true;
     $db->NConnect( $database_host, $admin_login, $admin_passwd, '' );
 
     if (!$db->IsConnected()) {
@@ -513,7 +512,7 @@ $db->debug = true;
 <?xml version="1.0"?>
 <schema version="0.3">
 <sql>
-    <query>INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600)</query>
+    <query>INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum,parent_id,serial,primary_master) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600,0,0,0)</query>
     <query>UPDATE sys_config SET value='{$default_domain}' WHERE name like 'dns_defaultdomain'</query>
 </sql>
 </schema>
