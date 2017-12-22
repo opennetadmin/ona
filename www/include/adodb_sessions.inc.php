@@ -98,21 +98,21 @@ function sess_write($key, $value) {
         list($status, $rows) = db_update_record($SESS_DBH, 'sessions', array('sesskey' => $key), array('expiry' => $expiry, 'sessvalue' => $value));
     }
 
-    return $rows;
+    return true;
 }
 
 
 function sess_destroy($key) {
     global $SESS_DBH;
     list($status, $rows) = db_delete_records($SESS_DBH, 'sessions', array('sesskey' => $key));
-    return $rows;
+    return true;
 }
 
 
 function sess_gc($lifetime) {
     global $SESS_DBH;
     list($status, $rows) = db_delete_records($SESS_DBH, "`sessions`", "`expiry` < " . time());
-    return($rows);
+    return true;
 }
 
 

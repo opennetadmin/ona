@@ -64,10 +64,6 @@
       <NOTNULL/>
       <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
     </field>
-    <field name="etime" type="T">
-      <NOTNULL/>
-      <DEFTIMESTAMP value="0000-00-00 00:00:00"/>
-    </field>
   </table>
 
 
@@ -431,8 +427,8 @@
     </field>
   </table>
 
-  <table name="domains" platform="mysql|mysqlt">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+  <table name="domains" platform="mysqli|mysqlt">
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -446,8 +442,7 @@
       <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
     </field>
     <field name="mtime" type="T">
-      <NOTNULL/>
-      <DEFTIMESTAMP value="0000-00-00 00:00:00"/>
+      <NULL/>
     </field>
     <field name="serial" type="I" size="10">
       <NOTNULL/>
@@ -674,7 +669,7 @@
 
 
   <table name="messages">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <AUTOINCREMENT/>
@@ -695,12 +690,10 @@
       <NOTNULL/>
     </field>
     <field name="mtime" type="T">
-      <NOTNULL/>
-      <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
+      <NULL/>
     </field>
     <field name="expiration" type="T">
-      <NOTNULL/>
-      <DEFTIMESTAMP value="0000-00-00 00:00:00"/>
+      <NULL/>
     </field>
     <field name="message_text" type="X">
       <NOTNULL/>
@@ -820,8 +813,8 @@
   </table>
 
 
-  <table name="sequences" platform="mysql|mysqlt">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+  <table name="sequences" platform="mysqli|mysqlt">
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="name" type="C" size="31">
       <KEY/>
     </field>
@@ -941,7 +934,7 @@
   </table>
 
   <table name="users">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <AUTOINCREMENT/>
@@ -962,8 +955,7 @@
       <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
     </field>
     <field name="atime" type="T">
-      <NOTNULL/>
-      <DEFTIMESTAMP value="0000-00-00 00:00:00"/>
+      <NULL/>
     </field>
     <index name="username">
       <UNIQUE/>

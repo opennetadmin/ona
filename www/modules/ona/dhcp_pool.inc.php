@@ -117,7 +117,6 @@ EOM
         list($fail_host2, $fail_zone2) = ona_find_host($fg['secondary_server_id']);
         $desc = $fail_host1['fqdn'] .'/'. $fail_host2['fqdn'];
 
-        $serverid = '';
         $failovergroupid = $fg['id'];
     }
 

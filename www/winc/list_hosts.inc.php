@@ -367,7 +367,7 @@ and d.domain_id = ". $onadb->qstr($domain['id']). "
     if (is_numeric($form['subnet_id'])) {
         // We do a sub-select to find interface id's that match
         $from = "(
-SELECT distinct a.*
+SELECT distinct a.*,b.ip_addr
 from hosts as a, interfaces as b
 where a.id = b.host_id
 and b.subnet_id = ". $onadb->qstr($form['subnet_id']). "

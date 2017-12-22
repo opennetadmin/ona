@@ -25,7 +25,7 @@ function ws_editor($window_name, $form='') {
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
 
-    if ($form['id'])
+    if (isset($form['id']))
         list($status, $rows, $record) = ona_get_location_record(array('id' => $form['id']));
 
     // Escape data for display in html

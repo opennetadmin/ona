@@ -17,8 +17,8 @@ $curr_ver = '';
 
 // Get some pre-requisite information
 $phpversion = phpversion() > '5.0' ? 'Yes' : '<font color="red">No</font>';
-$hasgmp = function_exists( 'gmp_init' ) ? 'Yes' : 'Recommended (IPv6)';
-$hasmysql = function_exists( 'mysql_connect' ) ? 'Yes' : 'Recommended';
+$hasgmp = function_exists( 'gmp_init' ) ? 'Yes' : '<font color="red">No</font>';
+$hasmysql = function_exists( 'mysqli_connect' ) ? 'Yes' : 'Recommended';
 $hasmbstring = function_exists( 'mb_internal_encoding' ) ? 'Yes' : 'Recommended';
 $dbconfwrite = @is_writable($onabase.'/www/local/config/') ? 'Yes' : '<font color="red">No</font>';
 
@@ -42,7 +42,7 @@ $requisitediv = <<<EOL
                 <table id="checks">
                     <tr><th colspan="5">Prerequisite checks</th></tr>
                     <tr><td>PHP version > 5.0:</td><td>{$phpversion}</td></tr>
-                    <tr title="The PHP mysql database modules are used to connect to mysql databases"><td>PHP mysql support:</td><td>{$hasmysql}</td></tr>
+                    <tr title="The PHP mysqli database modules are used to connect to mysql databases"><td>PHP mysqli support:</td><td>{$hasmysql}</td></tr>
                     <tr title="The PHP GMP modules are required for IPv6 support."><td>Has GMP support:</td><td>{$hasgmp}</td></tr>
                     <tr title="The PHP mbstring modules provide better text encoding for UTF etc, but are not required."><td>Has mbstring support:</td><td>{$hasmbstring}</td></tr>
                     <tr title="The local config directory must be writable by the web server user: {$_ENV['APACHE_RUN_USER']}"><td>{$onabase}/www/local/config dir writable by '{$_ENV['APACHE_RUN_USER']}':</td><td>{$dbconfwrite}</td></tr>
@@ -59,7 +59,7 @@ $upgrademain = '';
 // Get info from old $db_context[] array if ona_contexts does not exist
 // this is transitional, hopefully I can remove this part soon.
 if (!is_array($ona_contexts) and is_array($db_context)) {
-    $type='mysqlt';
+    $type='mysqli';
     $context_name='default';
     $ona_contexts[$context_name]['databases']['0']['db_type']     = $db_context[$type] [$context_name] ['primary'] ['db_type'];
     $ona_contexts[$context_name]['databases']['0']['db_host']     = $db_context[$type] [$context_name] ['primary'] ['db_host'];
@@ -108,7 +108,6 @@ if (@file_exists($dbconffile)) {
 
                     $levelinfo = $upgrade_index;
 
-                    if ($curr_ver == '') { $curr_ver = 'PRE-v08.02.18'; }
                     if ($upgrade_index < 8) { $levelinfo = "<span style='background-color:#FF7375;'>Must upgrade to at least v09.09.15 first!</span>"; }
                 } else {
                     $status++;
@@ -166,7 +165,7 @@ $main = <<<EOL
                             <td>Database Type:</td>
                             <td>
                                 <select class='edit' name='dbtype' onfocus="el('help').innerHTML = inputtext_dbtype;">
-                                <option value="mysqlt" selected="true">MySQL</option>
+                                <option value="mysqli" selected="true">MySQL</option>
                               <!--  <option value="oci8">Oracle (oci8 driver)</option>
                                 <option value="oci8po">Oracle (oci8po driver)</option>
                                 <option value="postgres7">Postgres7</option>
@@ -221,7 +220,7 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
 
             // switch from mysqlt to mysql becuase of adodb problems with innodb and opt stuff when doing xml
             $adotype = $cdbs['db_type'];
-            if ($adotype == 'mysqlt') $adotype = 'mysql';
+            //if ($adotype == 'mysqlt') $adotype = 'mysql';
 
             // Make an initial connection to a DB server without specifying a database
             $db = ADONewConnection($adotype);
@@ -409,10 +408,11 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
 
     // switch from mysqlt to mysql becuase of adodb problems with innodb and opt stuff when doing xml
     $adotype = $dbtype;
-    if ($adotype == 'mysqlt') $adotype = 'mysql';
+   // if ($adotype == 'mysqlt') $adotype = 'mysql';
 
     // Make an initial connection to a DB server without specifying a database
     $db = ADONewConnection($adotype);
+#$db->debug = true;
     $db->NConnect( $database_host, $admin_login, $admin_passwd, '' );
 
     if (!$db->IsConnected()) {
@@ -512,7 +512,7 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
 <?xml version="1.0"?>
 <schema version="0.3">
 <sql>
-    <query>INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600)</query>
+    <query>INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum,parent_id,serial,primary_master) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600,0,0,0)</query>
     <query>UPDATE sys_config SET value='{$default_domain}' WHERE name like 'dns_defaultdomain'</query>
 </sql>
 </schema>

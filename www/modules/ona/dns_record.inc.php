@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.11';
+    $version = '1.12';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -130,10 +130,10 @@ primary name for a host should be unique in all cases I'm aware of
     // Switch the type setting to uppercase
     $options['type'] = strtoupper($options['type']);
     $add_txt = '';
-    $add_mx_preference = '';
-    $add_srv_pri = '';
-    $add_srv_weight = '';
-    $add_srv_port = '';
+    $add_mx_preference = 0;
+    $add_srv_pri = 0;
+    $add_srv_weight = 0;
+    $add_srv_port = 0;
 
     // force AAAA to A to keep it consistant.. we'll display it properly as needed
     if ($options['type'] == 'AAAA')  $options['type'] = 'A';
@@ -254,7 +254,7 @@ primary name for a host should be unique in all cases I'm aware of
         $add_domainid = $domain['id'];
         $add_interfaceid = $interface['id'];
         // A records should not have parent dns records
-        $add_dnsid = '';
+        $add_dnsid = 0;
 
         // Dont print a dot unless hostname has a value
         if ($hostname) $hostname = $hostname.'.';
@@ -684,7 +684,7 @@ complex DNS messes for themselves.
         $add_interfaceid = 0;
 
         // Blank dnsid first.. normally it wont get set, unless it does match up to another record
-        $add_dnsid = '';
+        $add_dnsid = 0;
 
         // lets try and determine the interface record using the name passed in.   Only works if we get one record back
         // this is all to help associate if it can so that when the A record is removed, so is this TXT record.
@@ -765,7 +765,7 @@ complex DNS messes for themselves.
     printmsg("DEBUG => ID for new dns record: $id", 3);
 
     // If a ttl was passed use it, otherwise use what was in the domain minimum
-    if ($options['ttl']) { $add_ttl = $options['ttl']; } else { $add_ttl = ''; }
+    if ($options['ttl']) { $add_ttl = $options['ttl']; } else { $add_ttl = 0; }
 
     // There is an issue with escaping '=' and '&'.  We need to avoid adding escape characters
     $options['notes'] = str_replace('\\=','=',$options['notes']);
