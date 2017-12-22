@@ -91,12 +91,10 @@ while($install_complete){
   // License info
   echo "ONA is licensed under GPL v2.0.\n";
   $showlicense = promptUser("Would you like to view license? [y/N] ", 'n');
-  if ($showlicense == 'y') { system("more -80 {$base}/../docs/LICENSE"); }
-  // TODO: Do you agree to the license
-
-  #while(empty($name)){
-  #  $name = promptUser(" Enter server name");
-  #}
+  if ($showlicense == 'y') {
+    system("more -80 {$base}/../docs/LICENSE");
+    promptUser("[Press Enter To Continue]");
+  }
 
   check_requirements();
 
@@ -118,7 +116,7 @@ while($install_complete){
 // Gather requirement information
 function check_requirements() {
 
-  global $onabase;
+  global $conf,$onabase;
 
   system('clear');
   // Get some pre-requisite information
@@ -129,6 +127,7 @@ function check_requirements() {
   $hasxml = function_exists( 'xml_parser_create' ) ? 'PASS' : 'FAIL';
   $hasmbstring = function_exists( 'mb_internal_encoding' ) ? 'PASS' : 'FAIL';
   $dbconfwrite = @is_writable($onabase.'/www/local/config/') ? 'PASS' : 'FAIL';
+  $logfilewrite = @is_writable($conf['logfile']) ? 'PASS' : 'FAIL';
 
   echo <<<EOL
 
@@ -140,6 +139,7 @@ CHECKING PREREQUISITES...
   PHP mysqli function:                        $hasmysql
   PHP mbstring function:                      $hasmbstring
   $onabase/www/local/config dir writable:     $dbconfwrite
+  {$conf['logfile']} writable:                $logfilewrite
 
 EOL;
 }
@@ -197,7 +197,7 @@ function upgrade() {
             @$db->Close();
 
 
-            $text .= "{$cname}		{$cdbs['db_type']}		{$cdbs['db_host']}	{$cdbs['db_database']}		{$curr_ver}	{$levelinfo}\n";
+            $text .= "{$cname}		{$cdbs['db_type']}		{$cdbs['db_host']}	{$cdbs['db_database']}	{$curr_ver}	{$levelinfo}\n";
         }
 
     }
@@ -205,11 +205,11 @@ function upgrade() {
 
     if ($status == 0) {
       echo $text."\n";
-      $upgrade = promptUser("Perform the upgrade? ", 'N');
+      $upgrade = promptUser("Perform the upgrade? ", 'y/N');
       $text = '';
     } else {
         $text .= <<<EOL
-            There was an error determining database context versions. Please correct them before proceeding.<br><br>Check that the content of your database configuration file:<br> '<i>{$dbconffile}</i>'<br>is accurate and that the databases themselves are configured properly.<br><br>{$err_txt}</div><br>
+            There was an error determining database context versions. Please correct them before proceeding. \n\nCheck that the content of your database configuration file '{$dbconffile}' is accurate and that the databases themselves are configured properly.\n\n{$err_txt}\n
 EOL;
     }
 
@@ -219,7 +219,7 @@ EOL;
   $dbtype = 'mysqli'; $adotype = $dbtype;
 
 // If they have selected to keep the tables then remove the run_install file
-if ($upgrade == 'Y') {
+if ($upgrade == 'Y' or $upgrade == 'y') {
 
     // Loop through each context and upgrade the Databases within
     foreach(array_keys($ona_contexts) as $cname) {
@@ -252,14 +252,15 @@ if ($upgrade == 'Y') {
                     $schema = new adoSchema( $db );
                     // Build the SQL array from the schema XML file
                     $sql = $schema->ParseSchema($xmlfile_tables);
+                    // Uncomment the following to display the raw SQL
+                    #$text .= "----------\n".$schema->PrintSQL('TEXT')."\n---------\n";
                     // Execute the SQL on the database
-                    //$text .= $schema->PrintSQL('TEXT')."\n";
                     if ($schema->ExecuteSchema( $sql ) == 2) {
                         $text .= "[{$cname}/{$cdbs['db_host']}] Upgrading tables within database '{$cdbs['db_database']}'.\n";
                         printmsg("INFO => [{$cname}/{$cdbs['db_host']}] Upgrading tables within database: {$cdbs['db_database']}",0);
                     } else {
                         $status++;
-                        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> There was an error upgrading tables.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                        $text .= "There was an error upgrading tables. ERROR: ".$db->ErrorMsg()."\n";
                         printmsg("ERROR => There was an error processing tables: ".$db->ErrorMsg(),0);
                         break;
                     }
@@ -295,7 +296,6 @@ if ($upgrade == 'Y') {
                                 // Execute the SQL on the database
                                 if ($schema->ExecuteSchema( $sql ) == 2) {
                                     $text .= "[{$cname}/{$cdbs['db_host']}] Processed XML update file.\n";
-                                    printmsg("INFO => [{$cname}/{$cdbs['db_host']}] Processed XML update file.",0);
 
                                     // update index info in the DB
                                     $text .= "[{$cname}/{$cdbs['db_host']}] Upgraded from index {$upgrade_index} to {$new_index}.\n";
@@ -311,7 +311,7 @@ if ($upgrade == 'Y') {
                                     $upgrade_index++;
                                 } else {
                                     $status++;
-                                    $text .= "[{$cname}/{$cdbs['db_host']}] Failed to process XML update file.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span>\n";
+                                    $text .= "[{$cname}/{$cdbs['db_host']}] Failed to process XML update file.\n".$db->ErrorMsg()."\n";
                                     printmsg("ERROR => [{$cname}/{$cdbs['db_host']}] Failed to process XML update file.  ".$db->ErrorMsg(),0);
                                     break;
                                 }
@@ -360,18 +360,17 @@ if ($upgrade == 'Y') {
             fwrite($fh, "<?php\n\n\$ona_contexts=".var_export($ona_contexts,TRUE).";\n\n?>");
             fclose($fh);
             $text .= "Upgraded database connection config file to new format.\n";
-            printmsg("INFO => Upgraded database connection config file to new format.",0);
         }
     }
 
 
     if($status == 0) {
         $text .= $script_text;
-        $text .= "You can now <a href='".parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH)."'>CLICK HERE</a> to start using OpenNetAdmin! Enjoy!";
+        $text .= "Upgrade complete, you may start using OpenNetAdmin! Enjoy!\n";
 
         if (@file_exists($runinstall)) {
           if (!@unlink($runinstall)) {
-            $text .= "Failed to delete the file '{$runinstall}'.\n";
+            $text .= "Buuut.. Failed to delete the file '{$runinstall}'.\n";
             $text .= "Please remove '{$runinstall}' manually.\n";
           }
         }
@@ -428,7 +427,6 @@ function new_install() {
     if (!$db->IsConnected()) {
         $status++;
         $text .= "Failed to connect to '{$database_host}' as '{$admin_login}'.\n".$db->ErrorMsg()."\n";
-        printmsg("INFO => Unable to connect to server '$database_host'. ".$db->ErrorMsg(),0);
     } else {
         $text .= "Connected to '{$database_host}' as '{$admin_login}'.\n";
 
@@ -486,7 +484,8 @@ function new_install() {
                 $schema = new adoSchema( $db );
                 // Build the SQL array from the schema XML file
                 $sql = $schema->ParseSchema($xmlfile_data);
-                /////$text .= $schema->PrintSQL('TEXT');
+                // Uncomment the following to display the raw SQL
+                #$text .= "----------\n".$schema->PrintSQL('TEXT')."\n---------\n";
                 // Execute the SQL on the database
                 if ($schema->ExecuteSchema( $sql ) == 2) {
                     $text .= "Loaded tables with default data.\n";

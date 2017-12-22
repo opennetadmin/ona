@@ -148,14 +148,6 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); window.location.href = 'http://opennetadmin.com/forum/';"
-     title="Participate in our forums"
- ><img style="vertical-align: middle;" src="{$images}/silk/comments.png" border="0"
- />&nbsp;Discussion forums</div>
-
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
      onClick="ona_menu_closedown(); window.location.href = 'http://opennetadmin.com/docs/';"
      title="Documentation from the main website"
  ><img style="vertical-align: middle;" src="{$images}/silk/book_open.png" border="0"
@@ -164,10 +156,10 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); window.location.href = 'http://opennetadmin.com/bugs/';"
+     onClick="ona_menu_closedown(); window.location.href = 'https://github.com/opennetadmin/ona/issues';"
      title="File a bug report or feature request"
  ><img style="vertical-align: middle;" src="{$images}/silk/bug.png" border="0"
- />&nbsp;File a bug/feature</div>
+ />&nbsp;Issues & Discussion</div>
 
 <div class="row"
      onMouseOver="this.className='hovered';"

@@ -25,7 +25,7 @@ $window['html'] .= <<<EOL
 
     <tr>
         <td colspan="2" align="center" class="padding" style="font-weight: bold;">
-            <br><u>&copy; {$year} OpenNetAdmin - {$conf['version']}</u>
+            <u>&copy; {$year} OpenNetAdmin - {$conf['version']}</u>
         </td>
     </tr>
 
@@ -40,19 +40,10 @@ $window['html'] .= <<<EOL
 
     <tr>
         <td align="right" valign="top" class="padding" style="font-weight: bold;">
-            Bugs/Tickets:
+            Issues/Discussion:
         </td>
         <td align="left" rowspan="1" class="padding">
-            <a href="http://opennetadmin.com/bugs/">http://opennetadmin.com/bugs</a>
-        </td>
-    </tr>
-
-    <tr>
-        <td align="right" valign="top" class="padding" style="font-weight: bold;">
-            Forum:
-        </td>
-        <td align="left" rowspan="1" class="padding">
-            <a href="http://opennetadmin.com/forum/">http://opennetadmin.com/forum</a>
+            <a href="https://github.com/opennetadmin/ona/issues">https://github.com/opennetadmin/ona/issues</a>
         </td>
     </tr>
 
@@ -81,10 +72,6 @@ $window['html'] .= <<<EOL
         <td align="left" rowspan="1" class="padding">
             <a href="http://www.famfamfam.com/lab/icons/silk/">Silk Icons, by Mark James</a>
         </td>
-    </tr>
-
-    <tr>
-        <br>
     </tr>
 
     </table>
