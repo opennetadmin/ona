@@ -190,7 +190,7 @@ function upgrade() {
                     if ($upgrade_index < 8) { $levelinfo = "Must upgrade to at least v09.09.15 first!\n"; }
                 } else {
                     $status++;
-                    $text .= " [{$cname}] Failed to select DB '{$cdbs['db_database']}'. ERROR: ".$db->ErrorMsg();
+                    $text .= "[{$cname}] Failed to select DB '{$cdbs['db_database']}'. ERROR: ".$db->ErrorMsg()."\n";
                 }
             }
             // Close the database connection
@@ -335,7 +335,7 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
                     }
                 } else {
                     $status++;
-                    $text .= "[{$cname}/{$cdbs['db_host']}] Failed to select DB '{$cdbs['db_database']}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                    $text .= "[{$cname}] Failed to select DB '{$cdbs['db_database']}'. ERROR: ".$db->ErrorMsg()."\n";
                 }
             }
             // Close the database connection
@@ -392,7 +392,7 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
 function new_install() {
 
   echo "\n\n";
-  global $text,$xmlfile_data,$xmlfile_tables,$dbconffile;
+  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile;
 
   // Gather info
   $adotype = 'mysqli';
@@ -555,7 +555,7 @@ EOL;
 
             // Update the version element in the sys_config table
             if(@$db->Execute("UPDATE sys_config SET value='{$new_ver}' WHERE name like 'version'")) {
-               // $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Updated local version info.<br>";
+               $text .= "Updated local version info.\n";
             }
             else {
                 $status++;
