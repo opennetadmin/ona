@@ -22,7 +22,7 @@
     <field name="name" type="C" size="63">
       <NOTNULL/>
     </field>
-    <field name="notes" type="C" size="255">
+    <field name="notes" type="C" size="191">
       <NOTNULL/>
     </field>
   </table>
@@ -117,7 +117,7 @@
     <field name="name" type="C" size="128">
       <KEY/>
     </field>
-    <field name="description" type="C" size="255">
+    <field name="description" type="C" size="191">
       <NOTNULL/>
     </field>
     <field name="file" type="C" size="128">
@@ -158,8 +158,8 @@
     <field name="primary_host_id" type="I" size="10">
       <NOTNULL/>
     </field>
-    <field name="asset_tag" type="C" size="255"/>
-    <field name="serial_number" type="C" size="255"/>
+    <field name="asset_tag" type="C" size="191"/>
+    <field name="serial_number" type="C" size="191"/>
   </table>
 
 
@@ -349,7 +349,7 @@
       <NOTNULL/>
       <UNSIGNED/>
     </field>
-    <field name="name" type="C" size="255">
+    <field name="name" type="C" size="191">
       <NOTNULL/>
     </field>
     <field name="ebegin" type="T">
@@ -363,7 +363,7 @@
       <NOTNULL/>
       <UNSIGNED/>
     </field>
-    <field name="txt" type="C" size="255">
+    <field name="txt" type="C" size="191">
       <NOTNULL/>
     </field>
     <field name="srv_pri" type="I" size="5">
@@ -419,10 +419,10 @@
       <KEY/>
       <UNSIGNED/>
     </field>
-    <field name="name" type="C" size="255">
+    <field name="name" type="C" size="191">
       <NOTNULL/>
     </field>
-    <field name="description" type="C" size="255">
+    <field name="description" type="C" size="191">
       <NOTNULL/>
     </field>
   </table>
@@ -468,13 +468,13 @@
       <NOTNULL/>
       <UNSIGNED/>
     </field>
-    <field name="primary_master" type="C" size="255">
+    <field name="primary_master" type="C" size="191">
       <NOTNULL/>
     </field>
-    <field name="admin_email" type="C" size="255">
+    <field name="admin_email" type="C" size="191">
       <NOTNULL/>
     </field>
-    <field name="name" type="C" size="255">
+    <field name="name" type="C" size="191">
       <NOTNULL/>
     </field>
   </table>
@@ -510,7 +510,7 @@
     <field name="name" type="C" size="32">
       <NOTNULL/>
     </field>
-    <field name="description" type="C" size="255">
+    <field name="description" type="C" size="191">
       <NOTNULL/>
     </field>
     <field name="level" type="I" size="4">
@@ -559,7 +559,7 @@
       <NOTNULL/>
       <UNSIGNED/>
     </field>
-    <field name="notes" type="C" size="255">
+    <field name="notes" type="C" size="191">
       <NOTNULL/>
     </field>
   </table>
@@ -575,7 +575,7 @@
       <KEY/>
       <UNSIGNED/>
     </field>
-    <field name="name" type="C" size="255">
+    <field name="name" type="C" size="191">
       <NOTNULL/>
     </field>
   </table>
@@ -607,10 +607,10 @@
     <field name="mac_addr" type="C" size="12">
       <NOTNULL/>
     </field>
-    <field name="name" type="C" size="255">
+    <field name="name" type="C" size="191">
       <NOTNULL/>
     </field>
-    <field name="description" type="C" size="255"/>
+    <field name="description" type="C" size="191"/>
     <field name="last_response" type="T"/>
   </table>
 
@@ -646,7 +646,7 @@
     <field name="longitude" type="C" size="20">
       <NOTNULL/>
     </field>
-    <field name="misc" type="C" size="256">
+    <field name="misc" type="C" size="191">
       <NOTNULL/>
     </field>
   </table>
@@ -658,7 +658,7 @@
       <KEY/>
       <UNSIGNED/>
     </field>
-    <field name="name" type="C" size="255">
+    <field name="name" type="C" size="191">
       <NOTNULL/>
     </field>
     <index name="name">
@@ -717,10 +717,10 @@
       <NOTNULL/>
       <UNSIGNED/>
     </field>
-    <field name="name" type="C" size="255">
+    <field name="name" type="C" size="191">
       <NOTNULL/>
     </field>
-    <field name="snmp_sysobjectid" type="C" size="255">
+    <field name="snmp_sysobjectid" type="C" size="191">
       <NOTNULL/>
     </field>
   </table>
@@ -787,7 +787,7 @@
     <field name="name" type="C" size="32">
       <NOTNULL/>
     </field>
-    <field name="description" type="C" size="255">
+    <field name="description" type="C" size="191">
       <NOTNULL/>
     </field>
     <index name="name">
@@ -852,7 +852,7 @@
     <field name="display_name" type="C" size="63">
       <NOTNULL/>
     </field>
-    <field name="notes" type="C" size="255">
+    <field name="notes" type="C" size="191">
       <NOTNULL/>
     </field>
   </table>
@@ -895,7 +895,7 @@
     <field name="name" type="C" size="128">
       <KEY/>
     </field>
-    <field name="value" type="C" size="256">
+    <field name="value" type="C" size="191">
       <NOTNULL/>
     </field>
     <field name="description" type="C" size="512">

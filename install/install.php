@@ -1,4 +1,7 @@
 <?php
+// MP: Since we know ONA will generate a ton of notice level errors, lets turn them off here
+error_reporting (E_ALL ^ E_NOTICE);
+
 // get adodb xml processing
 require_once($conf['inc_adodb_xml']);
 
