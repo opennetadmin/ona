@@ -395,7 +395,7 @@ function new_install() {
   global $text,$xmlfile_data,$xmlfile_tables,$dbconffile;
 
   // Gather info
-  $dbtype = 'mysqli'; $adotype = $dbtype;
+  $adotype = 'mysqli';
   $database_host = promptUser("Database host? ", 'localhost');
   $admin_login = promptUser("Database admin? ", 'root');
   $admin_passwd = promptUser("Database admin password? ", '');
@@ -410,7 +410,7 @@ function new_install() {
 
     // set up initial context connection information
     $context_name = 'DEFAULT';
-    $ona_contexts[$context_name]['databases']['0']['db_type']     = $dbtype;
+    $ona_contexts[$context_name]['databases']['0']['db_type']     = $adotype;
     $ona_contexts[$context_name]['databases']['0']['db_host']     = $database_host;
     $ona_contexts[$context_name]['databases']['0']['db_login']    = $sys_login;
     $ona_contexts[$context_name]['databases']['0']['db_passwd']   = $sys_passwd;
