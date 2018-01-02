@@ -11,7 +11,7 @@ CREATE TABLE `locations` (
   `zip_code` int(5) unsigned NOT NULL,
   `latitude` varchar(20) NOT NULL,
   `longitude` varchar(20) NOT NULL,
-  `misc` varchar(256) NOT NULL COMMENT 'Misc info, site contacts, phone numbers etc.',
+  `misc` varchar(191) NOT NULL COMMENT 'Misc info, site contacts, phone numbers etc.',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='This table needs re-worked';
 

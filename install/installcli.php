@@ -422,6 +422,7 @@ function new_install() {
 
     // Make an initial connection to a DB server without specifying a database
     $db = ADONewConnection($adotype);
+    $db->charSet = 'utf8';
     $db->NConnect( $database_host, $admin_login, $admin_passwd, '' );
 
     if (!$db->IsConnected()) {
