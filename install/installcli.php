@@ -237,7 +237,7 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
                 $text .= " [{$cname}] Failed to connect to '{$cdbs['db_host']}' as '{$cdbs['db_login']}'. ERROR: ".$db->ErrorMsg()."\n";
             } else {
                 $db->Close();
-                if ($db->NConnect( $database_host, $admin_login, $admin_passwd, $cdbs['db_database'])) {
+                if ($db->NConnect( $database_host, $cdbs['db_login'], $cdbs['db_passwd'], $cdbs['db_database'])) {
 
 
                     // Get the current upgrade index if there is one.

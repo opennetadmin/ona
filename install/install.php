@@ -218,12 +218,8 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
         foreach($ona_contexts[$cname]['databases'] as $cdbs) {
             printmsg("INFO => [{$cname}/{$cdbs['db_host']}] Performing an upgrade.",0);
 
-            // switch from mysqlt to mysql becuase of adodb problems with innodb and opt stuff when doing xml
-            $adotype = $cdbs['db_type'];
-            //if ($adotype == 'mysqlt') $adotype = 'mysql';
-
             // Make an initial connection to a DB server without specifying a database
-            $db = ADONewConnection($adotype);
+            $db = ADONewConnection($cdbs['db_type']);
             @$db->NConnect( $cdbs['db_host'], $cdbs['db_login'], $cdbs['db_passwd'], '' );
 
             if (!$db->IsConnected()) {
@@ -232,20 +228,13 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
                 $text .= " <img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> [{$cname}] Failed to connect to '{$cdbs['db_host']}' as '{$cdbs['db_login']}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
             } else {
                 $db->Close();
-                if ($db->NConnect( $database_host, $admin_login, $admin_passwd, $cdbs['db_database'])) {
+                if ($db->NConnect( $database_host, $cdbs['db_login'], $cdbs['db_passwd'], $cdbs['db_database'])) {
 
 
                     // Get the current upgrade index if there is one.
                     $rs = $db->Execute("SELECT value FROM sys_config WHERE name like 'upgrade_index'");
                     $array = $rs->FetchRow();
                     $upgrade_index = $array['value'];
-
-                    if ($upgrade_index < 8) {
-                        $status++;
-                        $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] This database must be on at least v09.09.15 before upgrading to this version.<br>";
-                        printmsg("ERROR => [{$cname}/{$cdbs['db_host']}] This database must be on at least v09.09.15 before upgrading to this version.",0);
-                        break;
-                    }
 
                     $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Keeping your original data.<br>";
 

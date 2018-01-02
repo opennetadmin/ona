@@ -405,9 +405,6 @@
     <field name="role" type="C" size="10">
       <NOTNULL/>
     </field>
-    <field name="type" type="C" size="10">
-      <NOTNULL/>
-    </field>
     <field name="rebuild_flag" type="I" size="1">
       <NOTNULL/>
     </field>
