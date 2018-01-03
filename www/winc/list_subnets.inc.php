@@ -282,9 +282,7 @@ EOL;
 
                 <a title="Delete subnet"
                    class="act"
-                   onClick="var doit=confirm('Are you sure you want to delete this subnet?');
-                            if (doit == true)
-                                xajax_window_submit('edit_subnet', xajax.getFormValues('{$form['form_id']}_list_subnet_{$record['id']}'), 'delete');"
+                   onClick="xajax_window_submit('edit_subnet', xajax.getFormValues('{$form['form_id']}_list_subnet_{$record['id']}'), 'delete');"
                 ><img src="{$images}/silk/delete.png" border="0"></a>&nbsp;
 EOL;
     }
