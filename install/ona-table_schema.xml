@@ -861,10 +861,6 @@
       <KEY/>
       <UNSIGNED/>
     </field>
-    <field name="network_role_id" type="I" size="10">
-      <NOTNULL/>
-      <UNSIGNED/>
-    </field>
     <field name="subnet_type_id" type="I" size="10">
       <NOTNULL/>
       <UNSIGNED/>
