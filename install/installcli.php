@@ -190,7 +190,7 @@ function upgrade() {
                     if ($upgrade_index < 8) { $levelinfo = "Must upgrade to at least v09.09.15 first!\n"; }
                 } else {
                     $status++;
-                    $text .= " [{$cname}] Failed to select DB '{$cdbs['db_database']}'. ERROR: ".$db->ErrorMsg();
+                    $text .= "[{$cname}] Failed to select DB '{$cdbs['db_database']}'. ERROR: ".$db->ErrorMsg()."\n";
                 }
             }
             // Close the database connection
@@ -237,7 +237,7 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
                 $text .= " [{$cname}] Failed to connect to '{$cdbs['db_host']}' as '{$cdbs['db_login']}'. ERROR: ".$db->ErrorMsg()."\n";
             } else {
                 $db->Close();
-                if ($db->NConnect( $database_host, $admin_login, $admin_passwd, $cdbs['db_database'])) {
+                if ($db->NConnect( $database_host, $cdbs['db_login'], $cdbs['db_passwd'], $cdbs['db_database'])) {
 
 
                     // Get the current upgrade index if there is one.
@@ -335,7 +335,7 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
                     }
                 } else {
                     $status++;
-                    $text .= "[{$cname}/{$cdbs['db_host']}] Failed to select DB '{$cdbs['db_database']}'.<br><span style='font-size: xx-small;'>".$db->ErrorMsg()."</span><br>";
+                    $text .= "[{$cname}] Failed to select DB '{$cdbs['db_database']}'. ERROR: ".$db->ErrorMsg()."\n";
                 }
             }
             // Close the database connection
@@ -392,10 +392,10 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
 function new_install() {
 
   echo "\n\n";
-  global $text,$xmlfile_data,$xmlfile_tables,$dbconffile;
+  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile;
 
   // Gather info
-  $dbtype = 'mysqli'; $adotype = $dbtype;
+  $adotype = 'mysqli';
   $database_host = promptUser("Database host? ", 'localhost');
   $admin_login = promptUser("Database admin? ", 'root');
   $admin_passwd = promptUser("Database admin password? ", '');
@@ -410,7 +410,7 @@ function new_install() {
 
     // set up initial context connection information
     $context_name = 'DEFAULT';
-    $ona_contexts[$context_name]['databases']['0']['db_type']     = $dbtype;
+    $ona_contexts[$context_name]['databases']['0']['db_type']     = $adotype;
     $ona_contexts[$context_name]['databases']['0']['db_host']     = $database_host;
     $ona_contexts[$context_name]['databases']['0']['db_login']    = $sys_login;
     $ona_contexts[$context_name]['databases']['0']['db_passwd']   = $sys_passwd;
@@ -422,6 +422,7 @@ function new_install() {
 
     // Make an initial connection to a DB server without specifying a database
     $db = ADONewConnection($adotype);
+    $db->charSet = 'utf8';
     $db->NConnect( $database_host, $admin_login, $admin_passwd, '' );
 
     if (!$db->IsConnected()) {
@@ -554,7 +555,7 @@ EOL;
 
             // Update the version element in the sys_config table
             if(@$db->Execute("UPDATE sys_config SET value='{$new_ver}' WHERE name like 'version'")) {
-               // $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Updated local version info.<br>";
+               $text .= "Updated local version info.\n";
             }
             else {
                 $status++;

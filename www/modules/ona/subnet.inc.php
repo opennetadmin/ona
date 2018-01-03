@@ -35,7 +35,7 @@ function subnet_display($options="") {
     $text_array = array();
 
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -121,7 +121,6 @@ EOM
     }
 
     // cleanup some un-used junk
-    unset($text_array['network_role_id']);
     unset($text_array['vlan_id']);
 
     // change the output format if other than default
@@ -169,7 +168,7 @@ function subnet_add($options="") {
     printmsg('DEBUG => subnet_add('.$options.') called', 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.07';
+    $version = '1.08';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -213,10 +212,6 @@ EOM
 
     // Set vlan_id to 0 initially
     $SET['vlan_id'] = 0;
-
-    // TODO: remove this column from db
-    $SET['network_role_id'] = 0;
-
 
     // Prepare options[ip] - translate IP address to a number
     $options['ip'] = $ourip = ip_mangle($options['ip'], 'numeric');
