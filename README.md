@@ -38,7 +38,7 @@ CONTACT
   * http://opennetadmin.com/		-- Main website
   * http://opennetadmin.com/community	-- Contact information
   * https://github.com/opennetadmin/ona/wiki -- Online documentation
-  * http://opennetadmin.com/forum	-- User discussion group
+  * https://github.com/opennetadmin/ona/issues -- Discussion and issues
 
 LICENSE
 -------
