@@ -1,8 +1,9 @@
 This directory contains the information needed to perform an initial setup of the system.
 
 README:		This text
-ona-data.sql:	Initial data required for the system
-ona-tables.sql:	Initial database tables
-install.php:	The installation script ran at first startup
-x-to-x.sql:	Various SQL upgrade scripts
-x-to-x.php:	Various PHP upgrade scripts
+ona-example-data.sql: Example set of data used for demo site
+ona-data.sql:	      Initial data required for the system
+ona-tables.sql:       Initial database tables
+install.php:	      The installation script ran at first startup
+x-to-x.sql:	      Various SQL upgrade scripts
+x-to-x.php:	      Various PHP upgrade scripts
