@@ -92,7 +92,7 @@ while($install_complete){
   echo "ONA is licensed under GPL v2.0.\n";
   $showlicense = promptUser("Would you like to view license? [y/N] ", 'n');
   if ($showlicense == 'y') {
-    system("more -80 {$base}/../docs/LICENSE");
+    system("more -80 {$base}/../LICENSE");
     promptUser("[Press Enter To Continue]");
   }
 

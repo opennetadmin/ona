@@ -14,7 +14,7 @@ $onabase = dirname($base);
 $runinstall = $onabase.'/www/local/config/run_install';
 $xmlfile_tables = $base.'/ona-table_schema.xml';
 $xmlfile_data = $base.'/ona-data.xml';
-$license_text = file_get_contents($base.'/../docs/LICENSE');
+$license_text = file_get_contents($base.'/../LICENSE');
 $new_ver = trim(file_get_contents($onabase.'/VERSION'));
 $curr_ver = '';
 

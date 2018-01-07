@@ -1,58 +1,60 @@
-Here are some basic notes on installation of the system.
+INSTALL
+-------
 
-The files in www/local will not be touched and are meant to house local
-configuration and modules/plugins.  However a few files will be touched by
-the installer in www/local/config such as the database_settings.inc.php file
+You can access the online documentation for upgrades at https://github.com/opennetadmin/ona/wiki/Install
 
-REQUIREMENTS:
-  An apache server
-  A mysql server
-  PHP
-    php-mysql module
+Requirements
+------------
 
-INSTALL:
+ONA has a simple set of requirements to run.  I will describe them each briefly here.
 
-1. Download the latest file from http://opennetadmin.com/docs/download
-2. tar -C /opt -zxvf ona-v00.00.00.tar.gz
-   This should extract the tar file into /opt/ona
+  * You will need a web server to service the page.  Apache was the web server used to do the development and testing.
+  * You will need a database to store the data.  MySQL was the database used to develop and test with.  We use the ADODB PHP database abstraction layer so using Postgres or Oracle should not be an issue although we have not tested with those backends.
+  * You will need a PHP interpreter.  ONA was written in the PHP language.  Currently PHP version 5 or newer is required. 
+  * In addition to PHP, you will need at least one PHP database module that may or may not be part of your distributions main install.  You can check that they exist by issuing the command `php -m |grep mysql` You will see a list of the installed modules and something like "mysql" should be in the list.
+  * You also need to install the `php-gmp` and `php-mbstring` modules as well.  
+  * While we are using the database abstraction system ADODB, the database creation scripts are all based off of MySQL .  So for the time being, MySQL is the only truly supported database.
 
-3. Add a symlink in your web server root that points "ona -> /opt/ona/www"
-   For example: ln -s /opt/ona/www /var/www/ona
+Requisite Steps
+---------------
+  * cd /opt (or other directory you wish, all documentation assumes /opt)
+  * git clone https://github.com/opennetadmin/ona.git
+    * You can still use a tar if desired from https://github.com/opennetadmin/ona/releases/latest
+  * Add a symlink in your web server root that points `ona -> /opt/ona/www`.  An example would be: `ln -s /opt/ona/www /var/www/ona` assuming your apache root is `/var/www`.  An alternative to a symlink could be to add something like the following to your apache configuration:
 
-   -or-
+>     Alias /ona "/opt/ona/www/"
+>     <Directory "/opt/ona/www/">
+>         Options Indexes MultiViews FollowSymLinks
+>         AllowOverride All
+>         Require all granted
+>     </Directory>
 
-   Add this to your apache configuration file in the approrpiate location:
+  * `touch /var/log/ona.log`  This is the default location for the ONA system log.
+  * `chown www-data /opt/ona/www/local/config /var/log/ona.log` (or whatever your web server user is)
+    * Opensuse uses `wwwrun`
+    * Note that on some systems like Centos, that use SElinux, you may need to adjust the security context for /opt/ona/www/local as [explained here](http://stackoverflow.com/questions/8138288/php-fopen-failed-to-open-stream-permission-denied).  `chcon -R -t httpd_sys_script_rw_t /opt/ona/www/local` should do it.
 
-    Alias /ona "/opt/ona/www/"
-    <Directory "/opt/ona/www/">
-        Options Indexes MultiViews FollowSymLinks
-        AllowOverride None
-        Order allow,deny
-        allow from all
-    </Directory>
+### Web install Method
+  * Point your broswer to http://localhost/ona (replace localhost with your server name if needed) and follow the install steps
+    * If needed you can manually run the installer by adding the following to the url. `http://localhost/ona/?runinstaller=y`
+    * You could also create the following file to invoke the installer: `touch /opt/ona/www/local/config/run_installer`
+  * Accept the GPL license.
+  * A new page with a set of questions will appear.
+  * In the first box, ensure that all of the prerequisite checks are indicating 'Yes'.  If not, fix them and reload the page to refresh their status.
+  * Fill out the form (Help information is also in a box at the bottom of the form):
+    * Database host: This is the IP or DNS name of the server hosting your database.  This is usually `localhost` but can certainly point to any other server.
+    * Database type: Since we use ADODB we can use many database backends, Currently however only MySQL is actually supported. Hope to fix this soon!
+    * Database admin: This is the username of a user that can create databases and tables on your database server.  Many times this is `root`.
+    * Database admin password: The password for the admin user.
+    * Database name: Since ONA supports `contexts` a database name instance should be given.  You should always use `default` for your primary install.  Only adjust this value if you will be using contexts.  This name will be prefixed with `ona_` when created so you will see databases in your system called `ona_default` for example.  Also note that if you already have an instance with this name, the database will be dropped and re-created so please back it up and be cautious.
+    * Application database user name: This is a user that will be created on the database server to be used by the application for connections. This user will be granted permissions to update tables in our new database.  The default user is `ona_sys`.
+    * Application database user password: The password for our new user.
+    * Default domain name: This is the default name that the system will use when adding new hosts.  The domain will be created automatically for you in the system. It would typically be the name of the domain for your organization.
+  * Click create database. **NOTE:** Please remember this will drop any existing database that has the same name as provided in the database name field in order to re-create it.
+  * Click the `CLICK HERE TO START` link to begin.
 
-4. touch /var/log/ona.log
-5. chmod 666 /var/log/ona.log
-6. chown www-data /opt/ona/www/local/config (or whatever your web server user is)
-7. Point your broswer to http://<servername>/ona
-8. You can log in as "admin" with a password of "admin"
-
-
-MISC:
-
-# These steps are not required but are things I might do in the future... They are not recomended at this point
-
-adduser ona
-addgroup ona
-#   ona:x:1001:1001:OpenNetAdmin,,,:/opt/ona:/bin/false  <-- should look something like this
-chown -R ona:ona /opt/ona
-
-export PATH=$PATH:/opt/ona/bin
-
-add a symlink of /tftpboot/ona -> /opt/ona/<something>
+### CLI install method
+  * run `php /opt/ona/install/installcli.php`
+  * Answer the questions.
 
 
-OTHER RECOMMENDATIONS:
-  1. Use something like eaccelerator.
-  2. Get the php-gmp modules, or compile php with gmp support.  These are used for extended IP functions.
-     They are not required as they are used for functions not fully implemented yet.

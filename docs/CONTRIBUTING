@@ -1,0 +1,21 @@
+Contributing
+------------
+
+Thank you for taking the time to look at this. Any help we can get from the
+community is much appreciated and helps the project move forward.
+
+OpenNetAdmin uses the Gitflow workflow. More info here: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
+
+I'm not going to go into a huge description of the process here. The easiest way for others
+to contribute is to use a forking workflow.
+
+Some good info on those workflows are here:
+  * https://help.github.com/articles/fork-a-repo/
+  * https://help.github.com/articles/working-with-forks/
+  * https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow
+
+Then once you have new code checked into your repo fork, submit a pull request for consideration.
+
+More info here: https://help.github.com/articles/creating-a-pull-request-from-a-fork/
+
+Thanks again for your participation.
