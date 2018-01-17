@@ -20,7 +20,7 @@ function ona_sql($options="") {
     global $conf, $onadb, $base;
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     // TODO: Maybe make this into a sys_config option
     $srvdir = dirname($base)."/sql";
@@ -118,6 +118,7 @@ EOM
     $plugins = plugin_list();
     $files   = array();
     $srvdirs = array();
+    $sqlopts = array();
     array_push($srvdirs, $srvdir);
     // add a local sql dir as well so they don't get overrriden by installs
     array_push($srvdirs, dirname($base).'/www/local/sql');
