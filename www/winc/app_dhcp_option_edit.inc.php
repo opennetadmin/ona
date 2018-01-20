@@ -253,6 +253,7 @@ function ws_save($window_name, $form='') {
                                                       'display_name' => $form['display_name'],
                                                       'type' => $form['type'],
                                                       'number' => $form['number'],
+                                                      'sys_default' => 0,
                                                       'name' => $form['name'])
                                                );
             if ($status or !$rows) {
