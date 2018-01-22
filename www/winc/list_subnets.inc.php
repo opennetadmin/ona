@@ -301,7 +301,7 @@ EOL;
     $html .= get_page_links($page, $conf['search_results_per_page'], $count, $window_name, $form['form_id']);
 
     // If there was only 1 result, and we're about to display results in the "Search Results" window, display it.
-    if ($count == 1 and $form['content_id'] == 'search_results_list' and $form['filter'] == '')
+    if ($count == 1 and $form['content_id'] == 'search_results_list' and $form['filter'] == '' and $form['one_go'] != 'n')
         $js .= $primary_object_js;
 
     // Insert the new html into the content div specified

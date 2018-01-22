@@ -31,6 +31,8 @@ print <<<EOL
     <link rel="stylesheet" type="text/css" href="{$baseURL}/include/html_style_sheet.inc.php">
     <link rel="shortcut icon" type="image/ico" href="{$images}/favicon.ico">
     <script type="text/javascript" src="{$baseURL}/include/js/global.js" language="javascript"></script>
+    <script type="text/javascript" src="{$baseURL}/include/js/mousetrap.min.js" language="javascript"></script>
+    <script type="text/javascript" src="{$baseURL}/include/js/mousetrap_mappings.js" language="javascript"></script>
     {$conf['html_headers']}
 </head>
 <body style="overflow: hidden;" bgcolor="{$color['bg']}" link="{$color['link']}" alink="{$color['alink']}" vlink="{$color['vlink']}">
@@ -300,12 +302,12 @@ print <<<EOL
 
 <!-- Side toolbar -->
 <div nowrap style="position: absolute;top: 90px;right: 1px;z-index: 10;background: #E3E3F0;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
-    <div style="float:left;padding: 5px 2px;" onclick="toggleBox('ipcalc_content');">
+    <div style="float:left;padding: 5px 2px;" onclick="toggleBox('ipcalc_content'); el('calc_ip').focus();">
     <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" />
     </div>
     <div id="ipcalc_content" style="visibility: hidden;display:none;background: #E3E3F0;padding: 5px;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
         <form id="ipcalc_form" onsubmit="return false;">
-            IP: <input type="text" name="ip" />
+            IP: <input id="calc_ip" type="text" name="ip" />
             Mask: <input type="text" name="mask" />
                 <input class="edit" type="button"
                     name="submit"

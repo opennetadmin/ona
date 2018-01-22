@@ -63,6 +63,7 @@ function ws_editor($window_name, $form='') {
         suggest_setup('vlan_edit',     'suggest_vlan_edit');
         el('{$window_name}_edit_form').onsubmit = function() { return false; };
 
+        el('vlan_edit').focus();
 EOL;
 
     // Define the window's inner html
