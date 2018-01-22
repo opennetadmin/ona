@@ -54,6 +54,7 @@ function ws_editor($window_name, $form='') {
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
 
+        el('campus_name').focus();
 EOL;
 
     // Define the window's inner html
@@ -77,6 +78,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="campus_name"
                     name="name"
                     alt="Vlan Campus Name"
                     value="{$vlan_campus['name']}"
