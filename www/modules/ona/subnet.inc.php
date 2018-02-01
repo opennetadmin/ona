@@ -1041,7 +1041,7 @@ function subnet_nextip($options="") {
     // Version - UPDATE on every edit!
     $version = '1.00';
 
-    printmsg('DEBUG => subnet_del('.$options.') called', 3);
+    printmsg('DEBUG => subnet_nextip('.$options.') called', 3);
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -1056,7 +1056,7 @@ function subnet_nextip($options="") {
         return(array(1,
 <<<EOM
 
-subnet_del-v{$version}
+subnet_nextip-v{$version}
 Return the next available IP address on a subnet.
 
   Synopsis: subnet_nextip [KEY=VALUE] ...
@@ -1074,7 +1074,7 @@ EOM
     }
 
 
-    // Find the subnet record we're deleting
+    // Find the subnet record
     list($status, $rows, $subnet) = ona_find_subnet($options['subnet']);
     if ($status or !$rows) {
         $self['error'] = "ERROR => Subnet not found";
