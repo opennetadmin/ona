@@ -1056,7 +1056,7 @@ function subnet_nextip($options="") {
         return(array(1,
 <<<EOM
 
-subnet_del-v{$version}
+subnet_nextip-v{$version}
 Return the next available IP address on a subnet.
 
   Synopsis: subnet_nextip [KEY=VALUE] ...
