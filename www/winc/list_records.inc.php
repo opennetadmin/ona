@@ -575,16 +575,13 @@ EOL;
         }
 
 
-        // display a view host button on the dns record search form list
-        if ($form['search_form_id'] == 'dns_record_search_form') {
-            $html .= <<<EOL
-
-                    <a title="View associated host record: {$interface['host_id']}"
-                       class="act"
-                       onClick="xajax_window_submit('display_host', 'host_id=>{$interface['host_id']}', 'display');"
-                    ><img src="{$images}/silk/computer_go.png" border="0"></a>&nbsp;
+        // display a view host button
+        $html .= <<<EOL
+                <a title="View associated host record: {$interface['host_id']}"
+                   class="act"
+                   onClick="xajax_window_submit('display_host', 'host_id=>{$interface['host_id']}', 'display');"
+                ><img src="{$images}/silk/computer_go.png" border="0"></a>&nbsp;
 EOL;
-        }
 
         if (auth('dns_record_modify')) {
             $html .= <<<EOL
