@@ -333,9 +333,9 @@ EOL;
 
                 // Format the date and colorize if its older than 2 months
                 if ($interface['last_response']) {
-                    $interface['last_response'] = date($conf['date_format'],strtotime($interface['last_response']));
+                    $interface['last_response_fmt'] = date($conf['date_format'],strtotime($interface['last_response']));
                     if (strtotime($interface['last_response']) < strtotime('-2 month')) {
-                        $interface['last_response_fmt'] = 'style=color:red;';
+                        $interface['last_response_fmt'] = "<span style=\"color: red;\">".$interface['last_response_fmt']."</style>";
                     }
                 }
 
@@ -409,7 +409,9 @@ EOL;
                     &nbsp;<span>{$clusterhtml}</span>
                 </td>
 
-                <td class="list-row" {$interface['last_response_fmt']}>{$interface['last_response']}&nbsp;</td>
+                <td class="list-row" align="left" title="{$interface['last_response']}">
+                    {$interface['last_response_fmt']}&nbsp;
+                </td>
 
                 <td class="list-row">
                     <span title="{$interface['description']}">{$interface['desc']}</span>&nbsp;
