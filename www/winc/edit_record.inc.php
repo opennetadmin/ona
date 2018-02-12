@@ -271,6 +271,12 @@ EOL;
                                 el('domain_name_container').style.display  = (selectBox.value == 'PTR') ? 'none' : '';
                                 el('existing_a_container').style.display = (selectBox.value == 'MX' || selectBox.value == 'PTR'|| selectBox.value == 'CNAME' || selectBox.value == 'NS' || selectBox.value == 'SRV') ? '' : 'none';"
                     >{$record_type_list}</select>
+                    <input id="force"
+                          type="checkbox"
+                          name="force"
+                          title="Disable database consistency checks. Allows external data references for IP or A record."
+                          onclick="if(el('force').checked == true) { el('existing_a').innerHTML = 'A record'; } else { el('existing_a').innerHTML = 'Existing A record';  }"
+                   /> <span title="Disable database consistency checks. Allows external data references for IP or A record."> Force </span>
                 </td>
             </tr>
 
@@ -293,7 +299,7 @@ EOL;
                         class="edit"
                         type="text"
                         size="25" maxlength="64"
-                        onblur="updatednsinfo('{$window_name}');"
+                        onkeyup="updatednsinfo('{$window_name}');"
                     />
                 </td>
             </tr>
@@ -351,7 +357,7 @@ EOL;
                         class="edit"
                         type="text"
                         size="20" maxlength="20"
-                        onblur="updatednsinfo('{$window_name}');"
+                        onkeyup="updatednsinfo('{$window_name}');"
                         onfocus="updatednsinfo('{$window_name}');"
                     />
                 </td>
@@ -447,7 +453,7 @@ EOL;
                         class="edit"
                         type="text"
                         size="45" maxlength="64"
-                        onblur="updatednsinfo('{$window_name}');"
+                        onkeyup="updatednsinfo('{$window_name}');"
                     />
                 </td>
             </tr>
@@ -483,7 +489,7 @@ EOL;
                         class="edit"
                         type="text"
                         size="25" maxlength="255"
-                        onblur="updatednsinfo('{$window_name}');"
+                        onkeyup="updatednsinfo('{$window_name}');"
                     />
                 </td>
             </tr>
@@ -502,7 +508,7 @@ EOL;
                         class="edit"
                         type="text"
                         size="5" maxlength="5"
-                        onblur="updatednsinfo('{$window_name}');"
+                        onkeyup="updatednsinfo('{$window_name}');"
                     />
                 </td>
             </tr>
@@ -522,7 +528,7 @@ EOL;
                         class="edit"
                         type="text"
                         size="5" maxlength="5"
-                        onblur="updatednsinfo('{$window_name}');"
+                        onkeyup="updatednsinfo('{$window_name}');"
                     /><br />
                     <input
                         style="margin-bottom:3px;"
@@ -533,7 +539,7 @@ EOL;
                         class="edit"
                         type="text"
                         size="5" maxlength="5"
-                        onblur="updatednsinfo('{$window_name}');"
+                        onkeyup="updatednsinfo('{$window_name}');"
                     /><br />
                     <input
                         id="set_srv_port_{$window_name}"
@@ -543,14 +549,14 @@ EOL;
                         class="edit"
                         type="text"
                         size="5" maxlength="5"
-                        onblur="updatednsinfo('{$window_name}');"
+                        onkeyup="updatednsinfo('{$window_name}');"
                     />
                 </td>
             </tr>
 
             <!-- CNAME CONTAINER -->
             <tr id="existing_a_container" style="display:none;">
-                <td class="input_required" align="right" nowrap="true">
+                <td id="existing_a" name="existing_a" class="input_required" align="right" nowrap="true">
                     Existing A record
                 </td>
                 <td class="padding" align="left" width="100%">

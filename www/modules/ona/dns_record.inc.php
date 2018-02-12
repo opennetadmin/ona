@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.12';
+    $version = '1.13';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -62,6 +62,8 @@ Add a new DNS record
     ebegin=date               Set the begin date for record, 0 disables, default now
     domain=DOMAIN             use only if you need to explicitly set a parent domain
     view=STRING               DNS view identifier. AKA Split horizon.
+    force                     Bypass regular data checks. Allows for pointsto and IP
+                              values that are not managed by ONA.
 
   Examples:
     dns_record_add name=newhost.something.com type=A ip=10.1.1.2 addptr
@@ -87,7 +89,7 @@ a records:
     check if there is an A record with that name/domain and IP already.
     check that name/domain does not match a CNAME entry
     will not have a dns_id value.. blank it out
-    if autoptr is set, create a ptr record too
+    if addptr is set, create a ptr record too
 cname records:
     check that name/domain does not match an A entry
     check that name/domain does not match an CNAME entry
@@ -109,6 +111,7 @@ primary name for a host should be unique in all cases I'm aware of
 
     // Sanitize addptr.. set it to Y if it is not set
     $options['addptr'] = sanitize_YN($options['addptr'], 'Y');
+    $options['force'] = sanitize_YN($options['force'], 'N');
 
     // clean up what is passed in
     $options['ip'] = trim($options['ip']);
@@ -223,14 +226,102 @@ primary name for a host should be unique in all cases I'm aware of
     // Set a message to display when using dns views
     if ($conf['dns_views']) $viewmsg = ' Ensure you are selecting the proper DNS view for this record.';
 
+    if ($options['pointsto']) {
+        // Determine the host and domain name portions of the pointsto option
+        // Find the domain name piece of $search
+        list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
+        printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$domain['fqdn']} for pointsto.", 3);
+ 
+        // Now find what the host part of $search is
+        $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
+ 
+        // Validate that the DNS name has only valid characters in it
+        $phostname = sanitize_hostname($phostname);
+        if (!$phostname) {
+            printmsg("ERROR => Invalid pointsto host name ({$options['pointsto']})!", 3);
+            $self['error'] = "ERROR => Invalid pointsto host name ({$options['pointsto']})!";
+            return(array(4, $self['error'] . "\n"));
+        }
+
+        // Find the dns record that it will point to
+        list($pointsto_status, $pointsto_rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
+    }
+
+
+    // if force option is passed, bypass standard validation
+    if ($options['force'] == 'Y' and $options['type'] != 'PTR') {
+        // must not have interface_id on overrides
+        $add_interfaceid = 0;
+        $add_dnsid = 0;
+        // do not create PTR records for override_data
+        $options['addptr'] = 'N';
+        // add pointsto into override_data and pointsto_fqdn
+        $pointsto_fqdn = $add_override_data = $options['pointsto'];
+
+        // ensure that when we are forcing the IP or pointsto value does
+        // not match something in our system. i.e. it must be external
+        if ($pointsto_rows) {
+            $self['error'] = "ERROR => Found '{$options['pointsto']}' in the database. You should NOT use the force option";
+            printmsg($self['error'],3);
+            return(array(5, $self['error'] . "\n"));
+        }
+        list($status, $rows, $iface) = ona_find_interface($options['ip']);
+        if ($rows) {
+            $self['error'] = "ERROR => Found '{$options['ip']}' in the database. You should NOT use the force option";
+            printmsg($self['error'],3);
+            return(array(5, $self['error'] . "\n"));
+        }
+    } else {
+        // Process common info for a record that uses pointsto
+
+        // Fail if we cant find the A record for pointsto
+        if (($pointsto_status or !$pointsto_rows) and $options['type'] != 'A') {
+            printmsg("ERROR => Unable to find DNS A record to point {$options['type']} entry to!{$viewmsg}",3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point {$options['type']} entry to!{$viewmsg}";
+            return(array(5, $self['error'] . "\n"));
+        }
+ 
+        // Debugging
+        printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
+
+        $add_override_data = '';
+        $add_interfaceid = $pointsto_record['interface_id'];
+        $add_dnsid = $pointsto_record['id'];
+        $pointsto_fqdn = "{$phostname}.{$pdomain['fqdn']}";
+    }
+
     // Process A or AAAA record types
     if ($options['type'] == 'A' or $options['type'] == 'AAAA') {
-        // find the IP interface record,
-        list($status, $rows, $interface) = ona_find_interface($options['ip']);
-        if (!$rows) {
-            printmsg("ERROR => dns_record_add() Unable to find existing IP interface: {$options['ip']}",3);
-            $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}. A records must point to existing IP addresses. Please add an interface with this IP address first.";
-            return(array(4, $self['error'] . "\n"));
+        // if force option is passed, bypass standard validation
+        if ($options['force'] == 'Y') {
+            // validate the IP info is valid
+            $orig_ip= $options['ip'];
+            $options['ip'] = ip_mangle($options['ip'], 'dotted');
+            if ($options['ip'] == -1) {
+                printmsg("ERROR => Invalid IP address ({$orig_ip}) for override",3);
+                $self['error'] = "ERROR => Invalid IP address ({$orig_ip}) for override!";
+                return(array(3, $self['error'] . "\n"));
+            }
+
+            // Validate that there isn't already an A record with this override data.
+            list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'override_data' => $options['ip'],'type' => 'A', 'dns_view_id' => $add_viewid));
+            if ($d_status or $d_rows) {
+                $self['error'] = "ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} with IP {$options['ip']} already exists!{$viewmsg}";
+                printmsg($self['error'],3);
+                return(array(5, $self['error'] . "\n"));
+            }
+
+            // add ip into override_data
+            $add_override_data = $options['ip'];
+        } else {
+            // find the IP interface record,
+            list($status, $rows, $interface) = ona_find_interface($options['ip']);
+            if (!$rows) {
+                printmsg("ERROR => dns_record_add() Unable to find existing IP interface: {$options['ip']}",3);
+                $self['error'] = "ERROR => dns_record_add() Unable to find IP interface: {$options['ip']}. A records must point to existing IP addresses. Please add an interface with this IP address first.";
+                return(array(4, $self['error'] . "\n"));
+            }
+            $add_interfaceid = $interface['id'];
         }
 
         // Validate that there isn't already any dns record named $hostname in the domain $domain_id.
@@ -252,14 +343,13 @@ primary name for a host should be unique in all cases I'm aware of
 
         $add_name = $hostname;
         $add_domainid = $domain['id'];
-        $add_interfaceid = $interface['id'];
         // A records should not have parent dns records
         $add_dnsid = 0;
 
         // Dont print a dot unless hostname has a value
         if ($hostname) $hostname = $hostname.'.';
 
-        $info_msg = "{$hostname}{$domain['fqdn']} -> " . ip_mangle($interface['ip_addr'],'dotted');
+        $info_msg = "{$hostname}{$domain['fqdn']} -> " . ip_mangle($options['ip'],'dotted');
 
         // Just to be paranoid, I'm doing the ptr checks here as well if addptr is set
         if ($options['addptr'] == 'Y') {
@@ -272,7 +362,7 @@ primary name for a host should be unique in all cases I'm aware of
             }
         }
 
-    }
+    } // end A record
 
 // I think I fixed this.. more testing needed.. no GUI option yet either.
     // MP: FIXME: there is an issue that you cant have just a ptr record with no A record.  so you cant add something like:
@@ -396,23 +486,7 @@ complex DNS messes for themselves.
 
     // Process CNAME record types
     else if ($options['type'] == 'CNAME') {
-        // Determine the host and domain name portions of the pointsto option
-        // Find the domain name piece of $search
-        list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
-        printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$domain['fqdn']} for pointsto.", 3);
 
-        // Now find what the host part of $search is
-        $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
-
-        // Validate that the DNS name has only valid characters in it
-        $phostname = sanitize_hostname($phostname);
-        if (!$phostname) {
-            printmsg("ERROR => Invalid pointsto host name ({$options['pointsto']})!", 3);
-            $self['error'] = "ERROR => Invalid pointsto host name ({$options['pointsto']})!";
-            return(array(4, $self['error'] . "\n"));
-        }
-        // Debugging
-        printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
 
         // Validate that the CNAME I'm adding doesnt match an existing A record.
         list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'A','dns_view_id' => $add_viewid));
@@ -431,25 +505,13 @@ complex DNS messes for themselves.
             return(array(5, $self['error'] . "\n"));
         }
 
-        // Find the dns record that it will point to
-        list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
-        if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point CNAME entry to!{$viewmsg}",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point CNAME entry to!{$viewmsg}";
-            return(array(5, $self['error'] . "\n"));
-        }
-
-
-
         $add_name = $hostname;
         $add_domainid = $domain['id'];
-        $add_interfaceid = $pointsto_record['interface_id'];
-        $add_dnsid = $pointsto_record['id'];
 
         // Dont print a dot unless hostname has a value
         if ($hostname) $hostname = $hostname.'.';
 
-        $info_msg = "{$hostname}{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+        $info_msg = "{$hostname}{$domain['fqdn']} -> {$pointsto_fqdn}";
 
     }
 
@@ -466,38 +528,6 @@ complex DNS messes for themselves.
             $self['error'] = "ERROR => Invalid domain name ({$options['name']})!";
             return(array(4, $self['error'] . "\n"));
         }
-        // Determine the host and domain name portions of the pointsto option
-        // Find the domain name piece of $search
-        list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
-        printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$pdomain['fqdn']} for pointsto.", 3);
-
-        // Now find what the host part of $search is
-        $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
-
-        // lets test out if it has a / in it to strip the view name portion
-//         if (strstr($phostname,'/')) {
-//             list($dnsview,$phostname) = explode('/', $phostname);
-//             list($status, $rows, $view) = db_get_record($onadb, 'dns_views', array('name' => strtoupper($dnsview)));
-//             if($rows) $add_pointsto_viewid = $view['id'];
-//         }
-
-        // Validate that the DNS name has only valid characters in it
-        $phostname = sanitize_hostname($phostname);
-        if (!$phostname) {
-            printmsg("ERROR => Invalid pointsto host name ({$options['pointsto']})!", 3);
-            $self['error'] = "ERROR => Invalid pointsto host name ({$options['pointsto']})!";
-            return(array(4, $self['error'] . "\n"));
-        }
-        // Debugging
-        printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
-
-        // Find the dns record that it will point to
-        list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_pointsto_viewid));
-        if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}";
-            return(array(5, $self['error'] . "\n"));
-        }
 
         // Validate that there are no NS already with this domain and host
         list($status, $rows, $record) = ona_get_dns_record(array('dns_id' => $pointsto_record['id'], 'domain_id' => $domain['id'],'type' => 'NS','dns_view_id' => $add_viewid));
@@ -510,10 +540,8 @@ complex DNS messes for themselves.
 
         $add_name = ''; //$options['name'];
         $add_domainid = $domain['id'];
-        $add_interfaceid = $pointsto_record['interface_id'];
-        $add_dnsid = $pointsto_record['id'];
 
-        $info_msg = "{$options['name']} -> {$phostname}.{$pdomain['fqdn']}";
+        $info_msg = "{$options['name']} -> {$pointsto_fqdn}";
 
     }
     // Process MX record types
@@ -548,43 +576,14 @@ complex DNS messes for themselves.
             printmsg("DEBUG => Using hostname: {$hostname}.{$domain['fqdn']}, Domain ID: {$domain['id']}", 3);
         }
 
-        // Determine the host and domain name portions of the pointsto option
-        // Find the domain name piece of $search
-        list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
-        printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$pdomain['fqdn']} for pointsto.", 3);
-
-        // Now find what the host part of $search is
-        $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
-
-        // Validate that the DNS name has only valid characters in it
-        $phostname = sanitize_hostname($phostname);
-        if (!$phostname) {
-            printmsg("ERROR => Invalid pointsto host name ({$options['pointsto']})!", 3);
-            $self['error'] = "ERROR => Invalid pointsto host name ({$options['pointsto']})!";
-            return(array(4, $self['error'] . "\n"));
-        }
-        // Debugging
-        printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
-
-        // Find the dns record that it will point to
-        list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
-        if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}";
-            return(array(5, $self['error'] . "\n"));
-        }
-
-
         $add_name = $hostname;
         $add_domainid = $domain['id'];
-        $add_interfaceid = $pointsto_record['interface_id'];
-        $add_dnsid = $pointsto_record['id'];
         $add_mx_preference = $options['mx_preference'];
 
         // Dont print a dot unless hostname has a value
         if ($hostname) $hostname = $hostname.'.';
 
-        $info_msg = "{$hostname}{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+        $info_msg = "{$hostname}{$domain['fqdn']} -> {$pointsto_fqdn}";
 
 
     }
@@ -622,31 +621,6 @@ complex DNS messes for themselves.
             $self['error'] = "ERROR => Invalid domain name ({$options['name']})!";
             return(array(4, $self['error'] . "\n"));
         }
-        // Determine the host and domain name portions of the pointsto option
-        // Find the domain name piece of $search
-        list($status, $rows, $pdomain) = ona_find_domain($options['pointsto']);
-        printmsg("DEBUG => ona_find_domain({$options['pointsto']}) returned: {$pdomain['fqdn']} for pointsto.", 3);
-
-        // Now find what the host part of $search is
-        $phostname = str_replace(".{$pdomain['fqdn']}", '', $options['pointsto']);
-
-        // Validate that the DNS name has only valid characters in it
-        $phostname = sanitize_hostname($phostname);
-        if (!$phostname) {
-            printmsg("ERROR => Invalid pointsto host name ({$options['pointsto']})!", 3);
-            $self['error'] = "ERROR => Invalid pointsto host name ({$options['pointsto']})!";
-            return(array(4, $self['error'] . "\n"));
-        }
-        // Debugging
-        printmsg("DEBUG => Using 'pointsto' hostname: {$phostname}.{$pdomain['fqdn']}, Domain ID: {$pdomain['id']}", 3);
-
-        // Find the dns record that it will point to
-        list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
-        if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point SRV entry to!{$viewmsg}",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point SRV entry to!{$viewmsg}";
-            return(array(5, $self['error'] . "\n"));
-        }
 
         // Validate that there are no records already with this domain and host
         list($status, $rows, $record) = ona_get_dns_record(array('dns_id' => $pointsto_record['id'], 'name' => $hostname, 'domain_id' => $domain['id'],'type' => 'SRV','dns_view_id' => $add_viewid));
@@ -659,8 +633,6 @@ complex DNS messes for themselves.
 
         $add_name = $hostname;
         $add_domainid = $domain['id'];
-        $add_interfaceid = $pointsto_record['interface_id'];
-        $add_dnsid = $pointsto_record['id'];
         $add_srv_pri = $options['srv_pri'];
         $add_srv_weight = $options['srv_weight'];
         $add_srv_port = $options['srv_port'];
@@ -668,7 +640,7 @@ complex DNS messes for themselves.
         // Dont print a dot unless hostname has a value
         if ($hostname) $hostname = $hostname.'.';
 
-        $info_msg = "{$hostname}{$domain['fqdn']} -> {$phostname}.{$pdomain['fqdn']}";
+        $info_msg = "{$hostname}{$domain['fqdn']} -> {$pointsto_fqdn}";
 
     }
 
@@ -790,7 +762,8 @@ complex DNS messes for themselves.
             'srv_port'             => $add_srv_port,
             'ebegin'               => $options['ebegin'],
             'notes'                => $options['notes'],
-            'dns_view_id'          => $add_viewid
+            'dns_view_id'          => $add_viewid,
+            'override_data'        => $add_override_data
        )
     );
     if ($status or !$rows) {
@@ -859,7 +832,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.13';
+    $version = '1.14';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -906,6 +879,8 @@ Modify a DNS record
     set_ebegin                  change the begin date for record, 0 disables
     set_domain=DOMAIN           use if you need to explicitly set domain
     set_view=STRING             change DNS view identifier. AKA Split horizon.
+    force                       Bypass regular data checks. Allows for pointsto and IP
+                                values that are not managed by ONA.
 
   Note:
     * You are not allowed to change the type of the DNS record, to do that
@@ -935,6 +910,7 @@ EOM
 
     // Sanitize addptr.. set it to Y if it is not set
     $options['set_addptr'] = sanitize_YN($options['set_addptr'], 'Y');
+    $options['force'] = sanitize_YN($options['force'], 'Y');
 
     // clean up what is passed in
     $options['set_ip'] = trim($options['set_ip']);

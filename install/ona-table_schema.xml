@@ -382,6 +382,9 @@
       <NOTNULL/>
       <UNSIGNED/>
     </field>
+    <field name="override_data" type="C" size="191">
+      <NOTNULL/>
+    </field>
     <index name="domain_id">
       <col>domain_id</col>
     </index>

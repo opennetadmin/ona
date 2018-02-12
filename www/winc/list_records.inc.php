@@ -274,27 +274,21 @@ EOL;
             </tr>
 EOL;
     // Loop and display each record
-  //  $last_record = array('name' => $results[0]['name'], 'domain_id' => $results[0]['domain_id']);
-  //  $last_record_count = 0;
-
     for($i=1; $i<=(count($results)); $i++) {
-        $record = $results[$i];
         // Get additional info about each host record
-
-
-
         $record = $results[$i-1];
 
-        // if the interface is the primary_dns_id for the host then mark it
         $primary_record = '&nbsp;';
-        if ($host['primary_dns_id'] == $record['id']) {
-            $primary_record = '<img title="Primary DNS record" src="'.$images.'/silk/font_go.png" border="0">';
-        }
 
         // Check for interface records (and find out how many there are)
         list($status, $interfaces, $interface) = ona_get_interface_record(array('id' => $record['interface_id']), '');
 
         if($interfaces) {
+            // if the interface is the primary_dns_id for the host then mark it
+            if ($host['primary_dns_id'] == $record['id']) {
+                $primary_record = '<img title="Primary DNS record" src="'.$images.'/silk/font_go.png" border="0">';
+            }
+
             // Get the host record so we know what the primary interface is
             //list($status, $rows, $inthost) = ona_get_host_record(array('id' => $interface['host_id']), '');
 
@@ -319,7 +313,7 @@ EOL;
         } else {
             // Get other DNS records which name this record as parent
             list($status, $rows, $dns_other) = ona_get_host_record(array('id' => $record['dns_id']));
-
+ 
             // Create string to be embedded in HTML for display
             if($rows) {
                 $data = <<<EOL
@@ -451,6 +445,28 @@ EOL;
             $data = truncate($record['txt'],70);
         }
 
+        // Lastly, Lets see if we have any override data
+        if ($record['override_data'] != '') {
+            $override_fmt = $record['override_data'];
+            // validate 
+            if ($record['type'] != 'A') {
+                // Add a trailing dot
+                $override_fmt = $record['override_data'].'.';
+                // Lets set some resolver optons so things are quicker
+                putenv('RES_OPTIONS=retrans:1 retry:1 timeout:1 attempts:1');
+                // Attempt a name lookup
+                $found_ext_dns = gethostbyname($record['override_data']);
+                // If the name we looked up is returned, this means we couldnt resolve an IP.
+                if ($found_ext_dns != $record['override_data']) {
+                    $override_fmt = "<span title='This external reference does not resolve in DNS. This may still be ok for some situations.' style='color: red;'>{$override_fmt}</style>";
+                }
+            }
+            $data = <<<EOL
+                    {$override_fmt}&nbsp;
+    
+EOL;
+        }
+ 
         // Get the domain name and domain ttl
         $ttl_style = 'title="Time-to-Live"';
         list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
@@ -576,12 +592,14 @@ EOL;
 
 
         // display a view host button
-        $html .= <<<EOL
+        if (!$record['override_data']) {
+          $html .= <<<EOL
                 <a title="View associated host record: {$interface['host_id']}"
                    class="act"
                    onClick="xajax_window_submit('display_host', 'host_id=>{$interface['host_id']}', 'display');"
                 ><img src="{$images}/silk/computer_go.png" border="0"></a>&nbsp;
 EOL;
+        }
 
         if (auth('dns_record_modify')) {
             $html .= <<<EOL
