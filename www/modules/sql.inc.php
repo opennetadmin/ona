@@ -216,8 +216,14 @@ EOM
 
     printmsg("DEBUG => [ona_sql] Running SQL query: {$options['sql']}",5);
 
-    // Run the query
-    $rs = $onadb->Execute($options['sql'],$sqlopts);
+    //  Check if we have anything in $sqlopts
+    if (!$sqlopts) {
+        // Run the query
+        $rs = $onadb->Execute($options['sql']);
+    } else {
+        // Run the query with the options
+        $rs = $onadb->Execute($options['sql'],$sqlopts);
+    }
 
     if ($rs === false) {
         $self['error'] = "ERROR => SQL query failed: " . $onadb->ErrorMsg() . "\n";
