@@ -228,6 +228,9 @@ require_once($conf['inc_functions_auth']);
 // Start the session handler (this calls a function defined in functions_general)
 startSession();
 
+// Include internationalization code (should be top of any .php file with strings to be translated).
+include $base . '/config/internationalization.inc.php';
+
 // Set session inactivity threshold
 ini_set("session.gc_maxlifetime", $conf['cookie_life']);
 

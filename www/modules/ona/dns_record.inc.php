@@ -1122,6 +1122,14 @@ EOM
                 $self['error'] = "ERROR => There is already an A record with that name!{$viewmsg}";
                 return(array(7, $self['error'] . "\n"));
             }
+            // FX: needed to add control over CNAMES modifications. This check was done in dns_add function but not here.  
+            // Validate that there are no CNAMES already with this fqdn
+            list($c_status, $c_rows, $c_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'type' => 'CNAME','dns_view_id' => $check_dns_view_id));
+            if ($c_rows or $c_status) {
+                printmsg("ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!{$viewmsg}",3);
+                $self['error'] = "ERROR => Another DNS CNAME record named {$hostname}.{$domain['fqdn']} already exists!{$viewmsg}";
+                return(array(5, $self['error'] . "\n"));
+            }
         }
 
         // lets try and determine the interface record using the name passed in.   Only works if we get one record back
