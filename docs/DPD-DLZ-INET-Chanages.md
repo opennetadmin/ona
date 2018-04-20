@@ -32,3 +32,90 @@ The PHP code is changes, but two install scripts need to be run manually.
    * modules/ona/dns_record.inc.php - various tweaks for v6, as well as setting dns.name for PTR records.
 
 
+
+---
+**named.conf for BIND-DLZ**
+The machine running bind-dlz, if you change /etc/resolv.conf to
+point to localhost, you may want to use an IP address for the host.
+
+And yes, this format and syntax below works with Bind 9.12.0 and FreeBSD 11.1-stable.
+
+NOTE: Zone Transfers haven't be tested yet.
+
+```
+dlz "ONA Default" {
+	database "mysql
+	{host=a.b.c.d dbname=ona_ixsystems user=ona pass=xxx ssl=true}
+	{select name as zone from domains where name = '$zone$' limit 1}
+{select
+ case
+    when dns.ttl = 0
+      then domains.default_ttl
+    end as ttl,
+  dns.type as type,
+  CASE
+    when lower(dns.type)='mx'
+      then
+        dns.mx_preference
+      else ''
+  end as mx_priority,
+  case
+    when lower(dns.type)='a' or lower(dns.type)='aaaa'
+      then inet6_ntoa(interfaces.ip_addr_inet)
+    when lower(dns.type) in ( 'ptr', 'cname')
+        then (select concat(dns2.name, '.', domains.name, '.') from dns as dns2 inner join domains on domains.id = dns2.domain_id where dns.dns_id = dns2.id)
+    when lower(dns.type)='txt'
+      then concat('\"', dns.txt, '\"')
+    when lower(dns.type)='srv'
+      then concat('\"',
+                  srv_pri ,' ', srv_weight,' ', srv_port, ' ',
+                  concat ( dns.name, '.' , domains.name),
+                  '\"')
+  when lower(dns.type) in ('mx', 'ns')
+      then (select concat(dns2.name, '.', domains.name, '.') from dns as dns2 inner join domains on domains.id = dns2.domain_id where dns.dns_id = dns2.id)
+  else concat(dns.name, '.' , domains.name)
+  end as data
+  from interfaces, dns, domains
+  where
+    dns.name =  if ('$record$' like '@', '', '$record$')
+    and domains.name = '$zone$'
+    and dns.interface_id = interfaces.id
+    and dns.domain_id = domains.id
+    and upper(dns.type) not in ('SOA', 'NS')}
+	{select
+ case
+    when dns.ttl = 0
+      then domains.default_ttl
+    end as ttl,
+  dns.type as type,
+  CASE
+    when lower(dns.type)='mx'
+      then
+        dns.mx_preference
+      else ''
+  end as mx_priority,
+  case
+    when lower(dns.type) in ('mx', 'ns')
+      then (select concat(dns2.name, '.', domains.name, '.') from dns as dns2 inner join domains on domains.id = dns2.domain_id where dns.dns_id = dns2.id)
+    when lower(dns.type) in ('soa')
+      then concat(
+          domains.primary_master,  '. ',
+          domains.admin_email, '. ',
+          domains.serial,   ' ',
+          domains.refresh,  ' ',
+          domains.retry,  ' ',
+          domains.expiry,  ' ',
+          domains.minimum )
+  else concat(dns.name, '.' , domains.name)
+  end as data
+  from interfaces, dns, domains
+  where
+    domains.name = '$zone$'
+    and dns.interface_id = interfaces.id
+    and dns.domain_id = domains.id
+    and upper(dns.type) in ('SOA', 'NS') order by type DESC}
+	{}
+	{select name as zone from domains where name = '$zone$' and '$client$' like '10.%'}
+	{}";
+};
+```
