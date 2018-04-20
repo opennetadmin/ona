@@ -145,7 +145,18 @@ function ona_logmsg($message, $logfile="") {
     }
 
     // Build the exact line we want to write to the file
-    $logdata = date("M j G:i:s ") . "{$uname['nodename']} {$username}@{$_SERVER['REMOTE_ADDR']}: [{$self['context_name']}] {$message}\n";
+    // Prevent Undefined index notice when running CLI.
+    if (isset ( $_SERVER['REMOTE_ADDR'] ) ) {
+	    $_remote_addr = $_SERVER['REMOTE_ADDR'];
+    } else {
+	    $_remote_addr = '';
+    }
+    if ( isset($self['context_name']) ) {
+        $_cn = $self['context_name'];
+    } else {
+        $_cn = '';
+    }
+    $logdata = date("M j G:i:s ") . "{$uname['nodename']} {$username}@{$_remote_addr}: [{$_cn}] {$message}\n";
 
     // Write the line to the file
     if (!fwrite($file, $logdata)) {
@@ -1222,7 +1233,7 @@ function startSession() {
     global $conf;
 
     // If the command line agent, dcm.pl, is making the request, don't really start a session.
-    if (preg_match('/console-module-interface/', $_SERVER['HTTP_USER_AGENT'])) {
+    if ( isset ($_SERVER['HTTP_USER_AGENT']) && preg_match('/console-module-interface/', $_SERVER['HTTP_USER_AGENT'])) {
 
         // Pretend to log them in
         if (preg_match('/unix_username=([^&]+?)(&|$)/', $_REQUEST['options'], $matches)) {

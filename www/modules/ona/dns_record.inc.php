@@ -136,7 +136,7 @@ primary name for a host should be unique in all cases I'm aware of
     $add_srv_port = 0;
 
     // force AAAA to A to keep it consistant.. we'll display it properly as needed
-    if ($options['type'] == 'AAAA')  $options['type'] = 'A';
+    // if ($options['type'] == 'AAAA')  $options['type'] = 'A';
 
     // If the name we were passed has a leading or trailing . in it then remove the dot.
     $options['name'] = preg_replace("/^\./", '', $options['name']);
@@ -234,7 +234,7 @@ primary name for a host should be unique in all cases I'm aware of
         }
 
         // Validate that there isn't already any dns record named $hostname in the domain $domain_id.
-        list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'interface_id' => $interface['id'],'type' => 'A', 'dns_view_id' => $add_viewid));
+        list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'interface_id' => $interface['id'],'type' => $options['type'], 'dns_view_id' => $add_viewid));
         if ($d_status or $d_rows) {
             printmsg("ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} with IP {$interface['ip_addr_text']} already exists!{$viewmsg}",3);
             $self['error'] = "ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} with IP {$interface['ip_addr_text']} already exists!{$viewmsg}";
@@ -310,7 +310,16 @@ but you still want to reverse lookup all the other interfaces to know they are o
         // Find the dns record that it will point to
 
         list($status, $rows, $arecord) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'interface_id' => $interface['id'], 'type' => 'A','dns_view_id' => $add_viewid));
-        if ($status or !$rows) {
+        list($status2, $rows2, $arecord2) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'interface_id' => $interface['id'], 'type' => 'AAAA','dns_view_id' => $add_viewid));
+	if ( !isset($arecord['id']) )
+	{
+		if ( isset($arecord2['id'] ) ) {
+			$arecord = $arecord2;
+			$rows = $rows2;
+			$status = $status2;
+		}
+	}
+        if ($status or $status2 or !$rows or !$rows2) {
             printmsg("ERROR => Unable to find DNS A record to point PTR entry to! Check that the IP you chose is associated with the name you chose.{$viewmsg}",3);
             $self['error'] = "ERROR => Unable to find DNS A record to point PTR entry to! Check that the IP you chose is associated with the name you chose.{$viewmsg}";
 
@@ -328,7 +337,6 @@ but you still want to reverse lookup all the other interfaces to know they are o
             if ($rows != 1)
                 return(array(66, $self['error'] . "\n"));
         }
-
 
         $ipflip = ip_mangle($interface['ip_addr'],'flip');
         $octets = explode(".",$ipflip);
@@ -353,7 +361,12 @@ but you still want to reverse lookup all the other interfaces to know they are o
         }
 
         // PTR records dont need a name set.
-        $add_name = '';
+	// but we are going to add it, so that Bind DLZ can query it
+	// name has to be the ip flip, sans the in-addr arap string and hex/octets of the IP.
+
+	$add_name = preg_replace ('/\.' . $ptrdomain['name'] . '/', '', $ipflip.$arpa );
+        // $add_name = $ipflip.$arpa;
+
         // PTR records should not have domain_ids
         $add_domainid = $ptrdomain['id'];
         $add_interfaceid = $interface['id'];
@@ -790,7 +803,7 @@ complex DNS messes for themselves.
             'srv_port'             => $add_srv_port,
             'ebegin'               => $options['ebegin'],
             'notes'                => $options['notes'],
-            'dns_view_id'          => $add_viewid
+	    'dns_view_id'          => $add_viewid
        )
     );
     if ($status or !$rows) {
@@ -802,7 +815,7 @@ complex DNS messes for themselves.
     $text = '';
 
     // If it is an A record and they have specified to auto add the PTR record for it.
-    if ($options['addptr'] == 'Y' and $options['type'] == 'A') {
+    if ($options['addptr'] == 'Y' and ( $options['type'] == 'A' or $options['type'] == 'AAAA' ) ) {
         printmsg("DEBUG => Auto adding a PTR record for {$options['name']}.", 4);
         // Run dns_record_add as a PTR type
         list($status, $output) = run_module('dns_record_add', array('name' => $options['name'],'domain' => $domain['fqdn'],'ip' => $options['ip'],'ebegin' => $options['ebegin'],'type' => 'PTR','view' => $add_viewid));
@@ -1249,7 +1262,7 @@ EOM
 
 
     // If it is an A record and they have specified to auto add the PTR record for it.
-    if ($options['set_addptr'] == 'Y' and $options['set_type'] == 'A') {
+    if ($options['set_addptr'] == 'Y' and ( $options['set_type'] == 'A' || $options['set_type'] == 'AAAA' ) ) {
         printmsg("DEBUG => Auto adding a PTR record for {$options['set_name']}.", 0);
         // Run dns_record_add as a PTR type
         // Always use the $current_name variable as the name might change during the update
@@ -1346,7 +1359,7 @@ EOM
 
 
        // Make sure we us A type for both A and AAAA
-       if ($SET['type'] == 'AAAA') $SET['type'] = 'A';
+       // if ($SET['type'] == 'AAAA') $SET['type'] = 'A';
 
         // Change the actual DNS record
         list($status, $rows) = db_update_record($onadb, 'dns', array('id' => $dns['id']), $SET);

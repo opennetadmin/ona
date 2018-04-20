@@ -30,9 +30,9 @@ $_ENV['help_url'] = "http://opennetadmin.com/docs/";
 
 
 // Get any query info
-parse_str($_SERVER['QUERY_STRING']);
-
-
+if ( isset($_SERVER['QUERY_STRING']) ) {
+    parse_str($_SERVER['QUERY_STRING']);
+}
 
 // Many of these settings serve as defaults.  They can be overridden by the settings in
 // the table "sys_config"
@@ -58,6 +58,7 @@ $conf = array (
     "inc_functions_gui"      => "$include/functions_gui.inc.php",
     "inc_functions_db"       => "$include/functions_db.inc.php",
     "inc_functions_auth"     => "$include/functions_auth.inc.php",
+    "inc_functions_inetformat"     => "$include/functions_inet_format.php",
     "inc_db_sessions"        => "$include/adodb_sessions.inc.php",
     "inc_adodb"              => "$include/adodb/adodb.inc.php",
     "inc_adodb_xml"          => "$include/adodb/adodb-xmlschema03.inc.php",
@@ -69,7 +70,7 @@ $conf = array (
     "plugin_dir"             => "$base/local/plugins",
 
     /* Defaults for some user definable options normally in sys_config table */
-    "debug"                  => "2",
+    "debug"                  => "16",
     "syslog"                 => "0",
     "stdout"                 => "0",
     "log_to_db"              => "0",
@@ -105,7 +106,7 @@ $self = array (
 );
 // If the server port is 443 then this is a secure page
 // This is basically used to put a padlock icon on secure pages.
-if ($_SERVER['SERVER_PORT'] == 443) { $self['secure'] = 1; }
+if (isset ($_SERVER['SERVER_PORT']) && ($_SERVER['SERVER_PORT'] == 443) ) { $self['secure'] = 1; }
 
 
 
@@ -168,6 +169,7 @@ $style['borderR'] = "border-right: 1px solid {$color['border']};";
 // Include the basic system functions
 // any $conf settings used in this "require" should not be user adjusted in the sys_config table
 require_once($conf['inc_functions']);
+require_once($conf['inc_functions_inetformat']);
 
 // Include the basic database functions
 require_once($conf['inc_functions_db']);
@@ -217,7 +219,7 @@ foreach ($records as $record) {
 }
 
 // Include functions that replace the default session handler with one that uses MySQL as a backend
-require_once($conf['inc_db_sessions']);
+# require_once($conf['inc_db_sessions']);
 
 // Include the GUI functions
 require_once($conf['inc_functions_gui']);
@@ -229,20 +231,25 @@ require_once($conf['inc_functions_auth']);
 startSession();
 
 // Set session inactivity threshold
-ini_set("session.gc_maxlifetime", $conf['cookie_life']);
+if ( isset ($_SERVER['REQUEST_METHOD']) ) {
+    ini_set("session.gc_maxlifetime", $conf['cookie_life']);
+}
 
 // if search_results_per_page is in the session, set the $conf variable to it.  this fixes the /rows command
 if (isset($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];
 
 // Set up our page to https if requested for our URL links
-if (@($conf['force_https'] == 1) or ($_SERVER['SERVER_PORT'] == 443)) {
+if (@($conf['force_https'] == 1) or (isset ($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) {
     $https  = "https://{$_SERVER['SERVER_NAME']}";
 }
 else {
-    if ($_SERVER['SERVER_PORT'] != 80) {
-      $https  = "http://{$_SERVER['SERVER_NAME']}:{$_SERVER['SERVER_PORT']}";
-    } else {
-      $https  = "http://{$_SERVER['SERVER_NAME']}";
+    if ( isset ($_SERVER['SERVER_PORT'] ) )
+    {
+        if ( $_SERVER['SERVER_PORT'] != 80) {
+          $https  = "http://{$_SERVER['SERVER_NAME']}:{$_SERVER['SERVER_PORT']}";
+        } else {
+          $https  = "http://{$_SERVER['SERVER_NAME']}";
+        }
     }
 }
 

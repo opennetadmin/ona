@@ -1142,7 +1142,7 @@ function ona_get_domain_record($array='', $order='') {
 function ona_get_dns_record($array='', $order='') {
     list($status, $rows, $record) = ona_get_record($array, 'dns', $order);
 
-    if ($record['type'] == 'A' or $record['type'] == 'TXT') {
+    if ($record['type'] == 'A' or $record['type'] == 'AAAA' or $record['type'] == 'TXT') {
         $record['fqdn'] = $record['name'].'.'.ona_build_domain_name($record['domain_id']);
         $record['domain_fqdn'] = ona_build_domain_name($record['domain_id']);
     }
@@ -1672,6 +1672,9 @@ function ona_find_domain($fqdn="", $returndefault=0) {
 //     }
 
     // FIXME: MP  rows is not right here..  need to look at fixing it.. rowsa/rowsb above doesnt translate.. do I even need that?
+    if ( !isset($rows) or !is_int($rows) ) {
+        $rows = 0;
+    }
     return(array($status, $rows, $domain));
 }
 
