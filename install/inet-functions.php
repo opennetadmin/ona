@@ -77,7 +77,7 @@ foreach ($ptrs as $ptr) {
     if (count($octets) > 4) {
         $arpa = 'ip6.arpa';
         $octcount = 31;
-        $a = array_reverse ( $octets )
+        $a = array_reverse ( $octets );
         $domain = implode (".", $a);
         $_name = '';
         $domain  = implode (".", array ($a[0], $arpa) );
