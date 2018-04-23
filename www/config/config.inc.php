@@ -70,11 +70,22 @@ $conf = array (
     "plugin_dir"             => "$base/local/plugins",
 
     /* Defaults for some user definable options normally in sys_config table */
-    "debug"                  => "16",
+    "debug"                  => "0",
     "syslog"                 => "0",
     "stdout"                 => "0",
     "log_to_db"              => "0",
     "logfile"                => "/var/log/ona.log",
+
+    /*
+        Allow MX, NS and CNAME records to point to external domains
+        For example, this is needed for Gmail/GSuite MX Records.
+     */
+    "allow_external_pointsto" => 0,
+
+    /*
+        Allow Duplicate A,AAA records for Round-Robin DNS
+     */
+    "allow_duplicate_arecords" => 0,
 
     /* The output charset to be used in htmlentities() and htmlspecialchars() filtering */
     "charset"                => "utf8",
@@ -214,8 +225,13 @@ $onadb = db_pconnect('', $_COOKIE['ona_context_name']);
 // These will override any of the defaults set above
 list($status, $rows, $records) = db_get_records($onadb, 'sys_config', 'name like "%"', 'name');
 foreach ($records as $record) {
-    printmsg("INFO => Loaded config item from database: {$record['name']}=''{$record['value']}''",5);
     $conf[$record['name']] = $record['value'];
+}
+// Do this twice, so to reflect the sys_config database debug value;
+if ( $conf['debug'] > 4 ) {
+    foreach ($records as $record) {
+        printmsg("INFO => Loaded config item from database: {$record['name']}=''{$record['value']}''",5);
+    }
 }
 
 // Include functions that replace the default session handler with one that uses MySQL as a backend
@@ -227,13 +243,14 @@ require_once($conf['inc_functions_gui']);
 // Include the AUTH functions
 require_once($conf['inc_functions_auth']);
 
-// Start the session handler (this calls a function defined in functions_general)
-startSession();
-
-// Set session inactivity threshold
+// Set session inactivity threshold - before you start the session.
 if ( isset ($_SERVER['REQUEST_METHOD']) ) {
     ini_set("session.gc_maxlifetime", $conf['cookie_life']);
 }
+
+// Start the session handler (this calls a function defined in functions_general)
+startSession();
+
 
 // if search_results_per_page is in the session, set the $conf variable to it.  this fixes the /rows command
 if (isset($_SESSION['search_results_per_page'])) $conf['search_results_per_page'] = $_SESSION['search_results_per_page'];

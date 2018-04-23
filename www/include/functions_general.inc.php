@@ -3,9 +3,18 @@
 
 
 // Debugging: lets print what's in $_REQUEST
-if ( 6 <= $conf['debug'] ) {
-  printmsg("Get/Post vars:", 6);
-  foreach (array_keys($_REQUEST) as $key) printmsg("Name: $key    Value: $_REQUEST[$key]", 6);
+if ( $conf['debug'] > 5 ) {
+  printmsg("Get/Post vars: . ", 6);
+  // this was getting "Array to string conversion" notice in PHP error logs.
+  // So, fix that for nested arrays, Serialize with JSON.
+  foreach ($_REQUEST as $key => $value) {
+    if ( is_array ($value) ) {
+        $v = json_encode ( $value );
+    } else {
+        $v = $value;
+    }
+    printmsg("Name: $key    Value: $v", 6);
+  }
 }
 
 // MP: moved this stuff to config.inc.php
@@ -646,7 +655,10 @@ function ip_mangle_gmp($ip="", $format="default") {
 
     // If we get here, then the input must be in numeric format (1)
     else {
-        $ip = gmp_init(strval($ip), 10);
+        // FIXME: "PHP Warning:  gmp_init(): Unable to convert variable to GMP"
+        // This happens when $ip == NULL, but fixing this, created even more warnings
+        // down the code.  I'm going to suppress warnings with @.
+        $ip = @gmp_init(strval($ip), 10);
         if ($format == "default") {
             if(is_ipv4($ip))
                 $format = "dotted";

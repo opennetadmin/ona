@@ -66,8 +66,18 @@ EOL;
 EOL;
 
     // Escape data for display in html
-    foreach(array_keys($record) as $key) { $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']); }
-    foreach(array_keys((array)$parent_domain) as $key) { $parent_domain[$key] = htmlentities($parent_domain[$key], ENT_QUOTES, $conf['php_charset']); }
+    if (is_array ($record) ) {
+        foreach($record as $key => $v) { 
+            $record[$key] = htmlentities($v, ENT_QUOTES, $conf['php_charset']); 
+        }
+    }
+    if (is_array ($parent_domain) ) {
+        foreach($parent_domain as $key => $v) {
+            printmsg("DEBUG => {" . __FILE__ . ":" . __LINE__ . "} parent_domain key/value : " . $key . " : " . $value ,  6);
+            // Cannot assign an empty string to a string offset
+            $parent_domain[$key] = htmlentities($v, ENT_QUOTES, $conf['php_charset']); 
+        }
+    }
 
 
     $html .= <<<EOL
@@ -115,7 +125,7 @@ EOL;
             </tr>
 EOL;
 
-    if ($parent_domain['id']) {
+    if (isset ($parent_domain['id']) && $parent_domain['id']) {
     $html .= <<<EOL
             <tr>
                 <td align="right" nowrap="true"><b>Parent Domain</b>&nbsp;</td>

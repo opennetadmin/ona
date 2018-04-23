@@ -1140,15 +1140,20 @@ function ona_get_domain_record($array='', $order='') {
 
 // Returns an additional "fqdn" field for some dns records
 function ona_get_dns_record($array='', $order='') {
+    global $conf;
     list($status, $rows, $record) = ona_get_record($array, 'dns', $order);
-
-    if ($record['type'] == 'A' or $record['type'] == 'AAAA' or $record['type'] == 'TXT') {
-        $record['fqdn'] = $record['name'].'.'.ona_build_domain_name($record['domain_id']);
-        $record['domain_fqdn'] = ona_build_domain_name($record['domain_id']);
-    }
-    if ($record['type'] == 'CNAME') {
-        $record['fqdn'] = $record['name'].'.'.ona_build_domain_name($record['domain_id']);
-        $record['domain_fqdn'] = ona_build_domain_name($record['domain_id']);
+    if ($record['type'] == 'A' or $record['type'] == 'AAAA' or $record['type'] == 'TXT' or $record['type'] == 'CNAME') {
+        if ( $conf['allow_external_pointsto'] && preg_match ( '/\.$/', $record['name']) ) 
+        {
+            $record['name'] = preg_replace ( '/\.$/', '', $record['name'] );
+            $record['fqdn'] = $record['name'];
+            $a = array_reverse ( explode(".", $record['name']) ) ;
+            $record['domain_fqdn_old'] = $a[2] . "." . $a[1];
+            $record['domain_fqdn'] = '';
+        } else {
+            $record['fqdn'] = $record['name'].'.'.ona_build_domain_name($record['domain_id']);
+            $record['domain_fqdn'] = ona_build_domain_name($record['domain_id']);
+        }
     }
     return(array($status, $rows, $record));
 }

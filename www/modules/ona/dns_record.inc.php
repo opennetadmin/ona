@@ -235,10 +235,12 @@ primary name for a host should be unique in all cases I'm aware of
 
         // Validate that there isn't already any dns record named $hostname in the domain $domain_id.
         list($d_status, $d_rows, $d_record) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'],'interface_id' => $interface['id'],'type' => $options['type'], 'dns_view_id' => $add_viewid));
-        if ($d_status or $d_rows) {
+        if (($d_status or $d_rows) and !$conf['allow_duplicate_arecords']) {
             printmsg("ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} with IP {$interface['ip_addr_text']} already exists!{$viewmsg}",3);
             $self['error'] = "ERROR => Another DNS A record named {$hostname}.{$domain['fqdn']} with IP {$interface['ip_addr_text']} already exists!{$viewmsg}";
             return(array(5, $self['error'] . "\n"));
+        } else if ($conf['allow_duplicate_arecords']) {
+              printmsg("DEBUG => Allowing duplicate A/AAA records for {$hostname}.{$domain['fqdn']} with IP {$interface['ip_addr_text']}; Input : IP: " . $options['ip'] . "Hostname: $hostname ; domain:" .  $domain['name'] , 3);
         }
 
         // Validate that there are no CNAMES already with this fqdn
@@ -329,12 +331,12 @@ but you still want to reverse lookup all the other interfaces to know they are o
             // MP: since there could be multiple A records, I'm going to fail out if there is not JUST ONE A record. 
             // this is limiting in a way but allows cleaner data.
             list($status, $rows, $arecord) = ona_get_dns_record(array('name' => $hostname, 'domain_id' => $domain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
-            if (($rows > 1)) {
+            if (($rows > 1) and !$conf['allow_duplicate_arecords']) {
                 printmsg("ERROR => Unable to find a SINGLE DNS A record to point PTR entry to! In this case, you are only allowed to do this if there is one A record using this name.{$viewmsg}",3);
                 $self['error'] = "ERROR => Unable to find a SINGLE DNS A record to point PTR entry to! In this case, you are only allowed to do this if there is one A record using this name.{$viewmsg}";
             }
 
-            if ($rows != 1)
+            if ($rows == 0)
                 return(array(66, $self['error'] . "\n"));
         }
 
@@ -446,10 +448,44 @@ complex DNS messes for themselves.
 
         // Find the dns record that it will point to
         list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
+
         if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point CNAME entry to!{$viewmsg}",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point CNAME entry to!{$viewmsg}";
-            return(array(5, $self['error'] . "\n"));
+            if ( !$conf['allow_external_pointsto']) {
+                printmsg("ERROR => Unable to find DNS A record to point CNAME entry to!{$viewmsg}",3);
+                $self['error'] = "ERROR => Unable to find DNS A record to point CNAME entry to!{$viewmsg}";
+                return(array(5, $self['error'] . "\n"));
+            } else {
+                printmsg("DEBUG => Allowing an external pointer, Using 'pointsto' as given, hostname: {$options['pointsto']}, for domain { " . $domain['id'] . ":" .  $domain['name'] . " } Domain ID: {$pdomain['id']}", 3);
+                if ( !preg_match ( '/\.$/', $options['pointsto']) )
+                {
+                    $name = $options['pointsto'] . '.';
+                } else {
+                    $name = $options['pointsto'];
+                }
+                $dns_id = ona_get_next_id('dns');
+                $pointsto_record['interface_id'] = 0;
+                $pointsto_record['id'] = $dns_id;
+                list($status, $rows) = db_insert_record(
+                $onadb,
+                'dns',
+                array(
+                    'id'                   => $dns_id,
+                    'domain_id'            => $domain['id'],
+                    'interface_id'         => 0,
+                    'dns_id'               => 0,
+                    'type'                 => 'A',
+                    'ttl'                  => 0,
+                    'name'                 => $name,
+                    'mx_preference'        => '0',
+                    'txt'                  => '',
+                    'srv_pri'              => 0,
+                    'srv_weight'           => 0,
+                    'srv_port'             => 0,
+                    'notes'                => '',
+                    'dns_view_id'          => 0
+                 )
+                );
+              }
         }
 
 
@@ -515,12 +551,43 @@ complex DNS messes for themselves.
         // Validate that there are no NS already with this domain and host
         list($status, $rows, $record) = ona_get_dns_record(array('dns_id' => $pointsto_record['id'], 'domain_id' => $domain['id'],'type' => 'NS','dns_view_id' => $add_viewid));
         if ($rows or $status) {
-            printmsg("ERROR => Another DNS NS record for {$domain['fqdn']} pointing to {$options['pointsto']} already exists!{$viewmsg}",3);
-            $self['error'] = "ERROR => Another DNS NS record for {$domain['fqdn']} pointing to {$options['pointsto']} already exists!{$viewmsg}";
-            return(array(5, $self['error'] . "\n"));
-        }
-
-
+            if ( !$conf['allow_external_pointsto']) {
+                printmsg("ERROR => Another DNS NS record for {$domain['fqdn']} pointing to {$options['pointsto']} already exists!{$viewmsg}",3);
+                $self['error'] = "ERROR => Another DNS NS record for {$domain['fqdn']} pointing to {$options['pointsto']} already exists!{$viewmsg}";
+                return(array(5, $self['error'] . "\n"));
+            } else {
+                printmsg("DEBUG => Allowing an external pointer, Using 'pointsto' as given, hostname: {$options['pointsto']}, for domain { " . $domain['id'] . ":" .  $domain['name'] . " } Domain ID: {$pdomain['id']}", 3);
+                if ( !preg_match ( '/\.$/', $options['pointsto']) )
+                {
+                    $name = $options['pointsto'] . '.';
+                } else {
+                    $name = $options['pointsto'];
+                }
+                $dns_id = ona_get_next_id('dns');
+                $pointsto_record['interface_id'] = 0;
+                $pointsto_record['id'] = $dns_id;
+                list($status, $rows) = db_insert_record(
+                    $onadb,
+                    'dns',
+                    array(
+                        'id'                   => $dns_id,
+                        'domain_id'            => $domain['id'],
+                        'interface_id'         => 0,
+                        'dns_id'               => 0,
+                        'type'                 => 'A',
+                        'ttl'                  => 0,
+                        'name'                 => $name,
+                        'mx_preference'        => '0',
+                        'txt'                  => '',
+                        'srv_pri'              => 0,
+                        'srv_weight'           => 0,
+                        'srv_port'             => 0,
+                        'notes'                => '',
+                        'dns_view_id'          => 0
+                     )
+                    );
+                }
+            }
         $add_name = ''; //$options['name'];
         $add_domainid = $domain['id'];
         $add_interfaceid = $pointsto_record['interface_id'];
@@ -582,11 +649,43 @@ complex DNS messes for themselves.
         // Find the dns record that it will point to
         list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $add_viewid));
         if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}";
-            return(array(5, $self['error'] . "\n"));
+            if ( !$conf['allow_external_pointsto'] ) {
+                printmsg("ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}",3);
+                $self['error'] = "ERROR => Unable to find DNS A record to point NS entry to!{$viewmsg}";
+                return(array(5, $self['error'] . "\n"));
+            } else {
+                printmsg("DEBUG => Allowing an external pointer, Using 'pointsto' as given, hostname: {$options['pointsto']}, for domain { " . $domain['id'] . ":" .  $domain['name'] . " } Domain ID: {$pdomain['id']}", 3);
+                if ( !preg_match ( '/\.$/', $options['pointsto']) )
+                {
+                    $name = $options['pointsto'] . '.';
+                } else {
+                    $name = $options['pointsto'];
+                }
+                $dns_id = ona_get_next_id('dns');
+                $pointsto_record['interface_id'] = 0;
+                $pointsto_record['id'] = $dns_id;
+                list($status, $rows) = db_insert_record(
+                $onadb,
+                'dns',
+                array(
+                    'id'                   => $dns_id,
+                    'domain_id'            => $domain['id'],
+                    'interface_id'         => 0,
+                    'dns_id'               => 0,
+                    'type'                 => 'A',
+                    'ttl'                  => 0,
+                    'name'                 => $name,
+                    'mx_preference'        => '0',
+                    'txt'                  => '',
+                    'srv_pri'              => 0,
+                    'srv_weight'           => 0,
+                    'srv_port'             => 0,
+                    'notes'                => '',
+                    'dns_view_id'          => 0
+                 )
+                );
+            }
         }
-
 
         $add_name = $hostname;
         $add_domainid = $domain['id'];
@@ -1189,8 +1288,8 @@ EOM
         // Find the dns record that it will point to
         list($status, $rows, $pointsto_record) = ona_get_dns_record(array('name' => $phostname, 'domain_id' => $pdomain['id'], 'type' => 'A','dns_view_id' => $check_dns_view_id));
         if ($status or !$rows) {
-            printmsg("ERROR => Unable to find DNS A record to point {$options['set_type']} entry to!{$viewmsg}",3);
-            $self['error'] = "ERROR => Unable to find DNS A record to point {$options['set_type']} entry to!{$viewmsg}";
+            printmsg("ERROR => Unable to find DNS A record to point {$options['set_type']} entry to!{$viewmsg} " ,3);
+            $self['error'] = "ERROR => Unable to find DNS A record to point {$options['set_type']} entry to!{$viewmsg} ";
             return(array(5, $self['error'] . "\n"));
         }
 

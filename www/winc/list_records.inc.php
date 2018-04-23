@@ -365,8 +365,6 @@ EOL;
             }
             $record['name'] = preg_replace("/${domain_part}$/", '', $record['name']);
 
-	    printmsg("DEBUG => list_records : " . json_encode ( array ( 'record' => $record, 'pointsto' => $pointsto, 'pdomain' => $pdomain, 'parent' => $parent  ) ),  1);
-
             $data = <<<EOL
                     <a title="Edit DNS A record"
                        class="act"
