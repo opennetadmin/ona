@@ -62,8 +62,14 @@ dlz "ONA Default" {
   case
     when lower(dns.type)='a' or lower(dns.type)='aaaa'
       then inet6_ntoa(interfaces.ip_addr_inet)
-    when lower(dns.type) in ( 'ptr', 'cname')
-        then (select concat(dns2.name, '.', domains.name, '.') from dns as dns2 inner join domains on domains.id = dns2.domain_id where dns.dns_id = dns2.id)
+    when lower(dns.type) in ( 'ptr', 'cname', 'mx', 'ns')
+        then (select
+              CASE
+                  WHEN SUBSTRING(dns2.name, -1) = '.'
+                    THEN dns2.name
+                ELSE concat(dns2.name, '.', domains.name, '.')
+            end
+              from dns as dns2 inner join domains on domains.id = dns2.domain_id where dns.dns_id = dns2.id)
     when lower(dns.type)='txt'
       then concat('\"', dns.txt, '\"')
     when lower(dns.type)='srv'
@@ -95,8 +101,14 @@ dlz "ONA Default" {
       else ''
   end as mx_priority,
   case
-    when lower(dns.type) in ('mx', 'ns')
-      then (select concat(dns2.name, '.', domains.name, '.') from dns as dns2 inner join domains on domains.id = dns2.domain_id where dns.dns_id = dns2.id)
+    when lower(dns.type) in ( 'ptr', 'cname', 'mx', 'ns')
+        then (select
+              CASE
+                  WHEN SUBSTRING(dns2.name, -1) = '.'
+                    THEN dns2.name
+                ELSE concat(dns2.name, '.', domains.name, '.')
+            end
+              from dns as dns2 inner join domains on domains.id = dns2.domain_id where dns.dns_id = dns2.id)
     when lower(dns.type) in ('soa')
       then concat(
           domains.primary_master,  '. ',
