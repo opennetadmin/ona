@@ -141,7 +141,7 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     global $conf, $self, $base, $images, $color, $style, $onadb;
     $modhtml = '';
     $modjs = '';
-    $modwsmenu = '';
+    $modwsmenu = array();
     $modbodyhtml = '';
     $ws_plugin_dir = "{$base}/workspace_plugins";
 
@@ -350,7 +350,7 @@ function get_host_suggestions($q, $max_results=10) {
                 list($status, $rows, $view) = db_get_record($onadb, 'dns_views', array('id' => $record['dns_view_id']));
                 $viewname = $view['name'].'/';
             }
-            $results[] = $viewname.$record[$field].".".$domain['name'];
+            $results[] = $viewname.$record[$field].".".ona_build_domain_name ( $record['domain_id'] );
         }
     }
 

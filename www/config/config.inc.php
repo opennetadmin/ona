@@ -217,7 +217,7 @@ foreach ($records as $record) {
 }
 
 // Include functions that replace the default session handler with one that uses MySQL as a backend
-require_once($conf['inc_db_sessions']);
+// require_once($conf['inc_db_sessions']);
 
 // Include the GUI functions
 require_once($conf['inc_functions_gui']);
