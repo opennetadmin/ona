@@ -350,7 +350,7 @@ function get_host_suggestions($q, $max_results=10) {
                 list($status, $rows, $view) = db_get_record($onadb, 'dns_views', array('id' => $record['dns_view_id']));
                 $viewname = $view['name'].'/';
             }
-            $results[] = $viewname.$record[$field].".".$domain['name'];
+            $results[] = $viewname.$record[$field].".".ona_build_domain_name ( $record['domain_id'] );
         }
     }
 
