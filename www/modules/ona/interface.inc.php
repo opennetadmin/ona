@@ -196,6 +196,7 @@ EOM
                 'host_id'                  => $host['id'],
                 'subnet_id'                => $subnet['id'],
                 'ip_addr'                  => $options['ip'],
+		'ip_addr_inet'		   => inet_format($options['ip']),
                 'mac_addr'                 => $options['mac'],
                 'name'                     => trim($options['name']),
                 'description'              => trim($options['description'])
@@ -477,8 +478,10 @@ EOM
         // Everything looks ok, add it to $SET
         if($interface['subnet_id'] != $subnet['id'])
             $SET['subnet_id'] = $subnet['id'];
-        if($interface['ip_addr'] != $options['set_ip'])
-            $SET['ip_addr'] = $options['set_ip'];
+	if($interface['ip_addr'] != $options['set_ip']) {
+		$SET['ip_addr'] = $options['set_ip'];
+		$SET['ip_addr_inet'] = inet_format($options['set_ip']);
+	}
     }
 
 

@@ -209,6 +209,34 @@ EOM
         $self['error'] = "ERROR => domain_add() SQL Query failed: " . $self['error'];
         printmsg($self['error'],0);
         return(array(7, $self['error'] . "\n"));
+    } else {
+	// FIXME: HACK for Bind-DLZ - need an SOA record in
+	// interface ID doesn't matter
+    $dns_id = ona_get_next_id('dns');
+
+    // Add the dns record
+    list($status, $rows) = db_insert_record(
+        $onadb,
+        'dns',
+        array(
+            'id'                   => $dns_id,
+            'domain_id'            => $id,
+            'interface_id'         => 0,
+            'dns_id'               => 0,
+            'type'                 => 'SOA',
+            'ttl'                  => 0,
+            'name'                 => '',
+            'mx_preference'        => '0',
+            'txt'                  => '',
+            'srv_pri'              => 0,
+            'srv_weight'           => 0,
+            'srv_port'             => 0,
+            'notes'                => '',
+            'dns_view_id'          => 0
+       )
+	);
+
+
     }
 
 

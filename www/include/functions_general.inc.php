@@ -3,9 +3,18 @@
 
 
 // Debugging: lets print what's in $_REQUEST
-if ( 6 <= $conf['debug'] ) {
-  printmsg("Get/Post vars:", 6);
-  foreach (array_keys($_REQUEST) as $key) printmsg("Name: $key    Value: $_REQUEST[$key]", 6);
+if ( $conf['debug'] > 5 ) {
+  printmsg("Get/Post vars: . ", 6);
+  // this was getting "Array to string conversion" notice in PHP error logs.
+  // So, fix that for nested arrays, Serialize with JSON.
+  foreach ($_REQUEST as $key => $value) {
+    if ( is_array ($value) ) {
+        $v = json_encode ( $value );
+    } else {
+        $v = $value;
+    }
+    printmsg("Name: $key    Value: $v", 6);
+  }
 }
 
 // MP: moved this stuff to config.inc.php
@@ -145,7 +154,18 @@ function ona_logmsg($message, $logfile="") {
     }
 
     // Build the exact line we want to write to the file
-    $logdata = date("M j G:i:s ") . "{$uname['nodename']} {$username}@{$_SERVER['REMOTE_ADDR']}: [{$self['context_name']}] {$message}\n";
+    // Prevent Undefined index notice when running CLI.
+    if (isset ( $_SERVER['REMOTE_ADDR'] ) ) {
+	    $_remote_addr = $_SERVER['REMOTE_ADDR'];
+    } else {
+	    $_remote_addr = '';
+    }
+    if ( isset($self['context_name']) ) {
+        $_cn = $self['context_name'];
+    } else {
+        $_cn = '';
+    }
+    $logdata = date("M j G:i:s ") . "{$uname['nodename']} {$username}@{$_remote_addr}: [{$_cn}] {$message}\n";
 
     // Write the line to the file
     if (!fwrite($file, $logdata)) {
@@ -635,7 +655,10 @@ function ip_mangle_gmp($ip="", $format="default") {
 
     // If we get here, then the input must be in numeric format (1)
     else {
-        $ip = gmp_init(strval($ip), 10);
+        // FIXME: "PHP Warning:  gmp_init(): Unable to convert variable to GMP"
+        // This happens when $ip == NULL, but fixing this, created even more warnings
+        // down the code.  I'm going to suppress warnings with @.
+        $ip = @gmp_init(strval($ip), 10);
         if ($format == "default") {
             if(is_ipv4($ip))
                 $format = "dotted";
@@ -1222,7 +1245,7 @@ function startSession() {
     global $conf;
 
     // If the command line agent, dcm.pl, is making the request, don't really start a session.
-    if (preg_match('/console-module-interface/', $_SERVER['HTTP_USER_AGENT'])) {
+    if ( isset ($_SERVER['HTTP_USER_AGENT']) && preg_match('/console-module-interface/', $_SERVER['HTTP_USER_AGENT'])) {
 
         // Pretend to log them in
         if (preg_match('/unix_username=([^&]+?)(&|$)/', $_REQUEST['options'], $matches)) {
