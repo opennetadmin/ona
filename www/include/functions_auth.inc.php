@@ -68,7 +68,7 @@ function get_authentication($login_name='', $login_password='') {
     $js = "el('loginmsg').innerHTML = '<span style=\"color: green;\">Success!</span>'; setTimeout('removeElement(\'tt_loginform\')',1000);";
 
     // Validate the userid was passed and is "clean"
-    if (!preg_match('/^[A-Za-z0-9.\-_]+$/', $login_name)) {
+    if (!preg_match('/^[A-Za-z0-9.\-_@]+$/', $login_name)) {
         $js = "el('loginmsg').innerHTML = 'Bad username format';";
         printmsg("ERROR => Login failure for {$login_name}: Bad username format", 0);
         return(array(1, $js));
