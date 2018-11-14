@@ -113,6 +113,16 @@ function get_authentication($login_name='', $login_password='') {
         return(array(1, $js));
     }
 
+    // look for group information:
+    if ($conf['authtype'] == 'ldap') { // ... other constraints
+        $userinfo = $auth->getUserData($login_name);
+        if (empty($userinfo['grps'])) {
+            $js = "el('loginmsg').innerHTML = 'Permission denied';";
+            printmsg("ERROR => Login failure for {$login_name} using authtype {$conf['authtype']}: No group assigned", 0);
+            return(array(1, $js));
+        }
+    }
+
     // If the password is good.. return success.
     printmsg("INFO => Authentication Successful for {$login_name} using authtype: {$conf['authtype']}", 1);
     return(array(0, $js));
