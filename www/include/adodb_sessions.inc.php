@@ -68,19 +68,20 @@ function sess_read($key) {
     printmsg("sess_read($key) called", 6);
 
     list($status, $rows, $record) = db_get_record($SESS_DBH, 'sessions', "`sesskey` = '$key' AND `expiry` > " . time());
-    if ($status or $rows == 0) { return false; }
+    if ($status or $rows == 0) { return ''; }
 
     if (array_key_exists('sessvalue', $record)) {
         // Update the expiry time (i.e. keep sessions alive even if nothing in the session has changed)
         $expiry = time() + $SESS_LIFE;
         list($status, $rows) = db_update_record($SESS_DBH, 'sessions', "`sesskey` = '$key' AND `expiry` > " . time(), array('expiry' => $expiry));
-        if ($status) { return false; }
+        if ($status) { return ''; }
 
-        // Return the value
+        // Return the value (but not a null)
+        if ( $record['sessvalue'] == NULL ) { return ''; }
         return($record['sessvalue']);
     }
 
-    return false;
+    return '';
 }
 
 
