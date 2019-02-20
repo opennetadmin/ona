@@ -258,6 +258,13 @@ EOL;
                     alt="Allow duplicate MAC addresses"
                     type="checkbox"
                 > Allow duplicate MAC addresses
+                <br>
+                <input
+                    id="set_laa"
+                    name="set_laa"
+                    alt="Auto generate MAC addresses"
+                    type="checkbox"
+                > Auto generate MAC addresses
             </td>
         </tr>
 
@@ -424,6 +431,7 @@ function ws_save($window_name, $form='') {
         $module = 'interface_add';
         $form['ip'] = $form['set_ip']; unset($form['set_ip']);
         $form['mac'] = $form['set_mac']; unset($form['set_mac']);
+        $form['laa'] = $form['set_laa']; unset($form['set_laa']);
         $form['name'] = $form['set_name']; unset($form['set_name']);
         $form['description'] = $form['set_description']; unset($form['set_description']);
         $form['addptr'] = $form['set_addptr']; unset($form['set_addptr']);
