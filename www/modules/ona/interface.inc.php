@@ -272,7 +272,7 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.12';
+    $version = '1.13';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -312,7 +312,7 @@ Modify an interface record
     set_mac=ADDRESS               change the mac address (most formats ok)
     set_name=NAME                 interface name (i.e. "FastEthernet0/1.100")
     set_description=TEXT          description (i.e. "VPN link to building 3")
-    set_last_response=DATE        date ip was last seen
+    set_last_response=DATE        date ip was last seen. (set to NULL to remove date)
     set_laa                       Auto gen a Locally Administerd Mac address in 0A range
 
   Optional:
@@ -529,8 +529,12 @@ EOM
 
     // Check the date formatting etc
     if (isset($options['set_last_response'])) {
-        // format the time that was passed in for the database
-        $SET['last_response']=date('Y-m-j G-i-s',strtotime($options['set_last_response']));
+        // format the time that was passed in for the database unless its NULL
+        if ( "${options['set_last_response']}" == "NULL" ) {
+          $SET['last_response']=NULL;
+        } else {
+          $SET['last_response']=date('Y-m-j G-i-s',strtotime($options['set_last_response']));
+        }
     }
 
     // Set options[set_name]?
