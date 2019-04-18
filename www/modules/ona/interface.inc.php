@@ -272,7 +272,7 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.13';
+    $version = '1.14';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -523,8 +523,9 @@ EOM
                 }
             }
         }
-        if($interface['mac_addr'] != $options['set_mac'])
+        if(strcmp($interface['mac_addr'],$options['set_mac']) !== 0) {
             $SET['mac_addr'] = $options['set_mac'];
+        }
     }
 
     // Check the date formatting etc
