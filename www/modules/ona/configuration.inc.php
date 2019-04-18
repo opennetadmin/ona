@@ -305,7 +305,7 @@ function config_add($options="") {
     global $onadb;
     
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
     
     // This debug is set very high as it can contain large configs and sensitive data, you gotta mean it!
     printmsg('DEBUG => config_add('.$options.') called', 7);
@@ -352,8 +352,9 @@ EOM
         return(array(3, $self['error']));
     }
     
-    $options['config'] = preg_replace('/\\\"/','"',$options['config']);
-    $options['config'] = preg_replace('/\\\=/','=',$options['config']);
+    # not sure why I did this.. it messes with the f5 config
+    #$options['config'] = preg_replace('/\\\"/','"',$options['config']);
+    #$options['config'] = preg_replace('/\\\=/','=',$options['config']);
     // Get the next ID for the new config_text record
     $id = ona_get_next_id('configurations');
     if (!$id) {
