@@ -45,7 +45,8 @@ apt-get install -y \
   php-gmp \
   php-pear \
   libapache2-mod-php \
-  libyaml-dev
+  libyaml-dev \
+  libio-socket-ssl-perl
 
 # Link in our ona code
 [ ! -d /var/www/html/ona ] && ln -fs /opt/ona/www /var/www/html/ona
