@@ -428,7 +428,7 @@ function config_diff($options="") {
     global $onadb;
     
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
     
     printmsg('DEBUG => config_diff('.$options.') called', 3);
     
@@ -472,17 +472,17 @@ EOM
                                                "id in ({$options['ida']},{$options['idb']})",
                                                'ctime DESC',
                                                '2',
-                                               ''
+                                               '0'
                                            );
     } else {
-    // Get a config record if there is one
-    $self['error'] = "";
-    list($status, $rows, $config) = ona_find_config($options);
-    list($status, $rows, $configs) = db_get_records($onadb,'configurations',
+        // Get a config record if there is one
+        $self['error'] = "";
+        list($status, $rows, $config) = ona_find_config($options);
+        list($status, $rows, $configs) = db_get_records($onadb,'configurations',
                                                array('host_id' => $config['host_id'],'configuration_type_id' => $config['configuration_type_id']),
                                                'ctime DESC',
                                                '2',
-                                               ''
+                                               '0'
                                            );
     }
 
