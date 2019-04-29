@@ -64,6 +64,9 @@
       <NOTNULL/>
       <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
     </field>
+    <index name="host_id">
+      <col>host_id</col>
+    </index>
   </table>
 
 
