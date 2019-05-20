@@ -441,9 +441,6 @@
       <NOTNULL/>
       <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
     </field>
-    <field name="mtime" type="T">
-      <NULL/>
-    </field>
     <field name="serial" type="I" size="10">
       <NOTNULL/>
       <UNSIGNED/>
