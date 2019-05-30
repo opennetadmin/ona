@@ -51,10 +51,6 @@ function ws_display($window_name, $form='') {
         return($response->getXML());
     }
 
-    // Get configurations info
-    list($status, $rows, $configs) = db_get_records($onadb,'configurations',array('host_id' => $host['id']),'ctime DESC');
-
-
     // Update History Title (and tell the browser to re-draw the history div)
     $history = array_pop($_SESSION['ona']['work_space']['history']);
     $js .= "xajax_window_submit('work_space', ' ', 'rewrite_history');";
