@@ -891,6 +891,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offset=-1) {
     global $self;
     @$self['db_get_records_count']++;
+    $self['error'] = '';
 
     // Debugging
     printmsg("DEBUG => db_get_records(\$dbh, \$where, $table, $order, $rows, $offset) called", 3);
@@ -2537,6 +2538,8 @@ function ona_find_config($options=array()) {
         }
 
         list($status, $rows, $config) = ona_get_config_record(array('id' => $options['config']));
+        // Shove it in to an 'array' so it is consistent
+        $config[0] = $config;
     }
 
     // Otherwise we're selecting a config by hostname and type
