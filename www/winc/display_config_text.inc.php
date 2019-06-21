@@ -144,8 +144,6 @@ EOL;
 
 
 
-
-
     // Config archive LIST
     $tab = 'configs';
     $submit_window = "list_{$tab}";
@@ -230,6 +228,15 @@ EOL;
                     else
                       xajax_window_submit('work_space', 'xajax_window_submit(\'{$window_name}\', \'host_id=>{$form['host_id']}, old_id=>' + OLD.value + ',new_id=>' + NEW.value + '\', \'display\')');
             ">
+
+            <input type="button"
+                   name="deleteall"
+                   value="Delete ALL configs from host"
+                   class="button"
+                   onClick="var doit=confirm('Are you sure you want to delete ALL configs on this host?');
+                            if (doit == true)
+                            xajax_window_submit('display_config_text', 'host=>{$form['host_id']},commit=>y', 'delete_all');"
+            >
         </div>
 
     </div>
@@ -434,149 +441,106 @@ EOL;
 
 
 
-
-//MP: TODO this delete stuff should be in configuration.inc.php module!!!!!!
-
-
 //////////////////////////////////////////////////////////////////////////////
-// Function: ws_delete_config()
+// Function:
+//     Delete Form
 //
 // Description:
-//   Deletes a single config text record
+//     Deletes a config record.  $form should be an array with a 'host_id'
+//     key defined and optionally a 'js' key with javascript to have the
+//     browser run after a successful delete.
 //////////////////////////////////////////////////////////////////////////////
-function ws_delete_config($window_name, $form='') {
-    global $conf, $self, $onadb;
-    global $images, $color, $style;
-
-    // If the user supplied an array in a string, build the array and store it in $form
-    $form = parse_options_string($form);
-
-    // Load the config text record
-    list($status, $rows, $config) = ona_get_config_record(array('id' => $form['config_id']));
-    if (!$config['id']) {
-        array_pop($_SESSION['ona']['work_space']['history']);
-        $html .= "<br><center><font color=\"red\"><b>Configuration text record doesn't exist!</b></font></center>";
-        $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
-    }
-
-    // Load the asscoiated host record
-    list($status, $rows, $host) = ona_find_host($config['host_id']);
-    if (!$host['id']) {
-        array_pop($_SESSION['ona']['work_space']['history']);
-        $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
-        $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
-    }
+function ws_delete($window_name, $form='') {
+    global $include, $conf, $self, $onadb;
 
     // Check permissions
-    if (! (auth('host_config_admin') and authlvl($host['lvl'])) ) {
+    if (!auth('host_config_admin')) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
     }
 
-    // Delete the config text
+    // If an array in a string was provided, build the array and store it in $form
+    $form = parse_options_string($form);
 
-    // FIXME, this should probably use a module, but there isn't one!
-
-    list($status, $rows) = db_delete_records($onadb, 'configurations', array('id' => $config['id']));
-    if ($status or !$rows) {
-        $response = new xajaxResponse();
-        $response->addScript("alert('Delete failed!');");
-        return($response->getXML());
-    }
-
-
-    // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if ($form['js']) { $response->addScript($form['js']); }
+    $js = '';
+
+    // Run the module
+    list($status, $output) = run_module('config_del', array('host' => $form['host'], 'type' => $form['type'], 'commit' => $form['commit']));
+
+    // If commit was N, display the confirmation dialog box
+    if (!$form['commit']) {
+        $build_commit_html = 1;
+        $commit_function = 'delete';
+        include(window_find_include('module_results'));
+        return(window_open("{$window_name}_results", $window));
+    }
+
+    // If the module returned an error code display a popup warning
+    if ($status)
+        $js .= "alert('Delete failed. " . preg_replace('/[\s\']+/', ' ', $output) . "');";
+    else if ($form['js'])
+        $js .= $form['js'];  // usually js will refresh the window we got called from
+
+    // Return an XML response
+    $response->addScript($js);
     return($response->getXML());
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 //////////////////////////////////////////////////////////////////////////////
-// Function: ws_delete_configs()
+// Function:
+//     Delete All Form
 //
 // Description:
-//   Deletes all the config records for a particular host and type
+//     Deletes all config records.  $form should be an array with a 'host_id'
+//     key defined and optionally a 'js' key with javascript to have the
+//     browser run after a successful delete.
 //////////////////////////////////////////////////////////////////////////////
-function ws_delete_configs($window_name, $form='') {
-    global $conf, $self, $onadb;
-    global $images, $color, $style;
-
-    // If the user supplied an array in a string, build the array and store it in $form
-    $form = parse_options_string($form);
-
-    // Load the host record
-    list($status, $rows, $host) = ona_find_host($form['host_id']);
-    if (!$host['id']) {
-        array_pop($_SESSION['ona']['work_space']['history']);
-        $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
-        $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
-    }
+function ws_delete_all($window_name, $form='') {
+    global $include, $conf, $self, $onadb;
 
     // Check permissions
-    if (! (auth('host_config_admin') and authlvl($host['lvl'])) ) {
+    if (!auth('host_config_admin')) {
         $response = new xajaxResponse();
         $response->addScript("alert('Permission denied!');");
         return($response->getXML());
     }
 
-    // Load the config type
-    list($status, $rows, $type) = ona_get_config_type_record(array('id' => $form['type_id']));
-    if ($status or !$rows) {
-        $response = new xajaxResponse();
-        $response->addScript("alert('ERROR => Invalid config type!');");
-        return($response->getXML());
-    }
+    // If an array in a string was provided, build the array and store it in $form
+    $form = parse_options_string($form);
 
-
-    // Delete the config text records that match
-    // FIXME, this should probably use a module, but there isn't one!
-    list($status, $rows) = db_delete_records($onadb, 'configurations', array('host_id' => $host['id'], 'configuration_type_id' => $type['id']));
-    if ($status or !$rows) {
-        $response = new xajaxResponse();
-        $response->addScript("alert('Delete failed!');");
-        return($response->getXML());
-    }
-
-    // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if ($form['js']) { $response->addScript($form['js']); }
+    $js = '';
+
+    // Run the module
+    list($status, $output) = run_module('config_del_all', array('host' => $form['host'], 'commit' => $form['commit']));
+
+    // If commit was N, display the confirmation dialog box
+    if (!$form['commit']) {
+        $build_commit_html = 1;
+        $commit_function = 'delete';
+        include(window_find_include('module_results'));
+        return(window_open("{$window_name}_results", $window));
+    }
+
+    // If the module returned an error code display a popup warning
+    if ($status)
+        $js .= "alert('Delete failed. " . preg_replace('/[\s\']+/', ' ', $output) . "');";
+    else if ($form['js'])
+        $js .= $form['js'];  // usually js will refresh the window we got called from
+
+
+    // Basically hard code the refresh if you have deleted all the configs
+    $js .= "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$form['host']}\', \'display\')');";
+
+    // Return an XML response
+    $response->addScript($js);
     return($response->getXML());
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

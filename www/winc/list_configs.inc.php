@@ -159,10 +159,13 @@ EOL;
                     {$confsize}
                 </td>
                 <td class="list-row" align="right">
-                    <form id="{$form['form_id']}_list_configs_{$record['id']}"
-                        ><input type="hidden" name="config_id" value="{$record['id']}"
-                        ><input type="hidden" name="js" value="{$refresh}"
-                    ></form>
+                    <form id="{$form['form_id']}_list_configs_{$record['id']}">
+                        <input type="hidden" name="config_id" value="{$record['id']}">
+                        <input type="hidden" name="host" value="{$record['host_id']}">
+                        <input type="hidden" name="type" value="{$record['config_type_name']}">
+                        <input type="hidden" name="commit" value="y">
+                        <input type="hidden" name="js" value="{$refresh}">
+                    </form>
 EOL;
 
     if (auth('host_config_admin',$debug_val)) {
@@ -183,7 +186,7 @@ EOL;
                        class="nav"
                        onClick="var doit=confirm('Are you sure you want to delete this config record?');
                                 if (doit == true)
-                                    xajax_window_submit('display_config_text', xajax.getFormValues('{$form['form_id']}_list_configs_{$record['id']}'), 'delete_config');"
+                                    xajax_window_submit('display_config_text', xajax.getFormValues('{$form['form_id']}_list_configs_{$record['id']}'), 'delete');"
                     ><img src="{$images}/silk/delete.png" alt="Delete config" border="0"></a>&nbsp;
 
 EOL;
