@@ -891,6 +891,7 @@ function db_get_record($dbh=0, $table="", $where="", $order="") {
 function db_get_records($dbh=0, $table="", $where="", $order="", $rows=-1, $offset=-1) {
     global $self;
     @$self['db_get_records_count']++;
+    $self['error'] = '';
 
     // Debugging
     printmsg("DEBUG => db_get_records(\$dbh, \$where, $table, $order, $rows, $offset) called", 3);
@@ -2523,7 +2524,7 @@ function ona_find_vlan($vlan_search="", $campus_search="") {
 ///////////////////////////////////////////////////////////////////////
 function ona_find_config($options=array()) {
 
-    global $self;
+    global $onadb, $self;
 
     $status = 1;
     $rows = 0;
@@ -2537,6 +2538,8 @@ function ona_find_config($options=array()) {
         }
 
         list($status, $rows, $config) = ona_get_config_record(array('id' => $options['config']));
+        // Shove it in to an 'array' so it is consistent
+        $config[0] = $config;
     }
 
     // Otherwise we're selecting a config by hostname and type
@@ -2558,18 +2561,17 @@ function ona_find_config($options=array()) {
         }
 
         // Select the first config record of the specified type and host
-        list($status, $rows, $config) = ona_get_config_record(array('host_id' => $host['id'],
-                                                                     'configuration_type_id' => $config_type['id']));
+        list($status, $rows, $config) = db_get_records($onadb, 'configurations', array('host_id' => $host['id'], 'configuration_type_id' => $config_type['id']), 'ctime DESC', 1);
 
-        if ($status) {
-            $self['error'] = "ERROR => The config type specified, {$options['type']}, is invalid!";
+        if (!$config[0]['id']) {
+            $self['error'] = "ERROR => Unable to find configuration for host: {$options['host']}, with type {$options['type']}";
             return(array(5, 0, array()));
         }
 
     }
 
     // Return the config record we got
-    return(array($status, $rows, $config));
+    return(array($status, $rows, $config[0]));
 
 }
 

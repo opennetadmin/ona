@@ -82,7 +82,7 @@ function window_open($window_name, $window=array()) {
             <tr>
 
                 <td id="{$window_name}_title"
-                    width="99%"
+                    width="80%"
                     align="left"
                     nowrap="true"
                     onMouseDown="focus_window('$window_name'); dragStart(event, '{$window_name}');"

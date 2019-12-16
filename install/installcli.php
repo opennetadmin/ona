@@ -139,7 +139,7 @@ CHECKING PREREQUISITES...
   PHP mysqli function:                        $hasmysql
   PHP mbstring function:                      $hasmbstring
   $onabase/www/local/config dir writable:     $dbconfwrite
-  {$conf['logfile']} writable:                $logfilewrite
+  {$conf['logfile']} writable:                  $logfilewrite
 
 EOL;
 }
@@ -150,7 +150,7 @@ EOL;
 function upgrade() {
 
   echo "\n\n";
-  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile;
+  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile,$base;
 
   // If they already have a dbconffile, assume that we are doing and upgrade
   if (@file_exists($dbconffile)) {
@@ -197,7 +197,7 @@ function upgrade() {
             @$db->Close();
 
 
-            $text .= "{$cname}		{$cdbs['db_type']}		{$cdbs['db_host']}	{$cdbs['db_database']}	{$curr_ver}	{$levelinfo}\n";
+            $text .= "{$cname}		{$cdbs['db_type']}		{$cdbs['db_host']}	{$cdbs['db_database']}	{$curr_ver}		{$levelinfo}\n";
         }
 
     }

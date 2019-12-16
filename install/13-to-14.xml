@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<schema version="0.3">
+<sql>
+    <query platform="mysqli">INSERT INTO dcm_module_list (name,description,file) VALUES ('config_del', 'Delete a configuration text from the database', 'ona/configuration.inc.php') on duplicate key update name='config_del'</query> 
+    <query platform="mysqli">INSERT INTO dcm_module_list (name,description,file) VALUES ('config_del_all', 'Delete all configurations from a host', 'ona/configuration.inc.php') on duplicate key update name='config_del_all'</query> 
+</sql>
+</schema>
+
+
