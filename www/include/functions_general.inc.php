@@ -635,7 +635,7 @@ function ip_mangle_gmp($ip="", $format="default") {
 
     // If we get here, then the input must be in numeric format (1)
     else {
-        $ip = gmp_init((int) strval($ip), 10);
+        $ip = gmp_init(strval($ip), 10);
         if ($format == "default") {
             if(is_ipv4($ip))
                 $format = "dotted";
