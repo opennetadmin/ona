@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
 <schema version="0.3">
 
-  <!-- This is cleanup of some old dataformats, crated during 13-to-14.. maybe it goes away in future -->
-  <sql><query>update dns set ebegin = '2000-01-01' where CAST(ebegin AS CHAR(20)) = '0000-00-00 00:00:00'</query></sql>
-
 <!-- Begin creating base tables for the OpenNetAdmin system -->
 <!-- This file is used for the sole purpose of creating the base tables -->
 <!-- Another file will populate the default data -->
@@ -1004,6 +1001,9 @@
   </table>
 
 
+
+  <!-- This is cleanup of some old dataformats, crated during 13-to-14.. maybe it goes away in future -->
+  <sql><query>update dns set ebegin = '2000-01-01' where CAST(ebegin AS CHAR(20)) = '0000-00-00 00:00:00'</query></sql>
 
 
 </schema>

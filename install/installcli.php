@@ -33,9 +33,6 @@ $conf = array (
 // any $conf settings used in this "require" should not be user adjusted in the sys_config table
 require_once("{$include}/functions_general.inc.php");
 
-// Include the basic database functions
-#require_once("{$include}/functions_db.inc.php");
-
 // Include the localized Database settings
 $dbconffile = "{$onabase}/www/local/config/database_settings.inc.php";
 if (file_exists($dbconffile)) {
@@ -49,15 +46,6 @@ if (file_exists($dbconffile)) {
 #    require_once($base.'/../install/install.php');
 #    exit;
 }
-
-#// If it does, run the install process.
-#if (file_exists($base.'/local/config/run_install') or @$runinstaller or @$install_submit == 'Y') {
-#    // Process the install script
-#    require_once($base.'/../install/install.php');
-#    exit;
-#}
-
-
 
 
 
@@ -105,6 +93,10 @@ while($install_complete){
     new_install();
   }
 
+  // Print out the text to the end user
+  echo "\n";
+  echo $text;
+
   exit;
 
 }
@@ -120,11 +112,12 @@ function check_requirements() {
 
   system('clear');
   // Get some pre-requisite information
-  $phpversion = phpversion() > '5.0' ? 'PASS' : 'FAIL';
+  $phpversion = phpversion() > '7.0' ? 'PASS' : 'FAIL';
   $hasgmp = function_exists( 'gmp_init' ) ? 'PASS' : 'FAIL';
   //echo function_exists( 'gmp_init' ) ? '' : 'PHP GMP module is missing.';
   $hasmysql = function_exists( 'mysqli_connect' ) ? 'PASS' : 'FAIL';
   $hasxml = function_exists( 'xml_parser_create' ) ? 'PASS' : 'FAIL';
+  $hasjson = function_exists( 'json_decode' ) ? 'PASS' : 'FAIL';
   $hasmbstring = function_exists( 'mb_internal_encoding' ) ? 'PASS' : 'FAIL';
   $dbconfwrite = @is_writable($onabase.'/www/local/config/') ? 'PASS' : 'FAIL';
   $logfilewrite = @is_writable($conf['logfile']) ? 'PASS' : 'FAIL';
@@ -133,9 +126,10 @@ function check_requirements() {
 
 CHECKING PREREQUISITES...
 
-  PHP version greater than 5.0:               $phpversion
+  PHP version greater than 7.0:               $phpversion
   PHP GMP module:                             $hasgmp
   PHP XML module:                             $hasxml
+  PHP JSON module:                            $hasjson
   PHP mysqli function:                        $hasmysql
   PHP mbstring function:                      $hasmbstring
   $onabase/www/local/config dir writable:     $dbconfwrite
@@ -252,8 +246,8 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
                     $schema = new adoSchema( $db );
                     // Build the SQL array from the schema XML file
                     $sql = $schema->ParseSchema($xmlfile_tables);
-                    // Uncomment the following to display the raw SQL
-                    #$text .= "----------\n".$schema->PrintSQL('TEXT')."\n---------\n";
+                    // Save a copy of current sqlstatement
+                    file_put_contents('/tmp/ona-upgrade-tables.sql', $schema->PrintSQL('TEXT'));
                     // Execute the SQL on the database
                     if ($schema->ExecuteSchema( $sql ) == 2) {
                         $text .= "[{$cname}/{$cdbs['db_host']}] Upgrading tables within database '{$cdbs['db_database']}'.\n";
@@ -293,6 +287,8 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
                                 $schema = new adoSchema( $db );
                                 // Build the SQL array from the schema XML file
                                 $sql = $schema->ParseSchema($upgrade_xmlfile);
+                                // Save a copy of current sqlstatement
+                                file_put_contents('/tmp/ona-upgrade-data.sql', $schema->PrintSQL('TEXT'));
                                 // Execute the SQL on the database
                                 if ($schema->ExecuteSchema( $sql ) == 2) {
                                     $text .= "[{$cname}/{$cdbs['db_host']}] Processed XML update file.\n";
@@ -377,8 +373,6 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
     } else {
         $text .= "There was a fatal error. Upgrade may be incomplete. Fix the issue and try again\n";
     }
-
-  echo $text."\n";
 }
 
 
@@ -470,6 +464,8 @@ function new_install() {
             $schema = new adoSchema( $db );
             // Build the SQL array from the schema XML file
             $sql = $schema->ParseSchema($xmlfile_tables);
+            // Save a copy of current sqlstatement
+            file_put_contents('/tmp/ona-newinstall-tables.sql', $schema->PrintSQL('TEXT'));
             // Execute the SQL on the database
             if ($schema->ExecuteSchema( $sql ) == 2) {
                 $text .= "Creating and updating tables within database '{$database_name}'.\n";
@@ -485,8 +481,8 @@ function new_install() {
                 $schema = new adoSchema( $db );
                 // Build the SQL array from the schema XML file
                 $sql = $schema->ParseSchema($xmlfile_data);
-                // Uncomment the following to display the raw SQL
-                #$text .= "----------\n".$schema->PrintSQL('TEXT')."\n---------\n";
+                // Save a copy of current sqlstatement
+                file_put_contents('/tmp/ona-newinstall-data.sql', $schema->PrintSQL('TEXT'));
                 // Execute the SQL on the database
                 if ($schema->ExecuteSchema( $sql ) == 2) {
                     $text .= "Loaded tables with default data.\n";
@@ -498,8 +494,8 @@ function new_install() {
                 }
             }
 
-            // Add the system user to the database
-            // Run the query
+          // Add the system user to the database
+          // Run the query
           if ($status == 0) {
 
             // it is likely that this method here is mysql only?
@@ -581,7 +577,7 @@ EOL;
                 $text .= "Please remove '{$runinstall}' manually.\n";
               }
             }
-            $text .= "You can now go the following URL in your browser: ".parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH)."' using OpenNetAdmin!\nYou can log in as 'admin' with a password of 'admin'\nEnjoy!";
+            $text .= "You can now go the URL in your browser for this server.\nYou can log in as 'admin' with a password of 'admin'\nEnjoy!\n";
         }
 
         // Close the database connection
@@ -592,9 +588,6 @@ EOL;
 }
 
 
-
-// Print out the text to the end user
-echo $text;
 
 
 
