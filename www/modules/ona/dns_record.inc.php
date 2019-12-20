@@ -25,7 +25,7 @@ function dns_record_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.12';
+    $version = '1.13';
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -119,9 +119,10 @@ primary name for a host should be unique in all cases I'm aware of
     $options['view'] = trim($options['view']);
 
     // Check the date formatting etc
+    // Note, anything past 2038-01-10 will be considered disabled. Stupid mysql timestamp.
     if (isset($options['ebegin'])) {
         // format the time that was passed in for the database, leave it as 0 if they pass it as 0
-        $options['ebegin']=($options['ebegin'] == '0' ? 0 : date('Y-m-j G:i:s',strtotime($options['ebegin'])) );
+        $options['ebegin']=($options['ebegin'] == '0' ? '2038-01-19 00:00:00' : date('Y-m-j G:i:s',strtotime($options['ebegin'])) );
     } else {
         // If I got no date, use right now as the date/time
         $options['ebegin'] = date('Y-m-j G:i:s');
@@ -859,7 +860,7 @@ function dns_record_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.13';
+    $version = '1.14';
 
     printmsg("DEBUG => dns_record_modify({$options}) called", 3);
 
@@ -871,6 +872,7 @@ function dns_record_modify($options="") {
        (!$options['set_name'] and
         !$options['set_ip'] and
         !$options['set_ttl'] and
+        !$options['set_ebegin'] and
         !$options['set_pointsto'] and
         !$options['set_srv_pri'] and
         !$options['set_srv_weight'] and
@@ -1211,15 +1213,13 @@ EOM
     }
 
     // Check the date formatting etc
-    if (isset($options['set_ebegin']) and $options['set_ebegin'] != $dns['ebegin']) {
-        // format the time that was passed in for the database, leave it as 0 if they pass it as 0
-        $options['set_ebegin'] = ($options['set_ebegin'] == '0' ? 0 : date('Y-m-j G:i:s',strtotime($options['set_ebegin'])) );
-        // Force the SET variable if its ont 0 and the current record is not 0000:00:00 00:00
-        if (!(($options['set_ebegin'] == '0') and ($dns['ebegin'] == '0000-00-00 00:00:00')))
-            $SET['ebegin'] = $options['set_ebegin'];
-    } else {
-        // If I got no date, use right now as the date/time
-        $options['set_ebegin'] = date('Y-m-j G:i:s');
+    // Note, anything past 2038-01-10 will be considered disabled. Stupid mysql timestamp.
+    if (array_key_exists('set_ebegin', $options) and $options['set_ebegin'] != $dns['ebegin']) {
+        // Format the time that was passed in for the database, if 0 set to our disabled timestamp
+        $options['set_ebegin'] = ($options['set_ebegin'] == '0' ? '2038-01-19 00:00:00' : date('Y-m-j G:i:s',strtotime($options['set_ebegin'])) );
+        // Check that our new begin format still does not match the current setting, this accounts for our 0 method
+        if (!(($options['set_ebegin'] == '2038-01-19 00:00:00') and ($dns['ebegin'] == '2038-01-19 00:00:00')))
+          $SET['ebegin'] = $options['set_ebegin'];
     }
 
     // Add the remaining items to the $SET variable
@@ -1265,11 +1265,11 @@ EOM
 
 
     // Update the host record if necessary
-    //if(count($SET) > 0 and $options['set_ebegin'] != $dns['ebegin']) {
     if(count($SET) > 0) {
 
-        // Use the ebegin value set above
-        $SET['ebegin'] = $options['set_ebegin'];
+        // If we are changing records but do not have an ebegin defined, set it to current time
+        if (!array_key_exists('ebegin', $SET) and $SET['ebegin'] != $dns['ebegin'])
+          $SET['ebegin'] = date('Y-m-j G:i:s');
 
         // If we are changing the interface id as determined above, check using that value
         if ($changingint) {

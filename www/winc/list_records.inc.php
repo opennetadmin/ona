@@ -469,7 +469,7 @@ EOL;
         // If it is in the future, print the time
         if (strtotime($record['ebegin']) > time()) $ebegin = '<span title="Active in DNS on: '.$record['ebegin'].'">' . date($conf['date_format'],strtotime($record['ebegin'])) . '</span>';
         // If it is 0 then show as disabled
-        if (strtotime($record['ebegin']) < 0) {
+        if (strtotime($record['ebegin']) > strtotime('2038-01-10 00:00:00')) {
             $ebegin = <<<EOL
                 <span
                     style="background-color:#FFFF99;"

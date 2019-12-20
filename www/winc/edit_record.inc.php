@@ -358,13 +358,13 @@ EOL;
             </tr>
 
             <tr id="ebeginrow">
-                <td align="right" nowrap="true">
+                <td align="right" nowrap="true" alt="Set a future date for record to be active, or disable">
                     Begin
                 </td>
                 <td class="padding" align="left" width="100%">
 EOL;
 
-    if ((strtotime($dns_record['ebegin']) < time()) && (strtotime($dns_record['ebegin']) > 1)) {
+    if ((strtotime($dns_record['ebegin']) > time()) && (strtotime($dns_record['ebegin']) < strtotime('2038-01-10 00:00:00'))) {
         $window['html'] .= <<<EOL
                     <input id="ebegin_input" style="display:none;"
                         id="set_ebegin"
@@ -373,7 +373,7 @@ EOL;
                         value="{$dns_record['ebegin']}"
                         class="edit"
                         type="text"
-                        size="16" maxlength="30"
+                        size="25" maxlength="30"
                     />
                     <img
                         id="ebegin_clock"
@@ -393,11 +393,11 @@ EOL;
         $ebegin_clockstyle = '';
         $ebegin_style = 'style="display:none;"';
         // If record is disabled, then check the box and hide the input box.  Also set up a fake ebegin for now() in case they re-enable
-        if (strtotime($dns_record['ebegin']) < 0) {
+        if (strtotime($dns_record['ebegin']) > strtotime('2038-01-10 00:00:00')) {
             $ebegin_disabled = 'checked="1"';
             $dns_record['ebegin']=date('Y-m-j G:i:s',time());
         }
-        if (strtotime($dns_record['ebegin']) > time()) {
+        else if (strtotime($dns_record['ebegin']) > time()) {
             $ebegin_clockstyle = 'display:none;';
             $ebegin_style = '';
         }
@@ -410,7 +410,7 @@ EOL;
                         value="{$dns_record['ebegin']}"
                         class="edit"
                         type="text"
-                        size="16" maxlength="30"
+                        size="25" maxlength="30"
                     />
                     <img 
                         id="ebegin_clock"
