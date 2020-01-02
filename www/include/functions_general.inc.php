@@ -634,7 +634,7 @@ function ip_mangle_gmp($ip="", $format="default") {
     }
 
     // If we get here, then the input must be in numeric format (1)
-    else {
+    else if ($ip != '') {
         $ip = gmp_init(strval($ip), 10);
         if ($format == "default") {
             if(is_ipv4($ip))
@@ -644,6 +644,10 @@ function ip_mangle_gmp($ip="", $format="default") {
         }
     }
 
+    // If we got this far, then we will just return an error because it does not match sanity.
+    else {
+        return(-1);
+    }
 
     // If the address wasn't valid return an error --
     // check for out-of-range values (< 0 or > 2**128)
