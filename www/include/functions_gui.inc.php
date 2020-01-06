@@ -320,12 +320,33 @@ function get_host_suggestions($q, $max_results=10) {
     // If we are not using views, limit to the default
     if (!$conf['dns_views']) $limit_to_view = 'dns_view_id = 0 AND ';
 
+    // If there is a dot in what is typed, split that out and check the right hand side for domains first
+    // then use any found domainid in the search
+    if (strpos($q,'.') !== false) {
+      $orig_q = $q;
+      // Split the query into host and domain portions
+      list($q,$dom) = explode('.', $q, 2);
+      // Gather list of all domains that might match
+      list($status, $rows, $domains) = db_get_records($onadb, 'domains', "name like '{$dom}%'");
+      if ($rows) {
+        foreach ($domains as $domain) {
+          $domlist .= "{$domain['id']}, ";
+        }
+        // Add the list of domains to our search.  use a fake -1 domain id to fix the last comma
+        $domsearch = "domain_id in ($domlist -1) AND ";
+      } else {
+        // Since we didnt find any domains, lets try it as a dotted host name
+        // Note: you can not suggest dotted host names that include their domain as well. Only the hostname will show.
+        $q = $orig_q;
+      }
+    }
+
     // wildcard the query before searching
     $q = $q . '%';
 
     $table = 'dns';
     $field = 'name';
-    $where  = "{$limit_to_view} {$field} LIKE " . $onadb->qstr($q);
+    $where  = "{$limit_to_view} {$domsearch} {$field} LIKE " . $onadb->qstr($q);
     $order  = "{$field} ASC";
 
     // Search the db for results

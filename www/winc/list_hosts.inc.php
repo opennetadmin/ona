@@ -129,11 +129,13 @@ function ws_display_list($window_name, $form='') {
             list($status, $rows, $record) = ona_find_domain($form['domain']);
             if ($record['id']) {
                 $withdomain = "AND b.domain_id = {$record['id']}";
+            } else {
+                // last resort, try it as a partial name with wildcard
+                $withdomain = "AND b.domain_id in (select id from domains where name like '{$form['domain']}%')";
             }
             // Now find what the host part of $search is
             $hostname = trim($form['hostname']);
         }
-
 
         // MP: Doing the many select IN statements was too slow.. I did this kludge:
         //  1. get a list of all the interfaces
@@ -149,6 +151,10 @@ function ws_display_list($window_name, $form='') {
         // Just look for the host itself
         list($status, $rows, $r) = ona_find_host($form['hostname']);
         if ($rows) $hostids  .= ','.$r['id'];
+
+        // Lets try and find the host id for just the record that matches the dotted host portion
+        list($status, $rows, $r) = db_get_record($onadb, 'interfaces a, dns b', "a.id = b.interface_id and b.name LIKE '{$form['hostname']}.{$form['domain']}%'");
+        if ($rows) $hostids .= ','.$r['host_id'];
 
         // MP: this is the old, slow query for reference.
         //

@@ -718,6 +718,15 @@ function quick_search($q) {
         return( array('subnets', array('subnet_id' => $record['id']) ) );
     }
 
+    // If there is a dot in what is typed.  split that out and check the right hand side for domains first
+    // then use any found domainid in the search
+    if (strpos($q,'.') !== false) {
+      // Split the query into host and domain portions
+      list($q,$dom) = explode('.', $q, 2);
+      printmsg("DEBUG => quick_search() found a dot in the name, trying hostname = {$q} and domain = {$dom}" ,3);
+      return( array('hosts', array('hostname' => $q, 'domain' => $dom, 'nowildcard' => 'yes') ) );
+    }
+
     // Well, I guess we'll assume $q is a hostname/alias search
     printmsg("DEBUG => quick_search() found no subnet or host match. Returning hostname = {$q}" ,3);
     return( array('hosts', array('hostname' => $q) ) );
