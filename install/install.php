@@ -497,9 +497,12 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
 
           if ($status == 0) {
             // it is likely that this method here is mysql only?
-            if(@$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}'")) {
-                @$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'%' IDENTIFIED BY '{$sys_passwd}'");
-                @$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}'");
+            if($db->Execute("CREATE USER '{$sys_login}'@'localhost' IDENTIFIED  with mysql_native_password BY '{$sys_passwd}'")) {
+                $db->Execute("CREATE USER '{$sys_login}'@'%' IDENTIFIED with mysql_native_password BY '{$sys_passwd}'");
+                $db->Execute("CREATE USER '{$sys_login}'@'{$database_host}' IDENTIFIED with mysql_native_password BY '{$sys_passwd}'");
+                $db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'localhost' ");
+                $db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'%' ");
+                $db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' ");
                 @$db->Execute("FLUSH PRIVILEGES");
                 $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created system user '{$sys_login}'.<br>";
                 printmsg("INFO => Created new DB user: {$sys_login}",0);
