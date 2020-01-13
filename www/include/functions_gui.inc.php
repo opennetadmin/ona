@@ -141,7 +141,7 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     global $conf, $self, $base, $images, $color, $style, $onadb;
     $modhtml = '';
     $modjs = '';
-    $modwsmenu = '';
+    $modwsmenu = array();
     $modbodyhtml = '';
     $ws_plugin_dir = "{$base}/workspace_plugins";
 
