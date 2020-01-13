@@ -47,9 +47,6 @@ $window['html'] .= <<<EOL
         <td align="left" class="padding">
             <div style="float: left;">{$output['ona_username']}</div>
         </td>
-        <td align="left" rowspan="2" class="padding">
-            <div title="Detailed info about network managment" style="float: right;"><a target="null" href="http://www.homestarrunner.com/sbemail152.html"><img src="{$images}/strongbad.gif" hspace="0" vspace="0" align="left" border="0"></a></div>
-        </td>
     </td>
 
     <tr>
