@@ -42,7 +42,7 @@ function domain_add($options="") {
     printmsg("DEBUG => domain_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.07';
+    $version = '1.08';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -199,6 +199,7 @@ EOM
                 'refresh'         => $refresh,
                 'retry'           => $retry,
                 'expiry'          => $expiry,
+		'ctime'           => date('Y-m-j G:i:s',time()),
                 'minimum'         => $minimum,
                 'default_ttl'     => $ttl,
                 'parent_id'       => $parent_domain['id'],
