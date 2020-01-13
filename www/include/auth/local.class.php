@@ -98,7 +98,7 @@ class auth_local {
             // Load the user's groups
             list($status, $rows, $records) = db_get_records($onadb, 'group_assignments', array('user_id' => $user['id']));
             foreach ($records as $record) {
-                list($status, $rows, $group) = db_get_record($onadb, 'groups', array('id' => $record['group_id']));
+                list($status, $rows, $group) = db_get_record($onadb, 'auth_groups', array('id' => $record['group_id']));
                 $user['grps'][$group['name']] = $group['id'];
                 if ($group['level'] > $user['level']) { $user['level'] = $group['level']; }
             }

@@ -49,7 +49,7 @@ EOL;
 
     // If we got a group ID, load it and it's permissions
     if ($form['group_id']) {
-        list($status, $rows, $group)  = db_get_record($onadb, 'groups', array('id' => $form['group_id']));
+        list($status, $rows, $group)  = db_get_record($onadb, 'auth_groups', array('id' => $form['group_id']));
         list($status, $rows, $perms) = db_get_records($onadb, 'permission_assignments', array('group_id' => $group['id']));
         $form['type'] = 'group_id';
         $form['id'] = $group['id'];

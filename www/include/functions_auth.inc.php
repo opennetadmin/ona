@@ -159,7 +159,7 @@ function get_perms($login_name='') {
     // Load the users permissions based on their group ids
     foreach ((array)$userinfo['grps'] as $group => $grpid) {
         // Look up the group id stored in local tables using the name
-        list($status, $rows, $grp) = db_get_record($onadb, 'groups', array('name' => $group));
+        list($status, $rows, $grp) = db_get_record($onadb, 'auth_groups', array('name' => $group));
         // get permission assignments per group id
         list($status, $rows, $records) = db_get_records($onadb, 'permission_assignments', array('group_id' => $grp['id']));
         foreach ($records as $record) {

@@ -28,7 +28,7 @@ $window['title'] = "Group Administration";
 
 // Load some html into $window['html']
 $form_id = "{$window_name}_filter_form";
-$tab = 'groups';
+$tab = 'auth_groups';
 $submit_window = $window_name;
 $content_id = "{$window_name}_list";
 $window['html'] .= <<<EOL
@@ -163,7 +163,7 @@ EOL;
     if ($offset == 0) { $offset = -1; }
 
     // Get our groups
-    list($status, $rows, $records) = db_get_records($onadb, 'groups', $where, 'name', $conf['search_results_per_page'], $offset);
+    list($status, $rows, $records) = db_get_records($onadb, 'auth_groups', $where, 'name', $conf['search_results_per_page'], $offset);
 
     // If we got less than serach_results_per_page, add the current offset to it
     // so that if we're on the last page $rows still has the right number in it.
@@ -173,7 +173,7 @@ EOL;
 
     // If there were more than $conf['search_results_per_page'] find out how many records there really are
     else if ($rows >= $conf['search_results_per_page']) {
-        list ($status, $rows, $tmp) = db_get_records($onadb, 'groups', $where, '', 0);
+        list ($status, $rows, $tmp) = db_get_records($onadb, 'auth_groups', $where, '', 0);
     }
     $count = $rows;
 
@@ -282,7 +282,7 @@ function ws_delete($window_name, $form='') {
     $js = '';
 
     // Load the group record to make sure it exists
-    list($status, $rows, $group) = db_get_record($onadb, 'groups', array('id' => $form));
+    list($status, $rows, $group) = db_get_record($onadb, 'auth_groups', array('id' => $form));
     if ($status or !$rows) {
         $response->addScript("alert('Delete failed: Group ID {$form} doesnt exist');");
         return($response->getXML());
@@ -299,7 +299,7 @@ function ws_delete($window_name, $form='') {
     } while ($rows >= 1);
 
     // Delete the group's record
-    list($status, $rows) = db_delete_records($onadb, 'groups', array('id' => $group['id']));
+    list($status, $rows) = db_delete_records($onadb, 'auth_groups', array('id' => $group['id']));
 
     if ($status or !$rows) {
         // If the module returned an error code display a popup warning

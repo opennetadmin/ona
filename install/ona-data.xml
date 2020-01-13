@@ -108,7 +108,7 @@
 <query>INSERT INTO `subnet_types` VALUES (1,'loopback','Loopback','Loopback Interfaces (mostly for routers)'),(2,'','WAN',''),(7,'','VLAN',''),(10,'p2p','Point-to-Point',''),(11,'','VPN',''),(12,'','Wireless LAN',''),(13,'lan','LAN','Simple LAN');</query>
 
 
-<query>INSERT INTO `groups` VALUES (17,'Default','Default user group',1),(18,'Admin','Admin group',99);</query>
+<query>INSERT INTO `auth_groups` VALUES (17,'Default','Default user group',1),(18,'Admin','Admin group',99);</query>
 
 
 <query>INSERT INTO `group_assignments` VALUES (1,17,1),(2,18,2);</query>

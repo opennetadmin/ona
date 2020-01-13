@@ -44,7 +44,7 @@ EOL;
 
     // If we got a group ID, load it for display
     if (is_string($form) and $form) {
-        list($status, $rows, $record) = db_get_record($onadb, 'groups', array('id' => $form));
+        list($status, $rows, $record) = db_get_record($onadb, 'auth_groups', array('id' => $form));
     }
 
     // Build some html for selecting the groups the group is in
@@ -166,7 +166,7 @@ function ws_save($window_name, $form='') {
     if (!$form['id']) {
         list ($status, $rows) = db_insert_record(
             $onadb,
-            'groups',
+            'auth_groups',
             array(
                 'name' => $form['name'],
                 'description' => $form['description'],
@@ -187,7 +187,7 @@ function ws_save($window_name, $form='') {
 
     // Update an existing record?
     else {
-        list($status, $rows, $record) = db_get_record($onadb, 'groups', array('id' => $form['id']));
+        list($status, $rows, $record) = db_get_record($onadb, 'auth_groups', array('id' => $form['id']));
         if ($rows != 1 or $record['id'] != $form['id']) {
             $js .= "alert('Error! The record requested could not be loaded from the database!');";
             $response->addScript($js);
@@ -196,7 +196,7 @@ function ws_save($window_name, $form='') {
 
         list ($status, $rows) = db_update_record(
             $onadb,
-            'groups',
+            'auth_groups',
             array(
                 'id'     => $form['id'],
             ),
@@ -211,7 +211,7 @@ function ws_save($window_name, $form='') {
             printmsg($self['error'], 0);
         }
         else {
-            list($status, $rows, $new_record) = db_get_record($onadb, 'groups', array('id' => $form['id']));
+            list($status, $rows, $new_record) = db_get_record($onadb, 'auth_groups', array('id' => $form['id']));
 
             // Return the success notice
             $self['error'] = "INFO => Group UPDATED:{$record['id']}: {$record['name']}";
