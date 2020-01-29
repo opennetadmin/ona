@@ -2470,21 +2470,6 @@ EOL;
 }
 
 
-// Simple ping function that takes an IP in and pings it.. then shows the output in a module results window
-function ws_ping($window_name, $form='') {
-
-    // If an array in a string was provided, build the array and store it in $form
-    $form = parse_options_string($form);
-
-    $output = shell_exec("ping -n -w 3 -c 3 {$form['ip']}");
-
-    $window['title'] = 'Ping Results';
-    $build_commit_html = 0;
-    $commit_function = '';
-    include(window_find_include('module_results'));
-    return(window_open("{$window_name}_results", $window));
-}
-
 /////////////////////////
 // Setup empty window with a progress bar in it
 //

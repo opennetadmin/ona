@@ -351,13 +351,7 @@ EOL;
             if ($record['dbip'] == "NOT FOUND") continue;
             // If it is only in the database then they should validate the ip or remove from database
             if (($record['netip'] == $record['dbip']) or ($record['netdnsname'] != $record['dbdnsname'])) {
-                $action = <<<EOL
-                        {$act_status_partial}
-                        <a title="Ping"
-                            class="act"
-                            onClick="xajax_window_submit('tooltips', 'name=>tooltips', 'window_progressbar');xajax_window_submit('tooltips', 'ip=>{$record['dbip']}', 'ping');"
-                        >Ping to verify</a> then delete as desired
-EOL;
+                $action = "Ping to verify then delete as desired";
             }
         }
 
