@@ -6,9 +6,7 @@
 PORTNUM = ENV["PORTNUM"] || "10000"
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/xenial64"
-  # Lock box version to timeframe of current aptly snapshot.
-  config.vm.box_version = "20181207.0.0"
+  config.vm.box = "ubuntu/focal64"
 
   # Assign this VM to a bridged network, allowing you to connect directly to a
   # network using the host's network device. This makes the VM appear as another
@@ -35,10 +33,9 @@ export DEBIAN_FRONTEND=noninteractive
 
 apt-get update
 apt-get install -y \
-  build-essential \
   curl \
   apache2 \
-  mysql-server \
+  mariadb-server \
   php \
   php-mysql \
   php-mbstring \
@@ -55,7 +52,7 @@ apt-get install -y \
 #usermod -a -G adm www-data
 #usermod -a -G adm vagrant
 
-# Set up application log dir
+# Set up application log file
 if [ ! -f /var/log/ona.log ]
 then
   touch /var/log/ona.log
