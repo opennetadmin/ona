@@ -16,10 +16,10 @@ Thanks for your interest in OpenNetAdmin!
 ---
 
 Each host or subnet can be tracked via a centralized AJAX enabled web interface
-that can help reduce errors. A full [CLI interface](https://github.com/opennetadmin/dcm) is available 
-as well to use for scripting and bulk work. We hope to provide a useful 
-Network Management application for managing your IP subnets and hosts. 
-Stop using spreadsheets to manage your network! Start doing proper IP 
+that can help reduce errors. A full [CLI interface](https://github.com/opennetadmin/dcm) is available
+as well to use for scripting and bulk work. We hope to provide a useful
+Network Management application for managing your IP subnets and hosts.
+Stop using spreadsheets to manage your network! Start doing proper IP
 address management!
 
 ![desktop image](https://github.com/opennetadmin/ona/wiki/images/desktop.png)
@@ -31,6 +31,15 @@ Simply download and untar into `/opt/ona` or other directory of your choosing.  
 your web server to serve out `/opt/ona/www`.  Open it in your web browser and run the install process.
 
 Please refer to the [install page on the Github Wiki for more detail](https://github.com/opennetadmin/ona/wiki/Install)
+
+DEVELOPMENT
+-----------
+Simply clone this repo and issue a vagrant up to get a basic working system to develop with.
+You will need to have git and [vagrant](https://vagrantup.com) installed on your system
+
+   git clone https://github.com/opennetadmin/ona.git
+   cd ona
+   vagrant up
 
 
 CONTACT
