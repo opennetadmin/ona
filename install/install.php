@@ -496,13 +496,10 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
             // Run the query
 
           if ($status == 0) {
-            // it is likely that this method here is mysql only?
-            if($db->Execute("CREATE USER '{$sys_login}'@'localhost' IDENTIFIED  with mysql_native_password BY '{$sys_passwd}'")) {
-                $db->Execute("CREATE USER '{$sys_login}'@'%' IDENTIFIED with mysql_native_password BY '{$sys_passwd}'");
-                $db->Execute("CREATE USER '{$sys_login}'@'{$database_host}' IDENTIFIED with mysql_native_password BY '{$sys_passwd}'");
-                $db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'localhost' ");
-                $db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'%' ");
-                $db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' ");
+            if( $db->Execute("CREATE USER '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}'")) {
+                $db->Execute("CREATE USER '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}'");
+                $db->Execute("GRANT ALL privileges ON {$database_name}.* TO '{$sys_login}'@'localhost' ");
+                $db->Execute("GRANT ALL privileges ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' ");
                 @$db->Execute("FLUSH PRIVILEGES");
                 $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created system user '{$sys_login}'.<br>";
                 printmsg("INFO => Created new DB user: {$sys_login}",0);
@@ -669,11 +666,27 @@ print <<<EOL
             text-align: left;
             width:500px;
         }
+        #alert-banner {
+            background-color: #FFDBFF;
+            padding: 5px;
+            border: 1px solid;
+            text-align: left;
+            width:500px;
+        }
+
 
     </style>
     <body>
         <div align="center" style="width:100%;">
             <span id="maintitle">OpenNetAdmin Install</span><br>
+
+<br>
+<div id='alert-banner'>
+<div align='center'><b>ALERT</b></div>
+It is advised to run the install process from the CLI at this time due to changes in database security models. Use this web installer at your own risk.<br>
+<br>
+Please execute <i>"php /opt/ona/install/installcli.php"</i> as root.<br>
+</div>
 EOL;
 
 
