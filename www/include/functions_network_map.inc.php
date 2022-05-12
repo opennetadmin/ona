@@ -5,7 +5,7 @@
 
 // Returns javascript to set the portal
 function get_portal_js($window_name, $ip,$version=4) {
-    
+
     $zoom = array();
     if ($version == 4) {
       $zoom[7]['row_height'] = 8;
@@ -230,8 +230,8 @@ function ws_draw_block($window_name, $form='') {
     $ip = ip_mangle($form['ip'], 'numeric');
     if ($ip == -1) {
         $js .= "alert('Invalid IP address!');";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
     // Build a few variables
@@ -259,8 +259,8 @@ function ws_draw_block($window_name, $form='') {
     $el_name = $ip . '_row';
 
     // Add a row label
-    $response->addCreate("{$window_name}_substrate", "div", $el_name . '_label');
-    $response->addScript(<<<EOL
+    $response->create("{$window_name}_substrate", "div", $el_name . '_label');
+    $response->script(<<<EOL
         var _el = el('{$el_name}_label');
         _el.style.visibility = 'hidden';
         _el.style.position = 'absolute';
@@ -276,8 +276,8 @@ EOL
     );
 
     // Add the row
-    $response->addCreate("{$window_name}_substrate", "div", $el_name);
-    $response->addScript(<<<EOL
+    $response->create("{$window_name}_substrate", "div", $el_name);
+    $response->script(<<<EOL
         var _el = el('{$el_name}');
         _el.style.visibility = 'hidden';
         _el.style.position = 'absolute';
@@ -292,11 +292,11 @@ EOL
     );
 
     // Fill the label and row
-    $response->addAssign($el_name, "innerHTML", $html);
-    $response->addAssign($el_name . '_label', "innerHTML", $label);
+    $response->assign($el_name, "innerHTML", $html);
+    $response->assign($el_name . '_label', "innerHTML", $label);
 
     // Javascript to make sure the container (row) div is the exact length to hold it's contents in one row
-    $response->addScript(<<<EOL
+    $response->script(<<<EOL
         var nodes = _el.childNodes;
         var width = 0;
         for (var counter=0; counter < nodes.length; counter++)
@@ -308,16 +308,16 @@ EOL
     );
 
     // Display the label and block
-    $response->addScript(<<<EOL
+    $response->script(<<<EOL
         el('{$el_name}_label').style.visibility = 'visible';
         el('{$el_name}').style.visibility = 'visible';
         /* Tell the browser we've sent it this block so it knows it can re-request it if it needs to */
         _map_requests_['{$el_name}'] = undefined;
 EOL
     );
-    if ($js) { $response->addScript($js); }
+    if ($js) { $response->script($js); }
 
-    return($response->getXML());
+    return $response;
 }
 
 
