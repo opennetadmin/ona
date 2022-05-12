@@ -22,18 +22,8 @@ $color['window_tab_active_bg']      = '#E5E3F0';
 $color['window_tab_inactive_bg']    = '#FFFFFF';
 $color['window_content_bg']         = '#F2F2F2';
 
-
-// These are the functions we'll be exposing via Xajax
-// xajax 0.2.x format
-$xajax->registerFunction("window_open");
-$xajax->registerFunction("window_submit");
-
-// for when and if I switch to xajax 0.5.x
-//$xajax->register(XAJAX_FUNCTION,"window_submit");
-//$xajax->register(XAJAX_FUNCTION,"window_open");
-
-
-
+$xajax->register(XAJAX_FUNCTION,"window_submit");
+$xajax->register(XAJAX_FUNCTION,"window_open");
 
 //////////////////////////////////////////////////////////////////////////////
 // Xajax Server
@@ -59,7 +49,7 @@ $xajax->registerFunction("window_submit");
 function window_open($window_name, $window=array()) {
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$window_name) { return($response->getXML()); }
+    if (!$window_name) { return $response; }
 
     // Variables that might be used in building HTML :: FIXME this is site specific!
     global $font_family, $color, $style, $images;
@@ -113,19 +103,19 @@ EOL;
     }
 
     // Create a new div to display the content in
-    $response->addScript("removeElement('{$window_name}');");
-    $response->addCreate("window_container", "div", $window_name);
-    $response->addScript(
+    $response->script("removeElement('{$window_name}');");
+    $response->create("window_container", "div", $window_name);
+    $response->script(
         "initialize_window('{$window_name}');" .
         "el('$window_name').style.display = 'none';" .
         "el('$window_name').style.visibility = 'hidden';" .
         "el('$window_name').onclick = function(ev) { focus_window(this.id); };"
     );
-    $response->addAssign($window_name, "innerHTML", $window['header'] . $window['html'] . $window['footer']);
-    $response->addScript("toggle_window('{$window_name}');" . $window['js']);
+    $response->assign($window_name, "innerHTML", $window['header'] . $window['html'] . $window['footer']);
+    $response->script("toggle_window('{$window_name}');" . $window['js']);
 
     // Send an XML response to the web browser
-    return($response->getXML());
+    return $response;
 }
 
 
@@ -157,7 +147,7 @@ EOL;
 function window_submit($window_name, $form='', $function='') {
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$window_name or !$form) { return($response->getXML()); }
+    if (!$window_name or !$form) { return $response; }
     $js = "";
 
     printmsg("DEBUG => webwin_submit() Window: {$window_name} Function: {$function} Form: {$form}", 1);
@@ -175,14 +165,14 @@ function window_submit($window_name, $form='', $function='') {
     // Try looking for the same function in an include file
     $file = window_find_include($window_name);
     if ($file) { require_once($file); }
-    else { $response->addAssign("work_space_content", "innerHTML", "<br><center><font color=\"red\"><b>Invalid window requested: {$window_name}</b></font></center>"); }
+    else { $response->assign("work_space_content", "innerHTML", "<br><center><font color=\"red\"><b>Invalid window requested: {$window_name}</b></font></center>"); }
 
     // Now see if our function is available...
     if (function_exists($function)) { return($function($window_name, $form)); }
 
     // Ok, I couldn't find anything to do.. just return an empty XML response
     printmsg("NOTICE => webwin_submit() invalid function called! Window: {$window_name} Function: {$function}", 0);
-    return($response->getXML());
+    return $response;
 }
 
 

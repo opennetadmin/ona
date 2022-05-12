@@ -58,11 +58,11 @@ EOL;
 
 
     $response = new xajaxResponse();
-    $response->addAssign('menu_bar_top', "innerHTML", $html);
-    $response->addScript($js);
+    $response->assign('menu_bar_top', "innerHTML", $html);
+    $response->script($js);
     // used to let menus pass in javascript
-    $response->addScript($tmpjs);
-    return($response->getXML());
+    $response->script($tmpjs);
+    return $response;
 }
 
 
@@ -96,12 +96,12 @@ function ws_menu($window_name, $form='') {
     //   4. Unhide it
     $response = new xajaxResponse();
     if ($html) {
-        $response->addScript("el('{$form['id']}').style.visibility = 'hidden';");
-        $response->addAssign($form['id'], "innerHTML", $html);
-        $response->addScript("wwTT_position('{$form['id']}'); el('{$form['id']}').style.visibility = 'visible';");
+        $response->script("el('{$form['id']}').style.visibility = 'hidden';");
+        $response->assign($form['id'], "innerHTML", $html);
+        $response->script("wwTT_position('{$form['id']}'); el('{$form['id']}').style.visibility = 'visible';");
     }
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

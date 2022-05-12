@@ -30,7 +30,7 @@ $_ENV['help_url'] = "http://opennetadmin.com/docs/";
 
 
 // Get any query info
-parse_str($_SERVER['QUERY_STRING']);
+parse_str($_SERVER['QUERY_STRING'],$output);
 
 
 

@@ -1,17 +1,14 @@
 <?php
 //////////////////////////////////////////////////////////////////////////////
 // Xajax Enabled Drag
-// 
-// FIXME: requires that site support $conf['html_headers'] 
+//
+// FIXME: requires that site support $conf['html_headers']
 // FIXME: ?? requires $_SESSION already be active
 //
 //////////////////////////////////////////////////////////////////////////////
 
 
-$xajax->registerFunction("window_save_position");
-
-// for when and if I switch to xajax 0.5.x
-//$xajax->register(XAJAX_FUNCTION,"window_save_position");
+$xajax->register(XAJAX_FUNCTION,"window_save_position");
 
 
 
@@ -43,15 +40,15 @@ if (isset($_SESSION['window_position']) and is_array($_SESSION['window_position'
 function window_save_position($element, $x, $y) {
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$element or !$x or !$y) { return($response->getXML()); }
-    
+    if (!$element or !$x or !$y) { return $response; }
+
     // Search the DB
     if ($x > 0 and $y > 0 and $x < 3000 and $y < 3000) {
         $_SESSION['window_position']["{$element}_x"] = $x;
         $_SESSION['window_position']["{$element}_y"] = $y;
     }
-    
-    return($response->getXML());
+
+    return $response;
 }
 
 

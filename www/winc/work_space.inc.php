@@ -190,10 +190,10 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("trace_history", "innerHTML", $html);
-    $response->addAssign("work_space_title_r", "innerHTML", $new_buttons);
-    $response->addAssign("work_space_title", "innerHTML", $new_title);
-    return($response->getXML());
+    $response->assign("trace_history", "innerHTML", $html);
+    $response->assign("work_space_title_r", "innerHTML", $new_buttons);
+    $response->assign("work_space_title", "innerHTML", $new_title);
+    return $response;
 }
 
 
