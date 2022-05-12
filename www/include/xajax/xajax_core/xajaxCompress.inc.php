@@ -1,70 +1,42 @@
 <?php
-/**
- * xajaxCompress.php :: function to compress Javascript
- *
- * xajax version 0.2.4
- * copyright (c) 2005 by Jared White & J. Max Wilson
- * http://www.xajaxproject.org
- *
- * xajax is an open source PHP class library for easily creating powerful
- * PHP-driven, web-based Ajax Applications. Using xajax, you can asynchronously
- * call PHP functions and update the content of your your webpage without
- * reloading the page.
- *
- * xajax is released under the terms of the LGPL license
- * http://www.gnu.org/copyleft/lesser.html#SEC3
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- * 
- * @package xajax
- * @version $Id$
- * @copyright Copyright (c) 2005-2006  by Jared White & J. Max Wilson
- * @license http://www.gnu.org/copyleft/lesser.html#SEC3 LGPL License
- */
 
-/**
- * Compresses the Javascript code for more efficient delivery.
- * (used internally)
- * 
- * @param string contains the Javascript code to compress
- */
-function xajaxCompressJavascript($sJS)
+/*
+	Function: xajaxCompressFile
+	
+	<xajax> will call this function internally to compress the javascript code for 
+	more efficient delivery.
+	
+	Parameters:
+	
+	$sFile - (stirng):  The file to be compressed.
+*/
+function xajaxCompressFile($sFile)
 {
 	//remove windows cariage returns
-	$sJS = str_replace("\r","",$sJS);
+	$sFile = str_replace("\r",'',$sFile);
 	
 	//array to store replaced literal strings
 	$literal_strings = array();
 	
 	//explode the string into lines
-	$lines = explode("\n",$sJS);
+	$lines = explode("\n",$sFile);
 	//loop through all the lines, building a new string at the same time as removing literal strings
-	$clean = "";
+	$clean = '';
 	$inComment = false;
-	$literal = "";
+	$literal = '';
 	$inQuote = false;
 	$escaped = false;
-	$quoteChar = "";
+	$quoteChar = '';
 	
-	for($i=0;$i<count($lines);$i++)
+	$iLen = count($lines);
+	for($i=0; $i<$iLen; ++$i)
 	{
 		$line = $lines[$i];
 		$inNormalComment = false;
 	
 		//loop through line's characters and take out any literal strings, replace them with ___i___ where i is the index of this string
-		for($j=0;$j<strlen($line);$j++)
+		$jLen = strlen($line);
+		for($j=0; $j<$jLen; ++$j)
 		{
 			$c = substr($line,$j,1);
 			$d = substr($line,$j,2);
@@ -73,7 +45,7 @@ function xajaxCompressJavascript($sJS)
 			if(!$inQuote && !$inComment)
 			{
 				//is this character a quote or a comment
-				if(($c=="\"" || $c=="'") && !$inComment && !$inNormalComment)
+				if(($c=='"' || $c=="'") && !$inComment && !$inNormalComment)
 				{
 					$inQuote = true;
 					$inComment = false;
@@ -93,11 +65,11 @@ function xajaxCompressJavascript($sJS)
 				else if($d=="//") //ignore string markers that are found inside comments
 				{
 					$inNormalComment = true;
-					$clean .= $c;
 				}
 				else
 				{
-					$clean .= $c;
+					if (!$inNormalComment)
+						$clean .= $c;
 				}
 			}
 			else //allready in a string so find end quote
@@ -118,14 +90,7 @@ function xajaxCompressJavascript($sJS)
 				{
 					$inComment = false;
 					$literal .= $d;
-	
-					//subsitute in a marker for the string
-					$clean .= "___" . count($literal_strings) . "___";
-	
-					//push the string onto our array
-					array_push($literal_strings,$literal);
-	
-					$j++;
+					++$j;
 				}
 				else if($c == "\\" && !$escaped)
 					$escaped = true;
@@ -142,7 +107,8 @@ function xajaxCompressJavascript($sJS)
 	$lines = explode("\n",$clean);
 	
 	//now process each line at a time
-	for($i=0;$i<count($lines);$i++)
+	$iLen = count($lines);
+	for($i=0; $i<$iLen; ++$i)
 	{
 		$line = $lines[$i];
 	
@@ -162,21 +128,21 @@ function xajaxCompressJavascript($sJS)
 	}
 	
 	//implode the lines
-	$sJS = implode("\n",$lines);
+	$sFile = implode("\n",$lines);
 	
 	//make sure there is a max of 1 \n after each line
-	$sJS = preg_replace("/[\n]+/","\n",$sJS);
+	$sFile = preg_replace("/[\n]+/","\n",$sFile);
 	
 	//strip out line breaks that immediately follow a semi-colon
-	$sJS = preg_replace("/;\n/",";",$sJS);
+	$sFile = preg_replace("/;\n/",";",$sFile);
 	
 	//curly brackets aren't on their own
-	$sJS = preg_replace("/[\n]*\{[\n]*/","{",$sJS);
+	$sFile = preg_replace("/[\n]*\{[\n]*/","{",$sFile);
 	
 	//finally loop through and replace all the literal strings:
-	for($i=0;$i<count($literal_strings);$i++)
-		$sJS = str_replace("___".$i."___",$literal_strings[$i],$sJS);
+	$iLen = count($literal_strings);
+	for($i=0; $i<$iLen; ++$i)
+		$sFile = str_replace('___'.$i.'___',$literal_strings[$i],$sFile);
 	
-	return $sJS;
+	return $sFile;
 }
-?>
