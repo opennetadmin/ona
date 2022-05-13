@@ -1333,6 +1333,8 @@ function loggedIn() {
 //////////////////////////////////////////////////////////////////////////////
 function auth($resource,$msg_level=1) {
 
+    // for some reason the default above does not work
+    if (!isset($msg_level)) $msg_level=1;
     if (!is_string($resource)) return false;
     if (array_key_exists($resource, (array)$_SESSION['ona']['auth']['perms'])) {
         printmsg("DEBUG => auth() User[{$_SESSION['ona']['auth']['user']['username']}] has the {$resource} permission",5);

@@ -14,6 +14,7 @@ function ws_display_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
+    $debug_val = 3;
 
     // If the user supplied an array in a string, transform it into an array
     $form = parse_options_string($form);
@@ -619,7 +620,7 @@ EOL;
                     ></form>&nbsp;
 EOL;
 
-        if (auth('host_modify')) {
+        if (auth('host_modify',$debug_val)) {
             $html .= <<<EOL
 
                     <a title="Edit host"
@@ -629,7 +630,7 @@ EOL;
 EOL;
         }
 
-        if (auth('host_del')) {
+        if (auth('host_del',$debug_val)) {
             $html .= <<<EOL
 
                     <a title="Delete host"

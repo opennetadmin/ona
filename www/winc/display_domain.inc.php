@@ -13,7 +13,7 @@ function ws_display($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
-    //$debug_val = 3;  // used in the auth() calls to suppress logging
+    $debug_val = 3;  // used in the auth() calls to suppress logging
 
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
