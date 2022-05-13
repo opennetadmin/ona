@@ -28,8 +28,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('interface_modify')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -406,8 +406,8 @@ function ws_save($window_name, $form='') {
     // Check permissions (there is no interface_add, it's merged with host_add)
     if (! (auth('interface_modify') and auth('host_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
     // If an array in a string was provided, build the array and store it in $form
     $form = parse_options_string($form);
@@ -417,8 +417,8 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if ($form['set_ip'] == '') {
-        $response->addScript("alert('Please complete the IP address field to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete the IP address field to continue!');");
+        return $response;
     }
     // set_create_a and set_create_ptr should both be set!
     if (!$form['set_addptr']) $form['set_addptr'] = 'N';
@@ -443,7 +443,7 @@ function ws_save($window_name, $form='') {
 
     // Do a pre check of the ptr domain so we can prompt the user properly
     if ($module == 'interface_add') {
-	
+
         $ipflip = ip_mangle($form['ip'],'flip');
         $octets = explode(".",$ipflip);
         //GD: ipv6 IPs must be reversed in .ip6.arpa
@@ -459,8 +459,8 @@ function ws_save($window_name, $form='') {
         if (!$ptrdomain['id']) {
             printmsg("ERROR => You must first create at least the following DNS domain: {$octets[$octcount]}{$arpa}",3);
             $self['error'] = "ERROR => You must first create at least the following DNS domain: {$octets[$octcount]}{$arpa}.  You could also create domains for class B or class C level reverse zones.  Click OK to open add domain dialog";
-            $response->addScript("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[$octcount]}{$arpa}', 'editor');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[$octcount]}{$arpa}', 'editor');");
+            return $response;
         }
     }
 
@@ -488,8 +488,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -513,8 +513,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('interface_del')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -542,8 +542,8 @@ function ws_delete($window_name, $form='') {
         $js .= $form['js'];  // usually js will refresh the window we got called from
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

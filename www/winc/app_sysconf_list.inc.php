@@ -15,6 +15,7 @@
 //
 //
 
+global $images,$conf;
 
 // Check permissions
 if (!auth('advanced')) {
@@ -30,7 +31,7 @@ $form_id = "{$window_name}_filter_form";
 $tab = 'sysconf';
 $submit_window = $window_name;
 $content_id = "{$window_name}_list";
-$window['html'] .= <<<EOL
+$window['html'] = <<<EOL
     <!-- Tabs & Quick Filter -->
     <table width="100%" cellspacing="0" border="0" cellpadding="0" >
         <tr>
@@ -127,8 +128,8 @@ function ws_display_list($window_name, $form) {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -270,10 +271,9 @@ EOL;
     // Insert the new table into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_sysconf_count",  "innerHTML", "({$count})");
-    $response->addAssign("{$form['content_id']}", "innerHTML", $html);
-    // $response->addScript($js);
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_sysconf_count",  "innerHTML", "({$count})");
+    $response->assign("{$form['content_id']}", "innerHTML", $html);
+    return $response;
 }
 
 
@@ -294,8 +294,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -307,8 +307,8 @@ function ws_delete($window_name, $form='') {
                                         'sys_config',
                                         array('name' => $form));
     if ($status or !$rows) {
-        $response->addScript("alert('Delete failed: sys_config entry {$form} does not exist');");
-        return($response->getXML());
+        $response->script("alert('Delete failed: sys_config entry {$form} does not exist');");
+        return $response;
     }
 
         // Delete the record
@@ -332,8 +332,8 @@ function ws_delete($window_name, $form='') {
     $js .= "xajax_window_submit('$window_name', xajax.getFormValues('{$window_name}_filter_form'), 'display_list');";
 
     // Send an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

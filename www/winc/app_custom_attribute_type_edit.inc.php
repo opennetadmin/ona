@@ -19,8 +19,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Set a few parameters for the "results" window we're about to create
@@ -169,8 +169,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -186,8 +186,8 @@ function ws_save($window_name, $form='') {
     if($form['cust_attrib_type_name'] == "") {
         $self['error'] = "ERROR => Blank names not allowed.";
         printmsg($self['error'], 0);
-        $response->addScript("alert('{$self['error']}');");
-        return($response->getXML());
+        $response->script("alert('{$self['error']}');");
+        return $response;
     }
 
 
@@ -210,7 +210,7 @@ function ws_save($window_name, $form='') {
             if ($status or !$rows) {
                 $self['error'] = "ERROR => cust_attrib_type edit update ws_save() failed: " . $self['error'];
                 printmsg($self['error'], 0);
-                $response->addScript("alert('{$self['error']}');");
+                $response->script("alert('{$self['error']}');");
             }
             else {
                 // Get the manufacturer record after updating (logging)
@@ -264,8 +264,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Return some javascript to the browser
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

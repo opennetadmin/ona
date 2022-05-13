@@ -28,8 +28,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (! (auth('host_modify') or auth('host_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -507,8 +507,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (! (auth('host_modify') or auth('host_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -519,8 +519,8 @@ function ws_save($window_name, $form='') {
         /* Interface input: required only if adding a host */
         ($form['host'] == '.' and $form['set_ip'] == '')
        ) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all fields to continue!');");
+        return $response;
     }
 
     // Since we're adding two records (host and an interface)
@@ -530,21 +530,15 @@ function ws_save($window_name, $form='') {
     // Validate the "set_host" name is valid
     $form['set_host'] = sanitize_hostname(trim($form['set_host']));
     if (!$form['set_host']) {
-        $response->addScript("alert('Invalid hostname!');");
-        return($response->getXML());
+        $response->script("alert('Invalid hostname!');");
+        return $response;
     }
-    // Validate domain is valid
-//     list($status, $rows, $domain) = ona_find_domain($form['set_domain'],0);
-//     if ($status or !$rows) {
-//         $response->addScript("alert('Invalid domain!');");
-//         return($response->getXML());
-//     }
     // Make sure the IP address specified is valid
     if ($form['host'] != '.' and $form['set_ip']) {
         $form['set_ip'] = ip_mangle($form['set_ip'], 'dotted');
         if ($form['set_ip'] == -1) {
-            $response->addScript("alert('{$self['error']}');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');");
+            return $response;
         }
     }
 
@@ -565,8 +559,8 @@ function ws_save($window_name, $form='') {
 
         if (!auth('host_add')) {
             $response = new xajaxResponse();
-            $response->addScript("alert('Permission denied!');");
-            return($response->getXML());
+            $response->script("alert('Permission denied!');");
+            return $response;
         }
 
         // Device options
@@ -607,8 +601,8 @@ function ws_save($window_name, $form='') {
         if (!$ptrdomain['id']) {
             printmsg("ERROR => This operation tried to create a PTR record that is the first in this IP address space.  You must first create at least the following DNS domain: {$octets[$octcount]}.in-addr.arpa",3);
             $self['error'] = "ERROR => This operation tried to create a PTR record that is the first in this IP address space.<br>You must first create at least the following DNS domain: <b>{$octets[$octcount]}.in-addr.arpa</b>.<br>You could also create domains at deeper level reverse zones if desired.<br>We have opened the add domain dialog for you.";
-            $response->addScript("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[$octcount]}{$arpa}', 'editor');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[$octcount]}{$arpa}', 'editor');");
+            return $response;
         }
     }
 
@@ -639,8 +633,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -664,8 +658,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('host_del')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -693,8 +687,8 @@ function ws_delete($window_name, $form='') {
         $js .= $form['js'];  // usually js will refresh the window we got called from
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

@@ -19,8 +19,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Set a few parameters for the "results" window we're about to create
@@ -140,8 +140,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -162,8 +162,8 @@ function ws_save($window_name, $form='') {
     if(trim($form['dns_view_name']) == "") {
         $self['error'] = "ERROR => Blank names not allowed.";
         printmsg($self['error'], 1);
-        $response->addScript("alert('{$self['error']}');");
-        return($response->getXML());
+        $response->script("alert('{$self['error']}');");
+        return $response;
     }
 
 
@@ -180,8 +180,8 @@ function ws_save($window_name, $form='') {
             if ($rows) {
                 $self['error'] = "ERROR => The name you are trying to use already exists.";
                 printmsg($self['error'], 1);
-                $response->addScript("alert('{$self['error']}');");
-                return($response->getXML());
+                $response->script("alert('{$self['error']}');");
+                return $response;
             }
             $SET['name'] = strtoupper($form['dns_view_name']);
         }
@@ -191,7 +191,7 @@ function ws_save($window_name, $form='') {
         if ($status or !$rows) {
             $self['error'] = "ERROR => dns_view_edit update ws_save() failed: " . $self['error'];
             printmsg($self['error'], 1);
-            $response->addScript("alert('{$self['error']}');");
+            $response->script("alert('{$self['error']}');");
         }
         else {
             // Get the record after updating (logging)
@@ -213,8 +213,8 @@ function ws_save($window_name, $form='') {
         if ($rows) {
             $self['error'] = "ERROR => The name you are trying to use already exists.";
             printmsg($self['error'], 1);
-            $response->addScript("alert('{$self['error']}');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');");
+            return $response;
         }
 
         $id = ona_get_next_id('dns_views');
@@ -252,8 +252,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Return some javascript to the browser
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

@@ -18,8 +18,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -324,8 +324,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -334,8 +334,8 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if (!$form['start'] and !$form['end']) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all fields to continue!');");
+        return $response;
     }
 
     list($status, $rows, $subnet) = ona_find_subnet($form['subnet_id']);
@@ -345,8 +345,8 @@ function ws_save($window_name, $form='') {
 
     // check the ips are part of the subnet you are on
     if (($start_dec < $subnet['ip_addr'] or $start_dec > $net_end) or ($end_dec < $subnet['ip_addr'] or $end_dec > $net_end)) {
-        $response->addScript("alert('Save failed: ERROR => The pool range you specified is not part of the subnet: {$subnet['name']}!');");
-        return($response->getXML());
+        $response->script("alert('Save failed: ERROR => The pool range you specified is not part of the subnet: {$subnet['name']}!');");
+        return $response;
     }
 
 
@@ -378,8 +378,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 
 }
 
@@ -403,8 +403,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
    // If an array in a string was provided, build the array and store it in $form
@@ -425,8 +425,8 @@ function ws_delete($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 
 }
 

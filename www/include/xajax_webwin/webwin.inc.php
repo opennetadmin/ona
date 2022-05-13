@@ -59,7 +59,7 @@ function window_open($window_name, $window=array()) {
     if ($file) { require_once($file); }
 
     // Setup a header and footer for the new window
-    if (!$window['header']) {
+    if (!isset($window['header'])) {
         $window['header'] = <<<EOL
 
         <!-- This wrapper table is so that internal tables can be set to 100% width and they won't stretch the box too wide. -->
@@ -94,7 +94,7 @@ function window_open($window_name, $window=array()) {
             </table>
 EOL;
     }
-    if (!$window['footer']) {
+    if (!isset($window['footer'])) {
         $window['footer'] = <<<EOL
         </td>
         </tr>

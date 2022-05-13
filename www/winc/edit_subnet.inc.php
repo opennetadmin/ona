@@ -18,18 +18,21 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (! (auth('subnet_modify') and auth('subnet_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
 
+
     // If $form is a number, it's an record ID- so we transform $form into an array
     if (is_numeric($form)) $form = array('subnet_id' => $form);
     $subnet = array();
+    $vlan = array();
 
     // Load an existing record (and associated info) if $form is an id
+   if (!empty($form['subnet_id'])) {
     if (is_numeric($form['subnet_id'])) {
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
         if ($rows) {
@@ -51,8 +54,10 @@ function ws_editor($window_name, $form='') {
         if (strlen($form['ip_mask']) > 1) $subnet['ip_mask'] = ip_mangle($form['ip_mask'], 'dotted');
         if (strlen($form['name']) > 1) $subnet['name'] = $form['name'];
     }
+   }
 
-    if (!$subnet['vlan_id']) $subnet['vlan_desc'] = 'None';
+    if (empty($subnet['vlan_id'])) $subnet['vlan_desc'] = 'None';
+    if (empty($subnet['subnet_type_id'])) $subnet['subnet_type_id'] = 0;
 
 
     // Escape data for display in html
@@ -60,20 +65,16 @@ function ws_editor($window_name, $form='') {
 
     // Set the window title:
     $window['title'] = "Add Subnet";
-    if ($subnet['id']) $window['title'] = "Edit Subnet";
-
+    if (isset($subnet['id'])) $window['title'] = "Edit Subnet";
 
     // Build subnet type list
     list($status, $rows, $subnettypes) = db_get_records($onadb, 'subnet_types', 'id > 0', 'display_name');
     $subnet_type_list = '<option value="">&nbsp;</option>\n';
-    $subnettypes['subnet_type_name'] = htmlentities($subnettypes['display_name']);
     foreach ($subnettypes as $record) {
         $selected = "";
         if ($record['id'] == $subnet['subnet_type_id']) { $selected = "SELECTED=\"selected\""; }
         if ($record['id']) {$subnet_type_list .= "<option {$selected} value=\"{$record['id']}\">{$record['display_name']}</option>\n";}
     }
-
-
 
     // Javascript to run after the window is built
     $window['js'] = <<<EOL
@@ -290,8 +291,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (! (auth('subnet_modify') and auth('subnet_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -304,22 +305,22 @@ function ws_save($window_name, $form='') {
         $form['set_ip'] == '' or
         $form['set_netmask'] == ''
        ) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all fields to continue!');");
+        return $response;
     }
 
     // Make sure the IP address specified is valid
     $form['set_ip'] = ip_mangle($form['set_ip'], 'dotted');
     if ($form['set_ip'] == -1) {
-        $response->addScript("alert('{$self['error']}');");
-        return($response->getXML());
+        $response->script("alert('{$self['error']}');");
+        return $response;
     }
     // Make sure the netmask specified is valid
     $form['set_netmask'] = ip_mangle($form['set_netmask'], 'cidr');
     if ($form['set_netmask'] == -1) {
         $self['error'] = preg_replace('/IP address/i', 'netmask', $self['error']);
-        $response->addScript("alert('{$self['error']}');");
-        return($response->getXML());
+        $response->script("alert('{$self['error']}');");
+        return $response;
     }
 
     // Before we go on, we must alert the user if this new subnet would require a new PTR zone.
@@ -329,8 +330,8 @@ function ws_save($window_name, $form='') {
 //     list($status, $rows, $ptrdomain) = ona_find_domain($ipflip.".in-addr.arpa");
 //     if (!$ptrdomain['id']) {
 //         $self['error'] = "ERROR => This subnet is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa\\n\\nSelect OK to create new DNS domain now.";
-//         $response->addScript("var doit=confirm('{$self['error']}');if (doit == true) {xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[3]}.in-addr.arpa', 'editor');} else {removeElement('{$window_name}');}");
-//         return($response->getXML());
+//         $response->script("var doit=confirm('{$self['error']}');if (doit == true) {xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[3]}.in-addr.arpa', 'editor');} else {removeElement('{$window_name}');}");
+//         return $response;
 //     }
 
 
@@ -350,7 +351,7 @@ function ws_save($window_name, $form='') {
         $form['netmask'] = $form['set_netmask'];         unset($form['set_netmask']);
         $form['vlan'] = $form['set_vlan'];               unset($form['set_vlan']);
     }
-    
+
     // Run the module to ADD or MODIFY the SUBNET.
     list($status, $output) = run_module('subnet_'.$module, $form);
 
@@ -364,15 +365,15 @@ function ws_save($window_name, $form='') {
             $js .= "el('statusinfo_{$window_name}').innerHTML = 'Previously added: {$form['name']}';";
         else
             $js .= "removeElement('{$window_name}');";
-        
+
         // If there is "refresh" javascript, send it to the browser to execute
         // MP: FIXME.. there is an issue that if you add a new subnet, then imidiately modify its IP the JS refresh uses the old ip and fails.  find out why
         if ($form['js']) $js .= $form['js'];
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -396,8 +397,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('subnet_del')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -425,8 +426,8 @@ function ws_delete($window_name, $form='') {
         $js .= $form['js'];  // usually js will refresh the window we got called from
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

@@ -35,8 +35,8 @@ function ws_process_alerts_submit($window_name, $form='') {
 
 
     $response = new xajaxResponse();
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

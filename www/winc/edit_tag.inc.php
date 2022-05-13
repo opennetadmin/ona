@@ -14,8 +14,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (! (auth('host_add') or auth('subnet_add'))) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -39,8 +39,8 @@ function ws_save($window_name, $form='') {
     $js .= "xajax_window_submit('tooltips', 'type => {$form['type']}, reference => {$form['reference']}, updateid => {$form['updateid']}', 'tag_html');";
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -58,8 +58,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (! (auth('host_del') or auth('subnet_del'))) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -80,8 +80,8 @@ function ws_delete($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

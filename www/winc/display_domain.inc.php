@@ -24,8 +24,8 @@ function ws_display($window_name, $form='') {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Domain doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
+        $response->assign("work_space_content", "innerHTML", $html);
+        return $response;
     }
 
     // Update History Title
@@ -41,7 +41,7 @@ function ws_display($window_name, $form='') {
     $refresh = "xajax_window_submit('work_space', '{$refresh}');";
 
     // Get associated info
-    if ($record['parent_id']) {
+    if (isset($record['parent_id'])) {
         list($status, $rows, $parent_domain) = ona_get_domain_record(array('id' => $record['parent_id']));
         $parent_domain['name'] = ona_build_domain_name($parent_domain['id']);
     } else {
@@ -472,9 +472,9 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("work_space_content", "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign("work_space_content", "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 
@@ -517,9 +517,9 @@ function ws_display_config($window_name, $form='') {
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("confoutput", "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign("confoutput", "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

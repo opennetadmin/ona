@@ -19,20 +19,20 @@ EOL;
                 try one of these tasks:<br>
                 <a title="Add DNS domain"
                 class="act"
-                onClick="xajax_window_submit('edit_domain', ' ', 'editor');"
+                onClick="xajax_window_submit('edit_domain', 'js=> ', 'editor');"
                 ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
                 <a title="Add DNS domain"
                 class="act"
-                onClick="xajax_window_submit('edit_domain', ' ', 'editor');"
+                onClick="xajax_window_submit('edit_domain', 'js=> ', 'editor');"
                 >Add a DNS domain</a>&nbsp;
                 <br>
                 <a title="Add subnet"
                 class="act"
-                onClick="xajax_window_submit('edit_subnet', ' ', 'editor');"
+                onClick="xajax_window_submit('edit_subnet', 'js=> ', 'editor');"
                 ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
                 <a title="Add subnet"
                 class="act"
-                onClick="xajax_window_submit('edit_subnet', ' ', 'editor');"
+                onClick="xajax_window_submit('edit_subnet', 'js=> ', 'editor');"
                 >Add a new subnet</a>&nbsp;
                 <br>
                 <a title="Add host"

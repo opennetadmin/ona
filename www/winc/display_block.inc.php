@@ -25,8 +25,8 @@ function ws_display($window_name, $form='') {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Block doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
+        $response->assign("work_space_content", "innerHTML", $html);
+        return $response;
     }
 
     // Update History Title
@@ -316,10 +316,10 @@ EOL;
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     // GDO need to use Big Int JS
-    $response->addIncludeScript('include/js/bignumber.js');
-    $response->addAssign("work_space_content", "innerHTML", $html);
-    if ($js) { $response->addScript($js . $portal_js); }
-    return($response->getXML());
+    $response->includeScript('include/js/bignumber.js');
+    $response->assign("work_space_content", "innerHTML", $html);
+    if ($js) { $response->script($js . $portal_js); }
+    return $response;
 }
 
 

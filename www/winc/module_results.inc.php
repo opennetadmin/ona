@@ -3,10 +3,10 @@
 // This is not really a window at all.
 // It is intended to be "included" by other code to build the html
 // to display the output from a module it just ran.
-// 
+//
 // The following variables must be pre-defined before including this file:
 //   $output    The textual output from the module you just ran
-// 
+//
 // The following are optional variables must both be deifned to enable the "commit" checkbox:
 //   $build_commit_html = 1 | 0    Wether this code should build a commit checkbox and submit button.
 //                                 We use this for almost every "delete" module.
@@ -14,7 +14,7 @@
 //                                 the submit button is pressed.
 //  FYI, if you use the "commit" functionality, the created window MUST be called "{$window_name}_results"
 //  for the Cancel button to work properly.
-//  
+//
 
 
 global $color, $style;

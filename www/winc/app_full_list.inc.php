@@ -60,7 +60,7 @@ $window['js'] = <<<EOL
         el('{$window_name}_title_r').innerHTML = 
             '&nbsp;<a onClick="toggle_window(\'{$window_name}\');" title="Minimize window" style="cursor: pointer;"><img src="{$images}/icon_minimize.gif" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
-        
+
         /* Put a help icon in the title bar */
         el('{$window_name}_title_r').innerHTML = 
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
@@ -79,33 +79,33 @@ EOL;
     if(array_key_exists('ip',$form) && array_key_exists('ip_thru',$form) ) {
         // Set the window title:
         $window['subtitle'] = "Range: {$form['ip']} to {$form['ip_thru']}";
-        
+
         // Define javascript to run after the window is created
         $window['js'] .= <<<EOL
          /* Tell the browser to load/display the list */
          xajax_window_submit('app_full_list', 'ip=>{$form['ip']},ip_thru=>{$form['ip_thru']},form_id=>{$form_id},content_id=>{$content_id}', 'display_list');
-         
+
 EOL;
-    
+
     }
     if(array_key_exists('subnet_id',$form)) {
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
-        
+
         // Set the window title:
         $window['subtitle'] = "Subnet: {$subnet['name']}";
-        
+
         // Define javascript to run after the window is created
         $window['js'] .= <<<EOL
          /* Tell the browser to load/display the list */
          xajax_window_submit('app_full_list', 'subnet_id=>{$form['subnet_id']},form_id=>{$form_id},content_id=>{$content_id}', 'display_list');
-         
+
 EOL;
-        
-    }    
+
+    }
     $window['html'] .= <<<EOL
     <!-- HOST LIST -->
     <div style="border: 1px solid {$color['border']}; height : 700px; overflow-y : auto;overflow-x : hidden">
-        
+
         <!-- Tab & Quick Filter -->
         <table id="{$form_id}_table" cellspacing="0" border="0" cellpadding="0">
             <tr>
@@ -120,7 +120,7 @@ EOL;
          <div id='{$content_id}'>
             {$conf['loading_icon']}
         </div>
-    </div>        
+    </div>
 EOL;
 
 
@@ -130,7 +130,7 @@ EOL;
 
 //////////////////////////////////////////////////////////////////////////////
 // Function: ws_display_list()
-// 
+//
 // Description:
 //   Displays A list of hosts based on search criteria.
 //   Input:  An array from xajaxGetFormValues() from a quick filter form.
@@ -140,27 +140,27 @@ function ws_display_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
-    
+
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
-    
+
     // Find the "tab" we're on
     $tab = $_SESSION['ona'][$form['form_id']]['tab'];
-    
+
     // Build js to refresh this list
     $refresh = "xajax_window_submit('{$window_name}', xajax.getFormValues('{$form['form_id']}'), 'display_list');";
-    
-   
+
+
     // Search results go in here
     $results = array();
     $count = 0;
-   
-    
+
+
     // NETWORK ID
     if (is_numeric($form['subnet_id'])) {
-        
+
     }
-    
+
     // Do the SQL Query
     list ($status, $count, $results) = 
         db_get_records(
@@ -177,7 +177,7 @@ function ws_display_list($window_name, $form='') {
     foreach($results as $record) {
         $iplist["{$record['ip_addr']}"]='used';
     }
-   
+
     list($status, $rows, $subnet) = ona_find_subnet($form['subnet_id']); 
 
     // Create a few variables that will be handy later
@@ -196,14 +196,14 @@ function ws_display_list($window_name, $form='') {
     foreach ($pools as $pool)
         for ($ip = $pool['ip_addr_start']; $ip <= $pool['ip_addr_end']; $ip++)
             $iplist["{$ip}"] = 'pool-'.$pool['id'];
-    
+
     // 
     // *** BUILD HTML LIST ***
     // 
     $html .= <<<EOL
         <!-- Host Results -->
         <table id="{$form['form_id']}_full_host_list" class="list-box" cellspacing="0" border="0" cellpadding="0">
-            
+
             <!-- Table Header -->
             <tr>
                 <td class="list-header" align="center" style="{$style['borderR']};" title="IP Block Association">B</td>
@@ -249,7 +249,7 @@ EOL;
                class="act"
                onClick="xajax_window_submit('edit_interface', 'ip_addr=>{$currip_txt}', 'editor');"
             >Add interface to an existing host</a>&nbsp;
-                 
+
 EOL;
 
         // If the current ip is one allocated on this subnet lets do some stuff
@@ -267,7 +267,7 @@ EOL;
                        class="act"
                        onClick="xajax_window_submit('edit_dhcp_pool', 'subnet=>{$subnet['id']},id=>{$poolid}', 'editor');"
                     ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
-        
+
                     <a title="Edit Pool"
                        class="act"
                        onClick="xajax_window_submit('edit_dhcp_pool', 'subnet=>{$subnet['id']},id=>{$poolid}', 'editor');"
@@ -277,10 +277,10 @@ EOL;
             } else {
                 // Get host record
                 list($status, $rows, $host) = ona_find_host($currip); 
-               
+
                 // Get the interface info 
                 list($status, $rows, $interface) = ona_find_interface($currip);
-            
+
                 // Count how many interface rows this host hasand assign it back to the interfaces variable
                 list($status, $interfaces, $records) = db_get_records($onadb, 'interfaces', 'host_id = '. $onadb->qstr($host['id']), "", 0);
 
@@ -351,7 +351,7 @@ EOL;
 
         $html .= <<<EOL
             <tr {$rowid}=true style="{$rowstyle}" onMouseOver="this.className='row-highlight'" onMouseOut="this.className='row-normal'">
-                
+
 EOL;
 
         // Print color info for any matching blocks
@@ -437,8 +437,8 @@ EOL;
     $html .= <<<EOL
     </table>
 EOL;
-    
-    
+
+
     $js .= <<<EOL
             /* Make sure this table is 100% wide */
             el('{$form['form_id']}_full_host_list').style.width = el('{$form['form_id']}_table').offsetWidth + 'px';
@@ -453,16 +453,16 @@ function togglebyip(name) {
     }
 }
 EOL;
-    
-   
-    
+
+
+
     // Insert the new html into the content div specified
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_{$tab}_count",  "innerHTML", "({$count})");
-    $response->addAssign($form['content_id'], "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_{$tab}_count",  "innerHTML", "({$count})");
+    $response->assign($form['content_id'], "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

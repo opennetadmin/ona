@@ -32,8 +32,8 @@ function ws_display($window_name, $form='') {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>The report {$form['report']} doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
+        $response->assign("work_space_content", "innerHTML", $html);
+        return $response;
     }
 
     // Update History Title
@@ -69,10 +69,10 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("work_space_content", "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    if ($rpt_js) { $response->addScript($rpt_js); }
-    return($response->getXML());
+    $response->assign("work_space_content", "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    if ($rpt_js) { $response->script($rpt_js); }
+    return $response;
 }
 
 
@@ -102,9 +102,9 @@ function ws_run_report($window_name, $form='') {
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("report_content", "innerHTML", $report_output);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign("report_content", "innerHTML", $report_output);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

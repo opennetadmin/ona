@@ -108,10 +108,10 @@ EOL;
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     // GDO need to use Big Int JS
-    $response->addIncludeScript('include/js/bignumber.js');
-    $response->addAssign("work_space_content", "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->includeScript('include/js/bignumber.js');
+    $response->assign("work_space_content", "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

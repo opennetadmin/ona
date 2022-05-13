@@ -126,8 +126,8 @@ function ws_display_list($window_name, $form) {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -271,10 +271,9 @@ EOL;
     // Insert the new table into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_dns_view_count",  "innerHTML", "({$count})");
-    $response->addAssign("{$form['content_id']}", "innerHTML", $html);
-    // $response->addScript($js);
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_dns_view_count",  "innerHTML", "({$count})");
+    $response->assign("{$form['content_id']}", "innerHTML", $html);
+    return $response;
 }
 
 
@@ -295,8 +294,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -305,8 +304,8 @@ function ws_delete($window_name, $form='') {
 
     // Don't allow them to delete the default
     if ($form == 0) {
-        $response->addScript("alert('You are not allowed to delete the default DNS view.');");
-        return($response->getXML());
+        $response->script("alert('You are not allowed to delete the default DNS view.');");
+        return $response;
     }
 
     // Load the record to make sure it exists
@@ -314,8 +313,8 @@ function ws_delete($window_name, $form='') {
                                                 'dns_views',
                                                 array('id' => $form));
     if ($status or !$rows) {
-        $response->addScript("alert('Delete failed: DNS view id {$form} does not exist');");
-        return($response->getXML());
+        $response->script("alert('Delete failed: DNS view id {$form} does not exist');");
+        return $response;
     }
 
     // Get a list of device models that use this manufacturer
@@ -351,8 +350,8 @@ function ws_delete($window_name, $form='') {
     $js .= "xajax_window_submit('$window_name', xajax.getFormValues('{$window_name}_filter_form'), 'display_list');";
 
     // Send an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

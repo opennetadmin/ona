@@ -70,6 +70,7 @@ $conf = array (
 
     /* Defaults for some user definable options normally in sys_config table */
     "debug"                  => "2",
+    "force_https"            => "0", // TODO: check what the best default is here.. something wrong with port level redirects too
     "syslog"                 => "0",
     "stdout"                 => "0",
     "log_to_db"              => "0",

@@ -18,8 +18,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('vlan_add')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -200,8 +200,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (! (auth('advanced')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -210,14 +210,14 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if (!$form['campus'] or !$form['name'] or !$form['number']) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all fields to continue!');");
+        return $response;
     }
     // Validate zone is valid
     list($status, $rows, $campus)  = ona_get_vlan_campus_record(array('name'  => $form['campus']));
     if ($status or !$rows) {
-        $response->addScript("alert('Invalid VLAN campus!');");
-        return($response->getXML());
+        $response->script("alert('Invalid VLAN campus!');");
+        return $response;
     }
 
     // Decide if we're editing or adding
@@ -252,8 +252,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -276,8 +276,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -298,8 +298,8 @@ function ws_delete($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

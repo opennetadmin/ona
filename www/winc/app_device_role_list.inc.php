@@ -127,8 +127,8 @@ function ws_display_list($window_name, $form) {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -161,11 +161,11 @@ EOL;
     if ($offset == 0) { $offset = -1; }
 
     // Get list of elements
-    list($status, $rows, $records) = db_get_records($onadb, 
-                                            'roles', 
-                                            $where, 
-                                            'name', 
-                                            $conf['search_results_per_page'], 
+    list($status, $rows, $records) = db_get_records($onadb,
+                                            'roles',
+                                            $where,
+                                            'name',
+                                            $conf['search_results_per_page'],
                                             $offset);
 
     // If we got less than serach_results_per_page, add the current offset to it
@@ -176,10 +176,10 @@ EOL;
 
     // If there were more than $conf['search_results_per_page'] find out how many records there really are
     else if ($rows >= $conf['search_results_per_page']) {
-        list ($status, $rows, $tmp) = db_get_records($onadb, 
-                                            'roles', 
-                                            $where, 
-                                            '', 
+        list ($status, $rows, $tmp) = db_get_records($onadb,
+                                            'roles',
+                                            $where,
+                                            '',
                                             0);
     }
     $count = $rows;
@@ -247,10 +247,9 @@ EOL;
     // Insert the new table into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_role_count",  "innerHTML", "({$count})");
-    $response->addAssign("{$form['content_id']}", "innerHTML", $html);
-    // $response->addScript($js);
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_role_count",  "innerHTML", "({$count})");
+    $response->assign("{$form['content_id']}", "innerHTML", $html);
+    return $response;
 }
 
 
@@ -271,8 +270,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -280,19 +279,19 @@ function ws_delete($window_name, $form='') {
     $js = '';
 
     // Load the record to make sure it exists
-    list($status, $rows, $role) = db_get_record($onadb, 
-                                        'roles', 
+    list($status, $rows, $role) = db_get_record($onadb,
+                                        'roles',
                                         array('id' => $form));
     if ($status or !$rows) {
-        $response->addScript("alert('Delete failed: Role id {$form} does not exist');");
-        return($response->getXML());
+        $response->script("alert('Delete failed: Role id {$form} does not exist');");
+        return $response;
     }
 
     // Get a list of device models that use this role
-    list($status, $rows, $devicemodels) = db_get_records($onadb, 
-                                                'models', 
-                                                array('role_id' => $form), 
-                                                '', 
+    list($status, $rows, $devicemodels) = db_get_records($onadb,
+                                                'models',
+                                                array('role_id' => $form),
+                                                '',
                                                 0);
 
     // Check that there are no parent records using this type
@@ -301,8 +300,8 @@ function ws_delete($window_name, $form='') {
     }
     else {
         // Delete the record
-        list($status, $rows) = db_delete_records($onadb, 
-                                    'roles', 
+        list($status, $rows) = db_delete_records($onadb,
+                                    'roles',
                                     array('id' => $role['id']));
 
         if ($status or !$rows) {
@@ -321,8 +320,8 @@ function ws_delete($window_name, $form='') {
     $js .= "xajax_window_submit('$window_name', xajax.getFormValues('{$window_name}_filter_form'), 'display_list');";
 
     // Send an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

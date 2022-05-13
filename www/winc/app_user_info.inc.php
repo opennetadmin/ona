@@ -229,8 +229,8 @@ function ws_change_user_password($window_name, $form) {
     // Validate the userid was passed and is "clean"
     if (!preg_match('/^[A-Za-z0-9.\-_]+$/', $username)) {
         $js = "el('passchangemsg').innerHTML = 'Invalid username format';";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
     list($status, $rows, $user) = db_get_record($onadb, 'users', "username LIKE '{$username}'");
@@ -238,23 +238,23 @@ function ws_change_user_password($window_name, $form) {
     if (!$rows) {
         $js = "el('passchangemsg').innerHTML = 'Unknown user';";
         // Return some javascript to the browser
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
 
     if ($user['password'] != $form['old']) {
         $js = "el('passchangemsg').innerHTML = 'Password incorrect (old)';";
         // Return some javascript to the browser
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
     if ($form['new1'] != $form['new2']) {
         $js = "el('passchangemsg').innerHTML = 'New passwords dont match.';";
         // Return some javascript to the browser
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
     list ($status, $rows) = db_update_record(
@@ -275,8 +275,8 @@ function ws_change_user_password($window_name, $form) {
     }
 
 
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    if ($js) { $response->script($js); }
+    return $response;
 
 }
 

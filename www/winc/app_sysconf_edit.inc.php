@@ -19,8 +19,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Set a few parameters for the "results" window we're about to create
@@ -171,8 +171,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -189,8 +189,8 @@ function ws_save($window_name, $form='') {
     if(trim($form['name']) == "") {
         $self['error'] = "ERROR => Blank names not allowed.";
         printmsg($self['error'], 0);
-        $response->addScript("alert('{$self['error']}');");
-        return($response->getXML());
+        $response->script("alert('{$self['error']}');");
+        return $response;
     }
 
 
@@ -204,8 +204,8 @@ function ws_save($window_name, $form='') {
         if ($original_sysconf['editable'] == 0) {
             $self['error'] = "ERROR => This system config entry is not editable.";
             printmsg($self['error'], 0);
-            $response->addScript("alert('{$self['error']}');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');");
+            return $response;
         }
 
         if($form['value'] !== $original_sysconf['value'] or $form['description'] !== $original_sysconf['description']) {
@@ -232,8 +232,8 @@ function ws_save($window_name, $form='') {
         } else {
             $self['error'] = "INFO => You have not made a change to the value or description.";
             printmsg($self['error'], 0);
-            $response->addScript("alert('{$self['error']}');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');");
+            return $response;
         }
     }
     // If you get nothing in $form, create a new record
@@ -243,8 +243,8 @@ function ws_save($window_name, $form='') {
             if ($rows) {
                 $self['error'] = "ERROR => The name you are trying to use already exists.";
                 printmsg($self['error'], 0);
-                $response->addScript("alert('{$self['error']}');");
-                return($response->getXML());
+                $response->script("alert('{$self['error']}');");
+                return $response;
             }
 
             list($status, $rows) = db_insert_record($onadb,
@@ -276,8 +276,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Return some javascript to the browser
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

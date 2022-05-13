@@ -83,7 +83,7 @@ function ws_menu($window_name, $form='') {
     // If an array in a string was provided, build the array and store it in $form
     $form = parse_options_string($form);
 
-    printmsg("DEBUG => Displaying tooltip: {$form['tooltip']}", 4);
+    if (isset($form['tooltip'])) printmsg("DEBUG => Displaying tooltip: {$form['tooltip']}", 4);
 
     $menuname = 'get_html_'.$form['menu_name'];
 

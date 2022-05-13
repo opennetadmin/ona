@@ -19,8 +19,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     $window['js'] .= <<<EOL
@@ -138,8 +138,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -149,13 +149,13 @@ function ws_save($window_name, $form='') {
     // Validate input
     if (!$form['name']) {
         $js .= "alert('Error! All fields are required!');";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
     if (!preg_match('/^[A-Za-z0-9.\-_ ]+$/', $form['name'])) {
         $js .= "alert('Invalid group name! Valid characters: A-Z 0-9 .-_ and space');";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
     //MP: zero out the level for now
@@ -190,8 +190,8 @@ function ws_save($window_name, $form='') {
         list($status, $rows, $record) = db_get_record($onadb, 'auth_groups', array('id' => $form['id']));
         if ($rows != 1 or $record['id'] != $form['id']) {
             $js .= "alert('Error! The record requested could not be loaded from the database!');";
-            $response->addScript($js);
-            return($response->getXML());
+            $response->script($js);
+            return $response;
         }
 
         list ($status, $rows) = db_update_record(
@@ -243,8 +243,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

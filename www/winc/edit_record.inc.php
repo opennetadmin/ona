@@ -30,8 +30,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (! (auth('dns_record_modify') and auth('dns_record_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -679,23 +679,13 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (! (auth('dns_record_modify') and auth('dns_record_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     $js = '';
-
-
-
-    // Validate input
-//     if ($form['set_domain'] == '' or
-//         $form['set_type'] == ''
-//        ) {
-//         $response->addScript("alert('Please complete all fields to continue!');");
-//         return($response->getXML());
-//     }
 
     // we need to do a little validation here to make sure things
     // have a good chance of working!
@@ -708,8 +698,8 @@ function ws_save($window_name, $form='') {
     if ($form['set_name'] and ($form['set_type'] != 'NS')) {
         $form['set_name'] = sanitize_hostname($form['set_name']);
         if (!$form['set_name']) {
-            $response->addScript("alert('Invalid hostname!');");
-            return($response->getXML());
+            $response->script("alert('Invalid hostname!');");
+            return $response;
         }
     }
 
@@ -717,8 +707,8 @@ function ws_save($window_name, $form='') {
     if ($form['set_name'] != '.' and $form['set_ip']) {
         $form['set_ip'] = ip_mangle($form['set_ip'], 'dotted');
         if ($form['set_ip'] == -1) {
-            $response->addScript("alert('{$self['error']}');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');");
+            return $response;
         }
     }
 
@@ -789,8 +779,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -814,8 +804,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('dns_record_del')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -843,8 +833,8 @@ function ws_delete($window_name, $form='') {
         $js .= $form['js'];  // usually js will refresh the window we got called from
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -865,8 +855,8 @@ function ws_makeprimary($window_name, $form='') {
     // Check permissions
     if (!auth('dns_record_modify')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -891,8 +881,8 @@ function ws_makeprimary($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -915,8 +905,8 @@ function ws_enablerecord($window_name, $form='') {
     // Check permissions
     if (!auth('dns_record_modify')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Failed to enable record: Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Failed to enable record: Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -942,8 +932,8 @@ function ws_enablerecord($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

@@ -785,12 +785,12 @@ function qsearch_command($q) {
 
     if ($js) {
         $js .= "el('qsearch').value = ''; el('suggest_qsearch').style.display = 'none';";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
     else {
-        $response->addScript("alert('Invalid command!');");
-        return($response->getXML());
+        $response->script("alert('Invalid command!');");
+        return $response;
     }
 }
 
@@ -863,9 +863,9 @@ function ws_change_tab($window_name, $form, $display_list=1, $return_text=0) {
     }
 
     // Send an XML response to the window
-    $response->addAssign($_SESSION['ona'][$form_id]['content_id'], 'innerHTML', $conf['loading_icon']);
-    $response->addScript($js);
-    return($response->getXML());
+    $response->assign($_SESSION['ona'][$form_id]['content_id'], 'innerHTML', $conf['loading_icon']);
+    $response->script($js);
+    return $response;
 }
 
 
