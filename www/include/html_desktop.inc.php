@@ -3,10 +3,12 @@
 // Do some HTML headers before printing anything
 header("Cache-control: private");
 
-$year = date('Y');
+global $year;
+$ws_plugin_js='';
 
 // If there is a message of the day file, display it.
 $motdfile = $base.'/local/config/motd.txt';
+$MOTD = '';
 if (file_exists($motdfile)) {
     printmsg("INFO => Displaying MOTD: {$motdfile}",1);
     $MOTD = file_get_contents($motdfile);
@@ -17,7 +19,7 @@ foreach (array_keys($ona_contexts) as $entry) {
     $selected = "";
     // If this entry matches the record you are editing, set it to selected
     if ($entry == $self['context_name']) { $selected = "SELECTED=\"yes\""; }
-    if ($entry) {$context_list .= "<option {$selected} value=\"{$entry}\">{$entry}</option>\n";}
+    if (isset($entry)) {$context_list = "<option {$selected} value=\"{$entry}\">{$entry}</option>\n";}
 }
 
 // Lets start building the page!
@@ -323,8 +325,8 @@ EOL;
 
 
 // Open the work_space that was requested
-if ($work_space or $ws) {
-    if ($ws) $work_space = $ws;
+if (isset($work_space) or isset($ws)) {
+    if (isset($ws)) $work_space = $ws;
     // Take the query from the URL and process it for use in the window_submit
     $ws_qry = str_replace('&',',',$_SERVER['QUERY_STRING']);
     $ws_qry = str_replace('=','=>',$ws_qry);
@@ -336,8 +338,8 @@ EOL;
 }
 
 // Process any search that was passed
-if ($search or $q) {
-    if ($q) $search = $q;
+if (isset($search) or isset($q)) {
+    if (isset($q)) $search = $q;
     print <<<EOL
 <script type="text/javascript"><!--
     el('qsearch').value = '{$search}';

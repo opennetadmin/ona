@@ -72,8 +72,8 @@ function ws_editor($window_name, $form='') {
     $subnet_type_list = '<option value="">&nbsp;</option>\n';
     foreach ($subnettypes as $record) {
         $selected = "";
-        if ($record['id'] == $subnet['subnet_type_id']) { $selected = "SELECTED=\"selected\""; }
-        if ($record['id']) {$subnet_type_list .= "<option {$selected} value=\"{$record['id']}\">{$record['display_name']}</option>\n";}
+        if (isset($record['id']) == $subnet['subnet_type_id']) { $selected = "SELECTED=\"selected\""; }
+        if (isset($record['id'])) {$subnet_type_list .= "<option {$selected} value=\"{$record['id']}\">{$record['display_name']}</option>\n";}
     }
 
     // Javascript to run after the window is built

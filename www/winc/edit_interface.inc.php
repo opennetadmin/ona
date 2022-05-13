@@ -83,9 +83,9 @@ function ws_editor($window_name, $form='') {
             $selected = '';
             $dnsviews['name'] = htmlentities($dnsviews['name']);
             // If this entry matches the record you are editing, set it to selected
-            if ($dns_record['id'] and $entry['id'] == $dns_record['dns_view_id']) {
+            if (isset($dns_record['id']) and $entry['id'] == $dns_record['dns_view_id']) {
                 $selected = "SELECTED=\"selected\"";
-            } elseif (!$dns_record['id'] and $entry['id'] == 0) {
+            } elseif (!isset($dns_record['id']) and $entry['id'] == 0) {
                 // Otherwise use the default record if we are adding a new entry
                 $selected = "SELECTED=\"selected\"";
             }

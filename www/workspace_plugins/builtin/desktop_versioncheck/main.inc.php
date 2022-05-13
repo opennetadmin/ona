@@ -17,7 +17,7 @@ $modbodyhtml = '';
 // Display only on the desktop
 if ($extravars['window_name'] == 'html_desktop') {
     // Dont perform a version check if the user has requested not to
-    if (!$conf['skip_version_check']) {
+    if (!array_key_exists('skip_version_check', $conf)) {
         //@ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']."-----".$conf['version']);
 
         // Define the URL we use to check what version is the latest release
@@ -46,26 +46,30 @@ if ($extravars['window_name'] == 'html_desktop') {
             // for some reason the default_socket_timeout was not working properly.
             //$fsock = @fsockopen("tcp://{$onachkserver}", 80, $errNo, $errString, 2);
             //if ($fsock) {
-                $old = @ini_set('default_socket_timeout', 2);
+                $timeout = 2;
+                $old = @ini_set('default_socket_timeout', $timeout);
                 $file = @fopen($ona_check_version_url, 'r', false, $context);
                 @ini_set('default_socket_timeout', $old);
+                stream_set_timeout($file, $timeout);
+                #stream_set_blocking($file, 0);
             //}
         }
 
-        $onaver = "Unable to determine";
-        if ($file) {
+        $onaver = 'Unable to determine';
+        $buffer = '';
+        if (isset($file)) {
             while (!feof ($file)) {
-                $buffer = trim(fgets ($file, 4096));
-                $onaver = $buffer;
+                $buffer .= trim(fread ($file, 1024));
             }
             fclose($file);
+            $onaver = $buffer;
         }
         if ($conf['version'] == $onaver) {
             $versit = "<img src='{$images}/silk/accept.png'> You are on the official stable version! ({$onaver})<br/><br/>";
         }
         else {
             $sty='fail';
-            if ($onaver == "Unable to determine") $sty='_unknown';
+            if ($onaver == 'Unable to determine') $sty='_unknown';
 
             $modbodyhtml .= <<<EOL
 <div class='version_check{$sty}'>

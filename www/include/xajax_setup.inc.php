@@ -267,7 +267,7 @@ function suggest_username($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB

@@ -151,6 +151,7 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     //Default the module title
     $title_left_html = $modulename;
     $title_right_html = '';
+    $title_description = '';
 
     // Load the modules contents from the modules directory.
     // Check for an installed module first. if not then use a builtin one

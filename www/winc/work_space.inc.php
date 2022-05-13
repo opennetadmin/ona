@@ -153,7 +153,7 @@ EOL;
 //     This also updates the work space window's title.
 //////////////////////////////////////////////////////////////////////////////
 function ws_rewrite_history($window_name, $null='', $return_html=0) {
-    global $conf, $self, $color, $style, $images;
+    global $conf, $self, $color, $style, $images, $year;
 
     $html = $js = '';
 

@@ -32,7 +32,7 @@ $_ENV['help_url'] = "http://opennetadmin.com/docs/";
 // Get any query info
 parse_str($_SERVER['QUERY_STRING'],$output);
 
-
+$year = date('Y');
 
 // Many of these settings serve as defaults.  They can be overridden by the settings in
 // the table "sys_config"

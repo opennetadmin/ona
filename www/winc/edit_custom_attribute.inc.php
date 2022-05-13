@@ -68,8 +68,8 @@ function ws_editor($window_name, $form='') {
     $ca_type_list = '';
     foreach ($catypes as $record) {
         $selected = "";
-        if ($record['id'] == $ca['custom_attribute_type_id']) { $selected = "SELECTED=\"selected\""; }
-        if ($record['id']) {$ca_type_list .= "<option {$selected} value=\"{$record['id']}\">{$record['name']}</option>\n";}
+        if (isset($record['id']) == $ca['custom_attribute_type_id']) { $selected = "SELECTED=\"selected\""; }
+        if (isset($record['id'])) {$ca_type_list .= "<option {$selected} value=\"{$record['id']}\">{$record['name']}</option>\n";}
     }
 
     // Javascript to run after the window is built
