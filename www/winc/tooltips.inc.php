@@ -422,7 +422,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- LOGIN PROMPT -->
-    <form id="loginform_form" onSubmit="return false;">
+    <form id="loginform_form" onSubmit="return false;" autocomplete="off">
     <input id="onapassword" type="hidden" name="onapassword">
     <table style="{$style['content_box']}" cellspacing="0" border="0">
 

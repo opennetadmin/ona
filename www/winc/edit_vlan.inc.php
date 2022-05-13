@@ -70,7 +70,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- Vlan Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="vlan_id" value="{$record['id']}">
     <input type="hidden" name="vlan_campus_name" value="{$form['vlan_campus_name']}">
     <input type="hidden" name="js" value="{$form['js']}">

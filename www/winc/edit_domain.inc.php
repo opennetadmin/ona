@@ -80,7 +80,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- Domain Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="id" value="{$domain['id']}">
     <input type="hidden" name="domain" value="{$domain['name']}">
     <input type="hidden" name="parent" value="{$domain['id']}">

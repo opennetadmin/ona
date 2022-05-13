@@ -123,7 +123,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- DHCP pool Edit Form -->
-    <form id="{$window_name}_form" onSubmit="return false;">
+    <form id="{$window_name}_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="id" value="{$pool['id']}">
     <input type="hidden" name="subnet_id" value="{$form['subnet']}">
     <input type="hidden" name="js" value="{$form['js']}">

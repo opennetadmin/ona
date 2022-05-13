@@ -761,30 +761,30 @@ function ipcalc_info($ip='', $mask='') {
     $retarray['mask_cidr'] = ip_mangle($retarray['in_mask'], 'cidr');
 
     // Process the IP address
-    $retarray['ip_dotted'] = ip_mangle($retarray['in_ip'], dotted);
-    $retarray['ip_numeric'] = ip_mangle($retarray['in_ip'], numeric);
-    $retarray['ip_binary'] = ip_mangle($retarray['in_ip'], binary);
-    $retarray['ip_bin128'] = ip_mangle($retarray['in_ip'], bin128);
-    $retarray['ip_ipv6'] = ip_mangle($retarray['in_ip'], ipv6);
-    $retarray['ip_ipv6gz'] = ip_mangle($retarray['in_ip'], ipv6gz);
-    $retarray['ip_flip'] = ip_mangle($retarray['in_ip'], flip);
+    $retarray['ip_dotted'] = ip_mangle($retarray['in_ip'], 'dotted');
+    $retarray['ip_numeric'] = ip_mangle($retarray['in_ip'], 'numeric');
+    $retarray['ip_binary'] = ip_mangle($retarray['in_ip'], 'binary');
+    $retarray['ip_bin128'] = ip_mangle($retarray['in_ip'], 'bin128');
+    $retarray['ip_ipv6'] = ip_mangle($retarray['in_ip'], 'ipv6');
+    $retarray['ip_ipv6gz'] = ip_mangle($retarray['in_ip'], 'ipv6gz');
+    $retarray['ip_flip'] = ip_mangle($retarray['in_ip'], 'flip');
 
     // Process the mask
-    $retarray['mask_dotted'] = ip_mangle($retarray['in_mask'], dotted);
-    $retarray['mask_numeric'] = ip_mangle($retarray['in_mask'], numeric);
-    $retarray['mask_binary'] = ip_mangle($retarray['in_mask'], binary);
-    $retarray['mask_bin128'] = ip_mangle($retarray['in_mask'], bin128);
-    $retarray['mask_ipv6'] = ip_mangle($retarray['in_mask'], ipv6);
-    $retarray['mask_ipv6gz'] = ip_mangle($retarray['in_mask'], ipv6gz);
-    $retarray['mask_flip'] = ip_mangle($retarray['in_mask'], flip);
+    $retarray['mask_dotted'] = ip_mangle($retarray['in_mask'], 'dotted');
+    $retarray['mask_numeric'] = ip_mangle($retarray['in_mask'], 'numeric');
+    $retarray['mask_binary'] = ip_mangle($retarray['in_mask'], 'binary');
+    $retarray['mask_bin128'] = ip_mangle($retarray['in_mask'], 'bin128');
+    $retarray['mask_ipv6'] = ip_mangle($retarray['in_mask'], 'ipv6');
+    $retarray['mask_ipv6gz'] = ip_mangle($retarray['in_mask'], 'ipv6gz');
+    $retarray['mask_flip'] = ip_mangle($retarray['in_mask'], 'flip');
 
 
     // Invert the binary mask
-    $inverted = str_replace("0", "x", ip_mangle($retarray['in_mask'], binary));
+    $inverted = str_replace("0", "x", ip_mangle($retarray['in_mask'], 'binary'));
     $inverted = str_replace("1", "0", $inverted);
     $inverted = str_replace("x", "1", $inverted);
     $retarray['mask_bin_invert'] = $inverted;
-    $retarray['mask_dotted_invert'] = ip_mangle($inverted, dotted);
+    $retarray['mask_dotted_invert'] = ip_mangle($inverted, 'dotted');
 
 
     // Check boundaries
@@ -801,7 +801,7 @@ function ipcalc_info($ip='', $mask='') {
        $ip2 = str_pad(substr($ip1, 0, $retarray['mask_cidr']), $padding, '0');
        $total = (0xffffffff - $retarray['mask_numeric']) + 1;
        $usable = $total - 2;
-       $lastip = ip_mangle($ip2, numeric) - 1 + $total;
+       $lastip = ip_mangle($ip2, 'numeric') - 1 + $total;
        $retarray['ip_last'] = ip_mangle($lastip, 'dotted');
     } else {
        // echo "ipv6";

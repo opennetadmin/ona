@@ -46,8 +46,36 @@ function ws_search_results_submit($window_name, $form='') {
         }
     }
 
+
+    // ugg, setting empty form values that dont exist so warns dont show up
+    // This was an attempt at cleaning up warns, not sure if there will be other impacts
+    // for now I supress warns at the index.php.  This could just go away. leaving for refrence.
+    if (!array_key_exists('blockname',$form)) $form['blockname']='';
+    if (!array_key_exists('campusname',$form)) $form['campusname']='';
+    if (!array_key_exists('hostname',$form)) $form['hostname']='';
+    if (!array_key_exists('domain',$form)) $form['domain']='';
+    if (!array_key_exists('mac',$form)) $form['mac']='';
+    if (!array_key_exists('ip',$form)) $form['ip']='';
+    if (!array_key_exists('tag_host',$form)) $form['tag_host']='';
+    if (!array_key_exists('tag_net',$form)) $form['tag_net']='';
+    if (!array_key_exists('ip_thru',$form)) $form['ip_thru']='';
+    if (!array_key_exists('notes',$form)) $form['notes']='';
+    if (!array_key_exists('location',$form)) $form['location']='';
+    if (!array_key_exists('custom_attribute_type',$form)) $form['custom_attribute_type']='';
+    if (!array_key_exists('custom_attribute_type_net',$form)) $form['custom_attribute_type_net']='';
+    if (!array_key_exists('ca_value',$form)) $form['ca_value']='';
+    if (!array_key_exists('ca_value_net',$form)) $form['ca_value_net']='';
+    if (!array_key_exists('model',$form)) $form['model']='';
+    if (!array_key_exists('role',$form)) $form['role']='';
+    if (!array_key_exists('manufacturer',$form)) $form['manufacturer']='';
+    if (!array_key_exists('vlandesc',$form)) $form['vlandesc']='';
+    if (!array_key_exists('subnetname',$form)) $form['subnetname']='';
+    if (!array_key_exists('ip_subnet',$form)) $form['ip_subnet']='';
+    if (!array_key_exists('ip_subnet_thru',$form)) $form['ip_subnet_thru']='';
+
     // keep wildcard checkbox value
-    if ($form['nowildcard']) $wildchecked = 'checked="yes"';
+    $wildchecked = '';
+    if (array_key_exists('nowildcard',$form)) $wildchecked = 'checked="yes"';
 
     // Load some html into $window['html']
     $form_id = "{$window_name}_filter_form";

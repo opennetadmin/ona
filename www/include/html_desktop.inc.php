@@ -65,7 +65,7 @@ print <<<EOL
                            style="width: 150px;"
                            type="text"
                            title="Quick Search for IP, MAC, DNS"
-                           value="Quick Search..."
+                           placeholder="Quick Search..."
                            name="q"
                            maxlength="100"
                            onFocus="this.value='';"

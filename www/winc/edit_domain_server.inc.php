@@ -76,7 +76,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- DNS server Edit Form -->
-    <form id="{$window_name}_form" onSubmit="return false;">
+    <form id="{$window_name}_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
 

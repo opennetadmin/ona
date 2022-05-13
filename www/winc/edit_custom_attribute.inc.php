@@ -92,7 +92,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- Custom Attribute Edit Form -->
-    <form id="{$window_name}_form" onSubmit="return false;">
+    <form id="{$window_name}_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="host" value="{$host['id']}">
     <input type="hidden" name="subnet" value="{$subnet['id']}">
     <input type="hidden" name="vlan" value="{$vlan['id']}">

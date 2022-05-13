@@ -37,11 +37,11 @@ EOL;
                 <br>
                 <a title="Add host"
                 class="act"
-                onClick="xajax_window_submit('edit_host', ' ', 'editor');"
+                onClick="xajax_window_submit('edit_host', 'js=> ', 'editor');"
                 ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
                 <a title="Add host"
                 class="act"
-                onClick="xajax_window_submit('edit_host', ' ', 'editor');"
+                onClick="xajax_window_submit('edit_host', 'js=> ', 'editor');"
                 >Add a new host</a>&nbsp;
                 <br>
                 <a title="Advanced search" class="act"

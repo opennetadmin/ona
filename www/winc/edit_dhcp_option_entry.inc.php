@@ -105,7 +105,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- DHCP entry Edit Form -->
-    <form id="{$window_name}_form" onSubmit="return false;">
+    <form id="{$window_name}_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="host" value="{$host['id']}">
     <input type="hidden" name="subnet" value="{$subnet['id']}">
     <input type="hidden" name="server" value="{$server['id']}">

@@ -369,7 +369,7 @@ function get_html_menu_button_edit() {
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_subnet', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_subnet', 'js=> ', 'editor');"
      title="Add a new subnet"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Subnet</div>
@@ -381,7 +381,7 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_host', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_host', 'js=> ', 'editor');"
      title="Add a new host"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Host</div>
@@ -417,7 +417,7 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_vlan_campus', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_vlan_campus', 'js=> ', 'editor');"
      title="Add a new VLAN campus"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add VLAN campus</div>
@@ -429,7 +429,7 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_vlan', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_vlan', 'js=> ', 'editor');"
      title="Add a new VLAN"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add VLAN</div>
@@ -441,7 +441,7 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_block', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_block', 'js=> ', 'editor');"
      title="Add a new block"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Block</div>
@@ -453,7 +453,7 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_location', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_location', 'js=> ', 'editor');"
      title="Add a new location"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Location</div>

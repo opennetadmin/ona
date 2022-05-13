@@ -17,6 +17,102 @@ require_once($conf['inc_xajax_stuff']);
 // Display the style-sheet
 print <<<EOL
 
+/* --------------- Default Style Reset ---------------
+   One of the many CSS reset starting points.. taken from:
+   https://dev.to/neshaz/how-to-make-your-css-consistent-across-browsers--2hff
+*/
+
+html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote,  pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, fieldset, form, label, legend, caption, article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, time, mark, audio, video {
+     margin:0;
+     padding:0;
+     border:0;
+     outline:0;
+     font-size:100%;
+     vertical-align:baseline;
+     background:transparent;
+ }
+
+table, tbody, tfoot, thead, tr, th, td, ul, li {
+     font-size:100%;
+     vertical-align:baseline;
+     background:transparent;
+ }
+
+ body {
+     line-height:1;
+ }
+
+ article,aside,details,figcaption,figure, footer,header,hgroup,menu,nav,section{
+     display:block;
+ }
+
+ nav ul {
+    list-style:none;
+ }
+
+ blockquote, q {
+    quotes:none;
+ }
+
+ blockquote:before, blockquote:after, q:before, q:after {
+    content:'';
+    content:none;
+ }
+
+ a {
+    margin:0;
+    padding:0;
+    font-size:100%;
+    vertical-align:baseline;
+    background:transparent;
+    text-decoration:none;
+    transition: color 0.5s ease;
+    transition: text-shadow 0.5s ease;
+ }
+
+ /* change colors to suit your needs */
+ ins {
+    background-color:#ff9;
+    color:#000;
+    text-decoration:none;
+ }
+
+ /* change colors to suit your needs */
+ mark {
+    background-color:#ff9;
+    color:#000;
+    font-style:italic;
+    font-weight:bold;
+ }
+
+ del {
+    text-decoration: line-through;
+ }
+
+ abbr[title], dfn[title] {
+    border-bottom:1px dotted;
+    cursor:help;
+ }
+
+ table {
+    /*border-collapse:collapse;*/
+    border-spacing:0;
+ }
+
+ /* change border color to suit your needs */
+ hr {
+    display:block;
+    height:1px;
+    border:0;
+    border-top:1px solid #cccccc;
+    margin:1em 0;
+    padding:0;
+ }
+
+ input, select {
+    vertical-align:middle;
+ }
+
 
 /* --------------- Styles for common HTML elements --------------- */
 html { height: 100%; }
@@ -117,11 +213,15 @@ img {
     vertical-align: middle;
 }
 
-a            { color: {$color['link']};  cursor: pointer; text-decoration: underline; }
-a:link       { color: {$color['link']};  cursor: pointer; text-decoration: underline; }
-a:visited    { color: {$color['vlink']}; cursor: pointer; text-decoration: underline; }
-a:active     { color: {$color['alink']}; cursor: pointer; text-decoration: underline; }
-a:hover      { cursor: pointer; text-decoration: underline; }
+a            { color: {$color['link']};  cursor: pointer; }
+a:link       { color: {$color['link']};  }
+a:visited    { color: {$color['vlink']}; }
+a:active     { color: {$color['alink']}; }
+a:hover      {
+  cursor: poin#0069ba;
+  text-decoration:underline;
+  text-shadow: 0px 0px 1px #0090ff;
+}
 
 .content_box {
     margin: 10px 20px;
@@ -206,7 +306,6 @@ a:hover      { cursor: pointer; text-decoration: underline; }
     text-align:right;
     vertical-align: middle;
     max-height: 23px;
-    width: 200px;
 }
 
 .context_select_table {
@@ -400,16 +499,16 @@ span.tagdel  {
 }
 /* --------------- AJAX Boxes --------------- */
 
-a.nav          { color: {$color['link_nav']};  cursor: pointer; text-decoration: none; }
-a.nav:hover    { color: {$color['link_nav']};  cursor: pointer; text-decoration: underline; }
-a.act          { color: {$color['link_act']};  cursor: pointer; text-decoration: none; }
-a.act:hover    { color: {$color['link_act']};  cursor: pointer; text-decoration: underline; }
-a.domain       { color: {$color['link_domain']}; cursor: pointer; text-decoration: none; }
-a.domain:hover { color: {$color['link_domain']}; cursor: pointer; text-decoration: underline; }
+a.nav          { color: {$color['link_nav']};  }
+a.nav:hover    { color: {$color['link_nav']};  }
+a.act          { color: {$color['link_act']};  }
+a.act:hover    { color: {$color['link_act']};  }
+a.domain       { color: {$color['link_domain']}; }
+a.domain:hover { color: {$color['link_domain']}; }
 
 /* This is a new style action class that pads the images. */
-a.linkact          { color: #FF8000;  cursor: pointer; text-decoration: none; }
-a.linkact:hover    { color: #FF8000;  cursor: pointer; text-decoration: underline; }
+a.linkact          { color: #FF8000;  text-decoration: none; }
+a.linkact:hover    { color: #FF8000;  }
 a.linkact img      { padding-right: 4px; }
 
 .row-normal    { background-color: #FFFFFF; }
@@ -754,7 +853,7 @@ span.diffchange { color: red; }
 .display_notes { border: none; }
 
 /* ---- set the trace history so other imbeded junk wont change how it looks --- */
-#trace_history a { color: {$color['link']};  cursor: pointer; text-decoration: underline; font-family: {$style['font-family']}; }
+#trace_history a { color: {$color['link']};  cursor: pointer; font-family: {$style['font-family']}; }
 
 
 EOL;

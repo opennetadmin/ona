@@ -192,7 +192,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- DNS Record Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="dns_id" value="{$dns_record['id']}">
     <input type="hidden" name="name" value="{$host['fqdn']}">
     <input type="hidden" name="js" value="{$form['js']}">

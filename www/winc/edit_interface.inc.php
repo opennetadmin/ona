@@ -147,7 +147,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- Interface Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="interface_id" value="{$interface['id']}">
 EOL;
     if($host['fqdn']) {

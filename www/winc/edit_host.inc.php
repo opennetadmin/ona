@@ -179,7 +179,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- Host Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="host" value="{$dns_view_name}{$host['fqdn']}">
     <input type="hidden" name="interface" value="{$interface['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
