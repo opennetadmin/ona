@@ -798,7 +798,7 @@ input.filter {
     margin: 0px;
     padding: 2px 5px;
     white-space: nowrap;
-    font-size: 12px;
+    font-size: 80%;
     font-weight: bold;
 }
 
@@ -807,7 +807,7 @@ input.filter {
     margin: 0px;
     padding: 2px 5px;
     white-space: nowrap;
-    font-size: 12px;
+    font-size: 80%;
 }
 
 
