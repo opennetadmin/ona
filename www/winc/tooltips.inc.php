@@ -936,6 +936,7 @@ function quick_location_search($form) {
 
 
     $js .= <<<EOL
+        el('locref').focus();
 EOL;
 
     $style['content_box'] = <<<EOL
@@ -970,7 +971,7 @@ EOL;
             <u>R</u>eference
         </td>
         <td align="left" class="qf-search-line">
-             <input name="reference" type="text" class="edit" size="32" accesskey="r" />
+             <input id="locref" name="reference" type="text" class="edit" size="32" accesskey="r" />
         </td>
     </tr>
 
@@ -1201,6 +1202,7 @@ EOL;
     // Javascript to run after the window is built
     $js = <<<EOL
         suggest_setup('vlan_campus_qf', 'suggest_vlan_campus_qf');
+        el('vlan_campus_qf').focus();
 EOL;
 
     return(array($html, $js));
@@ -1335,7 +1337,7 @@ EOL;
 EOL;
 
     if ($form['text_value'] != "") {
-        $js .= "xajax_window_submit('search_results_qf', xajax.getFormValues('quick_free_ip_search_form'), 'subnet');";
+        $js .= "xajax_window_submit('search_results_qf', xajax.getFormValues('quick_free_ip_search_form'), 'subnet');el('subnet_qf').focus();";
     }
     return(array($html, $js));
 }

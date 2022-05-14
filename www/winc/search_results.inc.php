@@ -123,18 +123,11 @@ function ws_search_results_submit($window_name, $form='') {
             </td>
 
             <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
-                <form id="{$form_id}" onSubmit="return false;">
+                <form id="{$form_id}" onSubmit="return false;" autocomplete="off">
                 <input id="{$form_id}_page" name="page" value="1" type="hidden">
                 <input id="{$form_id}_tab" name="tab" value="" type="hidden">
                 <input name="content_id" value="{$content_id}" type="hidden">
                 <input name="form_id" value="{$form_id}" type="hidden">
-                    <div id="{$form_id}_filter_overlay"
-                         style="position: relative;
-                                display: inline;
-                                color: #CACACA;
-                                cursor: text;"
-                         onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                    >Filter</div>
                 <input
                     id="{$form_id}_filter"
                     name="filter"
@@ -144,8 +137,7 @@ function ws_search_results_submit($window_name, $form='') {
                     size="10"
                     maxlength="20"
                     alt="Quick Filter"
-                    onFocus="el('{$form_id}_filter_overlay').style.display = 'none';"
-                    onBlur="if (this.value == '') el('{$form_id}_filter_overlay').style.display = 'inline';"
+                    placeholder="Filter"
                     onKeyUp="
                         if (typeof(timer) != 'undefined') clearTimeout(timer);
                         code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
@@ -163,7 +155,7 @@ function ws_search_results_submit($window_name, $form='') {
 
     <div id="adv_search_div" style="background-color: {$color['window_content_bg']};padding-top: 5px;">
     <!-- Block Search Tab -->
-    <form id="block_search_form">
+    <form id="block_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="block_search_form">
     <table id="blocks_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
 
@@ -192,7 +184,7 @@ function ws_search_results_submit($window_name, $form='') {
 
 
     <!-- Vlan Campus Search Tab -->
-    <form id="vlan_campus_search_form">
+    <form id="vlan_campus_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="vlan_campus_search_form">
     <table id="vlan_campus_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
 
@@ -222,7 +214,7 @@ function ws_search_results_submit($window_name, $form='') {
 
 
     <!-- Host Search Tab -->
-    <form id="host_search_form">
+    <form id="host_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="host_search_form">
     <table id="hosts_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
 
@@ -372,7 +364,7 @@ function ws_search_results_submit($window_name, $form='') {
 
 
     <!-- DNS record Search Tab -->
-    <form id="dns_record_search_form">
+    <form id="dns_record_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="dns_record_search_form">
     <table id="records_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
 
@@ -473,7 +465,7 @@ EOL;
 
 
     <!-- subnet Search Tab -->
-    <form id="subnet_search_form">
+    <form id="subnet_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="subnet_search_form">
     <table id="subnets_search" style="display: none;" cellspacing="0" border="0" cellpadding="0">
 
@@ -618,7 +610,6 @@ EOL;
             el('{$window_name}_title_r').innerHTML;
 
         /* Setup the quick filter */
-        el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
         {$form_id}_last_search = '';
 
         /* Save the new tab and make it look active */
@@ -876,9 +867,6 @@ function ws_change_tab($window_name, $form, $display_list=1, $return_text=0) {
 
     // Put the cursor in the first field
     $js .= "_el = el('{$tab}_field1'); if (_el) el('{$tab}_field1').focus();";
-
-    // Hide/show the filter overlay
-    $js .= "el('{$form_id}_filter_overlay').style.display = (el('{$form_id}_filter').value == '') ? 'inline' : 'none';";
 
     // Tell the browser to ask for a new list of data
     if ($display_list) {
