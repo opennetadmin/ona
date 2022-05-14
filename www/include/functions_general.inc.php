@@ -1544,7 +1544,7 @@ function run_module($module='', $options='', $transaction=1) {
 
     if ($has_trans) {
         // If there was any sort of failure, make sure the status has incremented, this catches sub module output errors;
-        if ($onadb->HasFailedTrans()) $status = $status + 1;
+        if ($onadb->HasFailedTrans()) $status = $status + 100;
 
         // If the user passed the rollback flag then dont commit the transaction
 // FIXME: not complete or tested.. it would be nice to have an ability for the user to pass

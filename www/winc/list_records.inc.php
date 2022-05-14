@@ -164,7 +164,7 @@ function ws_display_list($window_name, $form='') {
 
     // Do the SQL Query
     $filter = '';
-    if ($form['filter']) {
+    if (isset($form['filter'])) {
         // Host names should always be lower case
         $form['filter'] = strtolower($form['filter']);
         $filter = ' AND name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
@@ -286,6 +286,11 @@ EOL;
 
 
         $record = $results[$i-1];
+
+        // crappy filter outside the query itself
+        if (isset($form['filter'])) {
+          if (!preg_match("/{$form['filter']}/",$record['name'])) continue;
+        }
 
         // if the interface is the primary_dns_id for the host then mark it
         $primary_record = '&nbsp;';

@@ -58,7 +58,7 @@ function ws_display_list($window_name, $form='') {
     // Do the SQL Query
     $filter = '';
     if ($form['filter']) {
-        $filter = $and . 'name LIKE ' . $oracle->qstr('%'.$form['filter'].'%');
+        $filter = $and . 'name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
 
 

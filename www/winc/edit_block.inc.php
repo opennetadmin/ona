@@ -22,8 +22,11 @@ function ws_editor($window_name, $form='') {
         return $response;
     }
 
+    // If an array in a string was provided, build the array and store it in $form
+    $form = parse_options_string($form);
+
     // Load an existing host record (and associated info) if $form is a host_id
-    if (is_numeric($form['block_id'])) {
+    if (isset($form['block_id'])) {
         list($status, $rows, $block) = ona_get_block_record(array('id' => $form['block_id']));
         $block['ip_addr_start'] = ip_mangle($block['ip_addr_start'], 'dotted');
         $block['ip_addr_end'] = ip_mangle($block['ip_addr_end'], 'dotted');
