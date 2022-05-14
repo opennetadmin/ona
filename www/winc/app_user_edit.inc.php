@@ -78,7 +78,7 @@ EOL;
     $window['html'] .= <<<EOL
 
     <!-- Simple User Edit Form -->
-    <form id="user_edit_form" onSubmit="return false;">
+    <form id="user_edit_form" onSubmit="return false;" autocomplete="off">
 EOL;
     if ($overwrite == 'yes') {
 	    $window['html'] .= <<<EOL

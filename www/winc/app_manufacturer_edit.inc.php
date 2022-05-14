@@ -40,6 +40,7 @@ function ws_editor($window_name, $form='') {
         el('{$window_name}_title_r').innerHTML =
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
+        el('manufacturer_name').focus();
 EOL;
 
     // If we got a manufacturer, load it for display
@@ -59,7 +60,7 @@ EOL;
     $window['html'] .= <<<EOL
 
     <!-- Simple class types Edit Form -->
-    <form id="manufacturer_edit_form" onSubmit="return false;">
+    <form id="manufacturer_edit_form" onSubmit="return false;" autocomplete="off">
     <input name="id" type="hidden" value="{$record['id']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
         <tr>
@@ -68,6 +69,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="manufacturer_name"
                     name="manufacturer_name"
                     alt="Manufacturer Name"
                     value="{$record['name']}"

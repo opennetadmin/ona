@@ -33,6 +33,7 @@ function ws_editor($window_name, $form='') {
         el('{$window_name}_title_r').innerHTML =
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
+        el('group_name').focus();
 EOL;
 
     // Set a few parameters for the "results" window we're about to create
@@ -57,7 +58,7 @@ EOL;
     $window['html'] .= <<<EOL
 
     <!-- Simple Group Edit Form -->
-    <form id="group_edit_form" onSubmit="return false;">
+    <form id="group_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="id" value="{$record['id']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
         <tr>
@@ -66,6 +67,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="group_name"
                     name="name"
                     alt="Group name"
                     value="{$record['name']}"

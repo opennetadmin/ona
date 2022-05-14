@@ -91,7 +91,7 @@ $window['html'] = <<<EOL
     
     
     <!-- Host Search Tab -->
-    <form id="host_search_form">
+    <form id="host_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="host_search_form">
     <table style="background-color: {$color['window_content_bg']};" id="host_search" width="100%" cellspacing="0" border="0" cellpadding="0">
     
@@ -190,7 +190,7 @@ $window['html'] = <<<EOL
     
     
     <!-- subnet Search Tab -->
-    <form id="subnet_search_form">
+    <form id="subnet_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="subnet_search_form">
     <table id="subnet_search" style="display: none; background-color: {$color['window_content_bg']};" width="100%" cellspacing="0" border="0" cellpadding="0">
 

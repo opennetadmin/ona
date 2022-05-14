@@ -121,7 +121,7 @@ $window['html'] .= <<<EOL
 
     <!-- PASSWORD CHANGE CONTAINER -->
     <span id="passchange_container" style="display:none;">
-    <form id="passchange_form">
+    <form id="passchange_form" autocomplete="off">
     <input id="old" name="old" type="hidden" value="">
     <input id="new1" name="new1" type="hidden" value="">
     <input id="new2" name="new2" type="hidden" value="">

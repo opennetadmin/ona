@@ -82,6 +82,7 @@ function ws_editor($window_name, $form='') {
 
         el('{$window_name}_edit_form').onsubmit = function() { return false; };
 
+        el('failover_pri_hostname').focus();
 EOL;
 
     // Define the window's inner html
