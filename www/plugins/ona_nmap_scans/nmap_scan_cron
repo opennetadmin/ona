@@ -142,7 +142,7 @@ for NETENTRY in $NETLIST
 do
     NETCLEAN=`echo $NETENTRY|sed "s/\//-/"`
     echo "INFO => Running NMAP ping only scan on $NETENTRY..."
-    $NMAPCOMMAND --stylesheet nmap.xsl -sP -R -oX - $NETENTRY > $NMAP_OUTPUT_DIR/$NETCLEAN.xml
+    $NMAPCOMMAND --stylesheet nmap.xsl -v -PE -sn -R -oX - $NETENTRY > $NMAP_OUTPUT_DIR/$NETCLEAN.xml 2>/dev/null
 
     if [ -n "$UPDATE_LAST_RESPONSE" ]
     then

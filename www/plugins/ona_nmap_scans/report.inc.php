@@ -348,7 +348,7 @@ EOL;
             // Set a red background color
             $redcolor = "color: red;";
             // Skip over hosts that are not in network or database
-            if ($record['dbip'] == "NOT FOUND") continue;
+            if (($record['dbip'] == "NOT FOUND") and ($record['netdnsname'] == '')) continue;
             // If it is only in the database then they should validate the ip or remove from database
             if (($record['netip'] == $record['dbip']) or ($record['netdnsname'] != $record['dbdnsname'])) {
                 $action = "Ping to verify then delete as desired";
@@ -547,7 +547,7 @@ EOL;
         // Check devices that are down
         if ($record['netstatus'] == "down") {
             // Skip over hosts that are not in network or database
-            if ($record['dbip'] == "NOT FOUND") continue;
+            if (($record['dbip'] == "NOT FOUND") and ($record['netdnsname'] == '')) continue;
             // If it is only in the database then they should validate the ip or remove from database
             if (($record['netip'] == $record['dbip']) or ($record['netdnsname'] != $record['dbdnsname'])) {
                 $action = "Ping to verify then delete as desired";
