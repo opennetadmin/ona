@@ -309,7 +309,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- SYS MESSAGES -->
-    <form id="sys_alert_form" onSubmit="return(false);">
+    <form id="sys_alert_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="input_id" value="{$form['input_id']}">
     <input type="hidden" name="text_id" value="{$form['text_id']}">
@@ -833,7 +833,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- SUBNET QUICK SEARCH -->
-    <form id="quick_subnet_search_form" onSubmit="return(false);">
+    <form id="quick_subnet_search_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="input_id" value="{$form['input_id']}">
     <input type="hidden" name="content_id" value="qf_subnet_results">
@@ -953,7 +953,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- LOCATION QUICK SEARCH -->
-    <form id="quick_location_search_form" onSubmit="return(false);">
+    <form id="quick_location_search_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="input_id" value="{$form['input_id']}">
     <input type="hidden" name="content_id" value="qf_location_results">
@@ -1075,7 +1075,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- QUICK TAG ADD -->
-    <form id="quick_tag_add_form" onSubmit="return(false);">
+    <form id="quick_tag_add_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="type" value="{$form['type']}">
     <input type="hidden" name="reference" value="{$form['reference']}">
     <input type="hidden" name="updateid" value="{$form['updateid']}">
@@ -1150,7 +1150,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- VLAN QUICK SEARCH -->
-    <form id="quick_vlan_search_form" onSubmit="return(false);">
+    <form id="quick_vlan_search_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="input_id" value="{$form['input_id']}">
     <input type="hidden" name="text_id" value="{$form['text_id']}">
@@ -1257,7 +1257,7 @@ EOL;
 
     $html .= <<<EOL
     <!-- FREE IP QUICK SEARCH -->
-    <form id="quick_free_ip_search_form" onSubmit="return(false);">
+    <form id="quick_free_ip_search_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="input_id" value="{$form['input_id']}">
     <input type="hidden" name="text_id" value="{$form['text_id']}">
@@ -1396,7 +1396,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- POOL SERVER QUICK SEARCH -->
-    <form id="quick_pool_server_search_form" onSubmit="return(false);">
+    <form id="quick_pool_server_search_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="input_id" value="{$form['input_id']}">
     <input type="hidden" name="content_id" value="qf_pool_server_results">
@@ -1607,7 +1607,7 @@ EOL;
         $html .= <<<EOL
             <tr>
                 <td align="left" class="padding" style="color: #FFFFFF;" nowrap="true">
-                    <form id="quick_interface_share_del_form" onSubmit="return(false);">
+                    <form id="quick_interface_share_del_form" onSubmit="return(false);" autocomplete="off">
                     <input type="hidden" name="ip" value="{$interface['interface_id']}">
                     <input type="hidden" name="host" value="{$host['id']}">
                     </form>
@@ -1693,7 +1693,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- QUICK INTERFACE SHARE -->
-    <form id="quick_interface_share_form" onSubmit="return(false);">
+    <form id="quick_interface_share_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <input type="hidden" name="ip" value="{$form['interface_id']}">
@@ -2002,7 +2002,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- QUICK INTERFACE NAT -->
-    <form id="quick_interface_nat_form" onSubmit="return(false);">
+    <form id="quick_interface_nat_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <input type="hidden" name="nataction" value="add">
@@ -2164,7 +2164,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- QUICK INTERFACE MOVE -->
-    <form id="quick_interface_move_form" onSubmit="return(false);">
+    <form id="quick_interface_move_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <input type="hidden" name="ip" value="{$form['interface_id']}">
@@ -2409,7 +2409,7 @@ EOL;
 
    $html .= <<<EOL
     <!-- SWITCHPORT TEMPLATE SELECT -->
-    <form id="switchport_template_select_form" onSubmit="return(false);">
+    <form id="switchport_template_select_form" onSubmit="return(false);" autocomplete="off">
     <input type="hidden" name="host" value="{$form['host']}">
     <input type="hidden" name="input_id" value="{$form['input_id']}">
     <table id="switchport_template_select" style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
