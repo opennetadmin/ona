@@ -307,7 +307,7 @@ function ws_display_config($window_name, $form='') {
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->asign("confoutput", "innerHTML", $html);
+    $response->assign("confoutput", "innerHTML", $html);
     if ($js) { $response->script($js); }
     return $response;
 }
