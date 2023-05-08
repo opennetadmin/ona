@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<schema version="0.3">
+<sql>
+    <query platform="mysqli">INSERT INTO `auth_groups` VALUES (17,'Default','Default user group',1) on duplicate key update name='Default'</query> 
+    <query platform="mysqli">INSERT INTO `auth_groups` VALUES (18,'Admin','Admin group',99) on duplicate key update name='Admin'</query> 
+</sql>
+</schema>
+
+
