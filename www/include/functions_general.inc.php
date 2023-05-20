@@ -1235,6 +1235,10 @@ function validate_username($input) {
 function startSession() {
     global $conf;
 
+    $secure=false;
+    // TODO: this should use the cookie_life variable out of $conf
+    $maxlifetime=3600;  // expire in 1 hour
+
     // If the command line agent, dcm.pl, is making the request, don't really start a session.
     if (preg_match('/console-module-interface/', $_SERVER['HTTP_USER_AGENT'])) {
 
@@ -1249,16 +1253,20 @@ function startSession() {
     // Set the name of the cookie (nicer than default name)
     session_name("ONA_SESSION_ID");
 
-   // Set cookie to expire at end of session
-   // secure cookie
-   if (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS']) {
+    // Set cookie to expire at end of session
+    // secure cookie
+    if (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS']) {
+        $secure=true;
+    }
 
-       session_set_cookie_params(0, '/', $_SERVER["SERVER_NAME"], 1);
-   }
-   // normal cookie
-   else {
-       session_set_cookie_params(0, '/');
-   }
+    session_set_cookie_params([
+      'lifetime' => $maxlifetime,
+      'path' => '/',
+      'domain' => $_SERVER['SERVER_NAME'],
+      'secure' => $secure,
+      'httponly' => true,
+      'samesite' => 'Strict'
+    ]);
 
     // (Re)start the session
     session_start();
