@@ -26,6 +26,9 @@ $conf = array (
     /* Defaults for some user definable options normally in sys_config table */
     "debug"                  => "2",
     "logfile"                => "/var/log/ona.log",
+    "syslog"                 => "0",
+    "stdout"                 => "0",
+    "log_to_db"              => "0",
 
 );
 
@@ -144,7 +147,9 @@ EOL;
 function upgrade() {
 
   echo "\n\n";
-  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile,$base;
+  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile,$base,$status;
+  $upgrade = 'N';
+  $levelinfo = '';
 
   // If they already have a dbconffile, assume that we are doing and upgrade
   if (@file_exists($dbconffile)) {
@@ -203,7 +208,7 @@ function upgrade() {
       $text = '';
     } else {
         $text .= <<<EOL
-            There was an error determining database context versions. Please correct them before proceeding. \n\nCheck that the content of your database configuration file '{$dbconffile}' is accurate and that the databases themselves are configured properly.\n\n{$err_txt}\n
+            There was an error determining database context versions. Please correct them before proceeding. \n\nCheck that the content of your database configuration file '{$dbconffile}' is accurate and that the databases themselves are configured properly.\n\n
 EOL;
     }
 
@@ -386,7 +391,7 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
 function new_install() {
 
   echo "\n\n";
-  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile;
+  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile,$status;
 
   // Gather info
   $adotype = 'mysqli';

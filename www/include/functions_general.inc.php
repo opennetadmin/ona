@@ -144,6 +144,16 @@ function ona_logmsg($message, $logfile="") {
         $username = "anonymous";
     }
 
+    // If we don't have a remote address, set it to localhost
+    if (!isset($_SERVER['REMOTE_ADDR'])) {
+        $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+    }
+
+    // If we don't have a context name, set it to UNKNOWN_CONTEXT
+    if (!isset($self['context_name'])) {
+        $self['context_name'] = 'UNKNOWN_CONTEXT';
+    }
+
     // Build the exact line we want to write to the file
     $logdata = date("M j G:i:s ") . "{$uname['nodename']} {$username}@{$_SERVER['REMOTE_ADDR']}: [{$self['context_name']}] {$message}\n";
 
