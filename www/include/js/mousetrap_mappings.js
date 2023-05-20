@@ -6,6 +6,7 @@ Mousetrap.bind("?", function() { toggle_window('app_keyboard_shortcuts'); return
 Mousetrap.bind("g s", function() { el('qsearch').focus(); return false; });
 Mousetrap.bind("g c", function() { toggleBox('ipcalc_content'); el('calc_ip').focus(); return false; });
 Mousetrap.bind("g h", function() { removeElement('work_space'); return false; });
+Mousetrap.bind("g l", function() { el('login_userid').click(); return false; });
 
 // Open editor for adding new things
 Mousetrap.bind("a h", function() { xajax_window_submit('edit_host', 'js=> ', 'editor'); return false; });
