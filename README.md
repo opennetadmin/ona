@@ -34,6 +34,37 @@ Please refer to the [install page on the Github Wiki for more detail](https://gi
 
 DEVELOPMENT
 -----------
+You can interact with either Docker or Vagrant. Docker is is the preferred
+method at this time.
+
+## Docker
+
+Once you have cloned the repo you can issue
+The Dockerfile is intended for development and testing purposes only. It is not recommended for production use.
+
+First: Build an image with a specific version of Ubuntu and tag it as such.
+```
+docker build --build-arg UBUNTU_VERSION=23.04 -t ona-dev:23.04 .
+```
+
+Second: Start the container for general use. Point your browser to http://localhost/ona
+```
+docker run -p 80:80 -it ona-dev:23.04
+```
+
+OR
+
+Start the container for development. Mount the current directory as a volume. This will allow you to edit the files on your host and have them be hosted in the container
+```
+docker run -p 80:80 -it -v $(pwd):/opt/ona ona-dev:23.04
+```
+
+This assumes you are in the directory you cloned the ONA repo into.
+Also, if you have already installed this prior, you may need to remove `www/local/config/database_settings.conf.php` to get the install to run again.
+
+
+## Vagrant
+
 Simply clone this repo and issue a vagrant up to get a basic working system to develop with.
 You will need to have git and [vagrant](https://vagrantup.com) installed on your system
 
