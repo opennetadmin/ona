@@ -519,7 +519,7 @@ function new_install() {
 
             // add the default domain to the system
             // This is a manual add with hard coded values for timers.
-	    $ctime=date('Y-m-j G:i:s',time());
+            $ctime=date('Y-m-j G:i:s',time());
             $xmldefdomain = <<<EOL
 <?xml version="1.0"?>
 <schema version="0.3">
@@ -614,7 +614,7 @@ if ($upgrademain != '') {
 //#           Or if return pressed returns a default if used e.g usage
 //# $name = promptUser("Enter your name");
 //# $serverName = promptUser("Enter your server name", "localhost");
-//# Note: Returned value requires validation 
+//# Note: Returned value requires validation
 // from http://wiki.uniformserver.com/index.php/PHP_CLI:_User_Input
 //#.......................................................................
 function promptUser($promptStr,$defaultVal=false){;
@@ -624,7 +624,7 @@ function promptUser($promptStr,$defaultVal=false){;
   }
   else {                                        // No default set
      echo $promptStr. ": ";                     // print prompt only
-  } 
+  }
   $name = chop(fgets(STDIN));                   // Read input. Remove CR
   if(empty($name)) {                            // No value. Enter was pressed
      return $defaultVal;                        // return default

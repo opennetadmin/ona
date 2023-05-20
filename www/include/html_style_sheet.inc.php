@@ -372,7 +372,7 @@ textarea.edit {
     width:100%;
 }
 
-input.edit,select.edit {
+input.edit,select.edit,button {
     border: 1px solid #8CACBB;
     color: Black;
     background-color: white;
