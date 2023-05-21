@@ -28,10 +28,11 @@ ENV TZ=UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update
-RUN apt-get -y install git mariadb-server apache2 php-gmp php-mysql libapache2-mod-php php-mbstring php-xml composer unzip && \
+RUN apt-get -y install git mariadb-server apache2 php-gmp php-mysql libapache2-mod-php php-mbstring php-xml unzip vim && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# TODO: the specific branch here needs to be removed once the libupgrades branch is merged
 RUN git -C /opt clone https://github.com/opennetadmin/ona.git -b libupgrades
 
 ENV APACHE_RUN_USER www-data
@@ -50,6 +51,7 @@ RUN chown www-data /opt/ona/www/local/config
 RUN service mariadb start || service mysql start
 
 RUN echo "\n\n\n"|php /opt/ona/install/installcli.php
+RUN echo "ServerName ona-dev.localhost" > /etc/apache2/conf-enabled/servername.conf
 
 EXPOSE 80
 
