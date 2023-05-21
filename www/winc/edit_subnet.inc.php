@@ -32,29 +32,30 @@ function ws_editor($window_name, $form='') {
     $vlan = array();
 
     // Load an existing record (and associated info) if $form is an id
-   if (!empty($form['subnet_id'])) {
-    if (is_numeric($form['subnet_id'])) {
+    if (!empty($form['subnet_id'])) {
+      if (is_numeric($form['subnet_id'])) {
         list($status, $rows, $subnet) = ona_get_subnet_record(array('id' => $form['subnet_id']));
         if ($rows) {
-            if (strlen($subnet['ip_addr']) > 11) {
-		        $subnet['ip_mask'] = '/'.ip_mangle($subnet['ip_mask'], 'cidr');
-	        } else {
-            	$subnet['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
-            }
-            $subnet['ip_addr'] = ip_mangle($subnet['ip_addr'], 'dotted');
+          if (strlen($subnet['ip_addr']) > 11) {
+            $subnet['ip_mask'] = '/'.ip_mangle($subnet['ip_mask'], 'cidr');
+          }
+          else {
+            $subnet['ip_mask'] = ip_mangle($subnet['ip_mask'], 'dotted');
+          }
+          $subnet['ip_addr'] = ip_mangle($subnet['ip_addr'], 'dotted');
 
-            // Vlan Record
-            list($status, $rows, $vlan) = ona_get_vlan_record(array('id' => $subnet['vlan_id']));
-            $subnet['vlan_desc'] = $vlan['vlan_campus_name'] . ' / ' . $vlan['name'];
+          // Vlan Record
+          list($status, $rows, $vlan) = ona_get_vlan_record(array('id' => $subnet['vlan_id']));
+          $subnet['vlan_desc'] = $vlan['vlan_campus_name'] . ' / ' . $vlan['name'];
         }
-    }
-    // If there is no subnet id in the form but we are passing in data, clean it up
-    else {
+      }
+      // If there is no subnet id in the form but we are passing in data, clean it up
+      else {
         if (strlen($form['ip_addr']) > 1) $subnet['ip_addr'] = ip_mangle($form['ip_addr'], 'dotted');
         if (strlen($form['ip_mask']) > 1) $subnet['ip_mask'] = ip_mangle($form['ip_mask'], 'dotted');
         if (strlen($form['name']) > 1) $subnet['name'] = $form['name'];
+      }
     }
-   }
 
     if (empty($subnet['vlan_id'])) $subnet['vlan_desc'] = 'None';
     if (empty($subnet['subnet_type_id'])) $subnet['subnet_type_id'] = 0;
@@ -255,12 +256,11 @@ EOL;
             </td>
             <td class="padding" align="right" width="100%">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -305,7 +305,7 @@ function ws_save($window_name, $form='') {
         $form['set_ip'] == '' or
         $form['set_netmask'] == ''
        ) {
-        $response->script("alert('Please complete all fields to continue!');");
+        $response->script("alert('Please complete all required fields to continue!');");
         return $response;
     }
 

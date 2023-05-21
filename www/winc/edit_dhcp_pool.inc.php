@@ -115,6 +115,7 @@ function ws_editor($window_name, $form='') {
             );
         };
 
+    el('start').focus();
 
 EOL;
 
@@ -176,6 +177,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="start"
                     name="start"
                     alt="IP Start"
                     value="{$pool['start_ip']}"
@@ -277,12 +279,11 @@ EOL;
             <td class="padding" align="right" width="100%">
                 <input type="hidden" name="overwrite" value="{$overwrite}">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -334,7 +335,7 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if (!$form['start'] and !$form['end']) {
-        $response->script("alert('Please complete all fields to continue!');");
+        $response->script("alert('Please complete all required fields to continue!');");
         return $response;
     }
 

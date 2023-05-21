@@ -98,6 +98,8 @@ function ws_editor($window_name, $form='') {
             el('{$window_name}_title_r').innerHTML;
 
         el('{$window_name}_form').onsubmit = function() { return false; };
+
+        el('option').focus();
 EOL;
 
 
@@ -165,12 +167,11 @@ EOL;
             <td class="padding" align="right" width="100%">
                 <input type="hidden" name="overwrite" value="{$overwrite}">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -222,7 +223,7 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if (!$form['type'] and $form['value'] == '') {
-        $response->script("alert('Please complete all fields to continue!');");
+        $response->script("alert('Please complete all required fields to continue!');");
         return $response;
     }
 

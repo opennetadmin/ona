@@ -304,8 +304,8 @@ print <<<EOL
 
 <!-- Side toolbar -->
 <div nowrap style="position: absolute;top: 90px;right: 1px;z-index: 10;background: #E3E3F0;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
-    <div style="float:left;padding: 5px 2px;" onclick="toggleBox('ipcalc_content'); el('calc_ip').focus();">
-      <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" />
+    <div style="float:left;padding: 5px 2px;" >
+      <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" onclick="toggleBox('ipcalc_content'); el('calc_ip').focus();"/>
       <div id="ipcalc_content" style="visibility: hidden;display:none;background: #E3E3F0;padding: 5px;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
         <form id="ipcalc_form" onsubmit="return false;">
             IP: <input id="calc_ip" type="text" name="ip" />

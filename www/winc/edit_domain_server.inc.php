@@ -69,6 +69,7 @@ function ws_editor($window_name, $form='') {
         suggest_setup('domain_server_name',  'suggest_domain_server_name');
         suggest_setup('domain_server_edit',  'suggest_domain_server_edit');
 
+        el('domain_server_name').focus();
 EOL;
 
 
@@ -142,12 +143,11 @@ EOL;
             <td class="padding" align="right" width="100%">
                 <input type="hidden" name="overwrite" value="{$overwrite}">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -201,6 +201,14 @@ function ws_save($window_name, $form='') {
     $js = '';
 
     // Validate input
+    if ($form['server'] == '' or
+        $form['domain'] == '' or
+        $form['role'] == ''
+       ) {
+        $response->script("alert('Please complete all required fields to continue!');");
+        return $response;
+    }
+
     if (!$form['domain']) {
         $response->script("alert('Please select a domain to continue!');");
         return $response;

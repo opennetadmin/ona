@@ -642,12 +642,11 @@ EOL;
             </td>
             <td colspan="2" class="padding" align="right" width="100%">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -689,6 +688,17 @@ function ws_save($window_name, $form='') {
 
     // we need to do a little validation here to make sure things
     // have a good chance of working!
+
+    // Validate input
+    if ($form['set_name'] == '' or
+        $form['set_type'] == '' or
+        $form['set_ip'] == '' or
+        $form['set_domain'] == ''
+       ) {
+        $response->script("alert('Please complete all required fields to continue!');");
+        return $response;
+    }
+
 
     // If the name we were passed has a leading . in it then remove the dot.
     $form['set_name'] = preg_replace("/^\./", '', trim($form['set_name']));
