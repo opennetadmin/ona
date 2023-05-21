@@ -69,6 +69,7 @@ function createONAAlert(txt) {
     msg = alertObj.appendChild(d.createElement("p"));
     msg.innerHTML = txt;
 
+    alertObj.appendChild(d.createElement("br"));
     btn = alertObj.appendChild(d.createElement("button"));
     btn.id = "closeBtn";
     btn.appendChild(d.createTextNode("Close"));

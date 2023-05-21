@@ -305,19 +305,14 @@ print <<<EOL
 <!-- Side toolbar -->
 <div nowrap style="position: absolute;top: 90px;right: 1px;z-index: 10;background: #E3E3F0;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
     <div style="float:left;padding: 5px 2px;" onclick="toggleBox('ipcalc_content'); el('calc_ip').focus();">
-    <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" />
-    </div>
-    <div id="ipcalc_content" style="visibility: hidden;display:none;background: #E3E3F0;padding: 5px;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
+      <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" />
+      <div id="ipcalc_content" style="visibility: hidden;display:none;background: #E3E3F0;padding: 5px;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
         <form id="ipcalc_form" onsubmit="return false;">
             IP: <input id="calc_ip" type="text" name="ip" />
-            Mask: <input type="text" name="mask" />
-                <input class="edit" type="button"
-                    name="submit"
-                    value="Go"
-                    onClick="xajax_window_submit('ipcalcgui', xajax.getFormValues('ipcalc_form'));"
-                >
+            Mask: <input type="text" name="mask" /> <button type="submit" onClick="xajax_window_submit('ipcalcgui', xajax.getFormValues('ipcalc_form'));" >Go</button>
         </form>
         <span style="font-family: monospace;font-size: medium;" id="ipcalc_data"></span>
+      </div>
     </div>
 </div>
 
