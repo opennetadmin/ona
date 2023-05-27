@@ -28,7 +28,7 @@ ENV TZ=UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update
-RUN apt-get -y install git mariadb-server apache2 php-gmp php-mysql libapache2-mod-php php-mbstring php-xml unzip vim && \
+RUN apt-get -y install git mariadb-server apache2 php-yaml php-gmp php-mysql libapache2-mod-php php-mbstring php-xml unzip vim && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
