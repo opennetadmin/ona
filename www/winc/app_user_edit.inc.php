@@ -290,7 +290,7 @@ function ws_save($window_name, $form='') {
         $exit_status += $status;
 
         // If the user is supposed to be assigned to this group, make sure she is.
-        if (array_key_exists($group['name'], $form['groups'])) {
+        if (isset($form['groups']) and array_key_exists($group['name'], $form['groups'])) {
             if ($status == 0 and $rows == 0) {
                 list($status, $rows) = db_insert_record($onadb, 'group_assignments', array('user_id' => $user['id'], 'group_id' => $group['id']));
                 $log_msg .= $more . "group_add[" . $group['name'] . "]";

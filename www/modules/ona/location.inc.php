@@ -27,7 +27,7 @@ function location_add($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => location_add({$options}) called", 3);
 
@@ -70,6 +70,12 @@ EOM
     $options['reference'] = strtoupper(trim($options['reference']));
 
     if (!$options['zip_code']) { $options['zip_code'] = 0; }
+    if (!$options['latitude']) { $options['latitude'] = ''; }
+    if (!$options['longitude']) { $options['longitude'] = ''; }
+    if (!$options['address']) { $options['address'] = ''; }
+    if (!$options['city']) { $options['city'] = ''; }
+    if (!$options['state']) { $options['state'] = ''; }
+    if (!$options['misc']) { $options['misc'] = ''; }
 
     // check to see if the campus already exists
     list($status, $rows, $loc) = ona_get_location_record(array('reference' => $options['reference']));
@@ -290,7 +296,7 @@ function location_modify($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => location_modify({$options}) called", 3);
 
@@ -345,48 +351,48 @@ EOM
     // This variable will contain the updated info we'll insert into the DB
     $SET = array();
 
-    if ($loc['reference'] != $options['set_reference']) {
+    if (isset($options['set_reference']) && $loc['reference'] != $options['set_reference']) {
         $SET['reference'] = $options['set_reference'];
         $msg .= "INFO => Location UPDATED reference: {$loc['reference']} => {$options['set_reference']}\n";
     }
 
     // If they are specifying a new name, process it.
-    if ($loc['name'] != $options['set_name']) {
+    if (isset($options['set_name']) && $loc['name'] != $options['set_name']) {
         $SET['name'] = $options['set_name'];
         $msg .= "INFO => Location UPDATED name: {$loc['name']} => {$options['set_name']}\n";
     }
 
-    if ($loc['address'] != $options['set_address']) {
+    if (isset($options['set_address']) && $loc['address'] != $options['set_address']) {
         $SET['address'] = $options['set_address'];
         $msg .= "INFO => Location UPDATED address: {$loc['address']} => {$options['set_address']}\n";
     }
 
-    if ($loc['city'] != $options['set_city']) {
+    if (isset($options['set_city']) && $loc['city'] != $options['set_city']) {
         $SET['city'] = $options['set_city'];
         $msg .= "INFO => Location UPDATED city: {$loc['city']} => {$options['set_city']}\n";
     }
 
-    if ($loc['state'] != $options['set_state']) {
+    if (isset($options['set_state']) && $loc['state'] != $options['set_state']) {
         $SET['state'] = $options['set_state'];
         $msg .= "INFO => Location UPDATED state: {$loc['state']} => {$options['set_state']}\n";
     }
 
-    if ($loc['zip_code'] != $options['set_zip_code']) {
+    if (isset($options['set_zip_code']) && $loc['zip_code'] != $options['set_zip_code']) {
         $SET['zip_code'] = $options['set_zip_code'];
         $msg .= "INFO => Location UPDATED zip_code: {$loc['zip_code']} => {$options['set_zip_code']}\n";
     }
 
-    if ($loc['latitude'] != $options['set_latitude']) {
+    if (isset($options['set_latitude']) && $loc['latitude'] != $options['set_latitude']) {
         $SET['latitude'] = $options['set_latitude'];
         $msg .= "INFO => Location UPDATED latitude: {$loc['latitude']} => {$options['set_latitude']}\n";
     }
 
-    if ($loc['longitude'] != $options['set_longitude']) {
+    if (isset($options['set_logitude']) && $loc['longitude'] != $options['set_longitude']) {
         $SET['longitude'] = $options['set_longitude'];
         $msg .= "INFO => Location UPDATED longitude: {$loc['longitude']} => {$options['set_longitude']}\n";
     }
 
-    if ($loc['misc'] != $options['set_misc']) {
+    if (isset($options['set_misc']) && $loc['misc'] != $options['set_misc']) {
         $SET['misc'] = $options['set_misc'];
         $msg .= "INFO => Location UPDATED misc: {$loc['misc']} => {$options['set_misc']}\n";
     }
