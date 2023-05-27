@@ -77,7 +77,7 @@ EOM
     if (!$options['state']) { $options['state'] = ''; }
     if (!$options['misc']) { $options['misc'] = ''; }
 
-    // check to see if the campus already exists
+    // check to see if the location already exists
     list($status, $rows, $loc) = ona_get_location_record(array('reference' => $options['reference']));
 
     if ($status or $rows) {
