@@ -72,6 +72,15 @@ You will need to have git and [vagrant](https://vagrantup.com) installed on your
    cd ona
    vagrant up
 
+## Postman
+
+There is a postman collection in the `docs` directory that can be used to interact with the API. An environment file is also provided that can be used. Simply import the collection and environment into postman or use Newman to run the collection from the command line.
+
+A simple usage would be:
+```
+cd /opt/ona
+newman run docs/ONA-dcm.postman_collection.json -e docs/ONA-dcm-dev.postman_environment.json
+```
 
 CONTACT
 -------
