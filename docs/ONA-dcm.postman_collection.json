@@ -1224,6 +1224,258 @@
 			]
 		},
 		{
+			"name": "Interfaces",
+			"item": [
+				{
+					"name": "Add Interface",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Interface ADDED: 1.1.1.100\\n\";",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=interface_add&host={{host}}&format={{format}}&ip=1.1.1.100&name=eth1&laa=true",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "interface_add"
+								},
+								{
+									"key": "host",
+									"value": "{{host}}"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "ip",
+									"value": "1.1.1.100"
+								},
+								{
+									"key": "name",
+									"value": "eth1"
+								},
+								{
+									"key": "laa",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Modify Interface",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Interface UPDATED:.*: 1.1.1.200/.test(jsonData.module_exit_message);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=interface_modify&interface=1.1.1.100&set_ip=1.1.1.200&set_name=eth2&set_description=int description&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "interface_modify"
+								},
+								{
+									"key": "interface",
+									"value": "1.1.1.100"
+								},
+								{
+									"key": "set_ip",
+									"value": "1.1.1.200"
+								},
+								{
+									"key": "set_name",
+									"value": "eth2"
+								},
+								{
+									"key": "set_description",
+									"value": "int description"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Display Interface",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"if (responseCode.code === 200) {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  tests[\"ONA Status Code\"] = jsonData.module_exit_status === 0;",
+									"",
+									"  tests[\"Found Name\"] = jsonData.name === \"eth2\";",
+									"  tests[\"Found IP\"] = jsonData.ip_addr_text === \"1.1.1.200\";",
+									"  tests[\"Found Desc\"] = jsonData.description === \"int description\";",
+									"",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DCM_URL}}?module=interface_display&interface=1.1.1.200&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "interface_display"
+								},
+								{
+									"key": "interface",
+									"value": "1.1.1.200"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Interface",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Interface DELETED: 1.1.1.200/.test(jsonData.module_exit_message);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DCM_URL}}?module=interface_del&interface=1.1.1.200&format={{format}}&commit=yes",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "interface_del"
+								},
+								{
+									"key": "interface",
+									"value": "1.1.1.200"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "commit",
+									"value": "yes"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Final cleanup",
 			"item": [
 				{

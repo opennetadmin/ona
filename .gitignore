@@ -25,6 +25,8 @@ spool
 *.log
 
 .vagrant
+.DS_Store
+.devcontainer
 
 # ignore vim swap files
 *.swp
