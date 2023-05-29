@@ -236,7 +236,7 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
                 $text .= " [{$cname}] Failed to connect to '{$cdbs['db_host']}' as '{$cdbs['db_login']}'. ERROR: ".$db->ErrorMsg()."\n";
             } else {
                 $db->Close();
-                if ($db->NConnect( $database_host, $cdbs['db_login'], $cdbs['db_passwd'], $cdbs['db_database'])) {
+                if ($db->NConnect( $cdbs['db_host'], $cdbs['db_login'], $cdbs['db_passwd'], $cdbs['db_database'])) {
 
 
                     // Get the current upgrade index if there is one.
@@ -345,25 +345,6 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
         }
 
     }
-
-    // If we still have the old reference to db_context in our config, upgrade it
-    if (is_array($db_context)) {
-        // set default db name to uppercase
-        $ona_contexts['DEFAULT'] = $ona_contexts['default'];unset($ona_contexts['default']);
-
-        // Open the database config and write the contents to it.
-        if (!$fh = @fopen($dbconffile, 'w')) {
-            $status++;
-            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to open config file for writing: '{$dbconffile}'.<br>";
-            printmsg("ERROR => Failed to open config file for writing: '{$dbconffile}'.",0);
-        }
-        else {
-            fwrite($fh, "<?php\n\n\$ona_contexts=".var_export($ona_contexts,TRUE).";\n\n?>");
-            fclose($fh);
-            $text .= "Upgraded database connection config file to new format.\n";
-        }
-    }
-
 
     if($status == 0) {
         $text .= $script_text;
