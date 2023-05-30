@@ -19,8 +19,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     $window['js'] .= <<<EOL
@@ -33,6 +33,7 @@ function ws_editor($window_name, $form='') {
         el('{$window_name}_title_r').innerHTML =
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
+        el('group_name').focus();
 EOL;
 
     // Set a few parameters for the "results" window we're about to create
@@ -57,7 +58,7 @@ EOL;
     $window['html'] .= <<<EOL
 
     <!-- Simple Group Edit Form -->
-    <form id="group_edit_form" onSubmit="return false;">
+    <form id="group_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="id" value="{$record['id']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
         <tr>
@@ -66,6 +67,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="group_name"
                     name="name"
                     alt="Group name"
                     value="{$record['name']}"
@@ -138,8 +140,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -149,13 +151,13 @@ function ws_save($window_name, $form='') {
     // Validate input
     if (!$form['name']) {
         $js .= "alert('Error! All fields are required!');";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
     if (!preg_match('/^[A-Za-z0-9.\-_ ]+$/', $form['name'])) {
         $js .= "alert('Invalid group name! Valid characters: A-Z 0-9 .-_ and space');";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
     //MP: zero out the level for now
@@ -190,8 +192,8 @@ function ws_save($window_name, $form='') {
         list($status, $rows, $record) = db_get_record($onadb, 'auth_groups', array('id' => $form['id']));
         if ($rows != 1 or $record['id'] != $form['id']) {
             $js .= "alert('Error! The record requested could not be loaded from the database!');";
-            $response->addScript($js);
-            return($response->getXML());
+            $response->script($js);
+            return $response;
         }
 
         list ($status, $rows) = db_update_record(
@@ -243,8 +245,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

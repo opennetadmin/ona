@@ -91,7 +91,7 @@ $window['html'] = <<<EOL
     
     
     <!-- Host Search Tab -->
-    <form id="host_search_form">
+    <form id="host_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="host_search_form">
     <table style="background-color: {$color['window_content_bg']};" id="host_search" width="100%" cellspacing="0" border="0" cellpadding="0">
     
@@ -190,7 +190,7 @@ $window['html'] = <<<EOL
     
     
     <!-- subnet Search Tab -->
-    <form id="subnet_search_form">
+    <form id="subnet_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="subnet_search_form">
     <table id="subnet_search" style="display: none; background-color: {$color['window_content_bg']};" width="100%" cellspacing="0" border="0" cellpadding="0">
 
@@ -257,7 +257,7 @@ EOL;
 
 //////////////////////////////////////////////////////////////////////////////
 // Function: ws_more_host_options()
-// 
+//
 // Description:
 //   Displays additional drop-downs in the advanced search form.
 //////////////////////////////////////////////////////////////////////////////
@@ -274,8 +274,8 @@ function ws_more_host_options($window_name, $form='') {
         $custom_attribute_type_list .= "<option value=\"{$record['id']}\">{$record['name']}</option>\n";
         unset($records, $ca);
     }
-    
-    
+
+
     // Build device model list
     list($status, $rows, $records) = db_get_records($onadb, 'models', 'id >= 1');
     $models = array();
@@ -290,8 +290,8 @@ function ws_more_host_options($window_name, $form='') {
         $device_model_list .= "<option value=\"{$id}\">{$models[$id]}</option>\n";
     }
     unset($models, $model);
-    
-    
+
+
     // Build device type list
     list($status, $rows, $records) = db_get_records($onadb, 'roles', 'id >= 1', 'name');
     $device_role_list = '<option value="">&nbsp;</option>\n';
@@ -299,8 +299,8 @@ function ws_more_host_options($window_name, $form='') {
     foreach ($records as $record) {
         $device_role_list .= "<option value=\"{$record['id']}\">{$record['name']}</option>\n";
     }
-    
-    
+
+
     // Build device manufacturer list
     list($status, $rows, $records) = db_get_records($onadb, 'manufacturers', 'ID >= 1', 'name');
     $device_manufacturer_list = '<option value="">&nbsp;</option>\n';
@@ -308,8 +308,8 @@ function ws_more_host_options($window_name, $form='') {
     foreach ($records as $record) {
         $device_manufacturer_list .= "<option value=\"{$record['id']}\">{$record['name']}</option>\n";
     }
-    
-    
+
+
     // Build the new HTML
     $html = <<<EOL
     <table cellspacing="0" border="0" cellpadding="0">
@@ -360,15 +360,15 @@ function ws_more_host_options($window_name, $form='') {
     </tr>
     </table>
 EOL;
-    
+
     $js = "el('more_options_link').style.display = 'none';";
-    
+
     // Insert the new html
     $response = new xajaxResponse();
-    $response->addAssign("more_host_options",  "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
-    
+    $response->assign("more_host_options",  "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
+
 }
 
 

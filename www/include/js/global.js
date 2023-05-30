@@ -44,8 +44,13 @@ function createONAAlert(txt) {
     mObj.id = "alertContainer";
     mObj.className = "alertContainer";
     mObj.style.height = document.documentElement.scrollHeight + "px";
+    mObj.onclick = function() {
+        removeElement("alertBox");
+        removeElement("alertContainer");
+        return false;
+    }
 
-    // create the DIV that will be the alert 
+    // create the DIV that will be the alert
     alertObj = d.getElementsByTagName("body")[0].appendChild(d.createElement("div"));
     alertObj.id = "alertBox";
     alertObj.className = "alertBox";
@@ -55,7 +60,7 @@ function createONAAlert(txt) {
 
     h1 = alertObj.appendChild(d.createElement("h1"));
     h1.appendChild(d.createTextNode("OpenNetAdmin Alert!"));
-    h1.onclick = function() { 
+    h1.onclick = function() {
         removeElement("alertBox");
         removeElement("alertContainer");
         return false;
@@ -64,12 +69,13 @@ function createONAAlert(txt) {
     msg = alertObj.appendChild(d.createElement("p"));
     msg.innerHTML = txt;
 
-    btn = alertObj.appendChild(d.createElement("a"));
+    alertObj.appendChild(d.createElement("br"));
+    btn = alertObj.appendChild(d.createElement("button"));
     btn.id = "closeBtn";
-    btn.appendChild(d.createTextNode("OK"));
-    btn.href = "#";
-
-    btn.onclick = function() { 
+    btn.appendChild(d.createTextNode("Close"));
+    btn.type = "button";
+    btn.focus();
+    btn.onclick = function() {
         removeElement("alertBox");
         removeElement("alertContainer");
         return false;

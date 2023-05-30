@@ -18,8 +18,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('location_add')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -61,7 +61,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- Location Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="location_id" value="{$record['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
@@ -156,12 +156,11 @@ EOL;
             <td class="padding" align="right" width="100%">
                 <input type="hidden" name="overwrite" value="{$overwrite}">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -189,8 +188,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (! (auth('location_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -202,8 +201,8 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if (!$form['reference'] or !$form['name']) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all required fields to continue!');");
+        return $response;
     }
 
 
@@ -239,8 +238,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

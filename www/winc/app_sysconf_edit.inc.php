@@ -19,8 +19,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Set a few parameters for the "results" window we're about to create
@@ -40,6 +40,7 @@ function ws_editor($window_name, $form='') {
         el('{$window_name}_title_r').innerHTML =
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
+        el('conf_name').focus();
 EOL;
 
     // If we got a class type, load it for display
@@ -65,7 +66,7 @@ EOL;
     $window['html'] .= <<<EOL
 
     <!-- Simple class types Edit Form -->
-    <form id="sysconf_edit_form" onSubmit="return false;">
+    <form id="sysconf_edit_form" onSubmit="return false;" autocomplete="off">
     <input name="id" type="hidden" value="{$record['name']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
 
@@ -80,6 +81,7 @@ EOL;
 
             <td class="padding" align="left" width="100%">
                 <input
+                    id="conf_name"
                     name="name"
                     alt="Name"
                     value="{$record['name']}"
@@ -171,8 +173,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -189,8 +191,8 @@ function ws_save($window_name, $form='') {
     if(trim($form['name']) == "") {
         $self['error'] = "ERROR => Blank names not allowed.";
         printmsg($self['error'], 0);
-        $response->addScript("alert('{$self['error']}');");
-        return($response->getXML());
+        $response->script("alert('{$self['error']}');");
+        return $response;
     }
 
 
@@ -204,8 +206,8 @@ function ws_save($window_name, $form='') {
         if ($original_sysconf['editable'] == 0) {
             $self['error'] = "ERROR => This system config entry is not editable.";
             printmsg($self['error'], 0);
-            $response->addScript("alert('{$self['error']}');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');");
+            return $response;
         }
 
         if($form['value'] !== $original_sysconf['value'] or $form['description'] !== $original_sysconf['description']) {
@@ -232,8 +234,8 @@ function ws_save($window_name, $form='') {
         } else {
             $self['error'] = "INFO => You have not made a change to the value or description.";
             printmsg($self['error'], 0);
-            $response->addScript("alert('{$self['error']}');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');");
+            return $response;
         }
     }
     // If you get nothing in $form, create a new record
@@ -243,8 +245,8 @@ function ws_save($window_name, $form='') {
             if ($rows) {
                 $self['error'] = "ERROR => The name you are trying to use already exists.";
                 printmsg($self['error'], 0);
-                $response->addScript("alert('{$self['error']}');");
-                return($response->getXML());
+                $response->script("alert('{$self['error']}');");
+                return $response;
             }
 
             list($status, $rows) = db_insert_record($onadb,
@@ -276,8 +278,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Return some javascript to the browser
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

@@ -58,7 +58,7 @@ function ws_display_list($window_name, $form='') {
     // Do the SQL Query
     $filter = '';
     if ($form['filter']) {
-        $filter = $and . 'name LIKE ' . $oracle->qstr('%'.$form['filter'].'%');
+        $filter = $and . 'name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
 
 
@@ -183,10 +183,10 @@ EOL;
     // Insert the new html into the content div specified
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_{$tab}_count",  "innerHTML", "({$count})");
-    $response->addAssign($form['content_id'], "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_{$tab}_count",  "innerHTML", "({$count})");
+    $response->assign($form['content_id'], "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

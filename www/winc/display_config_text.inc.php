@@ -29,8 +29,8 @@ function ws_display($window_name, $form='') {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>You don't have access to this page</b></font></center>";
         $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
+        $response->assign("work_space_content", "innerHTML", $html);
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -47,8 +47,8 @@ function ws_display($window_name, $form='') {
         array_pop($_SESSION['ona']['work_space']['history']);
         $html .= "<br><center><font color=\"red\"><b>Host doesn't exist!</b></font></center>";
         $response = new xajaxResponse();
-        $response->addAssign("work_space_content", "innerHTML", $html);
-        return($response->getXML());
+        $response->assign("work_space_content", "innerHTML", $html);
+        return $response;
     }
 
     // Update History Title (and tell the browser to re-draw the history div)
@@ -167,14 +167,6 @@ EOL;
                     <input name="content_id" value="{$content_id}" type="hidden">
                     <input name="form_id" value="{$form_id}" type="hidden">
                     <input name="host_id" value="{$host['id']}" type="hidden">
-                    <div id="{$form_id}_filter_overlay"
-                         title="Filter"
-                         style="position: relative;
-                                display: inline;
-                                color: #CACACA;
-                                cursor: text;"
-                         onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                    ></div>
                     <input
                         id="{$form_id}_filter"
                         name="filter"
@@ -184,8 +176,6 @@ EOL;
                         size="15"
                         maxlength="20"
                         alt="Quick Filter"
-                        onFocus="el('{$form_id}_filter_overlay').style.display = 'none';"
-                        onBlur="if (this.value == '') el('{$form_id}_filter_overlay').style.display = 'inline';"
                         onKeyUp="
                             if (typeof(timer) != 'undefined') clearTimeout(timer);
                             code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
@@ -244,7 +234,6 @@ EOL;
 EOL;
     $js .= <<<EOL
         /* Setup the quick filter */
-        el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
         {$form_id}_last_search = '';
 
         /* Tell the browser to load/display the list */
@@ -434,9 +423,9 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("work_space_content", "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign("work_space_content", "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 
@@ -456,8 +445,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('host_config_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -485,8 +474,8 @@ function ws_delete($window_name, $form='') {
         $js .= $form['js'];  // usually js will refresh the window we got called from
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -505,8 +494,8 @@ function ws_delete_all($window_name, $form='') {
     // Check permissions
     if (!auth('host_config_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -538,8 +527,8 @@ function ws_delete_all($window_name, $form='') {
     $js .= "xajax_window_submit('work_space', 'xajax_window_submit(\'display_host\', \'host_id=>{$form['host']}\', \'display\')');";
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

@@ -31,6 +31,7 @@ $window['html'] .= <<<EOL
     <tr> <td class="padding"> <b>g</b> then <b>s</b>: </td> <td class="padding">Focus the quicksearch box</td> </tr>
     <tr> <td class="padding"> <b>g</b> then <b>c</b>: </td> <td class="padding">Open IP Calculator</td> </tr>
     <tr> <td class="padding"> <b>g</b> then <b>h</b>: </td> <td class="padding">Open main Home screen</td> </tr>
+    <tr> <td class="padding"> <b>g</b> then <b>l</b>: </td> <td class="padding">Open login popup</td> </tr>
 
     <tr><td colspan="2">&nbsp;</td> </tr>
 
@@ -45,7 +46,7 @@ $window['html'] .= <<<EOL
     <tr> <td class="padding"> <b>s</b> then <b>s</b>: </td> <td class="padding">Subnet search tab</td> </tr>
     <tr> <td class="padding"> <b>s</b> then <b>h</b>: </td> <td class="padding">Host search tab</td> </tr>
     <tr> <td class="padding"> <b>s</b> then <b>d</b>: </td> <td class="padding">DNS domain search tab</td> </tr>
- 
+
     <tr><td colspan="2">&nbsp;</td> </tr>
 
     <tr>

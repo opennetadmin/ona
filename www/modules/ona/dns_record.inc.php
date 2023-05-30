@@ -26,6 +26,7 @@ function dns_record_add($options="") {
 
     // Version - UPDATE on every edit!
     $version = '1.13';
+    $debug_val = 3;
 
     printmsg("DEBUG => dns_record_add({$options}) called", 3);
 
@@ -750,7 +751,7 @@ complex DNS messes for themselves.
 
     //FIXME: MP, will this use its own dns_record_add permission? or use host_add?
     // Check permissions
-    if (!auth('host_add')) {
+    if (!auth('host_add',$debug_val)) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(10, $self['error'] . "\n"));
@@ -928,7 +929,7 @@ EOM
 */
 
     // Check permissions
-    if (!auth('host_modify')) {
+    if (!auth('host_modify',$debug_val)) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(10, $self['error'] . "\n"));
@@ -1492,7 +1493,7 @@ MP: TODO:  this delete will not handle DNS views unless you use the ID of the re
 
 
     // Check permissions
-    if (!auth('host_del') or !authlvl($host['LVL'])) {
+    if (!auth('host_del',$debug_val) or !authlvl($host['LVL'])) {
         $self['error'] = "Permission denied!";
         printmsg($self['error'], 0);
         return(array(10, $self['error'] . "\n"));

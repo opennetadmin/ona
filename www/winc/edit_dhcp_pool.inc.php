@@ -18,8 +18,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -115,6 +115,7 @@ function ws_editor($window_name, $form='') {
             );
         };
 
+    el('start').focus();
 
 EOL;
 
@@ -123,7 +124,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- DHCP pool Edit Form -->
-    <form id="{$window_name}_form" onSubmit="return false;">
+    <form id="{$window_name}_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="id" value="{$pool['id']}">
     <input type="hidden" name="subnet_id" value="{$form['subnet']}">
     <input type="hidden" name="js" value="{$form['js']}">
@@ -176,6 +177,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="start"
                     name="start"
                     alt="IP Start"
                     value="{$pool['start_ip']}"
@@ -277,12 +279,11 @@ EOL;
             <td class="padding" align="right" width="100%">
                 <input type="hidden" name="overwrite" value="{$overwrite}">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -324,8 +325,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -334,8 +335,8 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if (!$form['start'] and !$form['end']) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all required fields to continue!');");
+        return $response;
     }
 
     list($status, $rows, $subnet) = ona_find_subnet($form['subnet_id']);
@@ -345,8 +346,8 @@ function ws_save($window_name, $form='') {
 
     // check the ips are part of the subnet you are on
     if (($start_dec < $subnet['ip_addr'] or $start_dec > $net_end) or ($end_dec < $subnet['ip_addr'] or $end_dec > $net_end)) {
-        $response->addScript("alert('Save failed: ERROR => The pool range you specified is not part of the subnet: {$subnet['name']}!');");
-        return($response->getXML());
+        $response->script("alert('Save failed: ERROR => The pool range you specified is not part of the subnet: {$subnet['name']}!');");
+        return $response;
     }
 
 
@@ -378,8 +379,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 
 }
 
@@ -403,8 +404,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
    // If an array in a string was provided, build the array and store it in $form
@@ -425,8 +426,8 @@ function ws_delete($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 
 }
 

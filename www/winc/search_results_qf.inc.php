@@ -170,9 +170,9 @@ if ($count == 1) {
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign($form['content_id'], "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign($form['content_id'], "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 
@@ -225,8 +225,8 @@ function ws_free_ip($window_name, $form='') {
     if ($status or !$rows) {
         // Send a javascript popup error
         $response = new xajaxResponse();
-        $response->addScript("alert('ERROR => Invalid subnet selected!');");
-        return($response->getXML());
+        $response->script("alert('ERROR => Invalid subnet selected!');");
+        return $response;
     }
 
     // Get a list of interfaces on the selected subnet
@@ -335,9 +335,9 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign($form['content_id'], "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign($form['content_id'], "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 
@@ -510,9 +510,9 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign($form['content_id'], "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign($form['content_id'], "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 
@@ -563,8 +563,8 @@ function ws_vlan($window_name, $form='') {
     if ($status or !$rows) {
         // Send a javascript popup error
         $response = new xajaxResponse();
-        $response->addScript("alert('ERROR => Invalid VLAN campus!');");
-        return($response->getXML());
+        $response->script("alert('ERROR => Invalid VLAN campus!');");
+        return $response;
     }
 
 
@@ -636,9 +636,9 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign($form['content_id'], "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign($form['content_id'], "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

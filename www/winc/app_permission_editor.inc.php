@@ -21,8 +21,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -74,7 +74,7 @@ EOL;
     $window['html'] .= <<<EOL
 
     <!-- Simple Permission Edit Form -->
-    <form id="permission_edit_form" onSubmit="return false;">
+    <form id="permission_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="type" value="{$form['type']}">
     <table width="100%" cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding: 4px 20px;">
@@ -145,8 +145,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -194,8 +194,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Return some javascript to the browser
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

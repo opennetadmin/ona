@@ -111,11 +111,11 @@ function ws_tooltips_submit($window_name, $form='') {
     //   3. Reposition it
     //   4. Unhide it
     $response = new xajaxResponse();
-    $response->addScript("el('{$form['id']}').style.visibility = 'hidden';");
-    $response->addAssign($form['id'], "innerHTML", $html);
-    $response->addScript("wwTT_position('{$form['id']}'); el('{$form['id']}').style.visibility = 'visible';");
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->script("el('{$form['id']}').style.visibility = 'hidden';");
+    $response->assign($form['id'], "innerHTML", $html);
+    $response->script("wwTT_position('{$form['id']}'); el('{$form['id']}').style.visibility = 'visible';");
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 
@@ -131,7 +131,7 @@ function tagsort($a, $b) {
 // Update HTML list of tags for specified type
 // the tag lists will have 5 items per line
 // The output will be placed in the innerHTML of the 'updateid' dom element
-// 
+//
 // Form needs to have, type, reference, updateid
 ///////////////////////////////////////
 function ws_tag_html($window_name, $form='') {
@@ -173,10 +173,10 @@ EOL;
   }
 
   $response = new xajaxResponse();
-  $response->addAssign($form['updateid'], "innerHTML", $html);
+  $response->assign($form['updateid'], "innerHTML", $html);
   // set extra width in the table so the delete button looks better
-  $response->addScript("tagTdWidth=el('tagname_{$tag['name']}{$tag['id']}').parentNode.parentNode.offsetWidth+8;el('tagname_{$tag['name']}{$tag['id']}').parentNode.parentNode.setAttribute('style','width:'+tagTdWidth+'px');");
-  return($response->getXML());
+  $response->script("tagTdWidth=el('tagname_{$tag['name']}{$tag['id']}').parentNode.parentNode.offsetWidth+8;el('tagname_{$tag['name']}{$tag['id']}').parentNode.parentNode.setAttribute('style','width:'+tagTdWidth+'px');");
+  return $response;
 }
 
 
@@ -385,8 +385,8 @@ function ws_switch_context($window_name, $form='') {
     }
 
     $response = new xajaxResponse();
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -422,7 +422,7 @@ EOL;
     $html .= <<<EOL
 
     <!-- LOGIN PROMPT -->
-    <form id="loginform_form" onSubmit="return false;">
+    <form id="loginform_form" onSubmit="return false;" autocomplete="off">
     <input id="onapassword" type="hidden" name="onapassword">
     <table style="{$style['content_box']}" cellspacing="0" border="0">
 
@@ -506,8 +506,8 @@ function ws_logingo($window_name, $form='') {
     }
 
     $response = new xajaxResponse();
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 
 }
 
@@ -936,6 +936,7 @@ function quick_location_search($form) {
 
 
     $js .= <<<EOL
+        el('locref').focus();
 EOL;
 
     $style['content_box'] = <<<EOL
@@ -970,7 +971,7 @@ EOL;
             <u>R</u>eference
         </td>
         <td align="left" class="qf-search-line">
-             <input name="reference" type="text" class="edit" size="32" accesskey="r" />
+             <input id="locref" name="reference" type="text" class="edit" size="32" accesskey="r" />
         </td>
     </tr>
 
@@ -1201,6 +1202,7 @@ EOL;
     // Javascript to run after the window is built
     $js = <<<EOL
         suggest_setup('vlan_campus_qf', 'suggest_vlan_campus_qf');
+        el('vlan_campus_qf').focus();
 EOL;
 
     return(array($html, $js));
@@ -1335,7 +1337,7 @@ EOL;
 EOL;
 
     if ($form['text_value'] != "") {
-        $js .= "xajax_window_submit('search_results_qf', xajax.getFormValues('quick_free_ip_search_form'), 'subnet');";
+        $js .= "xajax_window_submit('search_results_qf', xajax.getFormValues('quick_free_ip_search_form'), 'subnet');el('subnet_qf').focus();";
     }
     return(array($html, $js));
 }
@@ -1772,8 +1774,8 @@ function ws_interface_share_save($window_name, $form='') {
     // Check permissions
     if (! (auth('interface_del')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -1782,8 +1784,8 @@ function ws_interface_share_save($window_name, $form='') {
 
     // Validate input
     if (!$form['host'] and !$form['ip']) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all fields to continue!');");
+        return $response;
     }
 
     // Decide if we're editing or adding
@@ -1801,8 +1803,8 @@ function ws_interface_share_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -1823,8 +1825,8 @@ function ws_interface_share_del($window_name, $form='') {
     // Check permissions
     if (! (auth('interface_del')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -1833,8 +1835,8 @@ function ws_interface_share_del($window_name, $form='') {
 
     // Validate input
     if (!$form['host'] and !$form['ip']) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all fields to continue!');");
+        return $response;
     }
 
     // Decide if we're editing or adding
@@ -1852,8 +1854,8 @@ function ws_interface_share_del($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response; 
 }
 
 
@@ -2071,8 +2073,8 @@ function ws_interface_nat_save($window_name, $form='') {
     // Check permissions
     if (! (auth('interface_modify')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     $form = parse_options_string($form);
@@ -2085,8 +2087,8 @@ function ws_interface_nat_save($window_name, $form='') {
 
     // Validate input
     if (!$form['ip'] and !$form['natip']) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all fields to continue!');");
+        return $response;
     }
 
     // Decide if we're deleting or adding
@@ -2101,8 +2103,8 @@ function ws_interface_nat_save($window_name, $form='') {
         if (!$ptrdomain['id']) {
             printmsg("ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa",3);
             $self['error'] = "ERROR => This operation tried to create a PTR record that is the first in the {$octets[3]}.0.0.0 class A range.  You must first create at least the following DNS domain: {$octets[3]}.in-addr.arpa.  You could also create domains for class B or class C level reverse zones.  Click OK to open add domain dialog";
-            $response->addScript("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[3]}.in-addr.arpa', 'editor');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[3]}.in-addr.arpa', 'editor');");
+            return $response;
         }
     }
 
@@ -2119,8 +2121,8 @@ function ws_interface_nat_save($window_name, $form='') {
 
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -2235,8 +2237,8 @@ function ws_interface_move_save($window_name, $form='') {
     // Check permissions
     if (! (auth('advanced')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -2247,8 +2249,8 @@ function ws_interface_move_save($window_name, $form='') {
 
     // Validate input
     if (!$form['host'] and !$form['ip']) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all fields to continue!');");
+        return $response;
     }
 
     list($status, $total_interfaces, $ints) = db_get_records($onadb, 'interfaces', array('host_id' => $form['orig_host']), '', 0);
@@ -2285,8 +2287,8 @@ function ws_interface_move_save($window_name, $form='') {
 
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

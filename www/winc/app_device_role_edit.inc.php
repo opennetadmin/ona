@@ -19,8 +19,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Set a few parameters for the "results" window we're about to create
@@ -40,6 +40,7 @@ function ws_editor($window_name, $form='') {
         el('{$window_name}_title_r').innerHTML =
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
+        el('role_name').focus();
 EOL;
 
     // If we got a class type, load it for display
@@ -61,7 +62,7 @@ EOL;
     $window['html'] .= <<<EOL
 
     <!-- Simple class types Edit Form -->
-    <form id="role_edit_form" onSubmit="return false;">
+    <form id="role_edit_form" onSubmit="return false;" autocomplete="off">
     <input name="id" type="hidden" value="{$record['id']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
         <tr>
@@ -70,6 +71,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="role_name"
                     name="role_name"
                     alt="Role Name"
                     value="{$record['name']}"
@@ -127,8 +129,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -139,13 +141,13 @@ function ws_save($window_name, $form='') {
     // Strip whitespace
     // FIXME: (PK) What about SQL injection attacks?  This is a user-entered string...
     $form['role_name'] = trim($form['role_name']);
-    
+
     // Don't insert a string of all white space!
     if(trim($form['role_name']) == "") {
         $self['error'] = "ERROR => Blank names not allowed.";
         printmsg($self['error'], 0);
-        $response->addScript("alert('{$self['error']}');");
-        return($response->getXML());
+        $response->script("alert('{$self['error']}');");
+        return $response;
     }
 
 
@@ -168,7 +170,7 @@ function ws_save($window_name, $form='') {
             else {
                 // Get the record after updating (logging)
                 list($status, $rows, $new_role) = ona_get_role_record(array('id' => $form['id']));
-    
+
                 // Return the success notice
                 $self['error'] = "INFO => Role UPDATED:{$new_role['id']}: {$new_role['name']}";
                 printmsg($self['error'], 0);
@@ -213,8 +215,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Return some javascript to the browser
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

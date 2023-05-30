@@ -19,8 +19,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Set a few parameters for the "results" window we're about to create
@@ -78,7 +78,7 @@ EOL;
     $window['html'] .= <<<EOL
 
     <!-- Simple User Edit Form -->
-    <form id="user_edit_form" onSubmit="return false;">
+    <form id="user_edit_form" onSubmit="return false;" autocomplete="off">
 EOL;
     if ($overwrite == 'yes') {
 	    $window['html'] .= <<<EOL
@@ -178,8 +178,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -190,13 +190,13 @@ function ws_save($window_name, $form='') {
     // Validate input
     if (!$form['username']) {
         $js .= "alert('Error! All fields are required!');";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
     if (!preg_match('/^[A-Za-z0-9.\-_]+$/', $form['username'])) {
         $js .= "alert('Invalid username! Valid characters: A-Z 0-9 .-_');";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
     // Create a new record?
@@ -226,8 +226,8 @@ function ws_save($window_name, $form='') {
         list($status, $rows, $user) = db_get_record($onadb, 'users', array('id' => $form['user_id']));
         if ($rows != 1 or $user['id'] != $form['user_id']) {
             $js .= "alert('Error! The record requested could not be loaded from the database!');";
-            $response->addScript($js);
-            return($response->getXML());
+            $response->script($js);
+            return $response;
         }
 
         list ($status, $rows) = db_update_record(
@@ -269,8 +269,8 @@ function ws_save($window_name, $form='') {
     if ($status or $rows != 1) {
         $js .= "alert('Save failed: " . trim($self['error']) . "');";
         // Return some javascript to the browser
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
 
@@ -290,7 +290,7 @@ function ws_save($window_name, $form='') {
         $exit_status += $status;
 
         // If the user is supposed to be assigned to this group, make sure she is.
-        if (array_key_exists($group['name'], $form['groups'])) {
+        if (isset($form['groups']) and array_key_exists($group['name'], $form['groups'])) {
             if ($status == 0 and $rows == 0) {
                 list($status, $rows) = db_insert_record($onadb, 'group_assignments', array('user_id' => $user['id'], 'group_id' => $group['id']));
                 $log_msg .= $more . "group_add[" . $group['name'] . "]";
@@ -325,8 +325,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Return some javascript to the browser
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

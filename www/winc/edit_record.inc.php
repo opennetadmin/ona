@@ -30,8 +30,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (! (auth('dns_record_modify') and auth('dns_record_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -158,9 +158,9 @@ function ws_editor($window_name, $form='') {
             $selected = '';
             $dnsviews['name'] = htmlentities($dnsviews['name']);
             // If this entry matches the record you are editing, set it to selected
-            if ($dns_record['id'] and $entry['id'] == $dns_record['dns_view_id']) {
+            if (isset($dns_record['id']) and $entry['id'] == $dns_record['dns_view_id']) {
                 $selected = "SELECTED=\"selected\"";
-            } elseif (!$dns_record['id'] and $entry['id'] == 0) {
+            } elseif (!isset($dns_record['id']) and $entry['id'] == 0) {
                 // Otherwise use the default record if we are adding a new entry
                 $selected = "SELECTED=\"selected\"";
             }
@@ -192,7 +192,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- DNS Record Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="dns_id" value="{$dns_record['id']}">
     <input type="hidden" name="name" value="{$host['fqdn']}">
     <input type="hidden" name="js" value="{$form['js']}">
@@ -642,12 +642,11 @@ EOL;
             </td>
             <td colspan="2" class="padding" align="right" width="100%">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -679,26 +678,27 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (! (auth('dns_record_modify') and auth('dns_record_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     $js = '';
 
-
-
-    // Validate input
-//     if ($form['set_domain'] == '' or
-//         $form['set_type'] == ''
-//        ) {
-//         $response->addScript("alert('Please complete all fields to continue!');");
-//         return($response->getXML());
-//     }
-
     // we need to do a little validation here to make sure things
     // have a good chance of working!
+
+    // Validate input
+    if ($form['set_name'] == '' or
+        $form['set_type'] == '' or
+        $form['set_ip'] == '' or
+        $form['set_domain'] == ''
+       ) {
+        $response->script("alert('Please complete all required fields to continue!');");
+        return $response;
+    }
+
 
     // If the name we were passed has a leading . in it then remove the dot.
     $form['set_name'] = preg_replace("/^\./", '', trim($form['set_name']));
@@ -708,8 +708,8 @@ function ws_save($window_name, $form='') {
     if ($form['set_name'] and ($form['set_type'] != 'NS')) {
         $form['set_name'] = sanitize_hostname($form['set_name']);
         if (!$form['set_name']) {
-            $response->addScript("alert('Invalid hostname!');");
-            return($response->getXML());
+            $response->script("alert('Invalid hostname!');");
+            return $response;
         }
     }
 
@@ -717,8 +717,8 @@ function ws_save($window_name, $form='') {
     if ($form['set_name'] != '.' and $form['set_ip']) {
         $form['set_ip'] = ip_mangle($form['set_ip'], 'dotted');
         if ($form['set_ip'] == -1) {
-            $response->addScript("alert('{$self['error']}');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');");
+            return $response;
         }
     }
 
@@ -789,8 +789,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -814,8 +814,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('dns_record_del')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -843,8 +843,8 @@ function ws_delete($window_name, $form='') {
         $js .= $form['js'];  // usually js will refresh the window we got called from
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -865,8 +865,8 @@ function ws_makeprimary($window_name, $form='') {
     // Check permissions
     if (!auth('dns_record_modify')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -891,8 +891,8 @@ function ws_makeprimary($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -915,8 +915,8 @@ function ws_enablerecord($window_name, $form='') {
     // Check permissions
     if (!auth('dns_record_modify')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Failed to enable record: Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Failed to enable record: Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -942,8 +942,8 @@ function ws_enablerecord($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

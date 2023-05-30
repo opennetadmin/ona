@@ -151,6 +151,7 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     //Default the module title
     $title_left_html = $modulename;
     $title_right_html = '';
+    $title_description = '';
 
     // Load the modules contents from the modules directory.
     // Check for an installed module first. if not then use a builtin one
@@ -605,15 +606,15 @@ function suggest_qsearch($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Command intrepreter
     if (strpos($q, '/') === 0) {
         $js .= "suggestions = Array('Enter a command...');";
         $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
     // Search the DB for ip addressees
@@ -686,8 +687,8 @@ function suggest_qsearch($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -700,7 +701,7 @@ function suggest_a_record($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -720,8 +721,8 @@ function suggest_a_record($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 function suggest_set_a_record_edit_record($q, $el_input, $el_suggest) {
     return(suggest_a_record($q, $el_input, $el_suggest));
@@ -737,7 +738,7 @@ function suggest_hostname($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -757,8 +758,8 @@ function suggest_hostname($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 function suggest_move_hostname($q, $el_input, $el_suggest) {
     return(suggest_hostname($q, $el_input, $el_suggest));
@@ -802,7 +803,7 @@ function suggest_server($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -824,8 +825,8 @@ function suggest_server($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 // FIXME: (PK) do we still use these functions anywhere?  Check & remove, if not.
@@ -851,7 +852,7 @@ function suggest_domain($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -871,8 +872,8 @@ function suggest_domain($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 function suggest_domain_alias_edit($q, $el_input, $el_suggest) {
     return(suggest_domain($q, $el_input, $el_suggest));
@@ -904,7 +905,7 @@ function suggest_notes($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -924,8 +925,8 @@ function suggest_notes($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -942,7 +943,7 @@ function suggest_mac($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -962,8 +963,8 @@ function suggest_mac($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -983,7 +984,7 @@ function suggest_ip($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -1001,8 +1002,8 @@ function suggest_ip($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 // The following are just wrappers around suggest_ip();
 function suggest_ip_thru($q, $el_input, $el_suggest) {
@@ -1046,7 +1047,7 @@ function suggest_vlan_campus($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -1066,8 +1067,8 @@ function suggest_vlan_campus($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 function suggest_vlan_edit($q, $el_input, $el_suggest) {
     return(suggest_vlan_campus($q, $el_input, $el_suggest));
@@ -1086,7 +1087,7 @@ function suggest_custom_attribute_type($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -1106,8 +1107,8 @@ function suggest_custom_attribute_type($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 function suggest_custom_attribute_type_net($q, $el_input, $el_suggest) {
@@ -1123,7 +1124,7 @@ function suggest_manufacturer($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -1143,8 +1144,8 @@ function suggest_manufacturer($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -1157,7 +1158,7 @@ function suggest_model($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -1177,8 +1178,8 @@ function suggest_model($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -1191,7 +1192,7 @@ function suggest_tag($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -1211,8 +1212,8 @@ function suggest_tag($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 function suggest_tag_qf($q, $el_input, $el_suggest) {
     return(suggest_tag($q, $el_input, $el_suggest));
@@ -1234,7 +1235,7 @@ function suggest_role($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -1254,8 +1255,8 @@ function suggest_role($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -1268,7 +1269,7 @@ function suggest_block($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -1288,8 +1289,8 @@ function suggest_block($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -1307,7 +1308,7 @@ function suggest_subnet($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -1327,8 +1328,8 @@ function suggest_subnet($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 function suggest_set_subnet_edit_interface($q, $el_input, $el_suggest) {
     return(suggest_subnet($q, $el_input, $el_suggest));
@@ -1355,7 +1356,7 @@ function suggest_masks_edit_subnet($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     $q = trim($q);
@@ -1454,8 +1455,8 @@ function suggest_masks_edit_subnet($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -1470,7 +1471,7 @@ function suggest_location($q, $el_input, $el_suggest) {
 
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
 
     // Search the DB
@@ -1490,8 +1491,8 @@ function suggest_location($q, $el_input, $el_suggest) {
 
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 // Used in all QF (tool-tip based) search boxes
 function suggest_location_qf($q, $el_input, $el_suggest) {

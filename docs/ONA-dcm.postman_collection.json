@@ -1,0 +1,1687 @@
+{
+	"info": {
+		"_postman_id": "0b9185a6-168b-4130-afd7-16464ef4f42f",
+		"name": "ONA-dcm",
+		"description": "Attempt at some sort of testing in the current dcm.php based endpoints. This endpoint is NOT a REST endpoint. It behaves in poor ways but should be testable and consistent in its behavior.\n\nEven though these requests are represented as GET,POST,DEL type requests, those types do not actualy mean anything to the DCM.php endpoint. They are done this way more for clarity in the task than actual proper usage.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2080494"
+	},
+	"item": [
+		{
+			"name": "Domains",
+			"item": [
+				{
+					"name": "Add Domain",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Domain ADDED: newdomain.com\\n\";",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=domain_add&name=newdomain.com&refresh=1&retry=2&expiry=3&minimum=4&ttl=5&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "domain_add"
+								},
+								{
+									"key": "name",
+									"value": "newdomain.com"
+								},
+								{
+									"key": "refresh",
+									"value": "1"
+								},
+								{
+									"key": "retry",
+									"value": "2"
+								},
+								{
+									"key": "expiry",
+									"value": "3"
+								},
+								{
+									"key": "minimum",
+									"value": "4"
+								},
+								{
+									"key": "ttl",
+									"value": "5"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Modify Domain",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Domain UPDATED:.*: newdomain.com/.test(jsonData.module_exit_message);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=domain_modify&domain=newdomain.com&set_refresh=10&set_retry=20&set_expiry=30&set_minimum=40&set_ttl=50&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "domain_modify"
+								},
+								{
+									"key": "domain",
+									"value": "newdomain.com"
+								},
+								{
+									"key": "set_refresh",
+									"value": "10"
+								},
+								{
+									"key": "set_retry",
+									"value": "20"
+								},
+								{
+									"key": "set_expiry",
+									"value": "30"
+								},
+								{
+									"key": "set_minimum",
+									"value": "40"
+								},
+								{
+									"key": "set_ttl",
+									"value": "50"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Display Domain",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"if (responseCode.code === 200) {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  tests[\"ONA Status Code\"] = jsonData.module_exit_status === 0;",
+									"",
+									"  tests[\"Found Name\"] = jsonData.name === \"newdomain.com\";",
+									"  tests[\"Found refresh\"] = jsonData.refresh === \"10\";",
+									"  tests[\"Found retry\"] = jsonData.retry === \"20\";",
+									"  tests[\"Found expiry\"] = jsonData.expiry === \"30\";",
+									"  tests[\"Found minimum\"] = jsonData.minimum === \"40\";",
+									"  tests[\"Found ttl\"] = jsonData.default_ttl === \"50\";",
+									"",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DCM_URL}}?module=domain_display&domain=newdomain.com&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "domain_display"
+								},
+								{
+									"key": "domain",
+									"value": "newdomain.com"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Domain",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Domain DELETED: newdomain.com\\n\";"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DCM_URL}}?module=domain_del&domain=newdomain.com&format={{format}}&commit=yes",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "domain_del"
+								},
+								{
+									"key": "domain",
+									"value": "newdomain.com"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "commit",
+									"value": "yes"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Domain 1.in-addr.arpa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Domain ADDED: 1.in-addr.arpa\\n\";",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=domain_add&name=1.in-addr.arpa&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "domain_add"
+								},
+								{
+									"key": "name",
+									"value": "1.in-addr.arpa"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Locations",
+			"item": [
+				{
+					"name": "Add Location for delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Location ADDED: DEL: deleteme\\n\";",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=location_add&reference=del&name=deleteme&format={{format}}&address=123 Main&city=Boise&state=ID&zip_code=90210",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "location_add"
+								},
+								{
+									"key": "reference",
+									"value": "del"
+								},
+								{
+									"key": "name",
+									"value": "deleteme"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "address",
+									"value": "123 Main"
+								},
+								{
+									"key": "city",
+									"value": "Boise"
+								},
+								{
+									"key": "state",
+									"value": "ID"
+								},
+								{
+									"key": "zip_code",
+									"value": "90210"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Location",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Location DELETED: DEL (deleteme)\\n\";"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DCM_URL}}?module=location_del&reference=DEL&format={{format}}&commit=yes",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "location_del"
+								},
+								{
+									"key": "reference",
+									"value": "DEL"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "commit",
+									"value": "yes"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Location",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Location ADDED: BOI-CHANGE: Corporate Off\\n\";",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=location_add&reference=boi-change&name=Corporate Off&format={{format}}&address=123 Main&city=Boisee&state=IL&zip_code=90210",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "location_add"
+								},
+								{
+									"key": "reference",
+									"value": "boi-change"
+								},
+								{
+									"key": "name",
+									"value": "Corporate Off"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "address",
+									"value": "123 Main"
+								},
+								{
+									"key": "city",
+									"value": "Boisee"
+								},
+								{
+									"key": "state",
+									"value": "IL"
+								},
+								{
+									"key": "zip_code",
+									"value": "90210"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Modify Location",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Location UPDATED.*BOI-CHANGE/.test(jsonData.module_exit_message);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=location_modify&reference=BOI-CHANGE&set_reference=BOI&set_address=1234 Main St&format={{format}}&set_city=Boise&set_state=ID&set_zip_code=83706&set_name=Corporate Office",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "location_modify"
+								},
+								{
+									"key": "reference",
+									"value": "BOI-CHANGE"
+								},
+								{
+									"key": "set_reference",
+									"value": "BOI"
+								},
+								{
+									"key": "set_address",
+									"value": "1234 Main St"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "set_city",
+									"value": "Boise"
+								},
+								{
+									"key": "set_state",
+									"value": "ID"
+								},
+								{
+									"key": "set_zip_code",
+									"value": "83706"
+								},
+								{
+									"key": "set_name",
+									"value": "Corporate Office"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Subnets",
+			"item": [
+				{
+					"name": "Add Subnet for delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Subnet ADDED: 3.3.3.0/24\\n\";",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=subnet_add&name={{netname}} del&ip=3.3.3.0&netmask={{netmask}}&type=LAN&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "subnet_add"
+								},
+								{
+									"key": "name",
+									"value": "{{netname}} del"
+								},
+								{
+									"key": "ip",
+									"value": "3.3.3.0"
+								},
+								{
+									"key": "netmask",
+									"value": "{{netmask}}"
+								},
+								{
+									"key": "type",
+									"value": "LAN"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete single subnet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Subnet DELETED: LAN-EXAMPLE-DEL IP: 3.3.3.0/24\\n\";"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DCM_URL}}?module=subnet_del&subnet=3.3.3.0&format={{format}}&commit=yes",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "subnet_del"
+								},
+								{
+									"key": "subnet",
+									"value": "3.3.3.0"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "commit",
+									"value": "yes"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Subnet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Subnet ADDED: 2.2.2.0/24\\n\";"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=subnet_add&name={{netname}}_CHANGE&ip=2.2.2.0&netmask={{netmask}}&type=LAN&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "subnet_add"
+								},
+								{
+									"key": "name",
+									"value": "{{netname}}_CHANGE"
+								},
+								{
+									"key": "ip",
+									"value": "2.2.2.0"
+								},
+								{
+									"key": "netmask",
+									"value": "{{netmask}}"
+								},
+								{
+									"key": "type",
+									"value": "LAN"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Modify Subnet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Subnet UPDATED:/.test(jsonData.module_exit_message);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=subnet_modify&set_name={{netname}}&set_ip={{netip}}&set_type=VLAN&format={{format}}&subnet={{netname}}_CHANGE",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "subnet_modify"
+								},
+								{
+									"key": "set_name",
+									"value": "{{netname}}"
+								},
+								{
+									"key": "set_ip",
+									"value": "{{netip}}"
+								},
+								{
+									"key": "set_type",
+									"value": "VLAN"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "subnet",
+									"value": "{{netname}}_CHANGE"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Display Subnet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"if (responseCode.code === 200) {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  tests[\"ONA Status Code\"] = jsonData.module_exit_status === 0;",
+									"",
+									"  tests[\"Found Name\"] = jsonData.name === \"LAN-EXAMPLE\";",
+									"  tests[\"Found IP\"] = jsonData.ip_addr === \"16843008\";",
+									"  tests[\"Found Type\"] = jsonData.subnet_type_name === \"VLAN\";",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DCM_URL}}?module=subnet_display&subnet={{netname}}&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "subnet_display"
+								},
+								{
+									"key": "subnet",
+									"value": "{{netname}}"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Hosts",
+			"item": [
+				{
+					"name": "Add Host for delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Host ADDED: delete.example.com/.test(jsonData.module_exit_message);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=host_add&host=delete.{{domainname}}&ip=1.1.1.100&type=1&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "host_add"
+								},
+								{
+									"key": "host",
+									"value": "delete.{{domainname}}"
+								},
+								{
+									"key": "ip",
+									"value": "1.1.1.100"
+								},
+								{
+									"key": "type",
+									"value": "1"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete host",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Host DELETED: delete.example.com/.test(jsonData.module_exit_message);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DCM_URL}}?module=host_del&host=delete.{{domainname}}&format={{format}}&commit=yes",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "host_del"
+								},
+								{
+									"key": "host",
+									"value": "delete.{{domainname}}"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "commit",
+									"value": "yes"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Host",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Host ADDED:/.test(jsonData.module_exit_message);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=host_add&host={{host}}&ip=1.1.1.1&type=1&format={{format}}&location=BOI",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "host_add"
+								},
+								{
+									"key": "host",
+									"value": "{{host}}"
+								},
+								{
+									"key": "ip",
+									"value": "1.1.1.1"
+								},
+								{
+									"key": "type",
+									"value": "1"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "location",
+									"value": "BOI"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Modify Host",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Host UPDATED:/.test(jsonData.module_exit_message);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=host_modify&set_notes=updated notes&set_type=2&format={{format}}&host={{host}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "host_modify"
+								},
+								{
+									"key": "set_notes",
+									"value": "updated notes"
+								},
+								{
+									"key": "set_type",
+									"value": "2"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "host",
+									"value": "{{host}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Display Host",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"if (responseCode.code === 200) {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  tests[\"ONA Status Code\"] = jsonData.module_exit_status === 0;",
+									"",
+									"  tests[\"Found Name\"] = jsonData.name === \"host\";",
+									"  tests[\"Found FQDN\"] = jsonData.fqdn === \"host.example.com\";",
+									"  tests[\"Found Notes\"] = jsonData.notes === \"updated notes\";",
+									"  tests[\"Found IP\"] = jsonData.interfaces[1].ip_addr_text === \"1.1.1.1\";",
+									"  tests[\"Found Location\"] = jsonData.location.reference === \"BOI\";",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DCM_URL}}?module=host_display&host={{host}}&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "host_display"
+								},
+								{
+									"key": "host",
+									"value": "{{host}}"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Interfaces",
+			"item": [
+				{
+					"name": "Add Interface",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Interface ADDED: 1.1.1.100\\n\";",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=interface_add&host={{host}}&format={{format}}&ip=1.1.1.100&name=eth1&laa=true",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "interface_add"
+								},
+								{
+									"key": "host",
+									"value": "{{host}}"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "ip",
+									"value": "1.1.1.100"
+								},
+								{
+									"key": "name",
+									"value": "eth1"
+								},
+								{
+									"key": "laa",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Modify Interface",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Interface UPDATED:.*: 1.1.1.200/.test(jsonData.module_exit_message);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{DCM_URL}}?module=interface_modify&interface=1.1.1.100&set_ip=1.1.1.200&set_name=eth2&set_description=int description&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "interface_modify"
+								},
+								{
+									"key": "interface",
+									"value": "1.1.1.100"
+								},
+								{
+									"key": "set_ip",
+									"value": "1.1.1.200"
+								},
+								{
+									"key": "set_name",
+									"value": "eth2"
+								},
+								{
+									"key": "set_description",
+									"value": "int description"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Display Interface",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"if (responseCode.code === 200) {",
+									"  var jsonData = JSON.parse(responseBody);",
+									"  tests[\"ONA Status Code\"] = jsonData.module_exit_status === 0;",
+									"",
+									"  tests[\"Found Name\"] = jsonData.name === \"eth2\";",
+									"  tests[\"Found IP\"] = jsonData.ip_addr_text === \"1.1.1.200\";",
+									"  tests[\"Found Desc\"] = jsonData.description === \"int description\";",
+									"",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DCM_URL}}?module=interface_display&interface=1.1.1.200&format={{format}}",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "interface_display"
+								},
+								{
+									"key": "interface",
+									"value": "1.1.1.200"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Interface",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = /Interface DELETED: 1.1.1.200/.test(jsonData.module_exit_message);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DCM_URL}}?module=interface_del&interface=1.1.1.200&format={{format}}&commit=yes",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "interface_del"
+								},
+								{
+									"key": "interface",
+									"value": "1.1.1.200"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "commit",
+									"value": "yes"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Final cleanup",
+			"item": [
+				{
+					"name": "Delete Subnet LAN-EXAMPLE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Subnet DELETED: LAN-EXAMPLE IP: 1.1.1.0/24\\n\";"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DCM_URL}}?module=subnet_del&subnet={{netname}}&format={{format}}&commit=yes",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "subnet_del"
+								},
+								{
+									"key": "subnet",
+									"value": "{{netname}}"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "commit",
+									"value": "yes"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Location BOI",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Location DELETED: BOI (Corporate Office)\\n\";"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DCM_URL}}?module=location_del&reference=BOI&format={{format}}&commit=yes",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "location_del"
+								},
+								{
+									"key": "reference",
+									"value": "BOI"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "commit",
+									"value": "yes"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Domain 1.in-addr.arpa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"ONA return code\"] = jsonData.module_exit_status === 0;",
+									"tests[\"Status mesage output\"] = jsonData.module_exit_message === \"INFO => Domain DELETED: 1.in-addr.arpa\\n\";"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{DCM_URL}}?module=domain_del&domain=1.in-addr.arpa&format={{format}}&commit=yes",
+							"host": [
+								"{{DCM_URL}}"
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "domain_del"
+								},
+								{
+									"key": "domain",
+									"value": "1.in-addr.arpa"
+								},
+								{
+									"key": "format",
+									"value": "{{format}}"
+								},
+								{
+									"key": "commit",
+									"value": "yes"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "{{password}}",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "{{username}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

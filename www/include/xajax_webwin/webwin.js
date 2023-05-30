@@ -161,11 +161,13 @@ function focus_window(el_name) {
     // Basically we loop through every window.  If we find any windows
     // that have a higher zIndex than the default we set it to the default.
     // When we find the window we're focusing we set it's zIndex to default + 1.
-    nodes = _parent.childNodes;
-    for (var i=0; i<nodes.length; i++) {
+    if (_el && _el.id) {
+      nodes = _parent.childNodes;
+      for (var i=0; i<nodes.length; i++) {
         if (nodes[i].id == _el.id)
             nodes[i].style.zIndex = window_default_zindex + 1;
         else if (nodes[i].style.zIndex > window_default_zindex)
             nodes[i].style.zIndex = window_default_zindex;
+      }
     }
 }

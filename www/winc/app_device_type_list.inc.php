@@ -39,17 +39,10 @@ $window['html'] .= <<<EOL
             </td>
 
             <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
-                <form id="{$form_id}" onSubmit="return false;">
+                <form id="{$form_id}" onSubmit="return false;" autocomplete="off">
                 <input id="{$form_id}_page" name="page" value="1" type="hidden">
                 <input name="content_id" value="{$content_id}" type="hidden">
                 <input name="form_id" value="{$form_id}" type="hidden">
-                <div id="{$form_id}_filter_overlay"
-                     style="position: relative;
-                            display: inline;
-                            color: #CACACA;
-                            cursor: text;"
-                     onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                >Filter</div>
                 <input
                     id="{$form_id}_filter"
                     name="filter"
@@ -59,8 +52,7 @@ $window['html'] .= <<<EOL
                     size="10"
                     maxlength="20"
                     alt="Quick Filter"
-                    onFocus="el('{$form_id}_filter_overlay').style.display = 'none';"
-                    onBlur="if (this.value == '') el('{$form_id}_filter_overlay').style.display = 'inline';"
+                    placeholder="Type"
                     onKeyUp="
                         if (typeof(timer) != 'undefined') clearTimeout(timer);
                         code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
@@ -101,7 +93,6 @@ $window['js'] = <<<EOL
         el('{$window_name}_title_r').innerHTML;
 
     /* Setup the quick filter */
-    el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
     {$form_id}_last_search = '';
 
     /* Tell the browser to load/display the list */
@@ -127,8 +118,8 @@ function ws_display_list($window_name, $form) {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -153,6 +144,7 @@ function ws_display_list($window_name, $form) {
 
 EOL;
 
+    // TODO: filter does not yet work right
     $where = 'id > 0';
     if (is_array($form) and $form['filter']) {
         $where = 'TODO LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
@@ -254,10 +246,9 @@ EOL;
     // Insert the new table into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_device_type_count",  "innerHTML", "({$count})");
-    $response->addAssign("{$form['content_id']}", "innerHTML", $html);
-    // $response->addScript($js);
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_device_type_count",  "innerHTML", "({$count})");
+    $response->assign("{$form['content_id']}", "innerHTML", $html);
+    return $response;
 }
 
 
@@ -278,8 +269,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -289,8 +280,8 @@ function ws_delete($window_name, $form='') {
     // Load the record to make sure it exists
     list($status, $rows, $device_type) = db_get_record($onadb, 'device_types', array('id' => $form));
     if ($status or !$rows) {
-        $response->addScript("alert('Delete failed: Device type id {$form} does not exist');");
-        return($response->getXML());
+        $response->script("alert('Delete failed: Device type id {$form} does not exist');");
+        return $response;
     }
 
     // Get a list of devices that use this device type
@@ -320,8 +311,8 @@ function ws_delete($window_name, $form='') {
     $js .= "xajax_window_submit('$window_name', xajax.getFormValues('{$window_name}_filter_form'), 'display_list');";
 
     // Send an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

@@ -180,7 +180,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `domains` WRITE;
 /*!40000 ALTER TABLE `domains` DISABLE KEYS */;
-INSERT INTO `domains` (`id`, `parent_id`, `ctime`, `mtime`, `serial`, `refresh`, `retry`, `expiry`, `minimum`, `default_ttl`, `primary_master`, `admin_email`, `name`) VALUES (1,0,'2018-01-07 02:10:17',NULL,0,86400,3600,3600,3600,86400,'server.example.com','hostmaster','example.com'),(5,0,'2018-01-05 05:24:35',NULL,15052435,86400,3600,3600,3600,86400,'','hostmaster','192.in-addr.arpa'),(6,0,'2018-01-05 06:10:49',NULL,15061049,86400,3600,3600,3600,86400,'','hostmaster','250.in-addr.arpa');
+INSERT INTO `domains` (`id`, `parent_id`, `ctime`, `serial`, `refresh`, `retry`, `expiry`, `minimum`, `default_ttl`, `primary_master`, `admin_email`, `name`) VALUES (1,0,'2018-01-07 02:10:17',0,86400,3600,3600,3600,86400,'server.example.com','hostmaster','example.com'),(5,0,'2018-01-05 05:24:35',15052435,86400,3600,3600,3600,86400,'','hostmaster','192.in-addr.arpa'),(6,0,'2018-01-05 06:10:49',15061049,86400,3600,3600,3600,86400,'','hostmaster','250.in-addr.arpa');
 /*!40000 ALTER TABLE `domains` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -198,10 +198,10 @@ UNLOCK TABLES;
 -- Dumping data for table `groups`
 --
 
-LOCK TABLES `groups` WRITE;
-/*!40000 ALTER TABLE `groups` DISABLE KEYS */;
-INSERT INTO `groups` (`id`, `name`, `description`, `level`) VALUES (17,'Default','Default user group',1),(18,'Admin','Admin group',99);
-/*!40000 ALTER TABLE `groups` ENABLE KEYS */;
+LOCK TABLES `auth_groups` WRITE;
+/*!40000 ALTER TABLE `auth_groups` DISABLE KEYS */;
+INSERT INTO `auth_groups` (`id`, `name`, `description`, `level`) VALUES (17,'Default','Default user group',1),(18,'Admin','Admin group',99);
+/*!40000 ALTER TABLE `auth_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -296,7 +296,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `permission_assignments` WRITE;
 /*!40000 ALTER TABLE `permission_assignments` DISABLE KEYS */;
-INSERT INTO `permission_assignments` (`id`, `perm_id`, `user_id`, `group_id`) VALUES (1,1,0,18),(2,2,0,18),(3,3,0,18),(4,4,0,18),(5,5,0,18),(6,6,0,18),(7,7,0,18),(8,8,0,18),(9,9,0,18),(10,10,0,18),(11,11,0,18),(12,12,0,18),(13,13,0,18),(14,14,0,18),(15,15,0,18),(16,16,0,18),(17,17,0,18),(18,18,0,18),(100001,100019,0,18),(100002,100020,0,18),(100003,100021,0,18),(100004,100022,0,18),(100005,100023,0,18),(100006,100024,0,18);
+INSERT INTO `permission_assignments` (`id`, `perm_id`, `user_id`, `group_id`) VALUES (1,1,2,18),(2,2,2,18),(3,3,2,18),(4,4,2,18),(5,5,2,18),(6,6,2,18),(7,7,2,18),(8,8,2,18),(9,9,2,18),(10,10,2,18),(11,11,2,18),(12,12,2,18),(13,13,2,18),(14,14,2,18),(15,15,2,18),(16,16,2,18),(17,17,2,18),(18,18,2,18),(100001,100019,2,18),(100002,100020,2,18),(100003,100021,2,18),(100004,100022,2,18),(100005,100023,2,18),(100006,100024,2,18);
 /*!40000 ALTER TABLE `permission_assignments` ENABLE KEYS */;
 UNLOCK TABLES;
 

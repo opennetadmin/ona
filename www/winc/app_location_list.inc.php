@@ -41,17 +41,10 @@ $window['html'] .= <<<EOL
             </td>
 
             <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
-                <form id="{$form_id}" onSubmit="return false;">
+                <form id="{$form_id}" onSubmit="return false;" autocomplete="off">
                 <input id="{$form_id}_page" name="page" value="1" type="hidden">
                 <input name="content_id" value="{$content_id}" type="hidden">
                 <input name="form_id" value="{$form_id}" type="hidden">
-                <div id="{$form_id}_filter_overlay"
-                     style="position: relative;
-                            display: inline;
-                            color: #CACACA;
-                            cursor: text;"
-                     onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                >Filter</div>
                 <input
                     id="{$form_id}_filter"
                     name="filter"
@@ -61,8 +54,7 @@ $window['html'] .= <<<EOL
                     size="10"
                     maxlength="20"
                     alt="Quick Filter"
-                    onFocus="el('{$form_id}_filter_overlay').style.display = 'none';"
-                    onBlur="if (this.value == '') el('{$form_id}_filter_overlay').style.display = 'inline';"
+                    placeholder="Reference"
                     onKeyUp="
                         if (typeof(timer) != 'undefined') clearTimeout(timer);
                         code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
@@ -103,7 +95,6 @@ $window['js'] = <<<EOL
         el('{$window_name}_title_r').innerHTML;
 
     /* Setup the quick filter */
-    el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
     {$form_id}_last_search = '';
 
     /* Tell the browser to load/display the list */
@@ -129,8 +120,8 @@ function ws_display_list($window_name, $form) {
     // Check permissions
     if (!auth('location_add')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -242,12 +233,12 @@ EOL;
         <!-- ADD LOCATION LINK -->
         <a title="New location"
             class="act"
-            onClick="xajax_window_submit('edit_location', ' ', 'editor');"
+            onClick="xajax_window_submit('edit_location', 'js=> ', 'editor');"
         ><img src="{$images}/silk/page_add.png" border="0"></a>&nbsp;
 
         <a title="New location"
             class="act"
-            onClick="xajax_window_submit('edit_location', ' ', 'editor');"
+            onClick="xajax_window_submit('edit_location', 'js=> ', 'editor');"
         >Add new location</a>&nbsp;
     </div>
 EOL;
@@ -260,10 +251,10 @@ EOL;
     // Insert the new table into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_locations_count",  "innerHTML", "({$count})");
-    $response->addAssign("{$form['content_id']}", "innerHTML", $html);
-    $response->addScript($js);
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_locations_count",  "innerHTML", "({$count})");
+    $response->assign("{$form['content_id']}", "innerHTML", $html);
+    $response->script($js);
+    return $response;
 }
 
 
@@ -284,8 +275,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('location_del')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -305,7 +296,7 @@ function ws_delete($window_name, $form='') {
 
         // Delete the record
         list($status, $output) = run_module('location_del', array('reference' => $form['id'], 'commit' => 'Y'));
-    
+
         // If the module returned an error code display a popup warning
         if ($status != 0) {
             $js .= "alert('Delete failed:" . trim($self['error']) . ");";
@@ -321,8 +312,8 @@ function ws_delete($window_name, $form='') {
     }
 
     // Send an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

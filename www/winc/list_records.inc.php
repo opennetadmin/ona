@@ -142,6 +142,8 @@ function ws_display_list($window_name, $form='') {
 
 
 
+    // default some arrays
+    $host = array();
 
 
     // display a nice message when we dont find all the records
@@ -162,7 +164,7 @@ function ws_display_list($window_name, $form='') {
 
     // Do the SQL Query
     $filter = '';
-    if ($form['filter']) {
+    if (isset($form['filter'])) {
         // Host names should always be lower case
         $form['filter'] = strtolower($form['filter']);
         $filter = ' AND name LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
@@ -284,6 +286,11 @@ EOL;
 
 
         $record = $results[$i-1];
+
+        // crappy filter outside the query itself
+        if (isset($form['filter'])) {
+          if (!preg_match("/{$form['filter']}/",$record['name'])) continue;
+        }
 
         // if the interface is the primary_dns_id for the host then mark it
         $primary_record = '&nbsp;';
@@ -628,10 +635,10 @@ EOL;
     // Insert the new html into the content div specified
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_{$tab}_count",  "innerHTML", "({$count})");
-    $response->addAssign($form['content_id'], "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_{$tab}_count",  "innerHTML", "({$count})");
+    $response->assign($form['content_id'], "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 
