@@ -6,7 +6,7 @@
 <!-- Another file will populate the default data -->
 
   <table name="blocks">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -29,7 +29,7 @@
 
 
   <table name="configuration_types">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -41,7 +41,7 @@
 
 
   <table name="configurations">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -64,11 +64,14 @@
       <NOTNULL/>
       <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
     </field>
+    <index name="host_id">
+      <col>host_id</col>
+    </index>
   </table>
 
 
   <table name="custom_attribute_types">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -89,7 +92,7 @@
 
 
   <table name="custom_attributes">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <AUTOINCREMENT/>
@@ -113,7 +116,7 @@
 
 
   <table name="dcm_module_list">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="name" type="C" size="128">
       <KEY/>
     </field>
@@ -131,7 +134,7 @@
 
 
   <table name="device_types">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
     </field>
@@ -145,7 +148,7 @@
 
 
   <table name="devices">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
     </field>
@@ -164,7 +167,7 @@
 
 
   <table name="dhcp_failover_groups">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -209,7 +212,7 @@
 
 
   <table name="dhcp_option_entries">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -237,7 +240,7 @@
 
 
   <table name="dhcp_options">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -263,7 +266,7 @@
 
 
   <table name="dhcp_pools">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -307,7 +310,7 @@
 
 
   <table name="dhcp_server_subnets">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -324,7 +327,7 @@
 
 
   <table name="dns">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -389,7 +392,7 @@
 
 
   <table name="dns_server_domains">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -411,7 +414,7 @@
   </table>
 
   <table name="dns_views">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -437,9 +440,6 @@
     <field name="ctime" type="T">
       <NOTNULL/>
       <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
-    </field>
-    <field name="mtime" type="T">
-      <NULL/>
     </field>
     <field name="serial" type="I" size="10">
       <NOTNULL/>
@@ -478,7 +478,7 @@
 
 
   <table name="group_assignments">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <AUTOINCREMENT/>
@@ -497,8 +497,8 @@
   </table>
 
 
-  <table name="groups">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+  <table name="auth_groups">
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <AUTOINCREMENT/>
@@ -522,7 +522,7 @@
 
 
   <table name="host_roles">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -539,7 +539,7 @@
 
 
   <table name="hosts">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -563,7 +563,7 @@
 
 
   <table name="interface_clusters">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="interface_id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -579,7 +579,7 @@
 
 
   <table name="interfaces">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -613,7 +613,7 @@
 
 
   <table name="locations">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -650,7 +650,7 @@
 
 
   <table name="manufacturers">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -687,10 +687,12 @@
       <NOTNULL/>
     </field>
     <field name="mtime" type="T">
-      <NULL/>
+      <NOTNULL/>
+      <DEFTIMESTAMP value="CURRENT_TIMESTAMP"/>
     </field>
     <field name="expiration" type="T">
       <NULL/>
+      <DEFAULT value="NULL"/>
     </field>
     <field name="message_text" type="X">
       <NOTNULL/>
@@ -705,7 +707,7 @@
 
 
   <table name="models">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -724,7 +726,7 @@
 
 
   <table name="ona_logs">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <AUTOINCREMENT/>
@@ -750,7 +752,7 @@
 
 
   <table name="permission_assignments">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <AUTOINCREMENT/>
@@ -775,7 +777,7 @@
 
 
   <table name="permissions">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <AUTOINCREMENT/>
@@ -795,7 +797,7 @@
 
 
   <table name="roles">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -823,7 +825,7 @@
 
 
   <table name="sessions">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="sesskey" type="C" size="128">
       <KEY/>
     </field>
@@ -838,7 +840,7 @@
 
 
   <table name="subnet_types">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -856,7 +858,7 @@
 
 
   <table name="subnets">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -884,7 +886,7 @@
 
 
   <table name="sys_config">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="name" type="C" size="128">
       <KEY/>
     </field>
@@ -909,7 +911,7 @@
   </table>
 
   <table name="tags">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -949,6 +951,7 @@
     </field>
     <field name="atime" type="T">
       <NULL/>
+      <DEFAULT value="NULL"/>
     </field>
     <index name="username">
       <UNIQUE/>
@@ -958,7 +961,7 @@
 
 
   <table name="vlan_campuses">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -970,7 +973,7 @@
 
 
   <table name="vlans">
-   <opt platform="mysql">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
+   <opt platform="mysqli">ENGINE=INNODB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci</opt>
     <field name="id" type="I" size="10">
       <KEY/>
       <UNSIGNED/>
@@ -989,34 +992,6 @@
   </table>
 
 
-
-
-  <!-- Run some sql to adjust tables that do not quite look right after the above table creations -->
-  <sql>
-      <!-- Added platform mysql to these.. not sure if/how they need to be adjusted on other platforms -->
-      <query platform="mysql">ALTER TABLE `configurations` CHANGE `ctime` `ctime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP</query>
-      <query platform="mysql">ALTER TABLE `dns` CHANGE `ebegin` `ebegin` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP</query>
-      <query platform="mysql">ALTER TABLE `ona_logs` CHANGE `timestamp` `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP</query>
-      <query platform="mysql">ALTER TABLE `users` CHANGE `ctime` `ctime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP</query>
-  </sql>
-
-  <sql>
-      <query platform="postgres">
-CREATE TABLE domains (
-id                       INTEGER NOT NULL,
-host_id                  INTEGER NOT NULL,
-domain_id                INTEGER NOT NULL,
-role                     VARCHAR(10) NOT NULL,
-type                     VARCHAR(10) NOT NULL,
-rebuild_flag             INTEGER NOT NULL,    
-                 PRIMARY KEY (id)             
-); 
-      </query>
-  </sql>
-
-
-
-
   <!-- Get rid of old tables that are no longer used -->
   <table name="defaults">
       <DROP/> 
@@ -1026,6 +1001,9 @@ rebuild_flag             INTEGER NOT NULL,
   </table>
 
 
+
+  <!-- This is cleanup of some old dataformats, crated during 13-to-14.. maybe it goes away in future -->
+  <sql><query>update dns set ebegin = '2000-01-01' where CAST(ebegin AS CHAR(20)) = '0000-00-00 00:00:00'</query></sql>
 
 
 </schema>

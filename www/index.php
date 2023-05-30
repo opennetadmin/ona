@@ -8,7 +8,9 @@ require_once($base . '/config/config.inc.php');
 /* --------------------------------------------------------- */
 // MP: Since we know ONA will generate a ton of notice level errors, lets turn them off here
 // I dont believe this will be impactful to anyone. keep an eye out for it however.
-error_reporting (E_ALL ^ E_NOTICE);
+// MP: Also turning of warnings. php8 whines about things I like to lazily do.  its probably
+//     worth looking at warnings now and then to clean up mess. but there is a lot here
+error_reporting (E_ALL ^ E_WARNING ^ E_NOTICE);
 
 // Start out the session as a guest with level 0 access.  This is for view only mode.
 // You can enable or disable this by setting the "disable_guest" sysconfig option

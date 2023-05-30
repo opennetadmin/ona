@@ -18,8 +18,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -81,8 +81,8 @@ function ws_editor($window_name, $form='') {
     $dhcpoptions['dhcp_options'] = htmlentities($dhcpoptions['display_name']);
     foreach ($dhcpoptions as $record) {
         $selected = "";
-        if ($record['id'] == $dhcp_entry['dhcp_option_id']) { $selected = "SELECTED=\"selected\""; }
-        if ($record['id']) {$dhcp_option_list .= "<option {$selected} value=\"{$record['id']}\">{$record['display_name']} ({$record['number']})</option>\n";}
+        if (isset($record['id']) == $dhcp_entry['dhcp_option_id']) { $selected = "SELECTED=\"selected\""; }
+        if (isset($record['id'])) {$dhcp_option_list .= "<option {$selected} value=\"{$record['id']}\">{$record['display_name']} ({$record['number']})</option>\n";}
     }
 
     // Javascript to run after the window is built
@@ -98,6 +98,8 @@ function ws_editor($window_name, $form='') {
             el('{$window_name}_title_r').innerHTML;
 
         el('{$window_name}_form').onsubmit = function() { return false; };
+
+        el('option').focus();
 EOL;
 
 
@@ -105,7 +107,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- DHCP entry Edit Form -->
-    <form id="{$window_name}_form" onSubmit="return false;">
+    <form id="{$window_name}_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="host" value="{$host['id']}">
     <input type="hidden" name="subnet" value="{$subnet['id']}">
     <input type="hidden" name="server" value="{$server['id']}">
@@ -165,12 +167,11 @@ EOL;
             <td class="padding" align="right" width="100%">
                 <input type="hidden" name="overwrite" value="{$overwrite}">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -212,8 +213,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -222,8 +223,8 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if (!$form['type'] and $form['value'] == '') {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all required fields to continue!');");
+        return $response;
     }
 
     // Validate the host is valid
@@ -251,8 +252,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 
 }
 
@@ -276,8 +277,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
    // If an array in a string was provided, build the array and store it in $form
@@ -298,8 +299,8 @@ function ws_delete($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 
 }
 

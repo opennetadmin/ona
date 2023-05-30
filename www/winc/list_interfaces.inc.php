@@ -58,10 +58,12 @@ function ws_display_list($window_name, $form='') {
 
     // Do the SQL Query
     $filter = '';
+/* disable filter here since it does not actual work properly
     if ($form['filter']) {
         $form['filter'] = ip_mangle($form['filter']);
         $filter = $and . ' ip_addr LIKE ' . $onadb->qstr('%'.$form['filter'].'%');
     }
+*/
     list ($status, $rows, $results) =
         db_get_records(
             $onadb,
@@ -112,6 +114,12 @@ EOL;
         // Loop and display each record
         foreach($results as $record) {
             // Get additional info about each host record //
+
+            // crappy filter outside the query itself
+            if (isset($form['filter'])) {
+              $iptext = ip_mangle($record['ip_addr'], 'dotted');
+              if (!preg_match("/{$form['filter']}/",$iptext)) continue;
+            }
 
             // Check if this interface has an external NAT
             unset($extnatint, $extnatdisplay, $extnatdisplay, $extnatsubdisplay);
@@ -306,10 +314,10 @@ EOL;
     // Insert the new html into the content div specified
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_{$tab}_count",  "innerHTML", "({$count})");
-    $response->addAssign($form['content_id'], "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_{$tab}_count",  "innerHTML", "({$count})");
+    $response->assign($form['content_id'], "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

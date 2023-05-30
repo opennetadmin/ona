@@ -19,8 +19,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Set a few parameters for the "results" window we're about to create
@@ -40,6 +40,7 @@ function ws_editor($window_name, $form='') {
         el('{$window_name}_title_r').innerHTML =
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
+        el('display_name').focus();
 EOL;
 
     // If we got an option, load it for display
@@ -73,7 +74,7 @@ EOL;
     $window['html'] .= <<<EOL
 
     <!-- Simple Edit Form -->
-    <form id="dhcp_option_edit_form" onSubmit="return false;">
+    <form id="dhcp_option_edit_form" onSubmit="return false;" autocomplete="off">
     <input name="id" type="hidden" value="{$record['id']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
         <tr>
@@ -82,6 +83,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="display_name"
                     name="display_name"
                     alt="Description"
                     value="{$record['display_name']}"
@@ -182,8 +184,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -253,6 +255,7 @@ function ws_save($window_name, $form='') {
                                                       'display_name' => $form['display_name'],
                                                       'type' => $form['type'],
                                                       'number' => $form['number'],
+                                                      'sys_default' => 0,
                                                       'name' => $form['name'])
                                                );
             if ($status or !$rows) {
@@ -276,8 +279,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Return some javascript to the browser
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

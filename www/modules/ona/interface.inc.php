@@ -21,7 +21,7 @@ function interface_add($options="") {
     printmsg("DEBUG => interface_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.11';
+    $version = '1.12';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -48,6 +48,7 @@ Adds a new interface to an existing host record
     description=TEXT          brief description of the interface
     natip=ADDRESS             IP of NAT address to add with this new interface
     addptr                    Auto add a PTR record for new IP
+    laa                       Auto gen a Locally Administerd Mac address in 0A range
 
   Notes:
     * DOMAIN will default to {$conf['dns_defaultdomain']} if not specified
@@ -64,6 +65,8 @@ EOM
 
     // Set options[addptr] and options[create_a] to Y if they're not set
     $options['addptr'] = sanitize_YN($options['addptr'], 'Y');
+
+    $options['laa'] = sanitize_YN($options['laa'], 'N');
 
     // Warn about 'name' and 'description' fields exceeding max lengths
     if ($options['force'] == 'N') {
@@ -138,6 +141,11 @@ EOM
         }
     }
 
+    // If we want locally administered mac addresses
+    if ($options['laa'] == 'Y') {
+      $options['mac'] = '0a:'.implode(':', str_split(substr(md5(mt_rand()), 0, 10), 2));
+      printmsg("INFO => Generating Locally Administered MAC Address.", 1);
+    }
 
     // Remove any MAC address formatting
     if ($options['mac']) {
@@ -264,13 +272,14 @@ function interface_modify($options="") {
     printmsg("DEBUG => interface_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.11';
+    $version = '1.14';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
 
     // Set options[use_primary] to N if they're not set
     $options['use_primary'] = sanitize_YN($options['use_primary'], 'N');
+    $options['set_laa'] = sanitize_YN($options['set_laa'], 'N');
     
     // Set options[force] to N if it's not set
     $options['force'] = sanitize_YN($options['force'], 'N');
@@ -303,7 +312,8 @@ Modify an interface record
     set_mac=ADDRESS               change the mac address (most formats ok)
     set_name=NAME                 interface name (i.e. "FastEthernet0/1.100")
     set_description=TEXT          description (i.e. "VPN link to building 3")
-    set_last_response=DATE        date ip was last seen
+    set_last_response=DATE        date ip was last seen. (set to NULL to remove date)
+    set_laa                       Auto gen a Locally Administerd Mac address in 0A range
 
   Optional:
     use_primary[=Y]               use the host's primary interface (only applies
@@ -481,6 +491,11 @@ EOM
             $SET['ip_addr'] = $options['set_ip'];
     }
 
+    // If we want locally administered mac addresses
+    if ($options['set_laa'] == 'Y') {
+      $options['set_mac'] = '0a:'.implode(':', str_split(substr(md5(mt_rand()), 0, 10), 2));
+      printmsg("INFO => Generating Locally Administered MAC Address.", 1);
+    }
 
     // Setting an MAC address?
     if (array_key_exists('set_mac', $options)) {
@@ -508,14 +523,19 @@ EOM
                 }
             }
         }
-        if($interface['mac_addr'] != $options['set_mac'])
+        if(strcmp($interface['mac_addr'],$options['set_mac']) !== 0) {
             $SET['mac_addr'] = $options['set_mac'];
+        }
     }
 
     // Check the date formatting etc
     if (isset($options['set_last_response'])) {
-        // format the time that was passed in for the database
-        $SET['last_response']=date('Y-m-j G-i-s',strtotime($options['set_last_response']));
+        // format the time that was passed in for the database unless its NULL
+        if ( "${options['set_last_response']}" == "NULL" ) {
+          $SET['last_response']=NULL;
+        } else {
+          $SET['last_response']=date('Y-m-j G-i-s',strtotime($options['set_last_response']));
+        }
     }
 
     // Set options[set_name]?

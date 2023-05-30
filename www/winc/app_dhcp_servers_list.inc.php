@@ -1,6 +1,6 @@
 <?php
 
-// 
+//
 // So, the basic flow of this script is like this:
 //   * When the window is initially opened we define the normal window
 //     parameters for building an almost empty window.  After that new
@@ -11,9 +11,7 @@
 //     call is made to display_list(), this time passing a search 
 //     query.  display_list() grabs the refined list of users
 //     and pushes them to the window just like the first time.
-// 
-// 
-// 
+//
 
 
 // Check permissions
@@ -39,30 +37,22 @@ $window['html'] .= <<<EOL
             <td id="{$form_id}_{$tab}_tab" nowrap="true" class="table-tab-active">
                 DHCP Servers <span id="{$form_id}_{$tab}_count"></span>
             </td>
-            
+
             <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
-                <form id="{$form_id}" onSubmit="return false;">
+                <form id="{$form_id}" onSubmit="return false;" autocomplete="off">
                 <input id="{$form_id}_page" name="page" value="1" type="hidden">
                 <input name="content_id" value="{$content_id}" type="hidden">
                 <input name="form_id" value="{$form_id}" type="hidden">
-                <div id="{$form_id}_filter_overlay"
-                     style="position: relative;
-                            display: inline;
-                            color: #CACACA;
-                            cursor: text;"
-                     onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                >Filter</div>
-                <input 
+                <input
                     id="{$form_id}_filter"
-                    name="filter" 
-                    class="filter" 
-                    type="text" 
+                    name="filter"
+                    class="filter"
+                    type="text"
                     value=""
-                    size="10" 
-                    maxlength="20" 
+                    size="10"
+                    maxlength="20"
                     alt="Quick Filter"
-                    onFocus="el('{$form_id}_filter_overlay').style.display = 'none';"
-                    onBlur="if (this.value == '') el('{$form_id}_filter_overlay').style.display = 'inline';"
+                    placeholder="Server"
                     onKeyUp="
                         if (typeof(timer) != 'undefined') clearTimeout(timer);
                         code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
@@ -74,10 +64,10 @@ $window['html'] .= <<<EOL
                 >
                 </form>
             </td>
-            
+
         </tr>
     </table>
-    
+
     <!-- Item List -->
     <div id='{$content_id}'>
         {$conf['loading_icon']}
@@ -96,16 +86,15 @@ $window['js'] = <<<EOL
     el('{$window_name}_title_r').innerHTML = 
         '&nbsp;<a onClick="toggle_window(\'{$window_name}\');" title="Minimize window" style="cursor: pointer;"><img src="{$images}/icon_minimize.gif" border="0" /></a>' +
         el('{$window_name}_title_r').innerHTML;
-    
+
     /* Put a help icon in the title bar */
     el('{$window_name}_title_r').innerHTML = 
         '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
         el('{$window_name}_title_r').innerHTML;
-    
+
     /* Setup the quick filter */
-    el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
     {$form_id}_last_search = '';
-    
+
     /* Tell the browser to load/display the list */
     xajax_window_submit('{$submit_window}', xajax.getFormValues('{$form_id}'), 'display_list');
 EOL;
@@ -125,14 +114,7 @@ EOL;
 function ws_display_list($window_name, $form) {
     global $conf, $self, $mysql, $onadb;
     global $font_family, $color, $style, $images;
-    
-    // Check permissions
-//     if (!auth('advanced')) {
-//         $response = new xajaxResponse();
-//         $response->addScript("alert('Permission denied!');");
-//         return($response->getXML());
-//     }
-    
+
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
 
@@ -143,22 +125,22 @@ function ws_display_list($window_name, $form) {
     // Find out what page we're on
     $page = 1;
     if ($form['page'] and is_numeric($form['page'])) { $page = $form['page']; }
-    
-    
+
+
     $html = <<<EOL
 
     <!-- Results Table -->
     <table cellspacing="0" border="0" cellpadding="0" width="100%" class="list-box">
-        
+
         <!-- Table Header -->
         <tr>
             <td class="list-header" align="center" style="{$style['borderR']};">Server name</td>
             <td class="list-header" align="center" style="{$style['borderR']};">Subnet count</td>
             <td class="list-header" align="center">&nbsp;</td>
         </tr>
-        
+
 EOL;
-    
+
     $where = 'id in (select host_id from dhcp_server_subnets group by host_id)';
     if (is_array($form) and $form['filter']) {
         //$where = 'name like ' . $onadb->qstr('%'.$form['filter'].'%');
@@ -166,10 +148,10 @@ EOL;
     // Offset for SQL query
     $offset = ($conf['search_results_per_page'] * ($page - 1));
     if ($offset == 0) { $offset = -1; }
-    
+
     // Get list of elements
     list($status, $rows, $records) = db_get_records($onadb, 'hosts', $where, '', $conf['search_results_per_page'], $offset);
-    
+
     //$records = array_unique(array_slice($dnsservers,1,1));
 
     // If we got less than search_results_per_page, add the current offset to it
@@ -177,14 +159,14 @@ EOL;
     if ($rows > 0 and $rows < $conf['search_results_per_page']) {
         $rows += ($conf['search_results_per_page'] * ($page - 1));
     }
-    
+
     // If there were more than $conf['search_results_per_page'] find out how many records there really are
     else if ($rows >= $conf['search_results_per_page']) {
         list ($status, $rows, $tmp) = db_get_records($onadb, 'hosts', $where, '', 0);
     }
     $count = $rows;
-    
-    
+
+
     // Loop through and display
     foreach ($records as $record) {
 
@@ -215,7 +197,7 @@ EOL;
             <td class="list-row">
                 {$usage_rows}
             </td>
-            
+
             <td align="right" class="list-row" nowrap="true">
                 <a title="View DHCP server. ID: {$record['id']}"
                     class="act"
@@ -226,10 +208,10 @@ EOL;
         </tr>
 EOL;
     }
-    
+
     $html .= <<<EOL
     </table>
-    
+
     <!-- Add a new record -->
     <div class="act-box" style="padding: 2px 4px; border-top: 1px solid {$color['border']}; border-bottom: 1px solid {$color['border']};">
         <form id="{$form['form_id']}_add_dhcp_srv_{$record['id']}"
@@ -247,19 +229,18 @@ EOL;
         >Add DHCP server</a>&nbsp;
     </div>
 EOL;
-    
-    
+
+
     // Build page links if there are any
     $html .= get_page_links($page, $conf['search_results_per_page'], $count, $window_name, $form['form_id']);
-    
-    
+
+
     // Insert the new table into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_domain_count",  "innerHTML", "({$count})");
-    $response->addAssign("{$form['content_id']}", "innerHTML", $html);
-    // $response->addScript($js);
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_domain_count",  "innerHTML", "({$count})");
+    $response->assign("{$form['content_id']}", "innerHTML", $html);
+    return $response;
 }
 
 

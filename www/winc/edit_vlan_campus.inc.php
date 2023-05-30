@@ -18,8 +18,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('vlan_add')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -54,13 +54,14 @@ function ws_editor($window_name, $form='') {
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
 
+        el('campus_name').focus();
 EOL;
 
     // Define the window's inner html
     $window['html'] = <<<EOL
 
     <!-- Vlan Campus Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="vlan_campus_id" value="{$vlan_campus['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
@@ -77,6 +78,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="campus_name"
                     name="name"
                     alt="Vlan Campus Name"
                     value="{$vlan_campus['name']}"
@@ -94,12 +96,11 @@ EOL;
             <td class="padding" align="right" width="100%">
                 <input type="hidden" name="overwrite" value="{$overwrite}">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -126,8 +127,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (! (auth('advanced')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -136,8 +137,8 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if (!$form['name']) {
-        $response->addScript("alert('Please provide a campus name to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please provide a campus name to continue!');");
+        return $response;
     }
 
     // Decide if we're editing or adding
@@ -169,8 +170,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -194,8 +195,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -216,8 +217,8 @@ function ws_delete($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

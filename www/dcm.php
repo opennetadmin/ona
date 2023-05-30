@@ -9,7 +9,7 @@ require_once($base . '/config/config.inc.php');
 
 // MP: Since we know ONA will generate a ton of notice level errors, lets turn them off here
 // I dont believe this will be impactful to anyone. keep an eye out for it however.
-error_reporting (E_ALL ^ E_NOTICE);
+error_reporting (E_ALL ^ E_WARNING ^ E_NOTICE);
 
 // These store the output to be displayed
 $status = 1;
@@ -64,6 +64,19 @@ else {
 // Display the current debug level if it's above 1
 printmsg("DEBUG => debug level: {$conf['debug']}", 1);
 
+// If we do not have an options element, lets fake one by passing all _REQUEST variables to the options string
+if (!isset($_REQUEST['options'])) {
+  foreach ($_REQUEST as $key => $value) {
+    if ($key != 'module') {
+      if ($value == '') {
+        $options .= "&${key}=Y";
+      } else {
+        $options .= "&${key}=${value}";
+      }
+    }
+  }
+  $_REQUEST['options'] = $options;
+}
 
 /* ----------- RUN A MODULE IF NEEDED ------------ */
 if (isset($_REQUEST['module'])) {
@@ -73,8 +86,10 @@ if (isset($_REQUEST['module'])) {
 
 // process various types of output formats
 if (strstr($_REQUEST['options'], "format=json")) {
+  header('Content-Type: application/json');
   output_formatter('json','json_encode');
 } elseif (strstr($_REQUEST['options'], "format=yaml")) {
+  header('Content-Type: application/yaml');
   output_formatter('yaml','yaml_emit');
 } else {
   // Assume default text format
@@ -101,6 +116,7 @@ function output_formatter($format='',$function='') {
     // Output needs to be an array
     if (is_array($output))  {
       $output['module_exit_status'] = $status;
+      ksort($output);
       eval('print '.$function.'($output);');
     } else {
       $out['module_exit_status'] = $status;

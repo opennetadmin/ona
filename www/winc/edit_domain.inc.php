@@ -18,8 +18,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the user supplied an array in a string, build the array and store it in $form
@@ -80,7 +80,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- Domain Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="id" value="{$domain['id']}">
     <input type="hidden" name="domain" value="{$domain['name']}">
     <input type="hidden" name="parent" value="{$domain['id']}">
@@ -247,12 +247,11 @@ EOL;
             <td class="padding" align="right" width="100%">
                 <input type="hidden" name="overwrite" value="{$overwrite}">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -280,8 +279,8 @@ function ws_save($window_name, $form='') {
     // Check permissions (there is no interface_add, it's merged with host_add)
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -290,8 +289,8 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if ($form['name'] == '') {
-        $response->addScript("alert('Please complete the domain name field to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete the domain name field to continue!');");
+        return $response;
     }
 
     //MP: FIXME: It would be nice to disallow "." in the name.. this would force us to create .com .org .net etc domains.
@@ -338,8 +337,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -363,8 +362,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -384,8 +383,8 @@ function ws_delete($window_name, $form='') {
         $js .= $form['js'];  // usually js will refresh the window we got called from
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

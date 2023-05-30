@@ -1,40 +1,23 @@
 <?php
 //////////////////////////////////////////////////////////////////////////////
-// 
+//
 // Xajax Setup
 // This file is a site specific file that loads Xajax and several "modules"
-// that we use.  We are currently loading at least xajax, 
-// 
+// that we use.  We are currently loading at least xajax,
+//
 //////////////////////////////////////////////////////////////////////////////
 
 // Load Xajax and create an xajax object
 
-// xajax 0.5.x formatting
-//require_once("{$include}/xajax/xajax_core/xajax.inc.php");
-//$xajaxProcReq='processRequest';
-
-
-
-
-
-
-// xajax 0.2.x formatting
-require_once("{$include}/xajax/xajax.inc.php");
-$xajaxProcReq='processRequests';
-
-
-
-
-
-
-
-
+// Pull in xajax
+require_once("{$include}/xajax/xajax_core/xajax.inc.php");
 
 $xajax = new xajax();
+$xajax->configure('deferScriptGeneration', false);
+$xajax->configure('javascript URI', "${baseURL}/include/xajax/");
 
 
-
-// Load various modules 
+// Load various modules
 // (registering several functions with xajax and loading additional js into the page)
 require_once("{$include}/xajax_drag/drag.inc.php");
 $conf['html_headers'] .= '<script type="text/javascript" src="'.$baseURL.'/include/xajax_drag/drag.js"></script>' . "\n";
@@ -62,8 +45,8 @@ $conf['html_headers'] .= '<link rel="stylesheet" type="text/css" href="'.$baseUR
 
 
 
-// Process xajax requests 
-$xajax->$xajaxProcReq();
+// Process xajax requests
+$xajax->processRequest();
 
 
 // Include the xajax javascript in our html headers
@@ -196,33 +179,33 @@ EOL;
 //////////////////////////////////////////////////////////////////////////////
 // Function:
 //     change_page (string $window_name, int $page)
-// 
+//
 // Description:
 //     This function changes the "page" a person is viewing by setting the
 //     new page value in a hidden input field and then instructing the
 //     browser to do an xajax callback to the display_list() function.
-//     
+//
 //     $form NEEDS form_id => id && page => page number
 //////////////////////////////////////////////////////////////////////////////
 function ws_change_page($window_name, $form) {
     global $conf, $self;
-    
+
     // If the user supplied an array in a string, build the array and store it in $form
     $form = parse_options_string($form);
-    
+
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
     $js = '';
-    
+
     // Basically we're going to update the value of the input field called "page" 
     // in the "filter" form. Then we just have the browser do an xajax callback to 
     // update the list being displayed.
     $js .= "el('{$form['form_id']}_page').value = '{$form['page']}';";
     $js .= "xajax_window_submit('{$window_name}', xajax.getFormValues('{$form['form_id']}'), 'display_list');";
-    
+
     // Send an XML response to the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -238,14 +221,14 @@ function ws_change_page($window_name, $form) {
 function get_text_suggestions($q="", $table="", $field="", $max_results=10) {
     global $conf, $self, $onadb;
     $results = array();
-    
+
     // Don't return anything if we didn't get anything
     if (!$q or ($max_results < 1) or !$table or !$field) { return($results); }
-    
+
     $where  = "{$field} LIKE " . $onadb->qstr($q);
     $order  = "{$field} ASC";
 
-    
+
     // Search the db for results
     list ($status, $rows, $records) = db_get_records(
                                         $onadb,
@@ -254,14 +237,14 @@ function get_text_suggestions($q="", $table="", $field="", $max_results=10) {
                                         $order,
                                         $max_results
                                       );
-    
+
     // If the query didn't work return the error message
     if ($status) { $results[] = "Internal Error: {$self['error']}"; }
-    
+
     foreach ($records as $record) {
         $results[] = $record[$field];
     }
-    
+
     // Return the records
     return($results);
 }
@@ -281,17 +264,17 @@ function get_username_suggestions($q, $max_results=10) {
 //////////////////////////////////////////////////////////////////////////////
 function suggest_username($q, $el_input, $el_suggest) {
     global $conf;
-    
+
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    if (!$q or !$el_input or !$el_suggest) { return($response->getXML()); }
+    if (!$q or !$el_input or !$el_suggest) { return $response; }
     $js = "";
-    
+
     // Search the DB
     $results = get_username_suggestions($q);
     $results = array_merge($results, get_username_suggestions('%'.$q, $conf['suggest_max_results'] - count($results)));
     $results = array_unique($results);
-    
+
     // Build the javascript to return
     $js .= "suggestions = Array(";
     $comma = "";
@@ -301,11 +284,11 @@ function suggest_username($q, $el_input, $el_suggest) {
         if (!$comma) { $comma = ", "; }
     }
     $js .= ");";
-    
+
     // Tell the browser to execute the javascript in $js by sending an XML response
     $js .= "suggest_display('{$el_input}', '{$el_suggest}');";
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 function suggest_tse_username($q, $el_input, $el_suggest) {
     return(suggest_username($q, $el_input, $el_suggest));

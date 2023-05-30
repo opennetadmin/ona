@@ -106,19 +106,11 @@ EOL;
                 </td>
 
                 <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
-                    <form id="{$form_id}" onSubmit="return false;">
+                    <form id="{$form_id}" onSubmit="return false;" autocomplete="off">
                     <input id="{$form_id}_page" name="page" value="1" type="hidden">
                     <input name="content_id" value="{$content_id}" type="hidden">
                     <input name="form_id" value="{$form_id}" type="hidden">
                     <input name="vlan_campus_id" value="{$record['id']}" type="hidden">
-                    <div id="{$form_id}_filter_overlay"
-                         title="Filter"
-                         style="position: relative;
-                                display: inline;
-                                color: #CACACA;
-                                cursor: text;"
-                         onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                    >Username</div>
                     <input
                         id="{$form_id}_filter"
                         name="filter"
@@ -128,8 +120,7 @@ EOL;
                         size="10"
                         maxlength="20"
                         alt="Quick Filter"
-                        onFocus="el('{$form_id}_filter_overlay').style.display = 'none';"
-                        onBlur="if (this.value == '') el('{$form_id}_filter_overlay').style.display = 'inline';"
+                        placeholder="User"
                         onKeyUp="
                             if (typeof(timer) != 'undefined') clearTimeout(timer);
                             code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
@@ -155,7 +146,6 @@ EOL;
 
     $js .= <<<EOL
         /* Setup the quick filter */
-        el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
         {$form_id}_last_search = '';
 
         /* Tell the browser to load/display the list */
@@ -167,9 +157,9 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("work_space_content", "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign("work_space_content", "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

@@ -16,7 +16,11 @@ error_reporting (E_ALL ^ E_NOTICE);
 printmsg("INFO => [Desktop] {$_SESSION['ona']['auth']['user']['username']} has logged out",0);
 
 // Unset session info relating to their account
-$_SESSION['ona']['auth'] = array();
+if(isset($_SESSION['ona']['auth'])) {
+  $_SESSION = array();
+}
+
+session_destroy();
 
 // Print javascript to redirect them to https so they can login again
 echo <<<EOL

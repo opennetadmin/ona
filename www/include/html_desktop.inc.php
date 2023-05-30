@@ -3,10 +3,12 @@
 // Do some HTML headers before printing anything
 header("Cache-control: private");
 
-$year = date('Y');
+global $year;
+$ws_plugin_js='';
 
 // If there is a message of the day file, display it.
 $motdfile = $base.'/local/config/motd.txt';
+$MOTD = '';
 if (file_exists($motdfile)) {
     printmsg("INFO => Displaying MOTD: {$motdfile}",1);
     $MOTD = file_get_contents($motdfile);
@@ -17,7 +19,7 @@ foreach (array_keys($ona_contexts) as $entry) {
     $selected = "";
     // If this entry matches the record you are editing, set it to selected
     if ($entry == $self['context_name']) { $selected = "SELECTED=\"yes\""; }
-    if ($entry) {$context_list .= "<option {$selected} value=\"{$entry}\">{$entry}</option>\n";}
+    if (isset($entry)) {$context_list = "<option {$selected} value=\"{$entry}\">{$entry}</option>\n";}
 }
 
 // Lets start building the page!
@@ -31,6 +33,8 @@ print <<<EOL
     <link rel="stylesheet" type="text/css" href="{$baseURL}/include/html_style_sheet.inc.php">
     <link rel="shortcut icon" type="image/ico" href="{$images}/favicon.ico">
     <script type="text/javascript" src="{$baseURL}/include/js/global.js" language="javascript"></script>
+    <script type="text/javascript" src="{$baseURL}/include/js/mousetrap.min.js" language="javascript"></script>
+    <script type="text/javascript" src="{$baseURL}/include/js/mousetrap_mappings.js" language="javascript"></script>
     {$conf['html_headers']}
 </head>
 <body style="overflow: hidden;" bgcolor="{$color['bg']}" link="{$color['link']}" alink="{$color['alink']}" vlink="{$color['vlink']}">
@@ -61,7 +65,7 @@ print <<<EOL
                            style="width: 150px;"
                            type="text"
                            title="Quick Search for IP, MAC, DNS"
-                           value="Quick Search..."
+                           placeholder="Quick Search..."
                            name="q"
                            maxlength="100"
                            onFocus="this.value='';"
@@ -300,20 +304,15 @@ print <<<EOL
 
 <!-- Side toolbar -->
 <div nowrap style="position: absolute;top: 90px;right: 1px;z-index: 10;background: #E3E3F0;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
-    <div style="float:left;padding: 5px 2px;" onclick="toggleBox('ipcalc_content');">
-    <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" />
-    </div>
-    <div id="ipcalc_content" style="visibility: hidden;display:none;background: #E3E3F0;padding: 5px;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
+    <div style="float:left;padding: 5px 2px;" >
+      <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" onclick="toggleBox('ipcalc_content'); el('calc_ip').focus();"/>
+      <div id="ipcalc_content" style="visibility: hidden;display:none;background: #E3E3F0;padding: 5px;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
         <form id="ipcalc_form" onsubmit="return false;">
-            IP: <input type="text" name="ip" />
-            Mask: <input type="text" name="mask" />
-                <input class="edit" type="button"
-                    name="submit"
-                    value="Go"
-                    onClick="xajax_window_submit('ipcalcgui', xajax.getFormValues('ipcalc_form'));"
-                >
+            IP: <input id="calc_ip" type="text" name="ip" />
+            Mask: <input type="text" name="mask" /> <button type="submit" onClick="xajax_window_submit('ipcalcgui', xajax.getFormValues('ipcalc_form'));" >Go</button>
         </form>
         <span style="font-family: monospace;font-size: medium;" id="ipcalc_data"></span>
+      </div>
     </div>
 </div>
 
@@ -321,8 +320,8 @@ EOL;
 
 
 // Open the work_space that was requested
-if ($work_space or $ws) {
-    if ($ws) $work_space = $ws;
+if (isset($work_space) or isset($ws)) {
+    if (isset($ws)) $work_space = $ws;
     // Take the query from the URL and process it for use in the window_submit
     $ws_qry = str_replace('&',',',$_SERVER['QUERY_STRING']);
     $ws_qry = str_replace('=','=>',$ws_qry);
@@ -334,8 +333,8 @@ EOL;
 }
 
 // Process any search that was passed
-if ($search or $q) {
-    if ($q) $search = $q;
+if (isset($search) or isset($q)) {
+    if (isset($q)) $search = $q;
     print <<<EOL
 <script type="text/javascript"><!--
     el('qsearch').value = '{$search}';

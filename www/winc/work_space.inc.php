@@ -153,7 +153,7 @@ EOL;
 //     This also updates the work space window's title.
 //////////////////////////////////////////////////////////////////////////////
 function ws_rewrite_history($window_name, $null='', $return_html=0) {
-    global $conf, $self, $color, $style, $images;
+    global $conf, $self, $color, $style, $images, $year;
 
     $html = $js = '';
 
@@ -190,10 +190,10 @@ EOL;
     // Insert the new html into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("trace_history", "innerHTML", $html);
-    $response->addAssign("work_space_title_r", "innerHTML", $new_buttons);
-    $response->addAssign("work_space_title", "innerHTML", $new_title);
-    return($response->getXML());
+    $response->assign("trace_history", "innerHTML", $html);
+    $response->assign("work_space_title_r", "innerHTML", $new_buttons);
+    $response->assign("work_space_title", "innerHTML", $new_title);
+    return $response;
 }
 
 

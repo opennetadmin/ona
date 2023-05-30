@@ -26,15 +26,15 @@ $conf = array (
     /* Defaults for some user definable options normally in sys_config table */
     "debug"                  => "2",
     "logfile"                => "/var/log/ona.log",
+    "syslog"                 => "0",
+    "stdout"                 => "0",
+    "log_to_db"              => "0",
 
 );
 
 // Include the basic system functions
 // any $conf settings used in this "require" should not be user adjusted in the sys_config table
 require_once("{$include}/functions_general.inc.php");
-
-// Include the basic database functions
-#require_once("{$include}/functions_db.inc.php");
 
 // Include the localized Database settings
 $dbconffile = "{$onabase}/www/local/config/database_settings.inc.php";
@@ -49,15 +49,6 @@ if (file_exists($dbconffile)) {
 #    require_once($base.'/../install/install.php');
 #    exit;
 }
-
-#// If it does, run the install process.
-#if (file_exists($base.'/local/config/run_install') or @$runinstaller or @$install_submit == 'Y') {
-#    // Process the install script
-#    require_once($base.'/../install/install.php');
-#    exit;
-#}
-
-
 
 
 
@@ -92,7 +83,7 @@ while($install_complete){
   echo "ONA is licensed under GPL v2.0.\n";
   $showlicense = promptUser("Would you like to view license? [y/N] ", 'n');
   if ($showlicense == 'y') {
-    system("more -80 {$base}/../LICENSE");
+    system("more -80 {$base}/../docs/LICENSE");
     promptUser("[Press Enter To Continue]");
   }
 
@@ -104,6 +95,10 @@ while($install_complete){
   } else {
     new_install();
   }
+
+  // Print out the text to the end user
+  echo "\n";
+  echo $text;
 
   exit;
 
@@ -120,11 +115,12 @@ function check_requirements() {
 
   system('clear');
   // Get some pre-requisite information
-  $phpversion = phpversion() > '5.0' ? 'PASS' : 'FAIL';
+  $phpversion = phpversion() > '7.0' ? 'PASS' : 'FAIL';
   $hasgmp = function_exists( 'gmp_init' ) ? 'PASS' : 'FAIL';
   //echo function_exists( 'gmp_init' ) ? '' : 'PHP GMP module is missing.';
   $hasmysql = function_exists( 'mysqli_connect' ) ? 'PASS' : 'FAIL';
   $hasxml = function_exists( 'xml_parser_create' ) ? 'PASS' : 'FAIL';
+  $hasjson = function_exists( 'json_decode' ) ? 'PASS' : 'FAIL';
   $hasmbstring = function_exists( 'mb_internal_encoding' ) ? 'PASS' : 'FAIL';
   $dbconfwrite = @is_writable($onabase.'/www/local/config/') ? 'PASS' : 'FAIL';
   $logfilewrite = @is_writable($conf['logfile']) ? 'PASS' : 'FAIL';
@@ -133,13 +129,14 @@ function check_requirements() {
 
 CHECKING PREREQUISITES...
 
-  PHP version greater than 5.0:               $phpversion
+  PHP version greater than 7.0:               $phpversion
   PHP GMP module:                             $hasgmp
   PHP XML module:                             $hasxml
+  PHP JSON module:                            $hasjson
   PHP mysqli function:                        $hasmysql
   PHP mbstring function:                      $hasmbstring
   $onabase/www/local/config dir writable:     $dbconfwrite
-  {$conf['logfile']} writable:                $logfilewrite
+  {$conf['logfile']} writable:                  $logfilewrite
 
 EOL;
 }
@@ -150,7 +147,9 @@ EOL;
 function upgrade() {
 
   echo "\n\n";
-  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile;
+  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile,$base,$status;
+  $upgrade = 'N';
+  $levelinfo = '';
 
   // If they already have a dbconffile, assume that we are doing and upgrade
   if (@file_exists($dbconffile)) {
@@ -197,7 +196,7 @@ function upgrade() {
             @$db->Close();
 
 
-            $text .= "{$cname}		{$cdbs['db_type']}		{$cdbs['db_host']}	{$cdbs['db_database']}	{$curr_ver}	{$levelinfo}\n";
+            $text .= "{$cname}		{$cdbs['db_type']}		{$cdbs['db_host']}	{$cdbs['db_database']}	{$curr_ver}		{$levelinfo}\n";
         }
 
     }
@@ -209,7 +208,7 @@ function upgrade() {
       $text = '';
     } else {
         $text .= <<<EOL
-            There was an error determining database context versions. Please correct them before proceeding. \n\nCheck that the content of your database configuration file '{$dbconffile}' is accurate and that the databases themselves are configured properly.\n\n{$err_txt}\n
+            There was an error determining database context versions. Please correct them before proceeding. \n\nCheck that the content of your database configuration file '{$dbconffile}' is accurate and that the databases themselves are configured properly.\n\n
 EOL;
     }
 
@@ -237,7 +236,7 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
                 $text .= " [{$cname}] Failed to connect to '{$cdbs['db_host']}' as '{$cdbs['db_login']}'. ERROR: ".$db->ErrorMsg()."\n";
             } else {
                 $db->Close();
-                if ($db->NConnect( $database_host, $cdbs['db_login'], $cdbs['db_passwd'], $cdbs['db_database'])) {
+                if ($db->NConnect( $cdbs['db_host'], $cdbs['db_login'], $cdbs['db_passwd'], $cdbs['db_database'])) {
 
 
                     // Get the current upgrade index if there is one.
@@ -252,8 +251,8 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
                     $schema = new adoSchema( $db );
                     // Build the SQL array from the schema XML file
                     $sql = $schema->ParseSchema($xmlfile_tables);
-                    // Uncomment the following to display the raw SQL
-                    #$text .= "----------\n".$schema->PrintSQL('TEXT')."\n---------\n";
+                    // Save a copy of current sqlstatement
+                    file_put_contents('/tmp/ona-upgrade-tables.sql', $schema->PrintSQL('TEXT'));
                     // Execute the SQL on the database
                     if ($schema->ExecuteSchema( $sql ) == 2) {
                         $text .= "[{$cname}/{$cdbs['db_host']}] Upgrading tables within database '{$cdbs['db_database']}'.\n";
@@ -293,6 +292,8 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
                                 $schema = new adoSchema( $db );
                                 // Build the SQL array from the schema XML file
                                 $sql = $schema->ParseSchema($upgrade_xmlfile);
+                                // Save a copy of current sqlstatement
+                                file_put_contents('/tmp/ona-upgrade-data.sql', $schema->PrintSQL('TEXT'));
                                 // Execute the SQL on the database
                                 if ($schema->ExecuteSchema( $sql ) == 2) {
                                     $text .= "[{$cname}/{$cdbs['db_host']}] Processed XML update file.\n";
@@ -345,25 +346,6 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
 
     }
 
-    // If we still have the old reference to db_context in our config, upgrade it
-    if (is_array($db_context)) {
-        // set default db name to uppercase
-        $ona_contexts['DEFAULT'] = $ona_contexts['default'];unset($ona_contexts['default']);
-
-        // Open the database config and write the contents to it.
-        if (!$fh = @fopen($dbconffile, 'w')) {
-            $status++;
-            $text .= "<img src=\"{$images}/silk/exclamation.png\" border=\"0\" /> Failed to open config file for writing: '{$dbconffile}'.<br>";
-            printmsg("ERROR => Failed to open config file for writing: '{$dbconffile}'.",0);
-        }
-        else {
-            fwrite($fh, "<?php\n\n\$ona_contexts=".var_export($ona_contexts,TRUE).";\n\n?>");
-            fclose($fh);
-            $text .= "Upgraded database connection config file to new format.\n";
-        }
-    }
-
-
     if($status == 0) {
         $text .= $script_text;
         $text .= "Upgrade complete, you may start using OpenNetAdmin! Enjoy!\n";
@@ -377,8 +359,6 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
     } else {
         $text .= "There was a fatal error. Upgrade may be incomplete. Fix the issue and try again\n";
     }
-
-  echo $text."\n";
 }
 
 
@@ -392,7 +372,7 @@ if ($upgrade == 'Y' or $upgrade == 'y') {
 function new_install() {
 
   echo "\n\n";
-  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile;
+  global $new_ver,$text,$xmlfile_data,$xmlfile_tables,$dbconffile,$status;
 
   // Gather info
   $adotype = 'mysqli';
@@ -470,6 +450,8 @@ function new_install() {
             $schema = new adoSchema( $db );
             // Build the SQL array from the schema XML file
             $sql = $schema->ParseSchema($xmlfile_tables);
+            // Save a copy of current sqlstatement
+            file_put_contents('/tmp/ona-newinstall-tables.sql', $schema->PrintSQL('TEXT'));
             // Execute the SQL on the database
             if ($schema->ExecuteSchema( $sql ) == 2) {
                 $text .= "Creating and updating tables within database '{$database_name}'.\n";
@@ -485,8 +467,8 @@ function new_install() {
                 $schema = new adoSchema( $db );
                 // Build the SQL array from the schema XML file
                 $sql = $schema->ParseSchema($xmlfile_data);
-                // Uncomment the following to display the raw SQL
-                #$text .= "----------\n".$schema->PrintSQL('TEXT')."\n---------\n";
+                // Save a copy of current sqlstatement
+                file_put_contents('/tmp/ona-newinstall-data.sql', $schema->PrintSQL('TEXT'));
                 // Execute the SQL on the database
                 if ($schema->ExecuteSchema( $sql ) == 2) {
                     $text .= "Loaded tables with default data.\n";
@@ -498,14 +480,13 @@ function new_install() {
                 }
             }
 
-            // Add the system user to the database
-            // Run the query
+          // Add the system user to the database
+          // Run the query
           if ($status == 0) {
-
-            // it is likely that this method here is mysql only?
-            if($db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}'")) {
-                $db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'%' IDENTIFIED BY '{$sys_passwd}'");
-                $db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}'");
+            if( $db->Execute("CREATE USER '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}'")) {
+                $db->Execute("CREATE USER '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}'");
+                $db->Execute("GRANT ALL privileges ON {$database_name}.* TO '{$sys_login}'@'localhost' ");
+                $db->Execute("GRANT ALL privileges ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' ");
                 $db->Execute("FLUSH PRIVILEGES");
                 $text .= "Created system user '{$sys_login}'.\n";
                 printmsg("INFO => Created new DB user: {$sys_login}",0);
@@ -519,11 +500,12 @@ function new_install() {
 
             // add the default domain to the system
             // This is a manual add with hard coded values for timers.
+            $ctime=date('Y-m-j G:i:s',time());
             $xmldefdomain = <<<EOL
 <?xml version="1.0"?>
 <schema version="0.3">
 <sql>
-    <query>INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum,parent_id,serial,primary_master) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600,0,0,0)</query>
+    <query>INSERT INTO domains (id,name,admin_email,default_ttl,refresh,retry,expiry,minimum,parent_id,serial,primary_master,ctime) VALUES (1,'{$default_domain}','hostmaster', 86400, 86400, 3600, 3600, 3600,0,0,0,'{$ctime}')</query>
     <query>UPDATE sys_config SET value='{$default_domain}' WHERE name like 'dns_defaultdomain'</query>
 </sql>
 </schema>
@@ -581,7 +563,7 @@ EOL;
                 $text .= "Please remove '{$runinstall}' manually.\n";
               }
             }
-            $text .= "You can now go the following URL in your browser: ".parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH)."' using OpenNetAdmin!\nYou can log in as 'admin' with a password of 'admin'\nEnjoy!";
+            $text .= "You can now go the URL in your browser for this server.\nYou can log in as 'admin' with a password of 'admin'\nEnjoy!\n";
         }
 
         // Close the database connection
@@ -592,9 +574,6 @@ EOL;
 }
 
 
-
-// Print out the text to the end user
-echo $text;
 
 
 
@@ -616,7 +595,7 @@ if ($upgrademain != '') {
 //#           Or if return pressed returns a default if used e.g usage
 //# $name = promptUser("Enter your name");
 //# $serverName = promptUser("Enter your server name", "localhost");
-//# Note: Returned value requires validation 
+//# Note: Returned value requires validation
 // from http://wiki.uniformserver.com/index.php/PHP_CLI:_User_Input
 //#.......................................................................
 function promptUser($promptStr,$defaultVal=false){;
@@ -626,7 +605,7 @@ function promptUser($promptStr,$defaultVal=false){;
   }
   else {                                        // No default set
      echo $promptStr. ": ";                     // print prompt only
-  } 
+  }
   $name = chop(fgets(STDIN));                   // Read input. Remove CR
   if(empty($name)) {                            // No value. Enter was pressed
      return $defaultVal;                        // return default

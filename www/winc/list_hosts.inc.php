@@ -14,6 +14,7 @@ function ws_display_list($window_name, $form='') {
     global $images, $color, $style;
     $html = '';
     $js = '';
+    $debug_val = 3;
 
     // If the user supplied an array in a string, transform it into an array
     $form = parse_options_string($form);
@@ -129,11 +130,13 @@ function ws_display_list($window_name, $form='') {
             list($status, $rows, $record) = ona_find_domain($form['domain']);
             if ($record['id']) {
                 $withdomain = "AND b.domain_id = {$record['id']}";
+            } else {
+                // last resort, try it as a partial name with wildcard
+                $withdomain = "AND b.domain_id in (select id from domains where name like '{$form['domain']}%')";
             }
             // Now find what the host part of $search is
             $hostname = trim($form['hostname']);
         }
-
 
         // MP: Doing the many select IN statements was too slow.. I did this kludge:
         //  1. get a list of all the interfaces
@@ -149,6 +152,10 @@ function ws_display_list($window_name, $form='') {
         // Just look for the host itself
         list($status, $rows, $r) = ona_find_host($form['hostname']);
         if ($rows) $hostids  .= ','.$r['id'];
+
+        // Lets try and find the host id for just the record that matches the dotted host portion
+        list($status, $rows, $r) = db_get_record($onadb, 'interfaces a, dns b', "a.id = b.interface_id and b.name LIKE '{$form['hostname']}.{$form['domain']}%'");
+        if ($rows) $hostids .= ','.$r['host_id'];
 
         // MP: this is the old, slow query for reference.
         //
@@ -613,7 +620,7 @@ EOL;
                     ></form>&nbsp;
 EOL;
 
-        if (auth('host_modify')) {
+        if (auth('host_modify',$debug_val)) {
             $html .= <<<EOL
 
                     <a title="Edit host"
@@ -623,7 +630,7 @@ EOL;
 EOL;
         }
 
-        if (auth('host_del')) {
+        if (auth('host_del',$debug_val)) {
             $html .= <<<EOL
 
                     <a title="Delete host"
@@ -658,16 +665,16 @@ EOL;
 
 
     // If there was only 1 result, and we're about to display results in the "Search Results" window, display it.
-    if ($count == 1 and $form['content_id'] == 'search_results_list' and $form['filter'] == '')
+    if ($count == 1 and $form['content_id'] == 'search_results_list' and $form['filter'] == '' and $form['one_go'] != 'n')
         $js .= $primary_object_js;
 
     // Insert the new html into the content div specified
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_{$tab}_count",  "innerHTML", "({$count})");
-    $response->addAssign($form['content_id'], "innerHTML", $html);
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_{$tab}_count",  "innerHTML", "({$count})");
+    $response->assign($form['content_id'], "innerHTML", $html);
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 

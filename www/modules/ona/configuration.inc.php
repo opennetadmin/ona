@@ -271,6 +271,254 @@ EOM
 
 
 
+///////////////////////////////////////////////////////////////////////
+//  Function: config_del (string $options='')
+//  
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//  
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function (0 on success, non-zero on error)
+//      2. A textual message displaying information on the selected unit
+//         record from the database.
+//  
+//  Example: list($status, $result) = config_chksum('config=12345');
+//  
+//  Exit codes:
+//    0  :: No error
+//    1  :: Help text printed - Insufficient or invalid input received
+//    2  :: Host specified doesn't exist
+//    3  :: Invalid config type specified
+//    4  :: The ona_get_next_id() call failed
+//    5  :: SQL INSERT failed
+///////////////////////////////////////////////////////////////////////
+function config_del($options="") {
+    
+    // The important globals
+    global $conf;
+    global $self;
+    global $onadb;
+    
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+    
+    // This debug is set very high as it can contain large configs and sensitive data, you gotta mean it!
+    printmsg('DEBUG => config_del('.$options.') called', 7);
+    
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+    
+    // Return the usage summary if we need to
+    if ($options['help'] or ( (!$options['config']) and (!$options['host'] or !$options['type']) ) ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        return(array(1, 
+<<<EOM
+
+config_del-v{$version}
+Delete a config text record from the database
+
+  Synopsis: config_del [KEY=VALUE] ...
+
+  Required:
+    config=ID                   The ID of the config record
+    OR
+    host=ID or NAME[.DOMAIN]    Host the config text is from
+    type=TYPE                   Type of config text we're deleting -
+                                usually "IOS_VERSION" or "IOS_CONFIG"
+
+  Optional:
+    commit=[yes|no]             Commit db transaction (Default: no)
+
+\n
+EOM
+
+        ));
+    }
+
+    // Check permissions
+    if (!auth('host_config_admin')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(5, $self['error'] . "\n"));
+    }
+   
+    // Sanitize options[commit] (default is no)
+    $options['commit'] = sanitize_YN($options['commit'], 'N');
+
+    // Lets find the most recent config based on input
+    list($status, $rows, $config) = ona_find_config($options);
+
+    // Error if an error was returned
+    if ($status or !$config['id']) {
+        $text = "";
+        if ($self['error']) { $text = $self['error'] . "\n"; }
+        $text .= "ERROR => No config text entries found!\n";
+        return(array(2, $text));
+    }
+    
+    // If "commit" is yes, delete the record
+    if ($options['commit'] == 'Y') {
+
+        list($status, $rows) = db_delete_records($onadb, 'configurations', array('id' => $config['id']));
+        if ($status or !$rows) {
+            $self['error'] = "ERROR => config_del() SQL Query failed: " . $self['error'];
+            printmsg($self['error'], 0);
+            return(array(6, $self['error'] . "\n"));
+        }
+
+        // Return the success notice
+        $self['error'] = "INFO => Configuration DELETED: {$config['md5_checksum']} ({$options['type']}) from host {$options['host']}";
+        printmsg($self['error'],0);
+        return(array(0, $self['error'] . "\n"));
+    }
+
+
+
+    // Maybe one day display the body below.. deminishing returns there
+    // Otherwise display the record that would have been deleted
+    $text = <<<EOL
+Record(s) NOT DELETED (see "commit" option)
+Displaying record(s) that would have been deleted:
+
+    ASSOCIATED HOST: {$options['host']} ({$config['host_id']})
+    CONFIG ID: {$config['id']}
+    TYPE: {$options['type']} ({$config['configuration_type_id']})
+    CREATE TIME: {$config['ctime']}
+    MD5SUM: {$config['md5_checksum']}
+
+EOL;
+
+    return(array(0, $text));
+    
+}
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+//  Function: config_del_all (string $options='')
+//  
+//  Input Options:
+//    $options = key=value pairs of options for this function.
+//               multiple sets of key=value pairs should be separated
+//               by an "&" symbol.
+//  
+//  Output:
+//    Returns a two part list:
+//      1. The exit status of the function (0 on success, non-zero on error)
+//      2. A textual message displaying information on the selected unit
+//         record from the database.
+//  
+//  Example: list($status, $result) = config_chksum('config=12345');
+//  
+//  Exit codes:
+//    0  :: No error
+//    1  :: Help text printed - Insufficient or invalid input received
+//    2  :: Host specified doesn't exist
+//    3  :: Invalid config type specified
+//    4  :: The ona_get_next_id() call failed
+//    5  :: SQL INSERT failed
+///////////////////////////////////////////////////////////////////////
+function config_del_all($options="") {
+    
+    // The important globals
+    global $conf;
+    global $self;
+    global $onadb;
+    
+    // Version - UPDATE on every edit!
+    $version = '1.00';
+    
+    // This debug is set very high as it can contain large configs and sensitive data, you gotta mean it!
+    printmsg('DEBUG => config_del_all('.$options.') called', 7);
+    
+    // Parse incoming options string to an array
+    $options = parse_options($options);
+    
+    // Return the usage summary if we need to
+    if ($options['help'] or !$options['host'] ) {
+        // NOTE: Help message lines should not exceed 80 characters for proper display on a console
+        return(array(1,
+<<<EOM
+
+config_del_all-v{$version}
+Delete ALL config text records from the database
+
+  Synopsis: config_del_all [KEY=VALUE] ...
+
+  Required:
+    host=ID or NAME[.DOMAIN]    Host the config text is from
+
+  Optional:
+    commit=[yes|no]             Commit db transaction (Default: no)
+
+\n
+EOM
+
+        ));
+    }
+
+    // Check permissions
+    if (!auth('host_config_admin')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(5, $self['error'] . "\n"));
+    }
+   
+    // Sanitize options[commit] (default is no)
+    $options['commit'] = sanitize_YN($options['commit'], 'N');
+
+    // Lets find the most recent config based on input
+    list($status, $rows, $host) = ona_find_host($options['host']);
+
+    // lets count how many records the host has total
+    list($status, $count, $config) = db_get_records($onadb, 'configurations', array('host_id' => $host['id']), '', 0);
+
+    // Error if an error was returned
+    if ($count == 0) {
+        $text = "";
+        if ($self['error']) { $text = $self['error'] . "\n"; }
+        $text .= "ERROR => No config text entries found!\n";
+        return(array(2, $text));
+    }
+    
+    // If "commit" is yes, delete the record
+    if ($options['commit'] == 'Y') {
+
+        list($status, $rows) = db_delete_records($onadb, 'configurations', array('host_id' => $host['id']));
+        if ($status or !$rows) {
+            $self['error'] = "ERROR => config_del_all() SQL Query failed: " . $self['error'];
+            printmsg($self['error'], 0);
+            return(array(6, $self['error'] . "\n"));
+        }
+
+        // Return the success notice
+        $self['error'] = "INFO => {$rows} Configuration(s) DELETED from {$host['fqdn']}";
+        printmsg($self['error'],0);
+        return(array(0, $self['error'] . "\n"));
+    }
+
+
+
+    // Maybe one day display the body below.. deminishing returns there
+    // Otherwise display the record that would have been deleted
+    $text = <<<EOL
+Record(s) NOT DELETED (see "commit" option)
+${count} record(s) would have been deleted from {$host['fqdn']}.
+
+EOL;
+
+    return(array(0, $text));
+    
+}
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -305,7 +553,7 @@ function config_add($options="") {
     global $onadb;
     
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
     
     // This debug is set very high as it can contain large configs and sensitive data, you gotta mean it!
     printmsg('DEBUG => config_add('.$options.') called', 7);
@@ -316,7 +564,7 @@ function config_add($options="") {
     // Return the usage summary if we need to
     if ($options['help'] or !($options['host'] and $options['type'] and $options['config']) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
-        return(array(1, 
+        return(array(1,
 <<<EOM
 
 config_add-v{$version}
@@ -352,8 +600,9 @@ EOM
         return(array(3, $self['error']));
     }
     
-    $options['config'] = preg_replace('/\\\"/','"',$options['config']);
-    $options['config'] = preg_replace('/\\\=/','=',$options['config']);
+    # not sure why I did this.. it messes with the f5 config
+    #$options['config'] = preg_replace('/\\\"/','"',$options['config']);
+    #$options['config'] = preg_replace('/\\\=/','=',$options['config']);
     // Get the next ID for the new config_text record
     $id = ona_get_next_id('configurations');
     if (!$id) {
@@ -374,7 +623,7 @@ EOM
         )
     );
     if ($status or !$rows) {
-        $self['error'] = "ERROR => message_add() SQL Query failed: " . $self['error'];
+        $self['error'] = "ERROR => config_add() SQL Query failed: " . $self['error'];
         printmsg($self['error'], 0);
         return(array(6, $self['error'] . "\n"));
     }
@@ -427,7 +676,7 @@ function config_diff($options="") {
     global $onadb;
     
     // Version - UPDATE on every edit!
-    $version = '1.03';
+    $version = '1.04';
     
     printmsg('DEBUG => config_diff('.$options.') called', 3);
     
@@ -437,7 +686,7 @@ function config_diff($options="") {
     // Return the usage summary if we need to
     if ($options['help'] or ( !$options['host'] or !$options['type'] ) and ( !$options['ida'] or !$options['idb'] ) ) {
         // NOTE: Help message lines should not exceed 80 characters for proper display on a console
-        return(array(1, 
+        return(array(1,
 <<<EOM
 
 config_diff-v{$version}
@@ -471,17 +720,17 @@ EOM
                                                "id in ({$options['ida']},{$options['idb']})",
                                                'ctime DESC',
                                                '2',
-                                               ''
+                                               '0'
                                            );
     } else {
-    // Get a config record if there is one
-    $self['error'] = "";
-    list($status, $rows, $config) = ona_find_config($options);
-    list($status, $rows, $configs) = db_get_records($onadb,'configurations',
+        // Get a config record if there is one
+        $self['error'] = "";
+        list($status, $rows, $config) = ona_find_config($options);
+        list($status, $rows, $configs) = db_get_records($onadb,'configurations',
                                                array('host_id' => $config['host_id'],'configuration_type_id' => $config['configuration_type_id']),
                                                'ctime DESC',
                                                '2',
-                                               ''
+                                               '0'
                                            );
     }
 

@@ -64,8 +64,8 @@ EOL;
 
 
     $response = new xajaxResponse();
-    $response->addAssign('ipcalc_data', "innerHTML", $text);
-    return($response->getXML());
+    $response->assign('ipcalc_data', "innerHTML", $text);
+    return $response;
 }
 
 

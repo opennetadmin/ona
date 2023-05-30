@@ -42,7 +42,7 @@ function domain_add($options="") {
     printmsg("DEBUG => domain_add({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.07';
+    $version = '1.08';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -199,6 +199,7 @@ EOM
                 'refresh'         => $refresh,
                 'retry'           => $retry,
                 'expiry'          => $expiry,
+		'ctime'           => date('Y-m-j G:i:s',time()),
                 'minimum'         => $minimum,
                 'default_ttl'     => $ttl,
                 'parent_id'       => $parent_domain['id'],
@@ -419,7 +420,7 @@ function domain_modify($options="") {
     printmsg("DEBUG => domain_modify({$options}) called", 3);
 
     // Version - UPDATE on every edit!
-    $version = '1.05';
+    $version = '1.06';
 
     // Parse incoming options string to an array
     $options = parse_options($options);
@@ -487,7 +488,7 @@ EOM
 
     // Test to see that we were able to find the specified record
     if (!$entry['id']) {
-        printmsg("DEBUG => Unable to find a domain record using ID {$options['domain']}!",3);
+        printmsg("ERROR => Unable to find a domain record using ID {$options['domain']}!",3);
         $self['error'] = "ERROR => Unable to find the domain record using {$options['domain']}!";
         return(array(4, $self['error']. "\n"));
     }
@@ -513,7 +514,7 @@ EOM
         list($status, $rows, $domain) = ona_get_domain_record($parentsearch);
 
         if (!$domain['id']) {
-            printmsg("DEBUG => The parent domain specified ({$options['set_parent']}) does not exist!",3);
+            printmsg("ERROR => The parent domain specified ({$options['set_parent']}) does not exist!",3);
             $self['error'] = "ERROR => The parent domain specified ({$options['set_parent']}) does not exist!";
             return(array(2, $self['error'] . "\n"));
         }
@@ -525,7 +526,7 @@ EOM
 
     // FIXME: currently renaming zones may not work when using
     // parent zones. https://github.com/opennetadmin/ona/issues/36
-    if (is_string($options['set_name'])) {
+    if (is_string($options['set_name']) and $options['set_name'] != '') {
         // trim leading and trailing whitespace from 'value'
         if ($entry['name'] != trim($options['set_name'])) $SET['name'] = trim($options['set_name']);
 
@@ -534,7 +535,7 @@ EOM
 
         // Test to see that the new entry isnt already used
         if ($domain['id'] and $domain['id'] != $entry['id']) {
-            printmsg("DEBUG => The domain specified ({$options['set_name']}) already exists!",3);
+            printmsg("ERROR => The domain specified ({$options['set_name']}) already exists!",3);
             $self['error'] = "ERROR => The domain specified ({$options['set_name']}) already exists!";
             return(array(6, $self['error']. "\n"));
         }
@@ -665,7 +666,7 @@ function domain_display($options="") {
     global $conf, $self, $oracle;
 
     // Version - UPDATE on every edit!
-    $version = '1.01';
+    $version = '1.02';
 
     printmsg("DEBUG => domain_display({$options}) called", 3);
 
@@ -722,7 +723,8 @@ EOM
 
 
 
-
+    // Convert some data
+    $text_array = $domain;
 
 
     // Build text to return
@@ -739,6 +741,13 @@ DOMAIN RECORD ({$domain['name']})
 
 EOL;
 
+    // change the output format if other than default
+    if ($options['format'] == 'json') {
+        $text = $text_array;
+    }
+    if ($options['format'] == 'yaml') {
+        $text = $text_array;
+    }
 
     // Return the success notice
     return(array(0, $text));

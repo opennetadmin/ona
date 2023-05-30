@@ -18,12 +18,15 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
+    // If an array in a string was provided, build the array and store it in $form
+    $form = parse_options_string($form);
+
     // Load an existing host record (and associated info) if $form is a host_id
-    if (is_numeric($form['block_id'])) {
+    if (isset($form['block_id'])) {
         list($status, $rows, $block) = ona_get_block_record(array('id' => $form['block_id']));
         $block['ip_addr_start'] = ip_mangle($block['ip_addr_start'], 'dotted');
         $block['ip_addr_end'] = ip_mangle($block['ip_addr_end'], 'dotted');
@@ -58,7 +61,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- Block Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="block_id" value="{$block['id']}">
     <input type="hidden" name="js" value="{$form['js']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
@@ -143,12 +146,11 @@ EOL;
             <td class="padding" align="right" width="100%">
                 <input type="hidden" name="overwrite" value="{$overwrite}">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -176,8 +178,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (! (auth('advanced')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -186,8 +188,8 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if (!$form['name'] or !$form['start'] or !$form['end']) {
-        $response->addScript("alert('Please complete all fields to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete all required fields to continue!');");
+        return $response;
     }
 
     // Decide if we're editing or adding
@@ -218,8 +220,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -239,8 +241,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('advanced')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -261,8 +263,8 @@ function ws_delete($window_name, $form='') {
     }
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

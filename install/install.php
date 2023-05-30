@@ -14,13 +14,15 @@ $onabase = dirname($base);
 $runinstall = $onabase.'/www/local/config/run_install';
 $xmlfile_tables = $base.'/ona-table_schema.xml';
 $xmlfile_data = $base.'/ona-data.xml';
-$license_text = file_get_contents($base.'/../LICENSE');
+$license_text = file_get_contents($base.'/../docs/LICENSE');
 $new_ver = trim(file_get_contents($onabase.'/VERSION'));
 $curr_ver = '';
 
 // Get some pre-requisite information
-$phpversion = phpversion() > '5.0' ? 'Yes' : '<font color="red">No</font>';
+$phpversion = phpversion() > '7.0' ? 'Yes' : '<font color="red">No</font>';
 $hasgmp = function_exists( 'gmp_init' ) ? 'Yes' : '<font color="red">No</font>';
+$hasxml = function_exists( 'xml_parse' ) ? 'Yes' : '<font color="red">No</font>';
+$hasjson = function_exists( 'json_decode' ) ? 'Yes' : '<font color="red">No</font>';
 $hasmysql = function_exists( 'mysqli_connect' ) ? 'Yes' : 'Recommended';
 $hasmbstring = function_exists( 'mb_internal_encoding' ) ? 'Yes' : 'Recommended';
 $dbconfwrite = @is_writable($onabase.'/www/local/config/') ? 'Yes' : '<font color="red">No</font>';
@@ -44,17 +46,22 @@ $requisitediv = <<<EOL
             <div id="checksdiv">
                 <table id="checks">
                     <tr><th colspan="5">Prerequisite checks</th></tr>
-                    <tr><td>PHP version > 5.0:</td><td>{$phpversion}</td></tr>
+                    <tr><td>PHP version > 7.0:</td><td>{$phpversion}</td></tr>
                     <tr title="The PHP mysqli database modules are used to connect to mysql databases"><td>PHP mysqli support:</td><td>{$hasmysql}</td></tr>
                     <tr title="The PHP GMP modules are required for IPv6 support."><td>Has GMP support:</td><td>{$hasgmp}</td></tr>
                     <tr title="The PHP mbstring modules provide better text encoding for UTF etc, but are not required."><td>Has mbstring support:</td><td>{$hasmbstring}</td></tr>
+                    <tr title="The PHP XML modules."><td>Has XML support:</td><td>{$hasxml}</td></tr>
+                    <tr title="The PHP JSON modules."><td>Has JSON support:</td><td>{$hasjson}</td></tr>
                     <tr title="The local config directory must be writable by the web server user: {$_ENV['APACHE_RUN_USER']}"><td>{$onabase}/www/local/config dir writable by '{$_ENV['APACHE_RUN_USER']}':</td><td>{$dbconfwrite}</td></tr>
                 </table>
             </div>
 EOL;
 
 // Initial text for the greeting div
-$greet_txt = "It looks as though this is your first time running OpenNetAdmin. Please answer a few questions and we'll initialize the system for you. We've pre-populated some of the fields with suggested values.  If the database you specify below already exists, it will be overwritten entirely.";
+$greet_txt = "It looks as though this is your first time running OpenNetAdmin. Please answer a few questions and we'll initialize the system for you. We've pre-populated some of the fields with suggested values.  If the database you specify below already exists, it will be overwritten entirely.
+<br><br>
+If the web based install fails to connect as the Database Admin user, you may need to execute the command line installer using 'php {$base}/installcli.php' as the root user.
+";
 
 
 $upgrademain = '';
@@ -246,8 +253,8 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
                     $schema = new adoSchema( $db );
                     // Build the SQL array from the schema XML file
                     $sql = $schema->ParseSchema($xmlfile_tables);
-                    // Execute the SQL on the database
-                    //$text .= "<pre>".$schema->PrintSQL('TEXT')."</pre>";
+                    // Save a copy of current sqlstatement
+                    file_put_contents('/tmp/ona-upgrade-tables.sql', $schema->PrintSQL('TEXT'));
                     if ($schema->ExecuteSchema( $sql ) == 2) {
                         $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Upgrading tables within database '{$cdbs['db_database']}'.<br>";
                         printmsg("INFO => [{$cname}/{$cdbs['db_host']}] Upgrading tables within database: {$cdbs['db_database']}",0);
@@ -286,6 +293,8 @@ if ($install_submit == 'Y' && $upgrade == 'Y') {
                                 $schema = new adoSchema( $db );
                                 // Build the SQL array from the schema XML file
                                 $sql = $schema->ParseSchema($upgrade_xmlfile);
+                                // Save a copy of current sqlstatement
+                                file_put_contents('/tmp/ona-upgrade-data.sql', $schema->PrintSQL('TEXT'));
                                 // Execute the SQL on the database
                                 if ($schema->ExecuteSchema( $sql ) == 2) {
                                     $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> [{$cname}/{$cdbs['db_host']}] Processed XML update file.<br>";
@@ -453,6 +462,8 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
             $schema = new adoSchema( $db );
             // Build the SQL array from the schema XML file
             $sql = $schema->ParseSchema($xmlfile_tables);
+            // Save a copy of current sqlstatement
+            file_put_contents('/tmp/ona-newinstall-tables.sql', $schema->PrintSQL('TEXT'));
             // Execute the SQL on the database
             if ($schema->ExecuteSchema( $sql ) == 2) {
                 $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Creating and updating tables within database '{$database_name}'.<br>";
@@ -468,7 +479,8 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
                 $schema = new adoSchema( $db );
                 // Build the SQL array from the schema XML file
                 $sql = $schema->ParseSchema($xmlfile_data);
-                //$text .= "<pre>".$schema->PrintSQL('TEXT')."</pre>";
+                // Save a copy of current sqlstatement
+                file_put_contents('/tmp/ona-newinstall-data.sql', $schema->PrintSQL('TEXT'));
                 // Execute the SQL on the database
                 if ($schema->ExecuteSchema( $sql ) == 2) {
                     $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Loaded tables with default data.<br>";
@@ -484,10 +496,10 @@ if ($install_submit == 'Y' && !isset($upgrade)) {
             // Run the query
 
           if ($status == 0) {
-            // it is likely that this method here is mysql only?
-            if(@$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}'")) {
-                @$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'%' IDENTIFIED BY '{$sys_passwd}'");
-                @$db->Execute("GRANT ALL ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}'");
+            if( $db->Execute("CREATE USER '{$sys_login}'@'localhost' IDENTIFIED BY '{$sys_passwd}'")) {
+                $db->Execute("CREATE USER '{$sys_login}'@'{$database_host}' IDENTIFIED BY '{$sys_passwd}'");
+                $db->Execute("GRANT ALL privileges ON {$database_name}.* TO '{$sys_login}'@'localhost' ");
+                $db->Execute("GRANT ALL privileges ON {$database_name}.* TO '{$sys_login}'@'{$database_host}' ");
                 @$db->Execute("FLUSH PRIVILEGES");
                 $text .= "<img src=\"{$images}/silk/accept.png\" border=\"0\" /> Created system user '{$sys_login}'.<br>";
                 printmsg("INFO => Created new DB user: {$sys_login}",0);
@@ -654,11 +666,27 @@ print <<<EOL
             text-align: left;
             width:500px;
         }
+        #alert-banner {
+            background-color: #FFDBFF;
+            padding: 5px;
+            border: 1px solid;
+            text-align: left;
+            width:500px;
+        }
+
 
     </style>
     <body>
         <div align="center" style="width:100%;">
             <span id="maintitle">OpenNetAdmin Install</span><br>
+
+<br>
+<div id='alert-banner'>
+<div align='center'><b>ALERT</b></div>
+It is advised to run the install process from the CLI at this time due to changes in database security models. Use this web installer at your own risk.<br>
+<br>
+Please execute <i>"php /opt/ona/install/installcli.php"</i> as root.<br>
+</div>
 EOL;
 
 

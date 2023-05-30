@@ -28,8 +28,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('interface_modify')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -83,9 +83,9 @@ function ws_editor($window_name, $form='') {
             $selected = '';
             $dnsviews['name'] = htmlentities($dnsviews['name']);
             // If this entry matches the record you are editing, set it to selected
-            if ($dns_record['id'] and $entry['id'] == $dns_record['dns_view_id']) {
+            if (isset($dns_record['id']) and $entry['id'] == $dns_record['dns_view_id']) {
                 $selected = "SELECTED=\"selected\"";
-            } elseif (!$dns_record['id'] and $entry['id'] == 0) {
+            } elseif (!isset($dns_record['id']) and $entry['id'] == 0) {
                 // Otherwise use the default record if we are adding a new entry
                 $selected = "SELECTED=\"selected\"";
             }
@@ -147,7 +147,7 @@ EOL;
     $window['html'] = <<<EOL
 
     <!-- Interface Edit Form -->
-    <form id="{$window_name}_edit_form" onSubmit="return false;">
+    <form id="{$window_name}_edit_form" onSubmit="return false;" autocomplete="off">
     <input type="hidden" name="interface_id" value="{$interface['id']}">
 EOL;
     if($host['fqdn']) {
@@ -258,6 +258,13 @@ EOL;
                     alt="Allow duplicate MAC addresses"
                     type="checkbox"
                 > Allow duplicate MAC addresses
+                <br>
+                <input
+                    id="set_laa"
+                    name="set_laa"
+                    alt="Auto generate MAC addresses"
+                    type="checkbox"
+                > Auto generate MAC addresses
             </td>
         </tr>
 
@@ -361,12 +368,11 @@ EOL;
             </td>
             <td class="padding" align="right" width="100%">
                 <input class="edit" type="button" name="cancel" value="Cancel" onClick="removeElement('{$window_name}');">
-                <input class="edit" type="button"
+                <button type="submit"
                     name="submit"
-                    value="Save"
                     accesskey=" "
                     onClick="xajax_window_submit('{$window_name}', xajax.getFormValues('{$window_name}_edit_form'), 'save');"
-                >
+                >Save</button>
             </td>
         </tr>
 
@@ -399,8 +405,8 @@ function ws_save($window_name, $form='') {
     // Check permissions (there is no interface_add, it's merged with host_add)
     if (! (auth('interface_modify') and auth('host_add')) ) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
     // If an array in a string was provided, build the array and store it in $form
     $form = parse_options_string($form);
@@ -410,8 +416,8 @@ function ws_save($window_name, $form='') {
 
     // Validate input
     if ($form['set_ip'] == '') {
-        $response->addScript("alert('Please complete the IP address field to continue!');");
-        return($response->getXML());
+        $response->script("alert('Please complete the IP address field to continue!');");
+        return $response;
     }
     // set_create_a and set_create_ptr should both be set!
     if (!$form['set_addptr']) $form['set_addptr'] = 'N';
@@ -424,6 +430,7 @@ function ws_save($window_name, $form='') {
         $module = 'interface_add';
         $form['ip'] = $form['set_ip']; unset($form['set_ip']);
         $form['mac'] = $form['set_mac']; unset($form['set_mac']);
+        $form['laa'] = $form['set_laa']; unset($form['set_laa']);
         $form['name'] = $form['set_name']; unset($form['set_name']);
         $form['description'] = $form['set_description']; unset($form['set_description']);
         $form['addptr'] = $form['set_addptr']; unset($form['set_addptr']);
@@ -435,7 +442,7 @@ function ws_save($window_name, $form='') {
 
     // Do a pre check of the ptr domain so we can prompt the user properly
     if ($module == 'interface_add') {
-	
+
         $ipflip = ip_mangle($form['ip'],'flip');
         $octets = explode(".",$ipflip);
         //GD: ipv6 IPs must be reversed in .ip6.arpa
@@ -451,8 +458,8 @@ function ws_save($window_name, $form='') {
         if (!$ptrdomain['id']) {
             printmsg("ERROR => You must first create at least the following DNS domain: {$octets[$octcount]}{$arpa}",3);
             $self['error'] = "ERROR => You must first create at least the following DNS domain: {$octets[$octcount]}{$arpa}.  You could also create domains for class B or class C level reverse zones.  Click OK to open add domain dialog";
-            $response->addScript("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[$octcount]}{$arpa}', 'editor');");
-            return($response->getXML());
+            $response->script("alert('{$self['error']}');xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[$octcount]}{$arpa}', 'editor');");
+            return $response;
         }
     }
 
@@ -480,8 +487,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Insert the new table into the window
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
@@ -505,8 +512,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('interface_del')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If an array in a string was provided, build the array and store it in $form
@@ -534,8 +541,8 @@ function ws_delete($window_name, $form='') {
         $js .= $form['js'];  // usually js will refresh the window we got called from
 
     // Return an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

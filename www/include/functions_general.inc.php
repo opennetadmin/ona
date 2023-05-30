@@ -64,7 +64,7 @@ function printmsg($msg="",$debugLevel=0) {
         if ($conf['log_to_db'] and $debugLevel == 0) {
             global $onadb;
             // MP TODO: log using tia64n
-            list($status, $rows) = db_insert_record($onadb, 'ona_logs', array('username' => $username, 'remote_addr' => $_SERVER['REMOTE_ADDR'], 'message' => $msg,'context_name' => $self['context_name']));
+            list($status, $rows) = db_insert_record($onadb, 'ona_logs', array('username' => $username, 'timestamp' => date('Y-m-j G:i:s',time()), 'remote_addr' => $_SERVER['REMOTE_ADDR'], 'message' => $msg,'context_name' => $self['context_name']));
         }
 
         // Print to syslogd if needed
@@ -142,6 +142,16 @@ function ona_logmsg($message, $logfile="") {
     }
     else {
         $username = "anonymous";
+    }
+
+    // If we don't have a remote address, set it to localhost
+    if (!isset($_SERVER['REMOTE_ADDR'])) {
+        $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+    }
+
+    // If we don't have a context name, set it to UNKNOWN_CONTEXT
+    if (!isset($self['context_name'])) {
+        $self['context_name'] = 'UNKNOWN_CONTEXT';
     }
 
     // Build the exact line we want to write to the file
@@ -634,7 +644,7 @@ function ip_mangle_gmp($ip="", $format="default") {
     }
 
     // If we get here, then the input must be in numeric format (1)
-    else {
+    else if ($ip != '') {
         $ip = gmp_init(strval($ip), 10);
         if ($format == "default") {
             if(is_ipv4($ip))
@@ -644,6 +654,10 @@ function ip_mangle_gmp($ip="", $format="default") {
         }
     }
 
+    // If we got this far, then we will just return an error because it does not match sanity.
+    else {
+        return(-1);
+    }
 
     // If the address wasn't valid return an error --
     // check for out-of-range values (< 0 or > 2**128)
@@ -757,30 +771,30 @@ function ipcalc_info($ip='', $mask='') {
     $retarray['mask_cidr'] = ip_mangle($retarray['in_mask'], 'cidr');
 
     // Process the IP address
-    $retarray['ip_dotted'] = ip_mangle($retarray['in_ip'], dotted);
-    $retarray['ip_numeric'] = ip_mangle($retarray['in_ip'], numeric);
-    $retarray['ip_binary'] = ip_mangle($retarray['in_ip'], binary);
-    $retarray['ip_bin128'] = ip_mangle($retarray['in_ip'], bin128);
-    $retarray['ip_ipv6'] = ip_mangle($retarray['in_ip'], ipv6);
-    $retarray['ip_ipv6gz'] = ip_mangle($retarray['in_ip'], ipv6gz);
-    $retarray['ip_flip'] = ip_mangle($retarray['in_ip'], flip);
+    $retarray['ip_dotted'] = ip_mangle($retarray['in_ip'], 'dotted');
+    $retarray['ip_numeric'] = ip_mangle($retarray['in_ip'], 'numeric');
+    $retarray['ip_binary'] = ip_mangle($retarray['in_ip'], 'binary');
+    $retarray['ip_bin128'] = ip_mangle($retarray['in_ip'], 'bin128');
+    $retarray['ip_ipv6'] = ip_mangle($retarray['in_ip'], 'ipv6');
+    $retarray['ip_ipv6gz'] = ip_mangle($retarray['in_ip'], 'ipv6gz');
+    $retarray['ip_flip'] = ip_mangle($retarray['in_ip'], 'flip');
 
     // Process the mask
-    $retarray['mask_dotted'] = ip_mangle($retarray['in_mask'], dotted);
-    $retarray['mask_numeric'] = ip_mangle($retarray['in_mask'], numeric);
-    $retarray['mask_binary'] = ip_mangle($retarray['in_mask'], binary);
-    $retarray['mask_bin128'] = ip_mangle($retarray['in_mask'], bin128);
-    $retarray['mask_ipv6'] = ip_mangle($retarray['in_mask'], ipv6);
-    $retarray['mask_ipv6gz'] = ip_mangle($retarray['in_mask'], ipv6gz);
-    $retarray['mask_flip'] = ip_mangle($retarray['in_mask'], flip);
+    $retarray['mask_dotted'] = ip_mangle($retarray['in_mask'], 'dotted');
+    $retarray['mask_numeric'] = ip_mangle($retarray['in_mask'], 'numeric');
+    $retarray['mask_binary'] = ip_mangle($retarray['in_mask'], 'binary');
+    $retarray['mask_bin128'] = ip_mangle($retarray['in_mask'], 'bin128');
+    $retarray['mask_ipv6'] = ip_mangle($retarray['in_mask'], 'ipv6');
+    $retarray['mask_ipv6gz'] = ip_mangle($retarray['in_mask'], 'ipv6gz');
+    $retarray['mask_flip'] = ip_mangle($retarray['in_mask'], 'flip');
 
 
     // Invert the binary mask
-    $inverted = str_replace("0", "x", ip_mangle($retarray['in_mask'], binary));
+    $inverted = str_replace("0", "x", ip_mangle($retarray['in_mask'], 'binary'));
     $inverted = str_replace("1", "0", $inverted);
     $inverted = str_replace("x", "1", $inverted);
     $retarray['mask_bin_invert'] = $inverted;
-    $retarray['mask_dotted_invert'] = ip_mangle($inverted, dotted);
+    $retarray['mask_dotted_invert'] = ip_mangle($inverted, 'dotted');
 
 
     // Check boundaries
@@ -797,7 +811,7 @@ function ipcalc_info($ip='', $mask='') {
        $ip2 = str_pad(substr($ip1, 0, $retarray['mask_cidr']), $padding, '0');
        $total = (0xffffffff - $retarray['mask_numeric']) + 1;
        $usable = $total - 2;
-       $lastip = ip_mangle($ip2, numeric) - 1 + $total;
+       $lastip = ip_mangle($ip2, 'numeric') - 1 + $total;
        $retarray['ip_last'] = ip_mangle($lastip, 'dotted');
     } else {
        // echo "ipv6";
@@ -1221,6 +1235,8 @@ function validate_username($input) {
 function startSession() {
     global $conf;
 
+    $secure=false;
+
     // If the command line agent, dcm.pl, is making the request, don't really start a session.
     if (preg_match('/console-module-interface/', $_SERVER['HTTP_USER_AGENT'])) {
 
@@ -1235,16 +1251,20 @@ function startSession() {
     // Set the name of the cookie (nicer than default name)
     session_name("ONA_SESSION_ID");
 
-   // Set cookie to expire at end of session
-   // secure cookie
-   if (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS']) {
+    // Set cookie to expire at end of session
+    // secure cookie
+    if (isset($_SERVER['HTTPS']) && 'on' == $_SERVER['HTTPS']) {
+        $secure=true;
+    }
 
-       session_set_cookie_params(0, '/', $_SERVER["SERVER_NAME"], 1);
-   }
-   // normal cookie
-   else {
-       session_set_cookie_params(0, '/');
-   }
+    session_set_cookie_params([
+      'lifetime' => $conf['cookie_life'],
+      'path' => '/',
+      'domain' => $_SERVER['SERVER_NAME'],
+      'secure' => $secure,
+      'httponly' => true,
+      'samesite' => 'Strict'
+    ]);
 
     // (Re)start the session
     session_start();
@@ -1329,6 +1349,8 @@ function loggedIn() {
 //////////////////////////////////////////////////////////////////////////////
 function auth($resource,$msg_level=1) {
 
+    // for some reason the default above does not work
+    if (!isset($msg_level)) $msg_level=1;
     if (!is_string($resource)) return false;
     if (array_key_exists($resource, (array)$_SESSION['ona']['auth']['perms'])) {
         printmsg("DEBUG => auth() User[{$_SESSION['ona']['auth']['user']['username']}] has the {$resource} permission",5);
@@ -1538,7 +1560,7 @@ function run_module($module='', $options='', $transaction=1) {
 
     if ($has_trans) {
         // If there was any sort of failure, make sure the status has incremented, this catches sub module output errors;
-        if ($onadb->HasFailedTrans()) $status = $status + 1;
+        if ($onadb->HasFailedTrans()) $status = $status + 100;
 
         // If the user passed the rollback flag then dont commit the transaction
 // FIXME: not complete or tested.. it would be nice to have an ability for the user to pass

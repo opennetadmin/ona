@@ -21,3 +21,13 @@ www/*.htm
 cfg_archive_local
 
 spool
+
+*.log
+
+.vagrant
+.DS_Store
+
+# ignore vim swap files
+*.swp
+
+.gitignore

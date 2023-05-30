@@ -28,7 +28,7 @@ $window['title'] = "Group Administration";
 
 // Load some html into $window['html']
 $form_id = "{$window_name}_filter_form";
-$tab = 'groups';
+$tab = 'auth_groups';
 $submit_window = $window_name;
 $content_id = "{$window_name}_list";
 $window['html'] .= <<<EOL
@@ -40,17 +40,10 @@ $window['html'] .= <<<EOL
             </td>
 
             <td id="{$form_id}_quick_filter" class="padding" align="right" width="100%">
-                <form id="{$form_id}" onSubmit="return false;">
+                <form id="{$form_id}" onSubmit="return false;" autocomplete="off">
                 <input id="{$form_id}_page" name="page" value="1" type="hidden">
                 <input name="content_id" value="{$content_id}" type="hidden">
                 <input name="form_id" value="{$form_id}" type="hidden">
-                <div id="{$form_id}_filter_overlay"
-                     style="position: relative;
-                            display: inline;
-                            color: #CACACA;
-                            cursor: text;"
-                     onClick="this.style.display = 'none'; el('{$form_id}_filter').focus();"
-                >Filter</div>
                 <input
                     id="{$form_id}_filter"
                     name="filter"
@@ -60,8 +53,7 @@ $window['html'] .= <<<EOL
                     size="10"
                     maxlength="20"
                     alt="Quick Filter"
-                    onFocus="el('{$form_id}_filter_overlay').style.display = 'none';"
-                    onBlur="if (this.value == '') el('{$form_id}_filter_overlay').style.display = 'inline';"
+                    placeholder="Group"
                     onKeyUp="
                         if (typeof(timer) != 'undefined') clearTimeout(timer);
                         code = 'if ({$form_id}_last_search != el(\'{$form_id}_filter\').value) {' +
@@ -102,7 +94,6 @@ $window['js'] = <<<EOL
         el('{$window_name}_title_r').innerHTML;
 
     /* Setup the quick filter */
-    el('{$form_id}_filter_overlay').style.left = (el('{$form_id}_filter_overlay').offsetWidth + 10) + 'px';
     {$form_id}_last_search = '';
 
     /* Tell the browser to load/display the list */
@@ -128,8 +119,8 @@ function ws_display_list($window_name, $form) {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // If the group supplied an array in a string, build the array and store it in $form
@@ -163,7 +154,7 @@ EOL;
     if ($offset == 0) { $offset = -1; }
 
     // Get our groups
-    list($status, $rows, $records) = db_get_records($onadb, 'groups', $where, 'name', $conf['search_results_per_page'], $offset);
+    list($status, $rows, $records) = db_get_records($onadb, 'auth_groups', $where, 'name', $conf['search_results_per_page'], $offset);
 
     // If we got less than serach_results_per_page, add the current offset to it
     // so that if we're on the last page $rows still has the right number in it.
@@ -173,7 +164,7 @@ EOL;
 
     // If there were more than $conf['search_results_per_page'] find out how many records there really are
     else if ($rows >= $conf['search_results_per_page']) {
-        list ($status, $rows, $tmp) = db_get_records($onadb, 'groups', $where, '', 0);
+        list ($status, $rows, $tmp) = db_get_records($onadb, 'auth_groups', $where, '', 0);
     }
     $count = $rows;
 
@@ -249,10 +240,9 @@ EOL;
     // Insert the new table into the window
     // Instantiate the xajaxResponse object
     $response = new xajaxResponse();
-    $response->addAssign("{$form['form_id']}_groups_count",  "innerHTML", "({$count})");
-    $response->addAssign("{$form['content_id']}", "innerHTML", $html);
-    // $response->addScript($js);
-    return($response->getXML());
+    $response->assign("{$form['form_id']}_groups_count",  "innerHTML", "({$count})");
+    $response->assign("{$form['content_id']}", "innerHTML", $html);
+    return $response;
 }
 
 
@@ -273,8 +263,8 @@ function ws_delete($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -282,10 +272,10 @@ function ws_delete($window_name, $form='') {
     $js = '';
 
     // Load the group record to make sure it exists
-    list($status, $rows, $group) = db_get_record($onadb, 'groups', array('id' => $form));
+    list($status, $rows, $group) = db_get_record($onadb, 'auth_groups', array('id' => $form));
     if ($status or !$rows) {
-        $response->addScript("alert('Delete failed: Group ID {$form} doesnt exist');");
-        return($response->getXML());
+        $response->script("alert('Delete failed: Group ID {$form} doesnt exist');");
+        return $response;
     }
 
     // Delete the group assignments that reference our group id
@@ -299,7 +289,7 @@ function ws_delete($window_name, $form='') {
     } while ($rows >= 1);
 
     // Delete the group's record
-    list($status, $rows) = db_delete_records($onadb, 'groups', array('id' => $group['id']));
+    list($status, $rows) = db_delete_records($onadb, 'auth_groups', array('id' => $group['id']));
 
     if ($status or !$rows) {
         // If the module returned an error code display a popup warning
@@ -316,8 +306,8 @@ function ws_delete($window_name, $form='') {
 
 
     // Send an XML response
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 

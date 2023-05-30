@@ -58,11 +58,11 @@ EOL;
 
 
     $response = new xajaxResponse();
-    $response->addAssign('menu_bar_top', "innerHTML", $html);
-    $response->addScript($js);
+    $response->assign('menu_bar_top', "innerHTML", $html);
+    $response->script($js);
     // used to let menus pass in javascript
-    $response->addScript($tmpjs);
-    return($response->getXML());
+    $response->script($tmpjs);
+    return $response;
 }
 
 
@@ -83,7 +83,7 @@ function ws_menu($window_name, $form='') {
     // If an array in a string was provided, build the array and store it in $form
     $form = parse_options_string($form);
 
-    printmsg("DEBUG => Displaying tooltip: {$form['tooltip']}", 4);
+    if (isset($form['tooltip'])) printmsg("DEBUG => Displaying tooltip: {$form['tooltip']}", 4);
 
     $menuname = 'get_html_'.$form['menu_name'];
 
@@ -96,12 +96,12 @@ function ws_menu($window_name, $form='') {
     //   4. Unhide it
     $response = new xajaxResponse();
     if ($html) {
-        $response->addScript("el('{$form['id']}').style.visibility = 'hidden';");
-        $response->addAssign($form['id'], "innerHTML", $html);
-        $response->addScript("wwTT_position('{$form['id']}'); el('{$form['id']}').style.visibility = 'visible';");
+        $response->script("el('{$form['id']}').style.visibility = 'hidden';");
+        $response->assign($form['id'], "innerHTML", $html);
+        $response->script("wwTT_position('{$form['id']}'); el('{$form['id']}').style.visibility = 'visible';");
     }
-    if ($js) { $response->addScript($js); }
-    return($response->getXML());
+    if ($js) { $response->script($js); }
+    return $response;
 }
 
 
@@ -369,7 +369,7 @@ function get_html_menu_button_edit() {
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_subnet', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_subnet', 'js=> ', 'editor');"
      title="Add a new subnet"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Subnet</div>
@@ -381,7 +381,7 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_host', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_host', 'js=> ', 'editor');"
      title="Add a new host"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Host</div>
@@ -417,7 +417,7 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_vlan_campus', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_vlan_campus', 'js=> ', 'editor');"
      title="Add a new VLAN campus"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add VLAN campus</div>
@@ -429,7 +429,7 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_vlan', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_vlan', 'js=> ', 'editor');"
      title="Add a new VLAN"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add VLAN</div>
@@ -441,7 +441,7 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_block', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_block', 'js=> ', 'editor');"
      title="Add a new block"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Block</div>
@@ -453,7 +453,7 @@ EOL;
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); xajax_window_submit('edit_location', ' ', 'editor');"
+     onClick="ona_menu_closedown(); xajax_window_submit('edit_location', 'js=> ', 'editor');"
      title="Add a new location"
  ><img style="vertical-align: middle;" src="{$images}/silk/page_add.png" border="0"
  />&nbsp;Add Location</div>

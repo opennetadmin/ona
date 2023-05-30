@@ -19,8 +19,8 @@ function ws_editor($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Set a few parameters for the "results" window we're about to create
@@ -40,6 +40,8 @@ function ws_editor($window_name, $form='') {
         el('{$window_name}_title_r').innerHTML =
             '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
             el('{$window_name}_title_r').innerHTML;
+
+        el('username').focus();
 EOL;
 
     // If we got a user ID, load it for display
@@ -53,12 +55,12 @@ EOL;
     $user_groups = array();
     list($status, $rows, $records) = db_get_records($onadb, 'group_assignments', array('user_id' => $user['id']));
     foreach ($records as $record) {
-        list($status, $rows, $g) = db_get_record($onadb, 'groups', array('id' => $record['group_id']));
+        list($status, $rows, $g) = db_get_record($onadb, 'auth_groups', array('id' => $record['group_id']));
         $user_groups[$g['name']] = $g['id'];
     }
 
     // Get all the groups from the database
-    list($status, $rows, $allgroups) = db_get_records($onadb, 'groups', 'id > 0');
+    list($status, $rows, $allgroups) = db_get_records($onadb, 'auth_groups', 'id > 0');
 
     $group_check_list = "";
     foreach ($allgroups as $group) {
@@ -76,8 +78,15 @@ EOL;
     $window['html'] .= <<<EOL
 
     <!-- Simple User Edit Form -->
-    <form id="user_edit_form" onSubmit="return false;">
+    <form id="user_edit_form" onSubmit="return false;" autocomplete="off">
+EOL;
+    if ($overwrite == 'yes') {
+	    $window['html'] .= <<<EOL
     <input type="hidden" name="user_id" value="{$user['id']}">
+EOL;
+    }
+
+    $window['html'] .= <<<EOL
     <input id="password" type="hidden" name="password" value="{$user['password']}">
     <table cellspacing="0" border="0" cellpadding="0" style="background-color: {$color['window_content_bg']}; padding-left: 20px; padding-right: 20px; padding-top: 5px; padding-bottom: 5px;">
         <tr>
@@ -86,6 +95,7 @@ EOL;
             </td>
             <td class="padding" align="left" width="100%">
                 <input
+                    id="username"
                     name="username"
                     alt="Username"
                     value="{$user['username']}"
@@ -168,8 +178,8 @@ function ws_save($window_name, $form='') {
     // Check permissions
     if (!auth('user_admin')) {
         $response = new xajaxResponse();
-        $response->addScript("alert('Permission denied!');");
-        return($response->getXML());
+        $response->script("alert('Permission denied!');");
+        return $response;
     }
 
     // Instantiate the xajaxResponse object
@@ -180,13 +190,13 @@ function ws_save($window_name, $form='') {
     // Validate input
     if (!$form['username']) {
         $js .= "alert('Error! All fields are required!');";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
     if (!preg_match('/^[A-Za-z0-9.\-_]+$/', $form['username'])) {
         $js .= "alert('Invalid username! Valid characters: A-Z 0-9 .-_');";
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
     // Create a new record?
@@ -197,6 +207,7 @@ function ws_save($window_name, $form='') {
             array(
                 'username' => $form['username'],
                 'password' => $form['password'],
+                'ctime'    => date('Y-m-j G:i:s',time()),
             )
         );
         if ($status or !$rows) {
@@ -215,8 +226,8 @@ function ws_save($window_name, $form='') {
         list($status, $rows, $user) = db_get_record($onadb, 'users', array('id' => $form['user_id']));
         if ($rows != 1 or $user['id'] != $form['user_id']) {
             $js .= "alert('Error! The record requested could not be loaded from the database!');";
-            $response->addScript($js);
-            return($response->getXML());
+            $response->script($js);
+            return $response;
         }
 
         list ($status, $rows) = db_update_record(
@@ -258,8 +269,8 @@ function ws_save($window_name, $form='') {
     if ($status or $rows != 1) {
         $js .= "alert('Save failed: " . trim($self['error']) . "');";
         // Return some javascript to the browser
-        $response->addScript($js);
-        return($response->getXML());
+        $response->script($js);
+        return $response;
     }
 
 
@@ -270,7 +281,7 @@ function ws_save($window_name, $form='') {
 
 
     // Get a list of every group
-    list($status, $rows, $groups) = db_get_records($onadb, 'groups', 'id > 0');
+    list($status, $rows, $groups) = db_get_records($onadb, 'auth_groups', 'id > 0');
 
     // Loop through each group
     foreach ($groups as $group) {
@@ -279,7 +290,7 @@ function ws_save($window_name, $form='') {
         $exit_status += $status;
 
         // If the user is supposed to be assigned to this group, make sure she is.
-        if (array_key_exists($group['name'], $form['groups'])) {
+        if (isset($form['groups']) and array_key_exists($group['name'], $form['groups'])) {
             if ($status == 0 and $rows == 0) {
                 list($status, $rows) = db_insert_record($onadb, 'group_assignments', array('user_id' => $user['id'], 'group_id' => $group['id']));
                 $log_msg .= $more . "group_add[" . $group['name'] . "]";
@@ -314,8 +325,8 @@ function ws_save($window_name, $form='') {
     }
 
     // Return some javascript to the browser
-    $response->addScript($js);
-    return($response->getXML());
+    $response->script($js);
+    return $response;
 }
 
 
