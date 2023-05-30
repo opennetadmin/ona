@@ -7,7 +7,7 @@ It will do this each time the interface is opened so the traffic should be very 
 Since fopen is required, I had been getting 'unable to determine' messages.
 I was able to fix it by adding the following to my apache config for the ona site
 
-php_admin_flag allow_url_fopen on
+php_admin_flag allow_url_fopen on # not sure this is required anymore?
 */
 
 $title_right_html = '';
@@ -17,11 +17,13 @@ $modbodyhtml = '';
 // Display only on the desktop
 if ($extravars['window_name'] == 'html_desktop') {
     // Dont perform a version check if the user has requested not to
-    if (!array_key_exists('skip_version_check', $conf)) {
+    if (!$conf['skip_version_check']) {
         //@ini_set('user_agent',$_SERVER['HTTP_USER_AGENT']."-----".$conf['version']);
 
         // Define the URL we use to check what version is the latest release
         $ona_check_version_url = 'http://checkversion.opennetadmin.com';
+        $onaver = 'Unable to determine';
+        $buffer = '';
 
         if ($ona_check_version_url) {
             $stream_opts = array(
@@ -49,15 +51,17 @@ if ($extravars['window_name'] == 'html_desktop') {
                 $timeout = 2;
                 $old = @ini_set('default_socket_timeout', $timeout);
                 $file = @fopen($ona_check_version_url, 'r', false, $context);
-                @ini_set('default_socket_timeout', $old);
-                stream_set_timeout($file, $timeout);
-                #stream_set_blocking($file, 0);
+                if (!$file) {
+                  $onaver="Unable to reach check version server";
+                } else {
+                  @ini_set('default_socket_timeout', $old);
+                  stream_set_timeout($file, $timeout);
+                  #stream_set_blocking($file, 0);
+                }
             //}
         }
 
-        $onaver = 'Unable to determine';
-        $buffer = '';
-        if (isset($file)) {
+        if (isset($file) && $file != false) {
             while (!feof ($file)) {
                 $buffer .= trim(fread ($file, 1024));
             }
