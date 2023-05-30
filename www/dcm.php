@@ -68,7 +68,11 @@ printmsg("DEBUG => debug level: {$conf['debug']}", 1);
 if (!isset($_REQUEST['options'])) {
   foreach ($_REQUEST as $key => $value) {
     if ($key != 'module') {
-      $options .= "&${key}=${value}";
+      if ($value == '') {
+        $options .= "&${key}=Y";
+      } else {
+        $options .= "&${key}=${value}";
+      }
     }
   }
   $_REQUEST['options'] = $options;
