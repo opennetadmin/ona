@@ -254,6 +254,8 @@ function ws_save($window_name, $form='') {
                                             array('name' => $form['name'],
                                                   'value' => $form['value'],
                                                   'description' => $form['description'],
+                                                  'field_validation_rule' => '',
+                                                  'failed_rule_text' => '',
                                                   'editable' => 1,
                                                   'deleteable' => 1)
                                             );
