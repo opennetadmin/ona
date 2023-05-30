@@ -404,6 +404,7 @@ EOM
 
     // This variable will contain the updated info we'll insert into the DB
     $SET = array();
+    $SET_DEV = array();
 
     // Set options['set_type']?
     if ($options['set_type']) {
