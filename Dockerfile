@@ -32,8 +32,7 @@ RUN apt-get -y install git mariadb-server apache2 php-yaml php-gmp php-mysql lib
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# TODO: the specific branch here needs to be removed once the libupgrades branch is merged
-RUN git -C /opt clone https://github.com/opennetadmin/ona.git -b libupgrades
+RUN git -C /opt clone https://github.com/opennetadmin/ona.git -b develop
 
 ENV APACHE_RUN_USER www-data
 ENV APACHE_RUN_GROUP www-data
