@@ -28,7 +28,7 @@ ENV TZ=UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update
-RUN apt-get -y install git mariadb-server apache2 php-yaml php-gmp php-mysql libapache2-mod-php php-mbstring php-xml unzip vim && \
+RUN apt-get -y install git mariadb-server apache2 php-yaml php-gmp php-mysql libapache2-mod-php php-mbstring php-xml unzip vim sendemail jq curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -50,6 +50,7 @@ RUN chown www-data /opt/ona/www/local/config
 # Start as mariadb or mysql depending on version of Ubuntu.
 RUN service mariadb start || service mysql start
 
+RUN echo '/opt/ona' > /etc/onabase
 RUN echo "\n\n\n"|php /opt/ona/install/installcli.php
 RUN echo "ServerName ona-dev.localhost" > /etc/apache2/conf-enabled/servername.conf
 
