@@ -1,0 +1,487 @@
+// Use DBML to define database structure using dbdiagram.io
+// Docs: https://dbml.dbdiagram.io/docs
+// Also published at https://dbdocs.io/mattebb8854a48/OpenNetAdmin
+
+Project OpenNetAdmin {
+  database_type: 'MySQL'
+  Note: 'Primary table structure for the OpenNetAdmin IPAM database. Please note that much of the data integrity and consistency is in the code not at the database level.'
+}
+
+Table "auth_groups" {
+  "id" int [pk, not null, increment]
+  "name" varchar(32) [not null]
+  "description" varchar(191) [not null]
+  "level" int [not null, default: "0"]
+
+Indexes {
+  name [unique, name: "name"]
+}
+}
+
+Table "blocks" {
+  "id" int [pk, not null]
+  "ip_addr_start" decimal(39,0) [not null]
+  "ip_addr_end" decimal(39,0) [not null]
+  "name" varchar(63) [not null]
+  "notes" varchar(191) [not null]
+}
+
+Table "configuration_types" {
+  "id" int [pk, not null]
+  "name" varchar(63) [not null]
+}
+
+Table "configurations" {
+  "id" int [pk, not null]
+  "configuration_type_id" int [not null]
+  "host_id" int [not null]
+  "md5_checksum" varchar(63) [not null]
+  "config_body" longtext [not null]
+  "ctime" timestamp [not null]
+
+Indexes {
+  host_id [name: "host_id"]
+}
+}
+
+Table "custom_attribute_types" {
+  "id" int [pk, not null]
+  "name" varchar(63) [not null]
+  "notes" varchar(127) [not null]
+  "field_validation_rule" text [not null]
+  "failed_rule_text" text [not null]
+}
+
+Table "custom_attributes" {
+  "id" int [pk, not null, increment]
+  "custom_attribute_type_id" int [not null]
+  "table_name_ref" varchar(40) [not null]
+  "table_id_ref" int [not null, default: "0"]
+  "value" text [not null]
+    Note: 'This table uses the table_name_ref field to identify the table and the table_id_ref field to identify the foreign key id. It would point to either a host or a subnet'
+}
+
+Table "dcm_module_list" {
+  "name" varchar(128) [pk, not null]
+  "description" varchar(191) [not null]
+  "file" varchar(128) [not null]
+
+Indexes {
+  name [unique, name: "name"]
+}
+}
+
+Table "device_types" {
+  "id" int [pk, not null]
+  "model_id" int [not null]
+  "role_id" int [not null]
+}
+
+Table "devices" {
+  "id" int [pk, not null]
+  "location_id" int [not null]
+  "device_type_id" int [not null]
+  "primary_host_id" int [not null]
+  "asset_tag" varchar(191) [default: NULL]
+  "serial_number" varchar(191) [default: NULL]
+}
+
+Table "dhcp_failover_groups" {
+  "id" int [pk, not null]
+  "primary_server_id" int [not null]
+  "secondary_server_id" int [not null]
+  "max_response_delay" int [not null]
+  "max_unacked_updates" int [not null]
+  "max_load_balance" int [not null]
+  "primary_port" int [not null]
+  "peer_port" int [not null]
+  "mclt" int [not null]
+  "split" int [not null]
+}
+
+Table "dhcp_option_entries" {
+  "id" int [pk, not null]
+  "dhcp_option_id" int [not null]
+  "subnet_id" int [not null, note: 'Define DHCP option at the Subnet level']
+  "host_id" int [not null, note: 'Define DHCP option at the Host level']
+  "server_id" int [not null, note: 'Define DHCP option at the DHCP Server level']
+  "value" varchar(127) [not null]
+  Note: 'DHCP Options. Must only populate one of subnet,host, or server ID fields for a given row, If none are populated then it is a Global default.'
+}
+
+Table "dhcp_options" {
+  "id" int [pk, not null]
+  "name" varchar(31) [not null]
+  "number" int [not null]
+  "type" varchar(1) [not null]
+  "display_name" varchar(31) [not null]
+  "sys_default" int [not null]
+}
+
+Table "dhcp_pools" {
+  "id" int [pk, not null]
+  "subnet_id" int [not null]
+  "dhcp_failover_group_id" int [not null]
+  "ip_addr_start" int [not null]
+  "ip_addr_end" int [not null]
+  "lease_length" int [not null]
+  "lease_grace_period" int [not null]
+  "lease_renewal_time" int [not null]
+  "lease_rebind_time" int [not null]
+  "allow_bootp_clients" int [not null]
+}
+
+Table "dhcp_server_subnets" {
+  "id" int [pk, not null]
+  "host_id" int [not null]
+  "subnet_id" int [not null]
+}
+
+Table "dns" {
+  "id" int [pk, not null]
+  "dns_id" int [not null, default: "0"]
+  "domain_id" int [not null]
+  "interface_id" int [not null]
+  "type" varchar(15) [not null]
+  "ttl" int [not null]
+  "name" varchar(191) [not null]
+  "ebegin" timestamp [not null]
+  "notes" varchar(128) [not null]
+  "mx_preference" int [not null]
+  "txt" varchar(191) [not null]
+  "srv_pri" int [not null]
+  "srv_weight" int [not null]
+  "srv_port" int [not null]
+  "dns_view_id" int [not null]
+
+Indexes {
+  domain_id [name: "domain_id"]
+}
+}
+
+Table "dns_server_domains" {
+  "id" int [pk, not null]
+  "host_id" int [not null]
+  "domain_id" int [not null]
+  "role" varchar(10) [not null]
+  "rebuild_flag" int [not null]
+}
+
+Table "dns_views" {
+  "id" int [pk, not null]
+  "name" varchar(191) [not null]
+  "description" varchar(191) [not null]
+}
+
+Table "domains" {
+  "id" int [pk, not null]
+  "parent_id" int [not null]
+  "ctime" timestamp [not null]
+  "serial" int [not null]
+  "refresh" int [not null]
+  "retry" int [not null]
+  "expiry" int [not null]
+  "minimum" int [not null]
+  "default_ttl" int [not null]
+  "primary_master" varchar(191) [not null]
+  "admin_email" varchar(191) [not null]
+  "name" varchar(191) [not null]
+}
+
+Table "group_assignments" {
+  "id" int [pk, not null, increment]
+  "user_id" int [not null, default: "0"]
+  "group_id" int [not null, default: "0"]
+}
+
+Table "hosts" {
+  "id" int [pk, not null]
+  "parent_id" int [not null]
+  "primary_dns_id" int [not null]
+  "device_id" int [not null]
+  "notes" varchar(191) [not null]
+}
+
+Table "interface_clusters" {
+  "host_id" int [not null]
+  "interface_id" int [not null]
+  "name" varchar(191) [not null]
+
+Indexes {
+  (interface_id, host_id) [pk]
+}
+}
+
+Table "interfaces" {
+  "id" int [pk, not null]
+  "nat_interface_id" int [not null, default: "0"]
+  "host_id" int [not null]
+  "subnet_id" int [not null]
+  "ip_addr" decimal(39,0) [not null]
+  "mac_addr" varchar(12) [not null]
+  "name" varchar(191) [not null]
+  "description" varchar(191) [default: NULL]
+  "last_response" datetime [default: NULL]
+}
+
+Table "locations" {
+  "id" int [pk, not null]
+  "reference" varchar(10) [not null]
+  "name" varchar(63) [not null]
+  "address" varchar(63) [not null]
+  "city" varchar(63) [not null]
+  "state" varchar(31) [not null]
+  "zip_code" int [not null]
+  "latitude" varchar(20) [not null]
+  "longitude" varchar(20) [not null]
+  "misc" varchar(191) [not null]
+}
+
+Table "manufacturers" {
+  "id" int [pk, not null]
+  "name" varchar(191) [not null]
+
+Indexes {
+  name [unique, name: "name"]
+}
+}
+
+Table "messages" {
+  "id" int [pk, not null, increment]
+  "table_name_ref" varchar(40) [not null]
+  "table_id_ref" int [not null, default: "0"]
+  "priority" varchar(20) [not null]
+  "username" varchar(40) [not null]
+  "mtime" timestamp [not null]
+  "expiration" datetime [default: NULL]
+  "message_text" text [not null]
+
+Indexes {
+  table_name_ref [name: "table_name_ref"]
+  table_id_ref [name: "table_id_ref"]
+}
+}
+
+Table "models" {
+  "id" int [pk, not null]
+  "manufacturer_id" int [not null]
+  "name" varchar(191) [not null]
+  "snmp_sysobjectid" varchar(191) [not null]
+}
+
+Table "ona_logs" {
+  "id" int [pk, not null, increment]
+  "timestamp" timestamp [not null]
+  "username" varchar(25) [not null]
+  "remote_addr" varchar(50) [not null]
+  "message" varchar(1023) [not null]
+  "context_name" varchar(63) [not null]
+}
+
+Table "permission_assignments" {
+  "id" int [pk, not null, increment]
+  "perm_id" int [not null, default: "0"]
+  "user_id" int [not null, default: "0"]
+  "group_id" int [not null, default: "0"]
+}
+
+Table "permissions" {
+  "id" int [pk, not null, increment]
+  "name" varchar(32) [not null]
+  "description" varchar(191) [not null]
+
+Indexes {
+  name [unique, name: "name"]
+}
+}
+
+Table "rack_assignments" {
+  "id" int [pk, not null]
+  "rack_id" int [not null]
+  "device_id" int [not null]
+  "position" int [not null, note: 'Which U is this device in']
+  "depth" int [not null, note: 'Is it 1,2,3,4 depth in quarters.']
+  "size" int [not null, note: 'How many U this device consumes']
+  "mounted_from" int [not null, note: 'Is the device in the front(1) or the back(2) of the rack']
+  "alt_name" varchar(64) [not null, note: 'if there is no ONA device, put another name here']
+  Note: 'Position of a device within a rack'
+}
+
+Enum "racks_numbering_enum" {
+  "DESC"
+  "ASC"
+}
+
+Table "racks" {
+  "id" int [pk, not null]
+  "name" varchar(64) [not null]
+  "description" varchar(255) [not null]
+  "size" int [not null, note: 'How many U are in this rack']
+  "numbering" racks_numbering_enum [not null, default: "DESC", note: 'Direction of rack numbering']
+  "location_id" int [not null, note: 'location of rack']
+  Note: 'Stores info about physical racks'
+}
+
+Table "roles" {
+  "id" int [pk, not null]
+  "name" varchar(127) [not null]
+
+Indexes {
+  name [unique, name: "name"]
+}
+}
+
+Table "sequences" {
+  "name" varchar(31) [pk, not null]
+  "seq" int [not null]
+}
+
+Table "sessions" {
+  "sesskey" varchar(128) [pk, not null]
+  "expiry" int [not null]
+  "sessvalue" text [not null]
+}
+
+Table "subnet_types" {
+  "id" int [pk, not null]
+  "short_name" varchar(31) [not null]
+  "display_name" varchar(63) [not null]
+  "notes" varchar(191) [not null]
+}
+
+Table "subnets" {
+  "id" int [pk, not null]
+  "subnet_type_id" int [not null]
+  "vlan_id" int [not null]
+  "ip_addr" decimal(39,0) [not null]
+  "ip_mask" decimal(39,0) [not null]
+  "name" varchar(127) [not null]
+}
+
+Table "sys_config" {
+  "name" varchar(128) [pk, not null]
+  "value" varchar(191) [not null]
+  "description" varchar(512) [not null]
+  "field_validation_rule" text [not null]
+  "editable" int [not null]
+  "deleteable" int [not null]
+  "failed_rule_text" text [not null]
+}
+
+Table "tags" {
+  "id" int [pk, not null]
+  "name" varchar(127) [not null]
+  "type" varchar(25) [not null]
+  "reference" int [not null]
+  Note: 'This table uses the type field to identify the table and the reference field to identify the foreign key id. It would point to either a host or a subnet'
+}
+
+Table "users" {
+  "id" int [pk, not null, increment]
+  "username" varchar(32) [not null]
+  "password" varchar(64) [not null]
+  "level" int [not null, default: "0"]
+  "ctime" timestamp [not null]
+  "atime" datetime [default: NULL]
+
+Indexes {
+  username [unique, name: "username"]
+}
+}
+
+Table "vlan_campuses" {
+  "id" int [pk, not null]
+  "name" varchar(63) [not null]
+}
+
+Table "vlans" {
+  "id" int [pk, not null]
+  "vlan_campus_id" int [not null]
+  "name" varchar(63) [not null]
+  "number" int [not null]
+}
+
+
+Ref: "configurations"."configuration_type_id" < "configuration_types"."id"
+
+Ref: "custom_attributes"."custom_attribute_type_id" < "custom_attribute_types"."id"
+
+Ref: "dhcp_option_entries"."dhcp_option_id" < "dhcp_options"."id"
+
+Ref: "vlans"."vlan_campus_id" < "vlan_campuses"."id"
+
+Ref: "rack_assignments"."rack_id" < "racks"."id"
+
+Ref: "dns"."dns_view_id" < "dns_views"."id"
+
+Ref: "dns_server_domains"."domain_id" < "domains"."id"
+
+Ref: "dns"."domain_id" < "domains"."id"
+
+Ref: "domains"."parent_id" < "domains"."id"
+
+Ref: "dns"."interface_id" < "interfaces"."id"
+
+Ref: "interfaces"."subnet_id" < "subnets"."id"
+
+Ref: "subnets"."subnet_type_id" < "subnet_types"."id"
+
+Ref: "racks"."location_id" < "locations"."id"
+
+Ref: "hosts"."primary_dns_id" < "dns"."id"
+
+Ref: "hosts"."parent_id" < "hosts"."id"
+
+Ref: "hosts"."device_id" < "devices"."id"
+
+Ref: "devices"."device_type_id" < "device_types"."id"
+
+Ref: "devices"."location_id" < "locations"."id"
+
+Ref: "devices"."primary_host_id" < "hosts"."id"
+
+Ref: "device_types"."role_id" < "roles"."id"
+
+Ref: "permission_assignments"."user_id" < "users"."id"
+
+Ref: "permission_assignments"."perm_id" < "permissions"."id"
+
+Ref: "group_assignments"."user_id" < "users"."id"
+
+Ref: "permission_assignments"."group_id" < "auth_groups"."id"
+
+Ref: "group_assignments"."group_id" < "auth_groups"."id"
+
+Ref: "dhcp_failover_groups"."primary_server_id" < "hosts"."id"
+
+Ref: "dhcp_failover_groups"."secondary_server_id" < "hosts"."id"
+
+Ref: "configurations"."host_id" < "hosts"."id"
+
+Ref: "dhcp_server_subnets"."host_id" < "hosts"."id"
+
+Ref: "dhcp_server_subnets"."subnet_id" < "subnets"."id"
+
+Ref: "rack_assignments"."device_id" < "devices"."id"
+
+Ref: "dns_server_domains"."host_id" < "hosts"."id"
+
+Ref: "interfaces"."host_id" < "hosts"."id"
+
+Ref: "interfaces"."nat_interface_id" < "interfaces"."id"
+
+Ref: "subnets"."vlan_id" < "vlans"."id"
+
+Ref: "models"."manufacturer_id" < "manufacturers"."id"
+
+Ref: "device_types"."model_id" < "models"."id"
+
+Ref: "dhcp_pools"."subnet_id" < "subnets"."id"
+
+Ref: "dhcp_pools"."dhcp_failover_group_id" < "dhcp_failover_groups"."id"
+
+Ref: "interface_clusters"."host_id" < "hosts"."id"
+
+Ref: "interface_clusters"."interface_id" < "interfaces"."id"
+
+Ref: "dns"."dns_id" < "dns"."id"
