@@ -205,15 +205,6 @@ INSERT INTO `auth_groups` (`id`, `name`, `description`, `level`) VALUES (17,'Def
 UNLOCK TABLES;
 
 --
--- Dumping data for table `host_roles`
---
-
-LOCK TABLES `host_roles` WRITE;
-/*!40000 ALTER TABLE `host_roles` DISABLE KEYS */;
-/*!40000 ALTER TABLE `host_roles` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Dumping data for table `hosts`
 --
 
