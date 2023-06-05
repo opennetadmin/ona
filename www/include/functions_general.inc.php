@@ -1257,14 +1257,18 @@ function startSession() {
         $secure=true;
     }
 
-    session_set_cookie_params([
-      'lifetime' => $conf['cookie_life'],
-      'path' => '/',
-      'domain' => $_SERVER['SERVER_NAME'],
-      'secure' => $secure,
-      'httponly' => true,
-      'samesite' => 'Strict'
-    ]);
+    if(PHP_VERSION_ID < 70300) {
+      session_set_cookie_params($conf['cookie_life'], '/; samesite=Strict', NULL, $secure, true);
+    } else {
+      session_set_cookie_params([
+        'lifetime' => $conf['cookie_life'],
+        'path' => '/',
+        'domain' => $_SERVER['SERVER_NAME'],
+        'secure' => $secure,
+        'httponly' => true,
+        'samesite' => 'Strict'
+      ]);
+    }
 
     // (Re)start the session
     session_start();
