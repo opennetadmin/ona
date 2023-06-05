@@ -150,7 +150,9 @@ function window_submit($window_name, $form='', $function='') {
     if (!$window_name or !$form) { return $response; }
     $js = "";
 
-    printmsg("DEBUG => webwin_submit() Window: {$window_name} Function: {$function} Form: {$form}", 1);
+    // print form data as json for better logging
+    $form_json=json_encode($form);
+    printmsg("DEBUG => webwin_submit() Window: {$window_name} Function: {$function} Form: {$form_json}", 5);
 
     // If a function name wasn't provided, we look for a function called:
     //   $window_name . '_submit'
