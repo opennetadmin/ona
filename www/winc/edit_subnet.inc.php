@@ -72,8 +72,8 @@ function ws_editor($window_name, $form='') {
     list($status, $rows, $subnettypes) = db_get_records($onadb, 'subnet_types', 'id > 0', 'display_name');
     $subnet_type_list = '<option value="">&nbsp;</option>\n';
     foreach ($subnettypes as $record) {
-        $selected = "";
-        if (isset($record['id']) == $subnet['subnet_type_id']) { $selected = "SELECTED=\"selected\""; }
+        $selected = '';
+        if ($record['id'] == $subnet['subnet_type_id']) { $selected = "SELECTED=\"selected\""; }
         if (isset($record['id'])) {$subnet_type_list .= "<option {$selected} value=\"{$record['id']}\">{$record['display_name']}</option>\n";}
     }
 

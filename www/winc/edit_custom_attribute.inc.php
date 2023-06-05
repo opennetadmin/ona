@@ -67,8 +67,8 @@ function ws_editor($window_name, $form='') {
     list($status, $rows, $catypes) = db_get_records($onadb, 'custom_attribute_types', 'id >= 1', 'name');
     $ca_type_list = '';
     foreach ($catypes as $record) {
-        $selected = "";
-        if (isset($record['id']) == $ca['custom_attribute_type_id']) { $selected = "SELECTED=\"selected\""; }
+        $selected = '';
+        if ($record['id'] == $ca['custom_attribute_type_id']) { $selected = "SELECTED=\"selected\""; }
         if (isset($record['id'])) {$ca_type_list .= "<option {$selected} value=\"{$record['id']}\">{$record['name']}</option>\n";}
     }
 
