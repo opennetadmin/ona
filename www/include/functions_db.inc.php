@@ -1378,8 +1378,8 @@ function ona_get_next_id($tablename) {
 
     // Init a new sequence when the tablename is not found
     if (!$rows) {
-        list($status, $rows) = db_insert_record($onadb, 'sequences', array('name' => $tablename, 'seq' => 2));
-        return(1);
+        list($status, $rows) = db_insert_record($onadb, 'sequences', array('name' => $tablename, 'seq' => 101));
+        return(100);
     }
     else {
         // if we did find something increment the sequence in the table
