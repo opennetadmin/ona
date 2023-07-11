@@ -595,7 +595,7 @@ function custom_attribute_display($options="") {
     $text_array = array();
 
     // Version - UPDATE on every edit!
-    $version = '1.02';
+    $version = '1.03';
 
     printmsg("DEBUG => custom_attribute_display({$options}) called", 3);
 
@@ -681,7 +681,7 @@ EOM
         }
 
         $anchor = 'subnet';
-        $desc = $subnet['description'];
+        $desc = $subnet['name'];
 
     }
 
@@ -730,9 +730,10 @@ EOM
         // Build text to return
         $text  .= strtoupper($anchor) . " CUSTOM ATTRIBUTE RECORDS ({$desc})\n";
 
-        // Display the record(s)
-        $i = 0;
-        do {
+        if ($cas[0]) {
+          // Display the record(s)
+          $i = 0;
+          do {
             $text .= "\nASSOCIATED CUSTOM ATTRIBUTE ENTRY RECORD ({$i} of {$rows})\n";
             $text .= format_array($cas[$i]);
     
@@ -740,7 +741,10 @@ EOM
             $text_array[$ca['name']]=$cas[$i]['value'];
     
             $i++;
-        } while ($i < $rows);
+            } while ($i < $rows);
+        } else {
+            $text .= "\nNO ASSOCIATED CUSTOM ATTRIBUTE RECORDS FOUND.\n";
+        }
     }
 
     // change the output format if other than default
