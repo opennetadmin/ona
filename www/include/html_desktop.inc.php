@@ -318,7 +318,6 @@ print <<<EOL
 
 EOL;
 
-
 // Open the work_space that was requested
 if (isset($output['work_space']) or isset($output['ws'])) {
     if (isset($output['ws'])) $output['work_space'] = $output['ws'];
@@ -332,7 +331,6 @@ if (isset($output['work_space']) or isset($output['ws'])) {
 EOL;
 }
 
-echo "hello world ----- ${output['q']}";
 // Process any search that was passed
 if (isset($output['search']) or isset($output['q'])) {
     if (isset($output['q'])) $output['search'] = $output['q'];
@@ -344,14 +342,9 @@ if (isset($output['search']) or isset($output['q'])) {
 EOL;
 }
 
-
 print <<<EOL
-
 <script>
     var desktop_height = document.body.clientHeight - el('bar_top').clientHeight - el('trace_history').clientHeight;
-    if (browser.isIE) {
-        desktop_height -= 20;
-    }
 
     /* Finally reposition/resize the window, hide any overflow, and bring it up behind other windows. */
     el('desktopmodules').style.height = desktop_height + 'px';
