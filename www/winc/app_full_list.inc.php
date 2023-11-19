@@ -56,16 +56,6 @@ printmsg("ws_display in app_full_list.inc.php called with: " . print_r($form,1),
 
 $window['title']= "Host List by IP";
 $window['js'] = <<<EOL
-        /* Put a minimize icon in the title bar */
-        el('{$window_name}_title_r').innerHTML = 
-            '&nbsp;<a onClick="toggle_window(\'{$window_name}\');" title="Minimize window" style="cursor: pointer;"><img src="{$images}/icon_minimize.gif" border="0" /></a>' +
-            el('{$window_name}_title_r').innerHTML;
-
-        /* Put a help icon in the title bar */
-        el('{$window_name}_title_r').innerHTML = 
-            '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
-            el('{$window_name}_title_r').innerHTML;
-
 EOL;
 
 // Load some html into $window['html']
