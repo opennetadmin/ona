@@ -156,7 +156,7 @@ EOL;
     $content_id = "{$window_name}_{$submit_window}";
     $html .= <<<EOL
     <!-- RECORD LIST -->
-    <div style="border: 1px solid {$color['border']}; margin: 10px 20px;">
+    <div class="ona-rounded" style="border: 1px solid {$color['border']}; margin: 10px 20px;">
 
         <!-- Tab & Quick Filter -->
         <table id="{$form_id}_table" cellspacing="0" border="0" cellpadding="0">

@@ -431,7 +431,7 @@ EOL;
             <b>Username</b>&nbsp;
         </td>
         <td>
-            <input id="onausername" class="edit" autocomplete="off" name="onausername" type="edit" size="12" onkeypress="if (event.keyCode == 13) { el('getpass').focus(); }">
+            <input id="onausername" class="edit" autocomplete="off" name="onausername" type="edit" size="12" autocomplete="off" onkeypress="if (event.keyCode == 13) { el('getpass').focus(); }">
         </td>
     </tr>
     <tr>
@@ -439,7 +439,7 @@ EOL;
             <b>Password</b>&nbsp;
         </td>
         <td>
-            <input id="getpass" class="edit" autocomplete="off" name="getpass" type="password" size="12" onkeypress="if (event.keyCode == 13) { el('loginbutton').click(); }">
+            <input id="getpass" class="edit" autocomplete="off" name="getpass" type="password" size="12" autocomplete="off" onkeypress="if (event.keyCode == 13) { el('loginbutton').click(); }">
         </td>
     </tr>
     <tr><td></td>

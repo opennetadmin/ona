@@ -22,6 +22,31 @@ print <<<EOL
    https://dev.to/neshaz/how-to-make-your-css-consistent-across-browsers--2hff
 */
 
+/* Pull in Nerdfonts */
+@import url("https://www.nerdfonts.com/assets/css/webfont.css");
+
+.ona-icon-qsgo {
+  color: green;
+}
+
+.ona-rounded {
+  border-radius:4px;
+}
+.ona-rounded-left {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+.ona-rounded-right {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+.ona-rounded-top {
+  border-top-left-radius:4px;
+  border-top-right-radius:4px;
+}
+
+
+
 html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote,  pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, fieldset, form, label, legend, caption, article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, time, mark, audio, video {
      margin:0;
      padding:0;
@@ -261,7 +286,7 @@ a:hover      {
 /* Bar with Nav Links at the top */
 
 .bar {
-    height:25px;
+    height:22px;
     background:{$color['bar_bg']};
     border:1px solid {$color['border']};
     border-left:0px;
@@ -272,11 +297,11 @@ a:hover      {
 }
 
 .menubar {
-    height:25px;
+    height:23px;
     background:{$color['bar_bg']};
     border: 1px solid {$color['border']};
     border-right: 0px;
-    padding-top: 8px;
+    padding-top: 7px;
     padding-bottom: 0px;
     margin:0px;
     vertical-align: middle;
@@ -289,7 +314,7 @@ a:hover      {
     border-top-right-radius: 3px;
     -moz-border-radius-topright: 3px;
     -webkit-border-top-right-radius: 3px;
-    padding: 2px 8px 3px 8px;
+    padding: 2px 8px 5px 8px;
     font-weight: bold;
     border-top: 1px solid #555555;
     border-right: 1px solid #555555;

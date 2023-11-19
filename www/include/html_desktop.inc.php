@@ -42,7 +42,7 @@ print <<<EOL
     <!-- Top (Task) Bar -->
     <div class="menubar" id="bar_topmenu" style="background-color: {$self['context_color']}">
         <!-- Button to open the "Start Menu" (Application Links), javascript passes in the workspace name for menu operations -->
-        <div id="menu-apps-item" class="main_menu_button" onmouseover="var wsname='FALSE';if (el('work_space')) {var wsname=el('work_space').getAttribute('wsname'); } xajax_window_submit('menu_control', wsname);">Menu</div>
+        <div id="menu-apps-item" class="main_menu_button" onmouseover="var wsname='FALSE';if (el('work_space')) {var wsname=el('work_space').getAttribute('wsname'); } xajax_window_submit('menu_control', wsname);"><i class="nf nf-md-menu"></i></div>
     </div>
 
     <div class="bar" id="bar_top" style="background-color: {$self['context_color']}">
@@ -51,8 +51,8 @@ print <<<EOL
             <!-- Button to open the "search dialog" -->
             <span class="topmenu-item" title="Advanced search" id="search-item" onClick="xajax_window_submit('search_results', 'search_form_id=>subnet_search_form'); return false;">
                 <a id="search-button"
-                   class="button"
-                ><img style="vertical-align: middle;" src="{$images}/silk/application_form_magnify.png" border="0" />&nbsp;Search&nbsp;</a>
+                   class="button ona-rounded"
+                >&nbsp;<i class="nf nf-seti-search ona-icon-mainsearch"></i>&nbsp;Search&nbsp;</a>
             </span>
 
             <!-- Quick Search -->
@@ -61,7 +61,7 @@ print <<<EOL
                     <input type="hidden" name="search_form_id" value="qsearch_form">
                     <input id="qsearch"
                            accesskey="q"
-                           class="edit"
+                           class="edit ona-rounded"
                            style="width: 150px;"
                            type="text"
                            title="Quick Search for IP, MAC, DNS"
@@ -71,12 +71,9 @@ print <<<EOL
                            onFocus="this.value='';"
                     >
                     <div id="suggest_qsearch" class="suggest"></div>
-                    <input type="image"
-                           src="{$images}/silk/bullet_go.png"
-                           title="Search"
-                           class="act"
-                           style="vertical-align: middle;"
-                    >
+                    <button type="submit" style="background: none; border: none;">
+                      <i class="nf nf-md-arrow_right_circle_outline ona-icon-qsgo" title="Search"></i>
+                    </button>
                 </form>
             </span>
 
@@ -116,15 +113,15 @@ print <<<EOL
                                         'direction', 'south',
                                         'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>loginform,id=>tt_loginform\');'
                                         );"
-            ><a class="button" style="font-weight:bold;"><img style="vertical-align: middle;" src="{$images}/silk/user_go.png" border="0" /> <span id="loggedin_user">{$_SESSION['ona']['auth']['user']['username']}</span> <span style="font-weight: normal;font-size: xx-small;">[Change]</span> </a>
+            ><a class="button ona-rounded" style="font-weight:bold;"><i class="nf nf-md-login" style="vertical-align: middle;"></i> <span id="loggedin_user">{$_SESSION['ona']['auth']['user']['username']}</span> <span style="font-weight: normal;font-size: xx-small;"></span> </a>
             </span>
 
             <span id="loggedin_info" class="topmenu-item" style="cursor: pointer;" title="Click to display user info." onClick="toggle_window('app_user_info');">
-                <img style="vertical-align: middle;" src="{$images}/silk/user_gray.png" border="0" />
+                &nbsp;<i class="nf nf-fa-user_circle_o ona-icon-userinfo"></i>
             </span>
 
             <span id="logoutbutton" class="topmenu-item" style="cursor: pointer;padding-right: 5px;" title="Logout" onClick="var doit=confirm('Are you sure you want to logout?'); if (doit == true) document.location = 'logout.php';">
-                <img style="vertical-align: middle;" title="Switch to Guest user (Logout)" src="{$images}/silk/door_out.png" border="0" />
+                <i class="nf nf-md-logout ona-icon-logout"></i>
             </span>
         </div>
     </div>
@@ -240,8 +237,8 @@ print <<<EOL
     function update_task_bar(_parent, _bar) {
         var nodes, html, icon_active, icon_inactive, update;
 
-        icon_active   = '{$images}/silk/application_lightning.png';
-        icon_inactive = '{$images}/silk/application.png'
+        icon_active   = 'nf-md-credit_card_outline';
+        icon_inactive = 'nf-md-credit_card_off_outline'
 
         /* Loop through each child node and display a "button" for it */
         update = 0;
@@ -261,11 +258,11 @@ print <<<EOL
                     update = 1;
 
                 /* Add a button for the window */
-                html += '<a class="button" ' +
+                html += '<a class="button ona-rounded" ' +
                         '   id="' + nodes[i].id + '_taskbar" ' +
                         '   title="' + _title + '" ' +
                         '   onClick="toggle_window(\'' + nodes[i].id + '\');" ' +
-                        '><img style="vertical-align: middle;" src="' + icon + '" border="0" />&nbsp;' + _title + '&nbsp;</a>&nbsp;';
+                        '><i class="nf ' + icon + '"></i>&nbsp;' + _title + '&nbsp;</a>&nbsp;';
             }
         }
 
@@ -305,7 +302,7 @@ print <<<EOL
 <!-- Side toolbar -->
 <div nowrap style="position: absolute;top: 90px;right: 1px;z-index: 10;background: #E3E3F0;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
     <div style="float:left;padding: 5px 2px;" >
-      <img src="{$images}/silk/calculator.png" title="BASIC IP calculator" onclick="toggleBox('ipcalc_content'); el('calc_ip').focus();"/>
+      <i class="nf nf-md-calculator ona-icon-calculator" title="BASIC IP calculator" onclick="toggleBox('ipcalc_content'); el('calc_ip').focus();"></i>
       <div id="ipcalc_content" style="visibility: hidden;display:none;background: #E3E3F0;padding: 5px;-moz-border-radius-topleft:4px;-moz-border-radius-bottomleft:4px;-webkit-border-top-left-radius:4px;-webkit-border-bottom-left-radius:4px;border-top-left-radius:4px;border-bottom-left-radius:4px;">
         <form id="ipcalc_form" onsubmit="return false;">
             IP: <input id="calc_ip" type="text" name="ip" />

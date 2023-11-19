@@ -126,7 +126,7 @@ function initialize_window(el_name) {
     // Fix for firefox pre 3.0 browsers
     if (navigator.userAgent.indexOf('Gecko/') != -1)
         _el.style.position   = 'fixed';
-    _el.className        = 'window';
+    _el.className        = 'window ona-rounded';
     _el.style.zIndex     = window_default_zindex;
 
 

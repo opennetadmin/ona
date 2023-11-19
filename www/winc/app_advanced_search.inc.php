@@ -21,16 +21,6 @@ $window['title'] = "Advanced Search";
 
 // Javascript to run after the window is built
 $window['js'] = <<<EOL
-    /* Put a minimize icon in the title bar */
-    el('{$window_name}_title_r').innerHTML = 
-        '&nbsp;<a onClick="toggle_window(\'{$window_name}\');" title="Minimize window" style="cursor: pointer;"><img src="{$images}/icon_minimize.gif" border="0" /></a>' +
-        el('{$window_name}_title_r').innerHTML;
-    
-    /* Put a help icon in the title bar */
-    el('{$window_name}_title_r').innerHTML = 
-        '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
-        el('{$window_name}_title_r').innerHTML;
-    
     suggest_setup('hostname', 'suggest_hostname');
     suggest_setup('domain',     'suggest_domain');
     suggest_setup('mac',      'suggest_mac');
@@ -63,38 +53,38 @@ $window['js'] = <<<EOL
                          "id=>tt_qf_location_{$window_name}," +
                          "input_id=>qf_location_{$window_name}');"
                 );
-            }; 
+            };
 
 EOL;
 
 // Define the window's inner html
 $window['html'] = <<<EOL
-    
+
     <!-- Tab for selecting a subnet or host search -->
     <table width="100%" cellspacing="0" border="0" cellpadding="0" style="margin-top: 0.2em">
     <tr>
-        <td id="host_search_tab" nowrap="true" class="padding" 
+        <td id="host_search_tab" nowrap="true" class="padding"
             style="cursor: pointer; {$style['borderT']}; {$style['borderB']}; {$style['borderR']}; background-color: {$color['window_tab_active_bg']};"
             onClick="el('subnet_search').style.display = 'none';  el('subnet_search_tab').style.backgroundColor = '{$color['window_tab_inactive_bg']}';
                      el('host_search').style.display = 'block';    el('host_search_tab').style.backgroundColor = '{$color['window_tab_active_bg']}';">
             Host search</td>
-        
-        <td id="subnet_search_tab" nowrap="true" class="padding" 
+
+        <td id="subnet_search_tab" nowrap="true" class="padding"
             style="cursor: pointer; {$style['borderT']}; {$style['borderB']}; {$style['borderR']};"
             onClick="el('host_search').style.display = 'none';     el('host_search_tab').style.backgroundColor = '{$color['window_tab_inactive_bg']}';
                      el('subnet_search').style.display = 'block'; el('subnet_search_tab').style.backgroundColor = '{$color['window_tab_active_bg']}';">
             Subnet search</td>
-        
+
         <td width="80%" class="padding" style="{$style['borderB']};">&nbsp;</td>
     </tr>
     </table>
-    
-    
+
+
     <!-- Host Search Tab -->
     <form id="host_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="host_search_form">
     <table style="background-color: {$color['window_content_bg']};" id="host_search" width="100%" cellspacing="0" border="0" cellpadding="0">
-    
+
     <tr>
         <td align="right" class="asearch-line">
             <u>H</u>ostname
@@ -104,7 +94,7 @@ $window['html'] = <<<EOL
             <div id="suggest_hostname" class="suggest"></div>
         </td>
     </tr>
-    
+
     <tr>
         <td align="right" class="asearch-line">
             Subdomain (<u>z</u>one)
@@ -114,7 +104,7 @@ $window['html'] = <<<EOL
             <div id="suggest_domain" class="suggest"></div>
         </td>
     </tr>
-    
+
     <tr>
         <td align="right" class="asearch-line">
             <u>M</u>AC
@@ -124,7 +114,7 @@ $window['html'] = <<<EOL
             <div id="suggest_mac" class="suggest"></div>
         </td>
     </tr>
-    
+
     <tr>
         <td align="right" class="asearch-line">
             <u>I</u>P Address
@@ -137,7 +127,7 @@ $window['html'] = <<<EOL
             <div id="suggest_ip_thru" class="suggest"></div>
         </td>
     </tr>
-    
+
     <tr>
         <td align="right" class="asearch-line">
             <u>N</u>otes
@@ -167,11 +157,11 @@ $window['html'] = <<<EOL
             &nbsp;
         </td>
     </tr>
-    
+
     <tr>
         <td align="left" colspan="2" id="more_host_options"></td>
     </tr>
-    
+
     <tr>
         <td align="right" class="asearch-line">
             &nbsp;
@@ -181,14 +171,14 @@ $window['html'] = <<<EOL
             <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="toggle_window('{$window_name}'); xajax_window_submit('search_results', xajax.getFormValues('host_search_form'));">
         </td>
     </tr>
-    
+
     </table>
     </form>
-    
-    
-    
-    
-    
+
+
+
+
+
     <!-- subnet Search Tab -->
     <form id="subnet_search_form" autocomplete="off">
     <input type="hidden" name="search_form_id" value="subnet_search_form">
@@ -213,7 +203,7 @@ $window['html'] = <<<EOL
             </select>
         </td>
     </tr>
-    
+
     <tr>
         <td align="right" class="asearch-line">
             Subnet <u>N</u>ame
@@ -223,7 +213,7 @@ $window['html'] = <<<EOL
             <div id="suggest_subnet" class="suggest"></div>
         </td>
     </tr>
-    
+
     <tr>
         <td align="right" class="asearch-line">
             <u>I</u>P Address

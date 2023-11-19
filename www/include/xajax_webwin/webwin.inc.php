@@ -68,7 +68,7 @@ function window_open($window_name, $window=array()) {
         <td>
 
             <!-- Window bar and close button -->
-            <table id="{$window_name}_title_table" class="window_title" style="border-bottom: 1px solid #69A6DE;background-color: {$color['window_title_bg']};" width="100%" cellspacing="0" border="0" cellpadding="0">
+            <table id="{$window_name}_title_table" class="window_title" width="100%" cellspacing="0" border="0" cellpadding="0">
             <tr>
 
                 <td id="{$window_name}_title"
@@ -88,7 +88,11 @@ function window_open($window_name, $window=array()) {
                     style="color: {$color['window_title_font']};
                            white-space: nowrap;
                            text-align: right;
-                           padding: 2px 4px;"><span id="{$window_name}_title_help"></span>&nbsp;<a title="Close window" style="cursor: pointer;" onClick="removeElement('{$window_name}');"><img src="{$images}/icon_close.gif" border="0" /></a></td>
+                           padding: 2px 4px;">
+                  <a title="Help for {$window_name}" style="cursor: pointer;text-decoration:none;" href="{$_ENV['help_url']}{$window_name}" id="{$window_name}_title_helpbutton" target="null"><i class="nf nf-md-help_circle_outline"></i></a>
+                  <a title="Minimize window" style="cursor: pointer;" onClick="toggle_window('{$window_name}');"><i class="nf nf-md-minus_box_outline"></i></a>
+                  <a title="Close window"    style="cursor: pointer; color: red;" onClick="removeElement('{$window_name}');"><i class="nf nf-md-close_box_outline"></i></a>
+                </td>
 
             </tr>
             </table>

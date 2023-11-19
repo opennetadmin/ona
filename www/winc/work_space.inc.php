@@ -182,9 +182,9 @@ EOL;
     $new_title = "Work Space: {$history['type']}: {$history['title']}";
     $new_buttons = <<<EOL
     <span style="font-size: xx-small;vertical-align: middle;">&copy; {$year} <a style="color: white;" href="http://opennetadmin.com">OpenNetAdmin</a> - {$conf['version']}</span>
-    <a style="cursor: pointer;" title="Open online help for: {$history['type']}" onClick="document.location = '{$_ENV['help_url']}{$history['type']}';"><img src="{$images}/silk/help.png" border="0" /></a>
+    <i class="nf nf-md-help_circle_outline" style="cursor: pointer;" title="Open online help for: {$history['type']}" onClick="document.location = '{$_ENV['help_url']}{$history['type']}';"></i>
 
-    <a onclick="removeElement('work_space');" style="cursor: pointer;" title="Home"><img border="0" src="{$images}/silk/application_home.png"/></a>
+    <i class="nf nf-md-folder_home_outline" onclick="removeElement('work_space');" style="cursor: pointer;" title="Home"></i>
 EOL;
 
     // Insert the new html into the window

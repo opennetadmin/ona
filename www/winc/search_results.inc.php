@@ -106,19 +106,19 @@ function ws_search_results_submit($window_name, $form='') {
             </td>
 
             <td style="vertical-align: middle;" class="padding" nowrap="true">
-                <img id="adv_search_img" src="{$min_img}" />
                 <span id="adv_search_div_toggle"
                     style="text-align: right;"
                     title="Min/Max"
                     onclick="if (el('adv_search_div').style.display=='none') {
                                 el('adv_search_div').style.display='';
                                 el('toggle_text').innerHTML='Hide search form';
-                                el('adv_search_img').src='{$min_img}';
+                                el('adv_search_img').className='nf nf-fa-caret_up';
                             } else {
                                 el('adv_search_div').style.display='none';
                                 el('toggle_text').innerHTML='Show search form';
-                                el('adv_search_img').src='{$max_img}';}" >
-                <span id="toggle_text" style="font-size: xx-small;">Hide search form</span>
+                                el('adv_search_img').className='nf nf-fa-caret_down';}" >
+                  <i id="adv_search_img" class="nf nf-fa-caret_up"></i>
+                  <span id="toggle_text" style="font-size: xx-small;">Hide search form</span>
                 </span>
             </td>
 
@@ -131,7 +131,7 @@ function ws_search_results_submit($window_name, $form='') {
                 <input
                     id="{$form_id}_filter"
                     name="filter"
-                    class="filter"
+                    class="filter ona-rounded"
                     type="text"
                     value=""
                     size="10"
@@ -174,8 +174,8 @@ function ws_search_results_submit($window_name, $form='') {
             &nbsp;
         </td>
         <td align="right" class="asearch-line">
-            <input class="button" type="button" name="clear" value="Clear" onClick="clearElements('block_search_form');">
-            <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('block_search_form'));">
+            <input class="button ona-rounded" type="button" name="clear" value="Clear" onClick="clearElements('block_search_form');">
+            <input class="button ona-rounded" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('block_search_form'));">
         </td>
     </tr>
 
@@ -203,8 +203,8 @@ function ws_search_results_submit($window_name, $form='') {
             &nbsp;
         </td>
         <td align="right" class="asearch-line">
-            <input class="button" type="button" name="clear" value="Clear" onClick="clearElements('vlan_campus_search_form');">
-            <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('vlan_campus_search_form'));">
+            <input class="button ona-rounded" type="button" name="clear" value="Clear" onClick="clearElements('vlan_campus_search_form');">
+            <input class="button ona-rounded" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('vlan_campus_search_form'));">
         </td>
     </tr>
 
@@ -280,7 +280,7 @@ function ws_search_results_submit($window_name, $form='') {
             </td>
             <td align="left" class="asearch-line">
                 <input id="location" class="edit" type="text" name="location" size="8" accesskey="l" value="{$form['location']}" />
-                <span id="qf_location_{$window_name}"><img src="{$images}/silk/find.png" border="0"/></span>
+                <span id="qf_location_{$window_name}"><i class="nf nf-md-binoculars"></i></span>
                 <div id="suggest_location" class="suggest"></div>
             </td>
         </tr>
@@ -352,8 +352,8 @@ function ws_search_results_submit($window_name, $form='') {
     <tr>
         <td colspan=4 align="right" class="asearch-line">
             Disable Wildcards: <input class="button" type="checkbox" name="nowildcard" {$wildchecked} title="Disable usage of SQL wildcards in queries, you must supply your own in the search form as needed.">
-            <input class="button" type="button" name="reset" value="Clear" onClick="clearElements('host_search_form');">
-            <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('host_search_form'));">
+            <input class="button ona-rounded" type="button" name="reset" value="Clear" onClick="clearElements('host_search_form');">
+            <input class="button ona-rounded" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('host_search_form'));">
         </td>
     </tr>
 
@@ -452,8 +452,8 @@ EOL;
         </td>
         <td align="right" class="asearch-line">
             Disable Wildcards: <input class="button" type="checkbox" name="nowildcard" {$wildchecked} title="Disable usage of SQL wildcards in queries, you must supply your own in the search form as needed.">
-            <input class="button" type="button" name="clear" value="Clear" onClick="clearElements('dns_record_search_form');">
-            <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('dns_record_search_form'));">
+            <input class="button ona-rounded" type="button" name="clear" value="Clear" onClick="clearElements('dns_record_search_form');">
+            <input class="button ona-rounded" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('dns_record_search_form'));">
         </td>
     </tr>
 
@@ -540,8 +540,8 @@ EOL;
         </td>
         <td align="right" class="asearch-line">
             Disable Wildcards: <input class="button" type="checkbox" name="nowildcard" {$wildchecked} title="Disable usage of SQL wildcards in queries, you must supply your own in the search form as needed.">
-            <input class="button" type="button" name="reset" value="Clear" onClick="clearElements('subnet_search_form');">
-            <input class="button" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('subnet_search_form'));">
+            <input class="button ona-rounded" type="button" name="reset" value="Clear" onClick="clearElements('subnet_search_form');">
+            <input class="button ona-rounded" type="button" name="search" value="Search" accesskey="s" onClick="xajax_window_submit('search_results', xajax.getFormValues('subnet_search_form'));">
         </td>
     </tr>
 
@@ -554,7 +554,7 @@ EOL;
     <div id="{$content_id}">{$conf['loading_icon']}</div>
 EOL;
 
-//TODO: this is a test I did on having a click focus bring up the full list of entries.. kinda like a dropdown dialog.. 
+//TODO: this is a test I did on having a click focus bring up the full list of entries.. kinda like a dropdown dialog..
 //onfocus="suggest_display('role', 'suggest_role');searchKeyDown('37', el('role'), 'suggest_role');"
 
     // Before we can let the browser call "display_list"
@@ -599,16 +599,6 @@ EOL;
 
     // A little javascript for the browser to run once we've created the window
     $window['js'] .= <<<EOL
-        /* Put a minimize icon in the title bar */
-        el('{$window_name}_title_r').innerHTML =
-            '&nbsp;<a onClick="toggle_window(\'{$window_name}\');" title="Minimize window" style="cursor: pointer;"><img src="{$images}/icon_minimize.gif" border="0" /></a>' +
-            el('{$window_name}_title_r').innerHTML;
-
-        /* Put a help icon in the title bar */
-        el('{$window_name}_title_r').innerHTML =
-            '&nbsp;<a href="{$_ENV['help_url']}{$window_name}" target="null" title="Help" style="cursor: pointer;"><img src="{$images}/silk/help.png" border="0" /></a>' +
-            el('{$window_name}_title_r').innerHTML;
-
         /* Setup the quick filter */
         {$form_id}_last_search = '';
 
