@@ -25,8 +25,6 @@ function ws_search_results_submit($window_name, $form='') {
         'html'  => "",
         'js'    => "",
     );
-    $max_img = "{$images}/silk/bullet_arrow_down.png";
-    $min_img = "{$images}/silk/bullet_arrow_up.png";
 
     // Build subnet type list
     list($status, $rows, $records) = db_get_records($onadb, 'subnet_types', 'id >= 1', 'display_name');

@@ -69,7 +69,7 @@ if ($extravars['window_name'] == 'html_desktop') {
             $onaver = $buffer;
         }
         if ($conf['version'] == $onaver) {
-            $versit = "<img src='{$images}/silk/accept.png'> You are on the official stable version! ({$onaver})<br/><br/>";
+            $versit = "You are on the official stable version! ({$onaver})<br/><br/>";
         }
         else {
             $sty='fail';
@@ -77,7 +77,7 @@ if ($extravars['window_name'] == 'html_desktop') {
 
             $modbodyhtml .= <<<EOL
 <div class='version_check{$sty}'>
-    <img src='{$images}/silk/exclamation.png'> You are NOT on the latest release version<br>
+    <i class='nf nf-fa-exclamation_triangle' style='color:red;'></i> You are NOT on the latest release version<br>
     Your version &nbsp;&nbsp;&nbsp;= {$conf['version']}<br>
     Latest version = {$onaver}<br>
 <br>

@@ -99,25 +99,19 @@ print <<<EOL
                                     );"
             ><img src="{$images}/silk/comment.png" border="0" /></span>
 
-
             <span id="login_userid" class="topmenu-item"
                     title="Current logged in user, click to change"
-                    onclick="var button_left   = calcOffset(el('login_userid'), 'offsetLeft');
-                             wwTT(this, event,
+                    onclick=" wwTT(this, event,
                                         'id', 'tt_loginform',
                                         'type', 'static',
-                                        'x', button_left - 75,
                                         'y', 1,
                                         'delay', 0,
+                                        'zIndex', 21,
                                         'styleClass', 'wwTT_login',
-                                        'direction', 'south',
+                                        'direction', 'north',
                                         'javascript', 'xajax_window_submit(\'tooltips\', \'tooltip=>loginform,id=>tt_loginform\');'
                                         );"
-            ><a class="button ona-rounded" style="font-weight:bold;"><i class="nf nf-md-login" style="vertical-align: middle;"></i> <span id="loggedin_user">{$_SESSION['ona']['auth']['user']['username']}</span> <span style="font-weight: normal;font-size: xx-small;"></span> </a>
-            </span>
-
-            <span id="loggedin_info" class="topmenu-item" style="cursor: pointer;" title="Click to display user info." onClick="toggle_window('app_user_info');">
-                &nbsp;<i class="nf nf-fa-user_circle_o ona-icon-userinfo"></i>
+            ><a class="button ona-rounded" style="font-weight:bold;"><i class="nf nf-fa-user_circle_o" style="vertical-align: middle;"></i> <span id="loggedin_user">{$_SESSION['ona']['auth']['user']['username']}</span> </a>
             </span>
 
             <span id="logoutbutton" class="topmenu-item" style="cursor: pointer;padding-right: 5px;" title="Logout" onClick="var doit=confirm('Are you sure you want to logout?'); if (doit == true) document.location = 'logout.php';">

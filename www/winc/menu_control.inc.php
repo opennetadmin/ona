@@ -121,53 +121,27 @@ function get_html_menu_button_ona() {
 
     $html = $js = '';
 
-
-    // If we are logged in or we are not guest, display a logout button
-    if (!loggedIn() or $_SESSION['ona']['auth']['user']['username'] != 'guest') {
-
-        $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="var doit=confirm('Are you sure you want to logout?'); ona_menu_closedown();if (doit == true) document.location = 'logout.php';"
-     title="About"
- ><img style="vertical-align: middle;" src="{$images}/silk/door_out.png" border="0"
- />&nbsp;Logout</div>
-EOL;
-}
-
     $html .= <<<EOL
-<div class="row"
-     onMouseOver="this.className='hovered';"
-     onMouseOut="this.className='row';"
-     onClick="ona_menu_closedown(); toggle_window('app_user_info');"
-     title="About"
- ><img style="vertical-align: middle;" src="{$images}/silk/user_gray.png" border="0"
- />&nbsp;User info/Change password</div>
-
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
      onClick="ona_menu_closedown(); window.location.href = 'http://opennetadmin.com/docs/';"
      title="Documentation from the main website"
- ><img style="vertical-align: middle;" src="{$images}/silk/book_open.png" border="0"
- />&nbsp;Documentation</div>
+ ><i class="nf nf-md-book_open_variant"></i>&nbsp; Documentation</div>
 
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
      onClick="ona_menu_closedown(); window.location.href = 'https://github.com/opennetadmin/ona/issues';"
      title="File a bug report or feature request"
- ><img style="vertical-align: middle;" src="{$images}/silk/bug.png" border="0"
- />&nbsp;Issues & Discussion</div>
+ ><i class="nf nf-oct-bug"></i>&nbsp; Issues & Discussion</div>
 
 <div class="row"
      onMouseOver="this.className='hovered';"
      onMouseOut="this.className='row';"
      onClick="ona_menu_closedown(); toggle_window('app_about');"
      title="About"
- ><img style="vertical-align: middle;" src="{$images}/silk/information.png" border="0"
- />&nbsp;About</div>
+ ><i class="nf nf-md-information_outline"></i>&nbsp; About</div>
 
 EOL;
 

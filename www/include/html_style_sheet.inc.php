@@ -642,7 +642,6 @@ div.wwTT_login {
     text-align: left;
     z-index: 20;
     padding: 4px;
-    padding-right: 6px;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
     -moz-border-radius-bottomleft: 4px;
@@ -655,6 +654,7 @@ div.wwTT_login {
     right: 10px;
     top: 1px;
     float: right;
+    width: fit-content;
 }
 
 /* Quick Filter Style */

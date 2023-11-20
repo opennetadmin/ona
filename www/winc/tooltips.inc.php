@@ -400,64 +400,46 @@ function ws_switch_context($window_name, $form='') {
 //     Returns a two part array ($html, $js)
 //////////////////////////////////////////////////////////////////////////////
 function get_loginform_html($form) {
-    global $conf, $self, $onadb, $tip_style;
-    global $font_family, $color, $style, $images;
+    global $conf, $self, $onadb;
 
     $html = $js = '';
 
+    $output['ona_username']    = $_SESSION['ona']['auth']['user']['username'];
+    $output['ona_user_level']  = $_SESSION['ona']['auth']['user']['level'];
+    $groups = array_keys($_SESSION['ona']['auth']['user']['grps']); sort($groups);
+    $output['ona_groups']      = implode("\n", $groups);
+    $permissions = array_keys($_SESSION['ona']['auth']['perms']); sort($permissions);
+    $output['ona_permissions'] = implode("\n", $permissions);
 
-    $style['content_box'] = <<<EOL
-        padding: 2px 4px;
+    // Escape data for display in html
+    foreach(array_keys($output) as $key) { $output[$key] = nl2br(htmlentities($output[$key], ENT_QUOTES, $conf['php_charset'])); }
 
-EOL;
-
-    // WARNING: this one's different than most of them!
-    $style['label_box'] = <<<EOL
-        font-weight: bold;
-        cursor: move;
-        color: #FFFFFF;
-EOL;
+    // Display the password change dialog if authtype is local
+    if ($conf['authtype'] != 'local') {
+      $passchange_visible = 'none';
+    }
 
     // Display system messages
     $html .= <<<EOL
+    <i style="float:right; color: red;" onClick="removeElement('{$form['id']}');" class="nf nf-md-close_box_outline" title="Close"></i>
 
     <!-- LOGIN PROMPT -->
     <form id="loginform_form" onSubmit="return false;" autocomplete="off">
     <input id="onapassword" type="hidden" name="onapassword">
-    <table style="{$style['content_box']}" cellspacing="0" border="0">
+    <table style="padding: 2px 4px;" cellspacing="0" border="0">
 
-    <tr >
-        <td nowrap="true" align="right">
-            <b>Username</b>&nbsp;
-        </td>
-        <td>
-            <input id="onausername" class="edit" autocomplete="off" name="onausername" type="edit" size="12" autocomplete="off" onkeypress="if (event.keyCode == 13) { el('getpass').focus(); }">
-        </td>
-    </tr>
     <tr>
-        <td nowrap="true" align="right">
-            <b>Password</b>&nbsp;
-        </td>
-        <td>
-            <input id="getpass" class="edit" autocomplete="off" name="getpass" type="password" size="12" autocomplete="off" onkeypress="if (event.keyCode == 13) { el('loginbutton').click(); }">
-        </td>
-    </tr>
-    <tr><td></td>
-        <td nowrap="true">
-            <input  class="button"
-                    type="button"
-                    name="cancel"
-                    value="Cancel"
-                    onClick="removeElement('{$form['id']}');"
-            >
-            <input  class="button"
+        <td nowrap="true" colspan=2 align="center">
+            <input id="onausername" class="edit ona-rounded" autocomplete="off" placeholder="Username" name="onausername" type="edit" size="12" autocomplete="off" onkeypress="if (event.keyCode == 13) { el('getpass').focus(); }">
+            <input id="getpass" class="edit ona-rounded" autocomplete="off" placeholder="Password" name="getpass" type="password" size="12" autocomplete="off" onkeypress="if (event.keyCode == 13) { el('loginbutton').click(); }">
+            <input  class="ona-rounded"
                     id="loginbutton"
-                    type="button"
+                    type="hidden"
                     name="login"
                     value="Login"
                     onClick="el('onapassword').value = el('getpass').value;
                              xajax_window_submit('tooltips', xajax.getFormValues('loginform_form'), 'logingo');"
-            >
+            > &nbsp;
         </td>
     </tr>
     <tr>
@@ -466,11 +448,137 @@ EOL;
         </td>
     </tr>
 
+    </form>
+
+
+    <!-- Start the user info section -->
+    <tr>
+        <td colspan="2" align="center" class="padding" style="font-weight: bold;">
+            <u>ONA User Profile Info</u>
+        </td>
+    </td>
+
+    <tr>
+        <td align="right" valign="top" class="padding" style="font-weight: bold;">
+            Username:
+        </td>
+        <td align="left" class="padding">
+            <div style="float: left;">{$output['ona_username']}</div>
+        </td>
+    </td>
+
+    <tr>
+        <td align="right" valign="top" class="padding" style="font-weight: bold;">
+            Groups:
+        </td>
+        <td align="left" class="padding">
+            {$output['ona_groups']}&nbsp;
+        </td>
+    </td>
+
+    <tr>
+        <td align="right" valign="top" class="padding" style="font-weight: bold;">
+            Permissions:
+        </td>
+        <td align="left" class="padding">
+            {$output['ona_permissions']}&nbsp;
+        </td>
+    </td>
+
+    <tr>
+        <td colspan="2" align="center" nowrap="true" class="padding">
+            <span style="color: red;" id="passchangemsg"></span>
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan=2 align="center" class="padding">
+            <input id="changebutton" class="button ona-rounded" type="button" name="change_pass" value="Change Password" style="display: {$passchange_visible};"
+                    onclick="el('passchange_container').style.display = (el('passchange_container').style.display == 'none') ? '' : 'none';
+                             el('changebutton').style.display = 'none';
+                             el('old_pass').focus();"
+            >
+        </td>
+    </td>
+
+    </table>
+
+    <!-- PASSWORD CHANGE CONTAINER -->
+    <span id="passchange_container" style="display:none;">
+    <form id="passchange_form" autocomplete="off">
+    <input id="old" name="old" type="hidden" value="">
+    <input id="new1" name="new1" type="hidden" value="">
+    <input id="new2" name="new2" type="hidden" value="">
+    <table style="padding-left: 25px; padding-right: 25px;" cellspacing="0" border="0" cellpadding="0">
+        <tr>
+            <td align="right" nowrap="true" class="padding" style="font-weight: bold;">
+                Old password:
+            </td>
+            <td class="padding" align="left">
+                <input
+                    id="old_pass"
+                    name="old_pass"
+                    value=""
+                    class="edit"
+                    type="password"
+                    size="10" maxlength="20"
+                />
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" nowrap="true" class="padding" style="font-weight: bold;">
+                New password:
+            </td>
+            <td class="padding" align="left">
+                <input
+                    id="new1_pass"
+                    name="new1_pass"
+                    value=""
+                    class="edit"
+                    type="password"
+                    size="10" maxlength="20"
+                />
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right" nowrap="true" class="padding" style="font-weight: bold;">
+                Confirm:
+            </td>
+            <td class="padding" align="left">
+                <input
+                    id="new2_pass"
+                    name="new2_pass"
+                    value=""
+                    class="edit"
+                    type="password"
+                    size="10" maxlength="20"
+                />
+            </td>
+        </tr>
+
+
+        <tr>
+            <td class="padding">
+                &nbsp;
+            </td>
+            <td class="padding">
+                <input id="changego" type="button" class="button ona-rounded" name="changego" value="Change"
+                        onclick="el('old').value = make_md5(el('old_pass').value);
+                                 el('new1').value = make_md5(el('new1_pass').value);
+                                 el('new2').value = make_md5(el('new2_pass').value);
+                                 xajax_window_submit('app_user_edit', xajax.getFormValues('passchange_form'), 'change_user_password');"
+                >
+            </td>
+        </td>
     </table>
     </form>
+    </span>
+
 EOL;
 
-    $js = "el('onausername').focus();";
+    $js = "el('onausername').focus();el('tt_loginform').style.left=null;el('tt_loginform').style.top='0px';";
 
 
     return(array($html, $js));

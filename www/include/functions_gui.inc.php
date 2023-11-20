@@ -145,9 +145,6 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
     $modbodyhtml = '';
     $ws_plugin_dir = "{$base}/workspace_plugins";
 
-    $max_img = "{$images}/silk/bullet_arrow_down.png";
-    $min_img = "{$images}/silk/bullet_arrow_up.png";
-
     //Default the module title
     $title_left_html = $modulename;
     $title_right_html = '';
@@ -202,13 +199,12 @@ function workspace_plugin_loader($modulename, $record=array(), $extravars=array(
                     <td class="ws_plugin_title_right ona-rounded-left" title="{$title_description}">{$title_left_html}</td>
                     <td class="ws_plugin_title_left ona-rounded-right">
                     {$title_right_html}
-                    <img  src="{$min_img}"
-                          id="{$modulename}_dropdown"
-                          title="Min/Max"
-                          onclick="if (el('{$modulename}_content').style.display=='none') { el('{$modulename}_content').style.display=''; el('{$modulename}_dropdown').src='{$min_img}'; }
-                                   else { el('{$modulename}_content').style.display='none'; el('{$modulename}_dropdown').src='{$max_img}';}"
-
-                    /></td>
+                    <i id="{$modulename}_dropdown"
+                      title="Min/Max"
+                      class="nf nf-fa-caret_up"
+                      onclick="if (el('{$modulename}_content').style.display=='none') { el('{$modulename}_content').style.display=''; el('{$modulename}_dropdown').className='nf nf-fa-caret_up'; }
+                               else { el('{$modulename}_content').style.display='none'; el('{$modulename}_dropdown').className='nf nf-fa-caret_down';}"
+                    ></i>
                 </tr>
                 <tr><td colspan="99" id="{$modulename}_content">
 EOL;
