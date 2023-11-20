@@ -313,18 +313,6 @@ CREATE TABLE `groups` (
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
 
 --
--- Table structure for table `host_roles`
---
-
-DROP TABLE IF EXISTS `host_roles`;
-CREATE TABLE `host_roles` (
-  `id` int(10) unsigned NOT NULL,
-  `host_id` int(10) unsigned NOT NULL,
-  `role_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
 -- Table structure for table `hosts`
 --
 

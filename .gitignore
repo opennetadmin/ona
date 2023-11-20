@@ -4,6 +4,7 @@ run_install
 VERSION
 
 www/local
+www/.htaccess
 !www/local/plugins/README
 !www/local/config/motd.txt.example
 !www/local/nmap_scans/subnets/nmap.xsl

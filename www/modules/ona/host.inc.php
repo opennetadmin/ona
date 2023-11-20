@@ -968,7 +968,7 @@ function host_display($options="") {
     $text_array = array();
 
     // Version - UPDATE on every edit!
-    $version = '1.04';
+    $version = '1.05';
 
     printmsg("DEBUG => host_display({$options}) called", 3);
 
@@ -1058,12 +1058,24 @@ EOM
         // Tag records
         list($status, $rows, $tags) = db_get_records($onadb, 'tags', array('type' => 'host', 'reference' => $host['id']));
         if ($rows) {
-            $text .= "\nASSOCIATED TAG RECORDS\n";
+            $text .= "\nASSOCIATED TAG RECORDS ({$rows})\n";
             foreach ($tags as $tag) {
                 $text_array['tags'][] = $tag['name'];
                 $text .= "  {$tag['name']}\n";
             }
         }
+
+        // custom attribute records
+        list($status, $rows, $records) = db_get_records($onadb, 'custom_attributes', array('table_name_ref' => 'hosts', 'table_id_ref' => $host['id']));
+        if ($rows) {
+          $text .= "\nASSOCIATED CUSTOM ATTRIBUTE RECORDS ({$rows}):\n";
+          foreach ($records as $record) {
+            list($status, $rows, $ca) = ona_get_custom_attribute_record(array('id' => $record['id']));
+            $text_array['custom_attributes'][$ca['name']]=$ca['value'];
+            $text .= "  ".str_pad($ca['name'], 28)."{$ca['value']}\n";
+          }
+        }
+
 
     }
 

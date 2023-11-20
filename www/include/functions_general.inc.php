@@ -1071,7 +1071,7 @@ function ip_complete($ip='', $filler=0) {
     // when to pad with 0 or not per section.  also when its compressed as :: how much is compressed?
     // as a user types in chars it would have to be evaluated against all formats.  ugh
     // for now, you can only quick search full form ipv6 addresses not compressed IPS.
-    if (@strpos($ip, ':',3) !== false) {
+    if ((strlen($ip) >= 3) and (@strpos($ip, ':',3) !== false)) {
 
         if ($filler == '255') $filler = 'f';
         $ip = str_replace(':','',$ip);
@@ -1257,14 +1257,18 @@ function startSession() {
         $secure=true;
     }
 
-    session_set_cookie_params([
-      'lifetime' => $conf['cookie_life'],
-      'path' => '/',
-      'domain' => $_SERVER['SERVER_NAME'],
-      'secure' => $secure,
-      'httponly' => true,
-      'samesite' => 'Strict'
-    ]);
+    if(PHP_VERSION_ID < 70300) {
+      session_set_cookie_params($conf['cookie_life'], '/; samesite=Strict', NULL, $secure, true);
+    } else {
+      session_set_cookie_params([
+        'lifetime' => $conf['cookie_life'],
+        'path' => '/',
+        'domain' => $_SERVER['SERVER_NAME'],
+        'secure' => $secure,
+        'httponly' => true,
+        'samesite' => 'Strict'
+      ]);
+    }
 
     // (Re)start the session
     session_start();

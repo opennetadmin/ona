@@ -318,39 +318,33 @@ print <<<EOL
 
 EOL;
 
-
 // Open the work_space that was requested
-if (isset($work_space) or isset($ws)) {
-    if (isset($ws)) $work_space = $ws;
+if (isset($output['work_space']) or isset($output['ws'])) {
+    if (isset($output['ws'])) $output['work_space'] = $output['ws'];
     // Take the query from the URL and process it for use in the window_submit
     $ws_qry = str_replace('&',',',$_SERVER['QUERY_STRING']);
     $ws_qry = str_replace('=','=>',$ws_qry);
     print <<<EOL
 <script type="text/javascript"><!--
-    xajax_window_submit('work_space', 'xajax_window_submit(\'{$work_space}\', \'{$ws_qry}\', \'display\')');
+    xajax_window_submit('work_space', 'xajax_window_submit(\'{$output['work_space']}\', \'{$ws_qry}\', \'display\')');
 --></script>
 EOL;
 }
 
 // Process any search that was passed
-if (isset($search) or isset($q)) {
-    if (isset($q)) $search = $q;
+if (isset($output['search']) or isset($output['q'])) {
+    if (isset($output['q'])) $output['search'] = $output['q'];
     print <<<EOL
 <script type="text/javascript"><!--
-    el('qsearch').value = '{$search}';
+    el('qsearch').value = '{$output['search']}';
     xajax_window_submit('search_results', xajax.getFormValues('qsearch_form'));
 --></script>
 EOL;
 }
 
-
 print <<<EOL
-
 <script>
     var desktop_height = document.body.clientHeight - el('bar_top').clientHeight - el('trace_history').clientHeight;
-    if (browser.isIE) {
-        desktop_height -= 20;
-    }
 
     /* Finally reposition/resize the window, hide any overflow, and bring it up behind other windows. */
     el('desktopmodules').style.height = desktop_height + 'px';

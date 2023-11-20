@@ -139,7 +139,7 @@
 ('upgrade_index', '15', 'Tracks current upgrade index, used to perform database upgrades.', '', '', 0, 0);</query>
 
 
-<query>INSERT INTO `users` VALUES (1,'guest','098f6bcd4621d373cade4e832627b4f6',0,'2007-10-30 02:55:37','2007-12-02 23:44:21'),(2,'admin','21232f297a57a5a743894a0e4a801fc3',0,'2007-10-30 03:00:17','2007-12-02 22:10:26');</query>
+<query>INSERT INTO `users` VALUES (1,'guest','084e0343a0486ff05530df6c705c8bb4',0,'2007-10-30 02:55:37','2007-12-02 23:44:21'),(2,'admin','21232f297a57a5a743894a0e4a801fc3',0,'2007-10-30 03:00:17','2007-12-02 22:10:26');</query>
 
 
 <query>INSERT INTO `permissions` VALUES

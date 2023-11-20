@@ -509,7 +509,7 @@ EOL;
 
             <!-- SRV CONTAINER -->
             <tr id="srv_container" style="display:none;">
-                <td class="input_required" align="right" nowrap="true">
+                <td class="input_required" align="right" nowrap="true" style="line-height: 22px;">
                     Priority<br>Weight<br>Port
                 </td>
                 <td class="padding" align="left" width="100%">
@@ -688,17 +688,6 @@ function ws_save($window_name, $form='') {
 
     // we need to do a little validation here to make sure things
     // have a good chance of working!
-
-    // Validate input
-    if ($form['set_name'] == '' or
-        $form['set_type'] == '' or
-        $form['set_ip'] == '' or
-        $form['set_domain'] == ''
-       ) {
-        $response->script("alert('Please complete all required fields to continue!');");
-        return $response;
-    }
-
 
     // If the name we were passed has a leading . in it then remove the dot.
     $form['set_name'] = preg_replace("/^\./", '', trim($form['set_name']));

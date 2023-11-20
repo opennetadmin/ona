@@ -205,15 +205,6 @@ INSERT INTO `auth_groups` (`id`, `name`, `description`, `level`) VALUES (17,'Def
 UNLOCK TABLES;
 
 --
--- Dumping data for table `host_roles`
---
-
-LOCK TABLES `host_roles` WRITE;
-/*!40000 ALTER TABLE `host_roles` DISABLE KEYS */;
-/*!40000 ALTER TABLE `host_roles` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Dumping data for table `hosts`
 --
 
@@ -376,7 +367,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` (`id`, `username`, `password`, `level`, `ctime`, `atime`) VALUES (1,'guest','098f6bcd4621d373cade4e832627b4f6',0,'2018-01-06 04:50:42','2018-01-06 04:50:42'),(2,'admin','21232f297a57a5a743894a0e4a801fc3',0,'2018-01-05 06:10:17','2018-01-05 06:10:17');
+INSERT INTO `users` (`id`, `username`, `password`, `level`, `ctime`, `atime`) VALUES (1,'guest','084e0343a0486ff05530df6c705c8bb4',0,'2018-01-06 04:50:42','2018-01-06 04:50:42'),(2,'admin','21232f297a57a5a743894a0e4a801fc3',0,'2018-01-05 06:10:17','2018-01-05 06:10:17');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
