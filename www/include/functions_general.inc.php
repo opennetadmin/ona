@@ -1263,7 +1263,7 @@ function startSession() {
       session_set_cookie_params([
         'lifetime' => $conf['cookie_life'],
         'path' => '/',
-        'domain' => $_SERVER['SERVER_NAME'],
+        'domain' => $_SERVER['HTTP_HOST'],
         'secure' => $secure,
         'httponly' => true,
         'samesite' => 'Strict'

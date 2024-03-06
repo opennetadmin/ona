@@ -55,7 +55,31 @@ class auth_ldap extends auth_local {
      * @return  bool
      */
     function checkPass($user,$pass){
-        // reject empty password
+	global $base;
+        $ldap_conf="{$base}/local/config/auth_ldap.config.php";
+
+        //Opening of the LDAP conf file
+        $confFile=fopen($ldap_conf,"r");
+
+        // This list can be modified depending on the LDAP config file
+        $var=['debug','version','server','usertree','grouptree','groupfilter'];
+
+        for ($i=0;$i<count($var);$i++){
+                $reading=fgets($confFile);
+                while($reading[0]!="$"){
+                        $reading=fgets($confFile);
+                };
+                $string=explode(" = '",$reading);
+                $this->cnf[$var[$i]]=explode("';",$string[1])[0];
+        };
+
+        // This 2 variables below can be modified depending on the LDAP configuration you have
+        $this->cnf['port']=389;
+        $this->cnf['groupkey']='cn';
+
+        fclose($confFile);    
+	    
+	// reject empty password
         if(empty($pass)) return false;
         if(!$this->_openLDAP()) return false;
 
