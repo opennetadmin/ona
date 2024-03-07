@@ -250,9 +250,24 @@ class auth_ldap extends auth_local {
 
             if(is_array($result)) foreach($result as $grp){
                 if(!empty($grp[$this->cnf['groupkey']][0])){
+                    $groupname = $grp[$this->cnf['groupkey']][0];
                     if($this->cnf['debug'])
-                        printmsg('DEBUG => auth_ldap: LDAP usergroup: '.htmlspecialchars($grp[$this->cnf['groupkey']][0]),2);
-                    $info['grps'][$grp[$this->cnf['groupkey']][0]] = $g++;
+                        printmsg('DEBUG => auth_ldap: LDAP usergroup: '
+                        .htmlspecialchars($groupname),2);
+                    if(!empty($this->cnf['mapping']['grps'][$this->cnf['groupkey']])){
+                        $regexp = $this->cnf['mapping']['grps'][$this->cnf['groupkey']];
+                        printmsg('DEBUG => Matching '.htmlspecialchars($groupname)
+                                                     .' against '.htmlspecialchars($regexp),2);
+                        if (preg_match($regexp,$groupname,$match)) {
+                            $groupname_mapped = $match[1];
+                            if($this->cnf['debug'])
+                                printmsg('DEBUG => auth_ldap: mapped LDAP usergroup: '
+                                .htmlspecialchars($groupname_mapped),2);
+                            $info['grps'][$groupname_mapped] = $g++;
+                        }
+                    } else {
+                        $info['grps'][$groupname] = $g++;
+                    }
                 }
             }
         }
