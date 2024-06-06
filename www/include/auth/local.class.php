@@ -15,15 +15,15 @@ class auth_local {
   var $user = null;
 
   /**
-   * Constructor.
+   * Constructor: auth_local
    *
    * Carry out sanity checks to ensure the object is
    * able to operate.
    *
    * @author  Christopher Smith <chris@jalakai.co.uk>
    */
-  function auth_local() {
-     // the base class constructor does nothing, derived class
+  function __construct() {
+    // the base class constructor does nothing, derived class
     // constructors do the real work
   }
 
