@@ -117,7 +117,6 @@ if ($_SERVER['SERVER_PORT'] == 443) { $self['secure'] = 1; }
 
 
 // Colors
-$color['bg']                   = '#FFFFFF';
 $color['content_bg']           = '#FFFFFF';
 $color['bar_bg']               = '#D3DBFF';
 $color['border']               = '#555555'; //#1A1A1A
@@ -127,13 +126,6 @@ $color['font_default']         = '#000000';
 $color['font_title']           = '#4E4E4E';
 $color['font_subtitle']        = '#5A5A5A';
 $color['font_error']           = '#E35D5D';
-
-$color['link']                 = '#6B7DD1';
-$color['vlink']                = '#6B7DD1';
-$color['alink']                = '#6B7DD1';
-$color['link_nav']             = '#0048FF';  // was '#7E8CD7';
-$color['link_act']             = '#FF8000';  // was '#EB8F1F';
-$color['link_domain']          = 'green';    // was '#5BA65B';
 
 $color['button_normal']        = '#FFFFFF';
 $color['button_hover']         = '#E0E0E0';

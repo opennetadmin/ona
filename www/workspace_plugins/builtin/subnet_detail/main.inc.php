@@ -7,30 +7,26 @@ $usage_html = get_subnet_usage_html($record['id']);
 
 if (auth('subnet_modify',$debug_val)) {
     $title_left_html .= <<<EOL
-                <a title="Edit subnet. ID: {$record['id']}"
-                    class="act"
-                    onClick="xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'editor');"
-                ><img src="{$images}/silk/page_edit.png" border="0"></a>
+                <i title="Edit subnet. ID: {$record['id']}"
+                   onClick="xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'editor');"
+                   class="shadow nf nf-md-file_edit" ></i>
 EOL;
 }
 if (auth('subnet_del',$debug_val)) {
     $title_left_html .= <<<EOL
-                <a title="Delete subnet. ID: {$record['id']}"
-                    class="act"
-                    onClick="xajax_window_submit('tooltips', 'name=>edit_subnet', 'window_progressbar');xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'delete');"
-                ><img src="{$images}/silk/delete.png" border="0"></a>
+                <i title="Delete subnet. ID: {$record['id']}"
+                   onClick="xajax_window_submit('tooltips', 'name=>edit_subnet', 'window_progressbar');xajax_window_submit('edit_subnet', xajax.getFormValues('form_subnet_{$record['id']}'), 'delete');"
+                   class="shadow nf nf-md-delete_circle_outline" style="color: red"></i>
 EOL;
 }
 
 $title_left_html .= <<<EOL
-                <b>{$record['name']}</b>&nbsp;
+                <b>{$record['name']}</b> <i class="nf onacb" onclick="writeCB(this, '{$record['name']}');"></i>
 EOL;
 
 
-
-
 $title_right_html .= <<<EOL
-                <a href="?work_space={$extravars['window_name']}&subnet={$record['name']}"><img title="Direct link to {$record['name']}" src="{$images}/silk/application_link.png" border="0"></a>
+                <i title="Copy page URL to clipboard" class="nf nf-md-link_plus" onclick="writeCB(this, '{$https}{$baseURL}?work_space={$extravars['window_name']}&subnet={$record['name']}');"></i>
 EOL;
 
 
@@ -118,7 +114,7 @@ $modbodyhtml .= <<<EOL
             <tr>
                 <td align="right" nowrap="true"><b>IP Address</b>&nbsp;</td>
                 <td class="padding" align="left">
-                    {$record['ip_addr']}&nbsp;
+                    {$record['ip_addr']} <i class="nf onacb" onclick="writeCB(this, '{$record['ip_addr']}');"></i>
                 </td>
             </tr>
 

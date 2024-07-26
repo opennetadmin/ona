@@ -45,7 +45,19 @@ print <<<EOL
   border-top-right-radius:4px;
 }
 
+/* A shorthand to get the nerd font I want without the huge name
+   This will be used by clipboard references
+*/
+.onacb:before {
+  font-size: 0.8em;
+  font-family: "NerdFontsSymbols Nerd Font";
+  content: "\\f1264"; /* represents nf-md-clipboard_check_multiple_outline */
+  transition: all .2s ease-out;
+}
+.onacb:active { color: green; }
 
+.shadow { transition: all .2s ease-in-out; }
+.shadow:hover { text-shadow: 0px 0px 1px; }
 
 html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote,  pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, fieldset, form, label, legend, caption, article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, time, mark, audio, video {
      margin:0;
@@ -144,9 +156,9 @@ html { height: 100%; }
 
 body {
     margin: 0px;
-    font-family: {$style['font-family']};
+    font-family: Arial, Sans-Serif;
     color: {$color['font_default']};
-    background-color: {$color['bg']};
+    background-color: #FFFFFF;
     vertical-align: top;
     height:auto !important;
     height:100%;
@@ -220,7 +232,7 @@ body {
 
 td {
     margin: 0px;
-    font-family: {$style['font-family']};
+    font-family: Arial, Sans-Serif;
     color: {$color['font_default']};
     vertical-align: top;
 }
@@ -238,10 +250,10 @@ img {
     vertical-align: middle;
 }
 
-a            { color: {$color['link']};  cursor: pointer; }
-a:link       { color: {$color['link']};  }
-a:visited    { color: {$color['vlink']}; }
-a:active     { color: {$color['alink']}; }
+a            { color: #6B7DD1; cursor: pointer; }
+a:link       { color: #6B7DD1; }
+a:visited    { color: #6B7DD1; }
+a:active     { color: #6B7DD1; }
 a:hover      {
   cursor: poin#0069ba;
   text-decoration:underline;
@@ -359,7 +371,7 @@ a:hover      {
     font-size: x-small;
     color: #868686;
     font-weight: normal;
-    font-family: {$style['font-family']};
+    font-family: Arial, Sans-Serif;
 }
 
 // color for the background of the version check box
@@ -524,12 +536,12 @@ span.tagdel  {
 }
 /* --------------- AJAX Boxes --------------- */
 
-a.nav          { color: {$color['link_nav']};  }
-a.nav:hover    { color: {$color['link_nav']};  }
-a.act          { color: {$color['link_act']};  }
-a.act:hover    { color: {$color['link_act']};  }
-a.domain       { color: {$color['link_domain']}; }
-a.domain:hover { color: {$color['link_domain']}; }
+a.nav          { color: #0048FF;  }
+a.nav:hover    { color: #0048FF;  }
+a.act          { color: #FF8000;  }
+a.act:hover    { color: #FF8000;  }
+a.domain       { color: green; }
+a.domain:hover { color: green; }
 
 /* This is a new style action class that pads the images. */
 a.linkact          { color: #FF8000;  text-decoration: none; }
@@ -878,7 +890,7 @@ span.diffchange { color: red; }
 .display_notes { border: none; }
 
 /* ---- set the trace history so other imbeded junk wont change how it looks --- */
-#trace_history a { color: {$color['link']};  cursor: pointer; font-family: {$style['font-family']}; }
+#trace_history a { color: #6B7DD1;  cursor: pointer; font-family: Arial, Sans-Serif; }
 
 
 EOL;

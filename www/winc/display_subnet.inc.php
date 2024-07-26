@@ -11,7 +11,7 @@ include('include/functions_network_map.inc.php');
 //   Displays a subnet record and all associated info in the work_space div.
 //////////////////////////////////////////////////////////////////////////////
 function ws_display($window_name, $form='') {
-    global $conf, $self, $onadb;
+    global $conf, $self, $onadb, $baseURL;
     global $images, $color, $style;
     $html = '';
     $js = '';

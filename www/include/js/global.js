@@ -9,6 +9,17 @@
 //    return("FYI, There is no need to use the back button, simply select from the trace bar.");
 //}
 
+// Add a clipboard function with a bit of style
+function writeCB(element, content) {
+  navigator.clipboard.writeText(content).then(function() {
+   // element.style.WebkitTransition = 'color .5s';
+  //  element.style.color = 'green';
+  //  setTimeout(function () {element.style.color = 'black'}, 1500);
+    return false;
+  }, function(err) {
+    console.error('Async: Could not copy text: ', err);
+  });
+}
 
 // Toggle the display style for table rows of a given 'tablename'
 // based on an attribute setting of 'type'
