@@ -14,9 +14,11 @@ class auth_ldap extends auth_local {
     var $founduser = false;
 
     /**
-     * Constructor
+     * Constructor: auth_ldap
+     *
+     * Reads configuration and checks for PHP LDAP module.
      */
-    function auth_ldap(){
+    function __construct(){
         global $conf,$base;
 
         // load in system default ldap config
