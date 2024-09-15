@@ -52,7 +52,6 @@ EOL;
     // Build model list
     // TODO: this needs to be made more efficent
     list($status, $rows, $model) = db_get_records($onadb, 'manufacturers b, models a','a.manufacturer_id = b.id and a.id >= 1', 'b.name, a.name');
-    $model['name'] = htmlentities($model['name']);
     foreach ($model as $entry) {
         $selected = "";
         list($status, $rows, $manufacturer) = ona_get_manufacturer_record(array('id' => $entry['manufacturer_id']));
@@ -65,7 +64,6 @@ EOL;
     // Build role list
     // TODO: this needs to be made more efficent
     list($status, $rows, $role) = db_get_records($onadb, 'roles','id >= 1', 'name');
-    $role['name'] = htmlentities($role['name']);
     foreach ($role as $entry) {
         $selected = "";
         // If this entry matches the record you are editing, set it to selected
@@ -75,6 +73,8 @@ EOL;
 
     // Escape data for display in html
     foreach(array_keys((array)$record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']);}
+    foreach(array_keys((array)$model_list) as $key) {$model_list[$key] = htmlentities($model_list[$key], ENT_QUOTES, $conf['php_charset']);}
+    foreach(array_keys((array)$role_list) as $key) {$role_list[$key] = htmlentities($role_list[$key], ENT_QUOTES, $conf['php_charset']);}
 
     // Load some html into $window['html']
     $window['html'] .= <<<EOL

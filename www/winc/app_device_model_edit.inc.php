@@ -53,7 +53,6 @@ EOL;
     // TODO: this needs to be made more efficent
     list($status, $rows, $manufacturer) = db_get_records($onadb, 'manufacturers','id >= 1', 'name');
     $manufacturer_list = '<option value="">&nbsp;</option>\n';
-    $manufacturer['name'] = htmlentities($manufacturer['name']);
     foreach ($manufacturer as $entry) {
         $selected = "";
         // If this entry matches the record you are editing, set it to selected
@@ -63,9 +62,8 @@ EOL;
 
 
     // Escape data for display in html
-    foreach(array_keys((array)$record) as $key) {
-        $record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']);
-    }
+    foreach(array_keys((array)$record) as $key) {$record[$key] = htmlentities($record[$key], ENT_QUOTES, $conf['php_charset']);}
+    foreach(array_keys((array)$manufacturer_list) as $key) {$manufacturer_list[$key] = htmlentities($manufacturer_list[$key], ENT_QUOTES, $conf['php_charset']);}
 
     // Load some html into $window['html']
     $window['html'] .= <<<EOL
