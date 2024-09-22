@@ -110,6 +110,7 @@ function ws_editor($window_name, $form='') {
                      "tooltip=>qf_vlan," +
                      "id=>tt_qf_vlan_{$window_name}," +
                      "text_id=>vlan_text_{$window_name}," +
+                     "campus_id=>set_campus_{$window_name}," +
                      "input_id=>set_vlan_{$window_name}');"
             );
         };
@@ -147,9 +148,9 @@ EOL;
                     value="{$vlan['number']}">
                 <input
                     type="hidden"
-                    id="vlan_campus_{$window_name}"
+                    id="set_campus_{$window_name}"
                     name="campus"
-                    value="{$vlan['vlan_campus_id']}">
+                    value="{$vlan['vlan_campus_name']}">
 
                 <span id="qf_vlan_{$window_name}">
                     <a id="vlan_text_{$window_name}"
@@ -333,7 +334,6 @@ function ws_save($window_name, $form='') {
 //         $response->script("var doit=confirm('{$self['error']}');if (doit == true) {xajax_window_submit('edit_domain', 'newptrdomainname=>{$octets[3]}.in-addr.arpa', 'editor');} else {removeElement('{$window_name}');}");
 //         return $response;
 //     }
-
 
     // Decide if we're editing or adding
     $module = 'modify';

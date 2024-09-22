@@ -1155,6 +1155,7 @@ EOL;
     <input type="hidden" name="id" value="{$form['id']}">
     <input type="hidden" name="input_id" value="{$form['input_id']}">
     <input type="hidden" name="text_id" value="{$form['text_id']}">
+    <input type="hidden" name="campus_id" value="{$form['campus_id']}">
     <input type="hidden" name="content_id" value="qf_vlan_results">
     <table style="{$style['content_box']}" cellspacing="0" border="0" cellpadding="0">
 
