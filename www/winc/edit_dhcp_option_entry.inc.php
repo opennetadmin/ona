@@ -81,7 +81,7 @@ function ws_editor($window_name, $form='') {
     $dhcpoptions['dhcp_options'] = htmlentities($dhcpoptions['display_name']);
     foreach ($dhcpoptions as $record) {
         $selected = "";
-        if (isset($record['id']) == $dhcp_entry['dhcp_option_id']) { $selected = "SELECTED=\"selected\""; }
+        if (isset($record['id']) && $record['id'] == $dhcp_entry['dhcp_option_id']) { $selected = "SELECTED=\"selected\""; }
         if (isset($record['id'])) {$dhcp_option_list .= "<option {$selected} value=\"{$record['id']}\">{$record['display_name']} ({$record['number']})</option>\n";}
     }
 
