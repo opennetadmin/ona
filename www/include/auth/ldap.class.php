@@ -216,7 +216,7 @@ class auth_ldap extends auth_local {
             foreach($this->cnf['mapping'] as $localkey => $key) {
                 if(is_array($key)) {
                     // use regexp to clean up user_result
-                    list($key, $regexp) = each($key);
+                    list($key, $regexp) = $key;
                     if($user_result[$key]) foreach($user_result[$key] as $grp){
                         if (preg_match($regexp,$grp,$match)) {
                             if($localkey == 'grps') {
