@@ -954,7 +954,7 @@ EOM
     $options['set_name'] = preg_replace("/^\./", '', $options['set_name']);
 
     // Find the DNS record from $options['name']
-    list($status, $rows, $dns) = ona_find_dns_record($options['name']);
+    list($status, $rows, $dns) = ona_find_dns_record($options['server'] . "." . $domain['fqdn']);
     printmsg("DEBUG => dns_record_modify() DNS record: {$dns['fqdn']}", 3);
     if ($rows > 1) {
         printmsg("DEBUG => Found more than one DNS record for: {$options['name']}",3);

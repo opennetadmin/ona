@@ -80,7 +80,7 @@ EOM
     printmsg("DEBUG => domain_server_add(): Found domain, {$domain['name']}", 3);
 
     // Determine the server is valid
-    list($status, $rows, $ns_dns) = ona_find_dns_record($options['server']);
+    list($status, $rows, $ns_dns) = ona_find_dns_record($options['server'] . "." . $domain['fqdn']);
     list($status, $rows, $interface) = ona_find_interface($ns_dns['interface_id']);
 
     $host['id'] = $interface['host_id'];
@@ -169,7 +169,7 @@ EOM
     if (!$dnsrows) {
         printmsg("DEBUG => Auto adding a NS record for {$options['server']}.", 0);
         // Run dns_record_add as a NS type
-        list($status, $output) = run_module('dns_record_add', array('name' => $domain['fqdn'],'pointsto' => $options['server'], 'type' => 'NS'));
+        list($status, $output) = run_module('dns_record_add', array('name' => $domain['fqdn'],'pointsto' => $options['server'] . "." . $domain['fqdn'], 'type' => 'NS'));
         if ($status)
             return(array($status, $output));
         $add_to_error .= $output;
