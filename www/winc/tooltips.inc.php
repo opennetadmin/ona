@@ -1564,7 +1564,7 @@ function get_interface_cluster_list_html($form) {
     list($status, $rows, $priint) = ona_get_interface_record(array('id'=>$form['interface_id']));
     list($status, $rows, $prihost) = ona_get_host_record(array('id'=>$priint['host_id']));
 
-    $priip = ip_mangle($priint['ip_addr'], dotted);
+    $priip = ip_mangle($priint['ip_addr'], 'dotted');
 
     // add one for primary host
     $introws=$introws+1;
