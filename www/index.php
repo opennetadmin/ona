@@ -16,7 +16,7 @@ error_reporting (E_ALL ^ E_WARNING ^ E_NOTICE);
 // You can enable or disable this by setting the "disable_guest" sysconfig option
 if (!$_SESSION['ona']['auth']['user']['username'] and !$conf['disable_guest']) {
     $_SESSION['ona']['auth']['user']['username'] = 'guest';
-    list($status, $js) = get_authentication('guest','guest');
+    list($status, $js) = get_authentication('guest','test');
     get_perms('guest');
 }
 
