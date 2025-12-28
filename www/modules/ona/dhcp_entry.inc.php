@@ -658,7 +658,7 @@ function dhcp_entry_display($options="") {
     global $conf, $self, $onadb;
 
     // Version - UPDATE on every edit!
-    $version = '1.00';
+    $version = '1.01';
 
     printmsg("DEBUG => dhcp_entry_display({$options}) called", 3);
 
@@ -703,8 +703,8 @@ EOM
         }
 
         $anchor = 'host';
-        $desc = $host['FQDN'];
-        $where = array('HOST_id' => $host['id']);
+        $desc = $host['fqdn'];
+        $where = array('host_id' => $host['id']);
     } elseif ($options['subnet']) {
         // Determine the subnet is valid
         list($status, $rows, $subnet) = ona_find_subnet($options['subnet']);
@@ -716,8 +716,8 @@ EOM
         }
 
         $anchor = 'subnet';
-        $desc = "{$subnet['DESCRIPTION']} (". ip_mangle($subnet['IP_ADDRESS']).")";
-        $where = array('NETWORK_id' => $subnet['id']);
+        $desc = "{$subnet['name']} (". ip_mangle($subnet['ip_addr']).")";
+        $where = array('subnet_id' => $subnet['id']);
 
     } elseif ($options['server']) {
         // Determine the server is valid
@@ -729,30 +729,14 @@ EOM
             return(array(4, $self['error'] . "\n"));
         }
 
-        // Determine the host that was found is actually a server
-        list($status, $rows, $server) = ona_get_server_record(array('HOST_id' => $host['id']));
-
-        if (!$server['id']) {
-            printmsg("DEBUG => The host specified, {$host['FQDN']}, is not a server!", 3);
-            $self['error'] = "ERROR => The host specified, {$host['FQDN']}, is not a server!";
-            return(array(5, $self['error'] . "\n"));
-        }
-
         $anchor = 'server';
-        $desc = $host['FQDN'];
-        $where = array('SERVER_id' => $server['id']);
+        $desc = $host['fqdn'];
+        $where = array('server_id' => $host['id']);
 
     }
 
-
     // Debugging
     printmsg("DEBUG => dhcp_entry_display(): Found {$anchor}: {$desc}", 3);
-
-
-
-
-
-
 
     // Build text to return
     $text  = strtoupper($anchor) . " RECORD ({$desc})\n";
@@ -760,7 +744,7 @@ EOM
     // Display the record(s)
     $i = 0;
     do {
-        list($status, $rows, $entry) = ona_get_dhcp_entry_record($where);
+        list($status, $rows, $entry) = ona_get_dhcp_option_entry_record($where);
         if ($rows == 0) {
             $text .= "\nNO ASSOCIATED DHCP ENTRY RECORDS\n";
             break;
@@ -768,7 +752,18 @@ EOM
         $i++;
         $text .= "\nASSOCIATED DHCP ENTRY RECORD ({$i} of {$rows})\n";
         $text .= format_array($entry);
+        $text_array['dhcp_entry'][$i] = $entry;
     } while ($i < $rows);
+
+    $text_array['dhcp_entry_count'] = $rows;
+
+    // change the output format if other than default
+    if ($options['format'] == 'json') {
+        $text = $text_array;
+    }
+    if ($options['format'] == 'yaml') {
+        $text = $text_array;
+    }
 
     // Return the success notice
     return(array(0, $text));

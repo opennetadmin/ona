@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<schema version="0.3">
+<sql>
+    <query platform="mysqli">INSERT INTO dcm_module_list (name,description,file) VALUES ('dhcp_entry_display', 'Display information about a DHCP option entry', 'ona/dhcp_entry.inc.php') on duplicate key update name='dhcp_entry_display'</query> 
+</sql>
+</schema>
+
+

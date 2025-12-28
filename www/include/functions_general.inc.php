@@ -1785,8 +1785,7 @@ function format_array($array=array()) {
                 $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['fqdn']})");
         }
         else if ($key == 'server_id')         {
-            list($status, $rows, $server) = ona_get_server_record(array('id' => $array[$key]));
-            list($status, $rows, $host) = ona_find_host($server['host_id']);
+            list($status, $rows, $host) = ona_find_host($array[$key]);
             if ($host['id'])
                 $array[$key] = str_pad($array[$key], 20) . strtolower("({$host['fqdn']})");
         }
