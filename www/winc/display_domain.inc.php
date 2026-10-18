@@ -281,7 +281,7 @@ EOL;
                 <tr>
                     <td colspan="3" align="left" valign="middle" nowrap="true" class="act-box">
                         <form id="form_domain_server_{$record['id']}"
-                            ><input type="hidden" name="domain" value="{$record['name']}"
+                            ><input type="hidden" name="domain" value="{$record['fqdn']}"
                             ><input type="hidden" name="js" value="{$refresh}"
                         ></form>
 

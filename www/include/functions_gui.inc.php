@@ -367,12 +367,12 @@ function get_host_suggestions($q, $max_results=10) {
         if ($record['type'] == 'NS') {
             $results[] = $record[$field];
         } else {
-            list($status, $rows, $domain) = db_get_record($onadb, 'domains', array('id' => $record['domain_id']));
+            list($status, $rows, $domain) = ona_get_domain_record(array('id' => $record['domain_id']));
             if ($conf['dns_views']) {
                 list($status, $rows, $view) = db_get_record($onadb, 'dns_views', array('id' => $record['dns_view_id']));
                 $viewname = $view['name'].'/';
             }
-            $results[] = $viewname.$record[$field].".".$domain['name'];
+            $results[] = $viewname.$record[$field].'.'.$domain['fqdn'];
         }
     }
 
