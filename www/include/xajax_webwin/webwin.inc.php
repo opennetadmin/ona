@@ -167,7 +167,10 @@ function window_submit($window_name, $form='', $function='') {
     // Try looking for the same function in an include file
     $file = window_find_include($window_name);
     if ($file) { require_once($file); }
-    else { $response->assign("work_space_content", "innerHTML", "<br><center><font color=\"red\"><b>Invalid window requested: {$window_name}</b></font></center>"); }
+    else {
+        $window_name_safe = htmlentities((string)$window_name, ENT_QUOTES);
+        $response->assign("work_space_content", "innerHTML", "<br><center><font color=\"red\"><b>Invalid window requested: {$window_name_safe}</b></font></center>");
+    }
 
     // Now see if our function is available...
     if (function_exists($function)) { return($function($window_name, $form)); }
@@ -195,6 +198,13 @@ function window_submit($window_name, $form='', $function='') {
 //////////////////////////////////////////////////////////////////////////////
 function window_find_include($window_name) {
     if (!$window_name) { return(''); }
+
+    // Window names come straight from the client, so only allow simple names.
+    // This prevents directory traversal / local file inclusion (e.g. "../../etc/passwd").
+    if (!is_string($window_name) or !preg_match('/^[A-Za-z0-9_-]+$/', $window_name)) {
+        printmsg("NOTICE => window_find_include() invalid window name requested!", 0);
+        return(FALSE);
+    }
 
     $file = '';
 
@@ -225,11 +235,6 @@ function window_find_include($window_name) {
                 return($file);
             }
         }
-    }
-
-    // If we still have not found it, lets just try the windowname as the file itself
-    if (is_file('.'.$window_name)) {
-        return('.'.$window_name);
     }
 
     // Couldn't find it :|
