@@ -13,7 +13,9 @@ error_reporting (E_ALL ^ E_NOTICE);
 // Log the user out and redirect them to the login page:
 
 // Print a logout message
-printmsg("INFO => [Desktop] {$_SESSION['ona']['auth']['user']['username']} has logged out",0);
+if(isset($_SESSION['ona']['auth']['user']['username'])){
+        printmsg("INFO => [Desktop] {$_SESSION['ona']['auth']['user']['username']} has logged out",0);
+}
 
 // Unset session info relating to their account
 if(isset($_SESSION['ona']['auth'])) {
@@ -23,12 +25,7 @@ if(isset($_SESSION['ona']['auth'])) {
 session_destroy();
 
 // Print javascript to redirect them to https so they can login again
-echo <<<EOL
-<html><body>
-<script type="text/javascript"><!--
-    window.location = "{$https}{$baseURL}/";
---></script>
-</body></html>
-EOL;
+header("Location: index.php");
+exit();
 
 ?>
