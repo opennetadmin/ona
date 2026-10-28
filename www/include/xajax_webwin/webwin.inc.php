@@ -199,9 +199,21 @@ function window_submit($window_name, $form='', $function='') {
 function window_find_include($window_name) {
     if (!$window_name) { return(''); }
 
-    // Window names come straight from the client, so only allow simple names.
-    // This prevents directory traversal / local file inclusion (e.g. "../../etc/passwd").
-    if (!is_string($window_name) or !preg_match('/^[A-Za-z0-9_-]+$/', $window_name)) {
+    // Window names come straight from the client, so they must be validated to
+    // prevent directory traversal / local file inclusion (e.g. "../../etc/passwd").
+    if (!is_string($window_name)) { return(FALSE); }
+
+    // Workspace plugins (wspl_item) use their own path as the window name, for example:
+    //   /local/plugins/vmware_stats/wspl_item.inc.php
+    // Only allow .inc.php files directly inside a plugin directory.
+    if (preg_match('#^/((local/)?plugins/([A-Za-z0-9_-]+))/[A-Za-z0-9_-]+\.inc\.php$#', $window_name, $matches)) {
+        if (is_file('.'.$window_name) and !file_exists("./{$matches[1]}/plugin_disabled")) {
+            return('.'.$window_name);
+        }
+        return(FALSE);
+    }
+
+    if (!preg_match('/^[A-Za-z0-9_-]+$/', $window_name)) {
         printmsg("NOTICE => window_find_include() invalid window name requested!", 0);
         return(FALSE);
     }
