@@ -321,12 +321,16 @@ EOL;
 // Open the work_space that was requested
 if (isset($output['work_space']) or isset($output['ws'])) {
     if (isset($output['ws'])) $output['work_space'] = $output['ws'];
+    // These values come from the URL and are printed into javascript, so only
+    // allow characters that cannot break out of the quoted strings (XSS).
+    $ws_name = preg_replace('/[^A-Za-z0-9_-]/', '', (string)$output['work_space']);
     // Take the query from the URL and process it for use in the window_submit
-    $ws_qry = str_replace('&',',',$_SERVER['QUERY_STRING']);
+    $ws_qry = preg_replace('/[^A-Za-z0-9_.:@%*\/=&,+-]/', '', $_SERVER['QUERY_STRING']);
+    $ws_qry = str_replace('&',',',$ws_qry);
     $ws_qry = str_replace('=','=>',$ws_qry);
     print <<<EOL
 <script type="text/javascript"><!--
-    xajax_window_submit('work_space', 'xajax_window_submit(\'{$output['work_space']}\', \'{$ws_qry}\', \'display\')');
+    xajax_window_submit('work_space', 'xajax_window_submit(\'{$ws_name}\', \'{$ws_qry}\', \'display\')');
 --></script>
 EOL;
 }
@@ -334,9 +338,11 @@ EOL;
 // Process any search that was passed
 if (isset($output['search']) or isset($output['q'])) {
     if (isset($output['q'])) $output['search'] = $output['q'];
+    // Encode the search text as a javascript string literal to prevent XSS
+    $search_js = json_encode((string)$output['search'], JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
     print <<<EOL
 <script type="text/javascript"><!--
-    el('qsearch').value = '{$output['search']}';
+    el('qsearch').value = {$search_js};
     xajax_window_submit('search_results', xajax.getFormValues('qsearch_form'));
 --></script>
 EOL;
