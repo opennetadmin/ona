@@ -52,6 +52,13 @@ EOM
         ));
     }
 
+    // Check permissions
+    if (!auth('advanced')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
+    }
+
 
     // Get a list of the valid "permissions" and their descriptions.
     list($status, $rows, $permissions) = db_get_record($onadb, 'permissions', array('name' => $options['name']), '');

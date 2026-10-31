@@ -783,6 +783,13 @@ EOM
         ));
     }
 
+    // Check permissions
+    if (!auth('advanced')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
+    }
+
     $name = 'N/A';
 
     if ($options['raw']) {

@@ -86,6 +86,13 @@ EOM
         ));
     }
 
+    // Check permissions
+    if (!auth('custom_attribute_add')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
+    }
+
 
     // If they provided a hostname / ID let's look it up
     if ($options['host']) {
@@ -441,6 +448,13 @@ Modifies the custom attribute specified
 EOM
 
         ));
+    }
+
+    // Check permissions
+    if (!auth('custom_attribute_modify') and !auth('custom_attribute_add')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
     }
 
 
