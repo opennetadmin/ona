@@ -582,6 +582,13 @@ EOM
 
         ));
     }
+
+    // Check permissions
+    if (!auth('host_config_admin')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
+    }
     
     
     // Search for the host first

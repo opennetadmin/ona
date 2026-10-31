@@ -61,6 +61,13 @@ EOM
         ));
     }
 
+    // Check permissions
+    if (!auth('advanced')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
+    }
+
     // Set default user ID, if none was provided.
     if(!$options['user'])
         $options['user']='root';

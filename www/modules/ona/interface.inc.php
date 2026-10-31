@@ -1295,6 +1295,13 @@ EOM
         ));
     }
 
+    // Check permissions
+    if (!auth('advanced')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
+    }
+
 
     // Find the Host they are looking for
     list($status, $rows, $host) = ona_find_host($options['host']);
@@ -1438,6 +1445,13 @@ EOM
         ));
     }
 
+    // Check permissions
+    if (!auth('interface_del')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
+    }
+
 
     // Find the Host they are looking for
     list($status, $rows, $host) = ona_find_host($options['host']);
@@ -1552,6 +1566,13 @@ EOM
         ));
     }
 
+    // Check permissions
+    if (!auth('interface_del')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
+    }
+
 
     // Find the Host they are looking for
     list($status, $rows, $host) = ona_find_host($options['host']);
@@ -1649,6 +1670,13 @@ nat_add-v{$version}
 \n
 EOM
         ));
+    }
+
+    // Check permissions
+    if (!auth('interface_modify')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
     }
 
 
@@ -1752,6 +1780,13 @@ nat_del-v{$version}
 \n
 EOM
         ));
+    }
+
+    // Check permissions
+    if (!auth('interface_modify')) {
+        $self['error'] = "Permission denied!";
+        printmsg($self['error'], 0);
+        return(array(10, $self['error'] . "\n"));
     }
 
     // Sanitize "options[commit]" (no is the default)
