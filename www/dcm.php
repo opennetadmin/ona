@@ -117,11 +117,11 @@ function output_formatter($format='',$function='') {
     if (is_array($output))  {
       $output['module_exit_status'] = $status;
       ksort($output);
-      eval('print '.$function.'($output);');
+      print $function($output);
     } else {
       $out['module_exit_status'] = $status;
       $out['module_exit_message'] = $output;
-      eval('print '.$function.'($out);');
+      print $function($out);
     }
   }
 }
